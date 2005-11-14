@@ -6,7 +6,7 @@
 %define polname2 strict
 %define type2 strict-mcs
 %define POLICYVER 20
-%define POLICYCOREUTILSVER 1.27.27-5
+%define POLICYCOREUTILSVER 1.27.27-3
 %define CHECKPOLICYVER 1.27.17-5
 Summary: SELinux policy configuration
 Name: selinux-policy
@@ -169,12 +169,12 @@ fi
 
 %triggerpostun %{polname1} -- selinux-policy-%{polname1} <= 2.0.0
 %rebuildpolicy %{polname1}
-
+%if 0
 %package %{polname2} 
 Summary: SELinux %{polname2} base policy
 Group: System Environment/Base
 Provides: selinux-policy-base
-Obsoletes: selinux-policy-%{polname1}-sources
+Obsoletes: selinux-policy-%{polname2}-sources
 
 %description %{polname2} 
 SELinux Reference policy %{polname2} base module.
@@ -191,7 +191,7 @@ SELinux Reference policy %{polname2} base module.
 
 %files %{polname2}
 #%#fileList %{polname2}
-
+%endif
 %changelog
 * Wed Nov 9 2003 Dan Walsh <dwalsh@redhat.com> 2.0.0-5
 - Initial version
