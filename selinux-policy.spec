@@ -6,7 +6,7 @@
 %define polname2 strict
 %define type2 strict-mcs
 %define POLICYVER 20
-%define POLICYCOREUTILSVER 1.27.26-1
+%define POLICYCOREUTILSVER 1.27.27-5
 %define CHECKPOLICYVER 1.27.17-5
 Summary: SELinux policy configuration
 Name: selinux-policy
