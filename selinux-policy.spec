@@ -11,7 +11,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.0.0
-Release: 0.6
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -111,7 +111,7 @@ make conf
 %installCmds %{polname1} %{type1} 
 
 # Commented out because only targeted ref policy currently builds
-%installCmds %{polname2} %{type2} 
+#%#installCmds %{polname2} %{type2} 
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
@@ -146,6 +146,7 @@ SELINUX=enforcing
 # SELINUXTYPE= can take one of these two values:
 #	targeted - Only targeted network daemons are protected.
 #	strict - Full SELinux protection.
+#	mls - Multi Level Security protection.
 SELINUXTYPE=targeted 
 # SETLOCALDEFS= Check local definition changes
 SETLOCALDEFS=0 
