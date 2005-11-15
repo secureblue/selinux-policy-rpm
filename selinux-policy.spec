@@ -34,50 +34,6 @@ Obsoletes: selinux-policy-%{polname1}-sources
 %description %{polname1}
 SELinux Reference policy targeted base module.
 
-%files %{polname1}
-%fileList %{polname1}
-
-%pre %{polname1}
-%saveFileContext %{polname1}
-
-%post %{polname1}
-if [ ! -s /etc/selinux/config ]; then
-	#
-	#	New install so we will default to targeted policy
-	#
-	echo "
-# This file controls the state of SELinux on the system.
-# SELINUX= can take one of these three values:
-#	enforcing - SELinux security policy is enforced.
-#	permissive - SELinux prints warnings instead of enforcing.
-#	disabled - No SELinux policy is loaded.
-SELINUX=enforcing
-# SELINUXTYPE= can take one of these two values:
-#	targeted - Only targeted network daemons are protected.
-#	strict - Full SELinux protection.
-#	mls - Multi Level Security protection.
-SELINUXTYPE=targeted 
-# SETLOCALDEFS= Check local definition changes
-SETLOCALDEFS=0 
-
-" > /etc/selinux/config
-
-	ln -sf /etc/selinux/config /etc/sysconfig/selinux 
-	restorecon /etc/selinux/config 2> /dev/null
-else
-	# if first time update booleans.local needs to be copied to sandbox
-	[ -f /etc/selinux/%{polname1}/booleans.local ] && mv /etc/selinux/%{polname1}/booleans.local /etc/selinux/%{polname1}/modules/active/
-	[ -f /etc/selinux/%{polname1}/seusers ] && cp -f /etc/selinux/%{polname1}/seusers /etc/selinux/%{polname1}/modules/active/seusers
-	grep -q "^SETLOCALDEFS" /etc/selinux/config || echo -n "
-# SETLOCALDEFS= Check local definition changes
-SETLOCALDEFS=0 
-">> /etc/selinux/config
-fi
-%rebuildpolicy %{polname1}
-%relabel %{polname1}
-
-%triggerpostun %{polname1} -- selinux-policy-%{polname1} <= 2.0.0
-%rebuildpolicy %{polname1}
 %define installCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%{direct_initrc} MONOLITHIC=%{monolithic} base.pp \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%{direct_initrc} MONOLITHIC=%{monolithic} modules \
@@ -168,6 +124,51 @@ make conf
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
+
+%files %{polname1}
+%fileList %{polname1}
+
+%pre %{polname1}
+%saveFileContext %{polname1}
+
+%post %{polname1}
+if [ ! -s /etc/selinux/config ]; then
+	#
+	#	New install so we will default to targeted policy
+	#
+	echo "
+# This file controls the state of SELinux on the system.
+# SELINUX= can take one of these three values:
+#	enforcing - SELinux security policy is enforced.
+#	permissive - SELinux prints warnings instead of enforcing.
+#	disabled - No SELinux policy is loaded.
+SELINUX=enforcing
+# SELINUXTYPE= can take one of these two values:
+#	targeted - Only targeted network daemons are protected.
+#	strict - Full SELinux protection.
+#	mls - Multi Level Security protection.
+SELINUXTYPE=targeted 
+# SETLOCALDEFS= Check local definition changes
+SETLOCALDEFS=0 
+
+" > /etc/selinux/config
+
+	ln -sf /etc/selinux/config /etc/sysconfig/selinux 
+	restorecon /etc/selinux/config 2> /dev/null
+else
+	# if first time update booleans.local needs to be copied to sandbox
+	[ -f /etc/selinux/%{polname1}/booleans.local ] && mv /etc/selinux/%{polname1}/booleans.local /etc/selinux/%{polname1}/modules/active/
+	[ -f /etc/selinux/%{polname1}/seusers ] && cp -f /etc/selinux/%{polname1}/seusers /etc/selinux/%{polname1}/modules/active/seusers
+	grep -q "^SETLOCALDEFS" /etc/selinux/config || echo -n "
+# SETLOCALDEFS= Check local definition changes
+SETLOCALDEFS=0 
+">> /etc/selinux/config
+fi
+%rebuildpolicy %{polname1}
+%relabel %{polname1}
+
+%triggerpostun %{polname1} -- selinux-policy-%{polname1} <= 2.0.0
+%rebuildpolicy %{polname1}
 
 %if 0
 %package %{polname2} 
