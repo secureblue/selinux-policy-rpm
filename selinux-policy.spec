@@ -10,7 +10,7 @@
 %define CHECKPOLICYVER 1.27.17-5
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.0.0
+Version: 2.0.1
 Release: 1
 License: GPL
 Group: System Environment/Base
