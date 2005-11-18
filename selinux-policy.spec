@@ -10,8 +10,8 @@
 %define CHECKPOLICYVER 1.27.17-5
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.0.1
-Release: 2
+Version: 2.0.2
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -194,6 +194,9 @@ SELinux Reference policy %{polname2} base module.
 #%#fileList %{polname2}
 %endif
 %changelog
+* Fri Nov 18 2003 Dan Walsh <dwalsh@redhat.com> 2.0.2-1
+- Update to upstream
+
 * Wed Nov 9 2003 Dan Walsh <dwalsh@redhat.com> 2.0.1-2
 - Turn on bash
 
