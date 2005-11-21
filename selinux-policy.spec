@@ -5,6 +5,8 @@
 %define type1 targeted-mcs
 %define polname2 strict
 %define type2 strict-mcs
+%define polname3 mls
+%define type3 mls
 %define POLICYVER 20
 %define POLICYCOREUTILSVER 1.27.27-3
 %define CHECKPOLICYVER 1.27.17-5
@@ -15,9 +17,8 @@ Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-Source1: seusers
-Source2: setrans.conf
 patch: policy-20051114.patch
+
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/serefpolicy-buildroot
 BuildArch: noarch
@@ -35,23 +36,26 @@ Obsoletes: selinux-policy-%{polname1}-sources
 SELinux Reference policy targeted base module.
 
 %define installCmds() \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%{direct_initrc} MONOLITHIC=%{monolithic} base.pp \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%{direct_initrc} MONOLITHIC=%{monolithic} modules \
+cp -f ${RPM_SOURCE_DIR}/modules-%1.conf  ./policy/modules.conf \
+cp -f ${RPM_SOURCE_DIR}/booleans-%1.conf ./policy/booleans.conf \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} base.pp \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} modules \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_usr}/share/selinux/%1/ \
 %{__cp} *.pp $RPM_BUILD_ROOT/%{_usr}/share/selinux/%1/ \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/policy \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/active \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/contexts/files \
-make NAME=%1 TYPE=%{type1} DISTRO=%{distro} DIRECT_INITRC=%{direct_initrc} MONOLITHIC=y DESTDIR=$RPM_BUILD_ROOT install-appconfig \
-install -m0644 %{SOURCE1} ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/modules/active/seusers \
-install -m0644 %{SOURCE2} ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/setrans.conf \
+make NAME=%1 TYPE=%{type1} DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=y DESTDIR=$RPM_BUILD_ROOT install-appconfig \
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
-touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs
+touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
+install -m0644 ${RPM_SOURCE_DIR}/seusers-%1 ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/modules/active/seusers \
+install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/setrans.conf \
+%nil
 
 %define fileList() \
 %defattr(-,root,root) \
@@ -108,19 +112,24 @@ fi;
 %description
 SELinux Reference Policy - modular.
 
-%prep
+%prep 
 %setup -q -n serefpolicy-%{version}
-%patch -p1 
-
-%build
-make conf
-
+%patch0 -p1 
+	
 %install
+make conf
 %{__rm} -fR $RPM_BUILD_ROOT
-%installCmds %{polname1} %{type1} 
+%installCmds %{polname1} %{type1} %{direct_initrc}
 
 # Commented out because only targeted ref policy currently builds
-#%#installCmds %{polname2} %{type2} 
+#%#installCmds %{polname2} %{type2} %{direct_initrc}
+
+#%patch2 -p1 
+# Commented out because only targeted ref policy currently builds
+make clean
+make conf
+%installCmds %{polname3} %{type3} n
+
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
@@ -193,6 +202,30 @@ SELinux Reference policy %{polname2} base module.
 %files %{polname2}
 #%#fileList %{polname2}
 %endif
+
+%package %{polname3} 
+Summary: SELinux %{polname3} base policy
+Group: System Environment/Base
+Provides: selinux-policy-base
+Obsoletes: selinux-policy-%{polname3}-sources
+
+%description %{polname3} 
+SELinux Reference policy %{polname3} base module.
+
+%pre %{polname3} 
+%saveFileContext %{polname3}
+
+%post %{polname3} 
+%rebuildpolicy %{polname3} 
+%relabel %{polname1}
+
+%triggerpostun %{polname3} -- %{polname3} <= 2.0.0
+%{rebuildpolicy} %{polname3} 
+
+%files %{polname3}
+%fileList %{polname3}
+
+
 %changelog
 * Fri Nov 18 2003 Dan Walsh <dwalsh@redhat.com> 2.0.2-1
 - Update to upstream
