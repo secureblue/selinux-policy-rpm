@@ -13,7 +13,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.0.2
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -231,6 +231,9 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Mon Nov 21 2003 Dan Walsh <dwalsh@redhat.com> 2.0.2-2
+- Start building MLS Policy
+
 * Fri Nov 18 2003 Dan Walsh <dwalsh@redhat.com> 2.0.2-1
 - Update to upstream
 
