@@ -117,15 +117,19 @@ SELinux Reference Policy - modular.
 %patch0 -p1 
 	
 %install
+
+# Build targeted policy
 make conf
 %{__rm} -fR $RPM_BUILD_ROOT
 %installCmds %{polname1} %{type1} %{direct_initrc}
 
+# Build strict policy
 # Commented out because only targeted ref policy currently builds
+# make clean
+# make conf
 #%#installCmds %{polname2} %{type2} %{direct_initrc}
 
-#%patch2 -p1 
-# Commented out because only targeted ref policy currently builds
+# Build mls policy
 make clean
 make conf
 %installCmds %{polname3} %{type3} n
