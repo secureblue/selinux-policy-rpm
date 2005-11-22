@@ -2,22 +2,27 @@
 %define direct_initrc y
 %define monolithic n
 %define polname1 targeted
-%define type1 targeted-mcs
-%define polname2 strict
-%define type2 strict-mcs
-%define polname3 mls
-%define type3 mls
+%define polname2 mls
+%define polname3 strict
 %define POLICYVER 20
 %define POLICYCOREUTILSVER 1.27.27-3
 %define CHECKPOLICYVER 1.27.17-5
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.0.2
-Release: 2
+Version: 2.0.3
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-20051114.patch
+Source1: modules-%{polname1}.conf
+Source2: booleans-%{polname1}.conf
+Source3: seusers-%{polname1}
+Source4: setrans-%{polname1}.conf
+Source5: modules-%{polname2}.conf
+Source6: booleans-%{polname2}.conf
+Source7: seusers-%{polname2}
+Source8: setrans-%{polname2}.conf
 
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/serefpolicy-buildroot
@@ -45,7 +50,7 @@ make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} 
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/policy \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/active \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/contexts/files \
-make NAME=%1 TYPE=%{type1} DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=y DESTDIR=$RPM_BUILD_ROOT install-appconfig \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=y DESTDIR=$RPM_BUILD_ROOT install-appconfig \
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
@@ -121,19 +126,19 @@ SELinux Reference Policy - modular.
 # Build targeted policy
 make conf
 %{__rm} -fR $RPM_BUILD_ROOT
-%installCmds %{polname1} %{type1} %{direct_initrc}
+%installCmds %{polname1} targeted-mcs %{direct_initrc}
+
+# Build mls policy
+make clean
+make conf
+%installCmds %{polname2} strict-mls n
+
 
 # Build strict policy
 # Commented out because only targeted ref policy currently builds
 # make clean
 # make conf
-#%#installCmds %{polname2} %{type2} %{direct_initrc}
-
-# Build mls policy
-make clean
-make conf
-%installCmds %{polname3} %{type3} n
-
+#%#installCmds %{polname3} strict-mcs %{direct_initrc}
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
@@ -183,7 +188,6 @@ fi
 %triggerpostun %{polname1} -- selinux-policy-%{polname1} <= 2.0.0
 %rebuildpolicy %{polname1}
 
-%if 0
 %package %{polname2} 
 Summary: SELinux %{polname2} base policy
 Group: System Environment/Base
@@ -198,15 +202,15 @@ SELinux Reference policy %{polname2} base module.
 
 %post %{polname2} 
 %rebuildpolicy %{polname2} 
-%relabel %{polname1}
+%relabel %{polname2}
 
 %triggerpostun %{polname2} -- %{polname2} <= 2.0.0
 %{rebuildpolicy} %{polname2} 
 
 %files %{polname2}
-#%#fileList %{polname2}
-%endif
+%fileList %{polname2}
 
+%if 0
 %package %{polname3} 
 Summary: SELinux %{polname3} base policy
 Group: System Environment/Base
@@ -221,13 +225,14 @@ SELinux Reference policy %{polname3} base module.
 
 %post %{polname3} 
 %rebuildpolicy %{polname3} 
-%relabel %{polname1}
+%relabel %{polname3}
 
 %triggerpostun %{polname3} -- %{polname3} <= 2.0.0
 %{rebuildpolicy} %{polname3} 
 
 %files %{polname3}
-%fileList %{polname3}
+#%#fileList %{polname3}
+%endif
 
 
 %changelog
