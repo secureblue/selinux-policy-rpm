@@ -5,12 +5,12 @@
 %define polname2 mls
 %define polname3 strict
 %define POLICYVER 20
-%define POLICYCOREUTILSVER 1.27.27-3
-%define CHECKPOLICYVER 1.27.17-5
+%define POLICYCOREUTILSVER 1.27.28-3
+%define CHECKPOLICYVER 1.27.17-7
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.0.3
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -236,6 +236,9 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Tue Nov 21 2003 Dan Walsh <dwalsh@redhat.com> 2.0.3-2
+- Add rules for pegasus and avahi
+
 * Mon Nov 21 2003 Dan Walsh <dwalsh@redhat.com> 2.0.2-2
 - Start building MLS Policy
 
