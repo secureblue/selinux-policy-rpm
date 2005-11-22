@@ -9,8 +9,8 @@
 %define CHECKPOLICYVER 1.27.17-7
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.0.3
-Release: 2
+Version: 2.0.4
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -236,7 +236,7 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
-* Tue Nov 21 2003 Dan Walsh <dwalsh@redhat.com> 2.0.3-2
+* Tue Nov 21 2003 Dan Walsh <dwalsh@redhat.com> 2.0.4-1
 - Add rules for pegasus and avahi
 
 * Mon Nov 21 2003 Dan Walsh <dwalsh@redhat.com> 2.0.2-2
