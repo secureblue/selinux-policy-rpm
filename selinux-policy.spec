@@ -51,10 +51,10 @@ make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} 
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/active \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/contexts/files \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=y DESTDIR=$RPM_BUILD_ROOT install-appconfig \
+semodule_expand $RPM_BUILD_ROOT/usr/share/selinux/%1/base.pp $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
-touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
@@ -76,7 +76,7 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %dir %{_sysconfdir}/selinux/%1/modules/active \
 %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
-%ghost %{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
+%verify(not md5 size mtime) %config(noreplace)%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 %dir %{_sysconfdir}/selinux/%1/contexts \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/customizable_types \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/dbus_contexts \
@@ -104,7 +104,8 @@ semodule -b /usr/share/selinux/%1/base.pp -s %1 \
 for file in $(ls /usr/share/selinux/%1 | grep -v base.pp) \
 do \
 	semodule -i /usr/share/selinux/%1/$file -s %1;\
-done; 
+done; \
+rm -f %{_sysconfdir}/selinux/%1/policy/policy.*.rpmnew
 
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
