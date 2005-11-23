@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.0.5
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -73,10 +73,10 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %ghost %{_sysconfdir}/selinux/%1/seusers \
 %dir %{_sysconfdir}/selinux/%1/modules \
-%dir %{_sysconfdir}/selinux/%1/modules/active \
-%config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
+%attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
+%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
-%verify(not md5 size mtime) %config(noreplace)%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
+%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 %dir %{_sysconfdir}/selinux/%1/contexts \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/customizable_types \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/dbus_contexts \
@@ -237,6 +237,10 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Tue Nov 21 2003 Dan Walsh <dwalsh@redhat.com> 2.0.5-2
+- Cleanup pegasus and named 
+- Fix spec file
+
 * Tue Nov 21 2003 Dan Walsh <dwalsh@redhat.com> 2.0.5-1
 -Update to latest from upstream
 
