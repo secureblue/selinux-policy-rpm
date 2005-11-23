@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.0.5
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -237,9 +237,10 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
-* Wed Nov 23 2003 Dan Walsh <dwalsh@redhat.com> 2.0.5-3
+* Wed Nov 23 2003 Dan Walsh <dwalsh@redhat.com> 2.0.5-4
 - Cleanup pegasus and named 
 - Fix spec file
+- Fix up passwd changing applications
 
 * Tue Nov 21 2003 Dan Walsh <dwalsh@redhat.com> 2.0.5-1
 -Update to latest from upstream
