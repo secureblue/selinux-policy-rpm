@@ -5,12 +5,12 @@
 %define polname2 mls
 %define polname3 strict
 %define POLICYVER 20
-%define POLICYCOREUTILSVER 1.27.28-3
+%define POLICYCOREUTILSVER 1.27.29-1
 %define CHECKPOLICYVER 1.27.17-7
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.0.6
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -237,6 +237,9 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Tue Nov 29 2003 Dan Walsh <dwalsh@redhat.com> 2.0.6-2
+- Fixes for dovecot and saslauthd
+
 * Wed Nov 23 2003 Dan Walsh <dwalsh@redhat.com> 2.0.5-4
 - Cleanup pegasus and named 
 - Fix spec file
