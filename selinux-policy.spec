@@ -9,8 +9,8 @@
 %define CHECKPOLICYVER 1.27.17-7
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.0.6
-Release: 2
+Version: 2.0.7
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -93,11 +93,13 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %config %{_sysconfdir}/selinux/%1/contexts/files/media
 
 %define saveFileContext() \
-. %{_sysconfdir}/selinux/config; \
-FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
-if [ "${SELINUXTYPE}" == %1 -a -f ${FILE_CONTEXT} ]; then \
-	cp -f ${FILE_CONTEXT} ${FILE_CONTEXT}.pre; \
-fi 
+if [ -s /etc/selinux/config ]; then \
+	. %{_sysconfdir}/selinux/config; \
+	FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
+	if [ "${SELINUXTYPE}" == %1 -a -f ${FILE_CONTEXT} ]; then \
+		cp -f ${FILE_CONTEXT} ${FILE_CONTEXT}.pre; \
+	fi \
+fi
 
 %define rebuildpolicy() \
 semodule -b /usr/share/selinux/%1/base.pp -s %1 \
