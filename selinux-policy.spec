@@ -4,13 +4,12 @@
 %define polname1 targeted
 %define polname2 mls
 %define polname3 strict
-%define POLICYVER 20
 %define POLICYCOREUTILSVER 1.27.29-1
 %define CHECKPOLICYVER 1.27.17-7
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.0.7
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -51,7 +50,6 @@ make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} 
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/active \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/contexts/files \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=y DESTDIR=$RPM_BUILD_ROOT install-appconfig \
-semodule_expand $RPM_BUILD_ROOT/usr/share/selinux/%1/base.pp $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
@@ -76,7 +74,6 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
 %verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
-%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 %dir %{_sysconfdir}/selinux/%1/contexts \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/customizable_types \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/dbus_contexts \
@@ -239,6 +236,9 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Tue Nov 29 2003 Dan Walsh <dwalsh@redhat.com> 2.0.7-2
+- No longer installing policy.20 file, anaconda handles the building of the app.
+
 * Tue Nov 29 2003 Dan Walsh <dwalsh@redhat.com> 2.0.6-2
 - Fixes for dovecot and saslauthd
 
