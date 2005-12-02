@@ -9,7 +9,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.0.7
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -185,7 +185,7 @@ fi
 %rebuildpolicy %{polname1}
 %relabel %{polname1}
 
-%triggerpostun %{polname1} -- selinux-policy-%{polname1} <= 2.0.0
+%triggerpostun %{polname1} -- selinux-policy-%{polname1} <= 2.0.7
 %rebuildpolicy %{polname1}
 
 %package %{polname2} 
@@ -204,7 +204,7 @@ SELinux Reference policy %{polname2} base module.
 %rebuildpolicy %{polname2} 
 %relabel %{polname2}
 
-%triggerpostun %{polname2} -- %{polname2} <= 2.0.0
+%triggerpostun %{polname2} -- %{polname2} <= 2.0.7
 %{rebuildpolicy} %{polname2} 
 
 %files %{polname2}
@@ -227,7 +227,7 @@ SELinux Reference policy %{polname3} base module.
 %rebuildpolicy %{polname3} 
 %relabel %{polname3}
 
-%triggerpostun %{polname3} -- %{polname3} <= 2.0.0
+%triggerpostun %{polname3} -- %{polname3} <= 2.0.7
 %{rebuildpolicy} %{polname3} 
 
 %files %{polname3}
@@ -236,31 +236,34 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
-* Tue Nov 29 2003 Dan Walsh <dwalsh@redhat.com> 2.0.7-2
+* Fri Dec  2 2005 Dan Walsh <dwalsh@redhat.com> 2.0.7-3
+- Also trigger to rebuild policy for versions up to 2.0.7.
+
+* Tue Nov 29 2005 Dan Walsh <dwalsh@redhat.com> 2.0.7-2
 - No longer installing policy.20 file, anaconda handles the building of the app.
 
-* Tue Nov 29 2003 Dan Walsh <dwalsh@redhat.com> 2.0.6-2
+* Tue Nov 29 2005 Dan Walsh <dwalsh@redhat.com> 2.0.6-2
 - Fixes for dovecot and saslauthd
 
-* Wed Nov 23 2003 Dan Walsh <dwalsh@redhat.com> 2.0.5-4
+* Wed Nov 23 2005 Dan Walsh <dwalsh@redhat.com> 2.0.5-4
 - Cleanup pegasus and named 
 - Fix spec file
 - Fix up passwd changing applications
 
-* Tue Nov 21 2003 Dan Walsh <dwalsh@redhat.com> 2.0.5-1
+* Tue Nov 21 2005 Dan Walsh <dwalsh@redhat.com> 2.0.5-1
 -Update to latest from upstream
 
-* Tue Nov 21 2003 Dan Walsh <dwalsh@redhat.com> 2.0.4-1
+* Tue Nov 21 2005 Dan Walsh <dwalsh@redhat.com> 2.0.4-1
 - Add rules for pegasus and avahi
 
-* Mon Nov 21 2003 Dan Walsh <dwalsh@redhat.com> 2.0.2-2
+* Mon Nov 21 2005 Dan Walsh <dwalsh@redhat.com> 2.0.2-2
 - Start building MLS Policy
 
-* Fri Nov 18 2003 Dan Walsh <dwalsh@redhat.com> 2.0.2-1
+* Fri Nov 18 2005 Dan Walsh <dwalsh@redhat.com> 2.0.2-1
 - Update to upstream
 
-* Wed Nov 9 2003 Dan Walsh <dwalsh@redhat.com> 2.0.1-2
+* Wed Nov 9 2005 Dan Walsh <dwalsh@redhat.com> 2.0.1-2
 - Turn on bash
 
-* Wed Nov 9 2003 Dan Walsh <dwalsh@redhat.com> 2.0.1-1
+* Wed Nov 9 2005 Dan Walsh <dwalsh@redhat.com> 2.0.1-1
 - Initial version
