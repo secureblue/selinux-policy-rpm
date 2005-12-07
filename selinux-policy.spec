@@ -4,11 +4,11 @@
 %define polname1 targeted
 %define polname2 mls
 %define polname3 strict
-%define POLICYCOREUTILSVER 1.27.29-1
+%define POLICYCOREUTILSVER 1.27.36-2
 %define CHECKPOLICYVER 1.27.17-7
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.0.10
+Version: 2.0.11
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -236,6 +236,9 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Tue Dec  6 2005 Dan Walsh <dwalsh@redhat.com> 2.0.11-1.
+Update from upstream
+
 * Fri Dec  2 2005 Dan Walsh <dwalsh@redhat.com> 2.0.9-1.
 Update from upstream
 
