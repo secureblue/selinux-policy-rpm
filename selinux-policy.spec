@@ -8,7 +8,7 @@
 %define CHECKPOLICYVER 1.27.17-7
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.0.11
+Version: 2.1.0
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -236,6 +236,9 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Wed Dec  7 2005 Dan Walsh <dwalsh@redhat.com> 2.0.11-2.
+Add xdm policy
+
 * Tue Dec  6 2005 Dan Walsh <dwalsh@redhat.com> 2.0.11-1.
 Update from upstream
 
