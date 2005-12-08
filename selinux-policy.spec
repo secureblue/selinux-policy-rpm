@@ -8,12 +8,12 @@
 %define CHECKPOLICYVER 1.27.17-7
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.1.0
-Release: 3
+Version: 2.1.1
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20051114.patch
+patch: policy-20051208.patch
 Source1: modules-%{polname1}.conf
 Source2: booleans-%{polname1}.conf
 Source3: seusers-%{polname1}
@@ -236,6 +236,10 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Thu Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.1-1
+- Update to upstream
+- Turn off boolean allow_execstack
+
 * Thu Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.0-3
 - Change setrans-mls to use new libsetrans
 - Add default_context rule for xdm
