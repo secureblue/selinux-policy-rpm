@@ -9,7 +9,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.0
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -236,6 +236,10 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Thu Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.0-3
+- Change setrans-mls to use new libsetrans
+- Add default_context rule for xdm
+
 * Thu Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.0-2.
 - Change Requires to PreReg for requiring of policycoreutils on install
 
