@@ -9,7 +9,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.0
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -27,7 +27,7 @@ Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/serefpolicy-buildroot
 BuildArch: noarch
 BuildRequires: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
-Requires: policycoreutils >= %{POLICYCOREUTILSVER}
+PreReq: policycoreutils >= %{POLICYCOREUTILSVER}
 Obsoletes: policy 
 
 %package %{polname1}
@@ -236,6 +236,12 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Thu Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.0-2.
+- Change Requires to PreReg for requiring of policycoreutils on install
+
+* Wed Dec  7 2005 Dan Walsh <dwalsh@redhat.com> 2.1.0-1.
+- New upstream release
+
 * Wed Dec  7 2005 Dan Walsh <dwalsh@redhat.com> 2.0.11-2.
 Add xdm policy
 
