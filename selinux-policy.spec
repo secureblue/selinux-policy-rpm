@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.1
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -239,6 +239,11 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Fri Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.1-3
+- Add two new httpd booleans, turned off by default
+	* httpd_can_network_relay
+	* httpd_can_network_connect_db
+
 * Fri Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.1-2
 - Add ghost for policy.20
 
