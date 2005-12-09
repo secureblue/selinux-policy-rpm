@@ -4,12 +4,13 @@
 %define polname1 targeted
 %define polname2 mls
 %define polname3 strict
-%define POLICYCOREUTILSVER 1.27.36-2
-%define CHECKPOLICYVER 1.27.17-7
+%define POLICYVER 20
+%define POLICYCOREUTILSVER 1.29.1-1
+%define CHECKPOLICYVER 1.28-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.1
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -53,6 +54,7 @@ make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} 
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
+touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
@@ -74,10 +76,11 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
 %verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
+%ghost %{_sysconfdir}/selinux/%1/policy/policy.* \
 %dir %{_sysconfdir}/selinux/%1/contexts \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/customizable_types \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/dbus_contexts \
-%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/default_contexts \
+%config %{_sysconfdir}/selinux/%1/contexts/default_contexts \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/default_type \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/failsafe_context \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/initrc_context \
@@ -236,6 +239,9 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Fri Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.1-2
+- Add ghost for policy.20
+
 * Thu Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.1-1
 - Update to upstream
 - Turn off boolean allow_execstack
