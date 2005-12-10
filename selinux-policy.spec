@@ -9,8 +9,8 @@
 %define CHECKPOLICYVER 1.28-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.1.1
-Release: 3
+Version: 2.1.2
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -234,11 +234,17 @@ SELinux Reference policy %{polname3} base module.
 %{rebuildpolicy} %{polname3} 
 
 %files %{polname3}
-#%#fileList %{polname3}
+%fileList %{polname3}
+
 %endif
 
 
 %changelog
+* Sat Dec  9 2005 Dan Walsh <dwalsh@redhat.com> 2.1.2-1
+- Update to upstream 
+- Turn off allow_execmem and allow_execmod booleans
+- Add tcpd and automount policies
+
 * Fri Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.1-3
 - Add two new httpd booleans, turned off by default
 	* httpd_can_network_relay
