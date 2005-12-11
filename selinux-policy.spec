@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.2
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -240,6 +240,9 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Sun Dec  10 2005 Dan Walsh <dwalsh@redhat.com> 2.1.2-2
+- Allow unconfined_t to execmod texrel_shlib_t
+
 * Sat Dec  9 2005 Dan Walsh <dwalsh@redhat.com> 2.1.2-1
 - Update to upstream 
 - Turn off allow_execmem and allow_execmod booleans
