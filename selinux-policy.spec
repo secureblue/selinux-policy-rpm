@@ -246,6 +246,9 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Mon Dec 12 2005 Dan Walsh <dwalsh@redhat.com> 2.1.3-2
+- Turn back on execmem since we need it for java, firefox, ooffice
+
 * Mon Dec 12 2005 Dan Walsh <dwalsh@redhat.com> 2.1.3-1
 - Allow gpm to stream socket to itself
 
