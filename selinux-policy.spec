@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.3
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -246,6 +246,9 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Mon Dec 12 2005 Dan Walsh <dwalsh@redhat.com> 2.1.3-2
+- Fixes for hal
+
 * Mon Dec 12 2005 Dan Walsh <dwalsh@redhat.com> 2.1.3-1
 - Turn back on execmem since we need it for java, firefox, ooffice
 - Allow gpm to stream socket to itself
