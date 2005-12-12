@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.2
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -246,6 +246,9 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Mon Dec  11 2005 Dan Walsh <dwalsh@redhat.com> 2.1.2-4
+- Allow gpm to stream socket to itself
+
 * Mon Dec 12 2005 Jeremy Katz <katzj@redhat.com> - 2.1.2-3
 - fix requirements to be on the actual packages so that policy can get
   created properly at install time
