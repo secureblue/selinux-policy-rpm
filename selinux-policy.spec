@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.2
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -36,6 +36,8 @@ Summary: SELinux %{polname1} base policy
 Group: System Environment/Base
 Provides: selinux-policy-base
 Obsoletes: selinux-policy-%{polname1}-sources
+Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
+Prereq: coreutils
 
 %description %{polname1}
 SELinux Reference policy targeted base module.
@@ -196,6 +198,8 @@ Summary: SELinux %{polname2} base policy
 Group: System Environment/Base
 Provides: selinux-policy-base
 Obsoletes: selinux-policy-%{polname2}-sources
+Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
+Prereq: coreutils
 
 %description %{polname2} 
 SELinux Reference policy %{polname2} base module.
@@ -219,6 +223,8 @@ Summary: SELinux %{polname3} base policy
 Group: System Environment/Base
 Provides: selinux-policy-base
 Obsoletes: selinux-policy-%{polname3}-sources
+Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
+Prereq: coreutils
 
 %description %{polname3} 
 SELinux Reference policy %{polname3} base module.
@@ -240,6 +246,10 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
+* Mon Dec 12 2005 Jeremy Katz <katzj@redhat.com> - 2.1.2-3
+- fix requirements to be on the actual packages so that policy can get
+  created properly at install time
+
 * Sun Dec  10 2005 Dan Walsh <dwalsh@redhat.com> 2.1.2-2
 - Allow unconfined_t to execmod texrel_shlib_t
 
