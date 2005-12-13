@@ -1,28 +1,25 @@
 %define distro redhat
 %define direct_initrc y
 %define monolithic n
-%define polname1 targeted
-%define polname2 mls
-%define polname3 strict
 %define POLICYVER 20
 %define POLICYCOREUTILSVER 1.29.1-1
 %define CHECKPOLICYVER 1.28-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.1.4
+Version: 2.1.5
 Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-20051208.patch
-Source1: modules-%{polname1}.conf
-Source2: booleans-%{polname1}.conf
-Source3: seusers-%{polname1}
-Source4: setrans-%{polname1}.conf
-Source5: modules-%{polname2}.conf
-Source6: booleans-%{polname2}.conf
-Source7: seusers-%{polname2}
-Source8: setrans-%{polname2}.conf
+Source1: modules-targeted.conf
+Source2: booleans-targeted.conf
+Source3: seusers-targeted
+Source4: setrans-targeted.conf
+Source5: modules-mls.conf
+Source6: booleans-mls.conf
+Source7: seusers-mls
+Source8: setrans-mls.conf
 
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/serefpolicy-buildroot
@@ -31,15 +28,15 @@ BuildRequires: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCO
 PreReq: policycoreutils >= %{POLICYCOREUTILSVER}
 Obsoletes: policy 
 
-%package %{polname1}
-Summary: SELinux %{polname1} base policy
+%package targeted
+Summary: SELinux targeted base policy
 Group: System Environment/Base
 Provides: selinux-policy-base
-Obsoletes: selinux-policy-%{polname1}-sources
+Obsoletes: selinux-policy-targeted-sources
 Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
 Prereq: coreutils
 
-%description %{polname1}
+%description targeted
 SELinux Reference policy targeted base module.
 
 %define installCmds() \
@@ -127,34 +124,33 @@ SELinux Reference Policy - modular.
 %patch0 -p1 
 	
 %install
-
 # Build targeted policy
 make conf
 %{__rm} -fR $RPM_BUILD_ROOT
-%installCmds %{polname1} targeted-mcs %{direct_initrc}
+%installCmds targeted targeted-mcs %{direct_initrc}
 
 # Build mls policy
 make clean
 make conf
-%installCmds %{polname2} strict-mls n
+%installCmds mls strict-mls n
 
 
 # Build strict policy
 # Commented out because only targeted ref policy currently builds
 # make clean
 # make conf
-#%#installCmds %{polname3} strict-mcs %{direct_initrc}
+#%#installCmds strict strict-mcs %{direct_initrc}
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
 
-%files %{polname1}
-%fileList %{polname1}
+%files targeted
+%fileList targeted
 
-%pre %{polname1}
-%saveFileContext %{polname1}
+%pre targeted
+%saveFileContext targeted
 
-%post %{polname1}
+%post targeted
 if [ ! -s /etc/selinux/config ]; then
 	#
 	#	New install so we will default to targeted policy
@@ -180,72 +176,80 @@ SETLOCALDEFS=0
 	restorecon /etc/selinux/config 2> /dev/null
 else
 	# if first time update booleans.local needs to be copied to sandbox
-	[ -f /etc/selinux/%{polname1}/booleans.local ] && mv /etc/selinux/%{polname1}/booleans.local /etc/selinux/%{polname1}/modules/active/
-	[ -f /etc/selinux/%{polname1}/seusers ] && cp -f /etc/selinux/%{polname1}/seusers /etc/selinux/%{polname1}/modules/active/seusers
+	[ -f /etc/selinux/targeted/booleans.local ] && mv /etc/selinux/targeted/booleans.local /etc/selinux/targeted/modules/active/
+	[ -f /etc/selinux/targeted/seusers ] && cp -f /etc/selinux/targeted/seusers /etc/selinux/targeted/modules/active/seusers
 	grep -q "^SETLOCALDEFS" /etc/selinux/config || echo -n "
 # SETLOCALDEFS= Check local definition changes
 SETLOCALDEFS=0 
 ">> /etc/selinux/config
 fi
-%rebuildpolicy %{polname1}
-%relabel %{polname1}
+%rebuildpolicy targeted
+%relabel targeted
 
-%triggerpostun %{polname1} -- selinux-policy-%{polname1} <= 2.0.7
-%rebuildpolicy %{polname1}
+%triggerpostun targeted -- selinux-policy-targeted <= 2.0.7
+%rebuildpolicy targeted
 
-%package %{polname2} 
-Summary: SELinux %{polname2} base policy
+%package mls 
+Summary: SELinux mls base policy
 Group: System Environment/Base
 Provides: selinux-policy-base
-Obsoletes: selinux-policy-%{polname2}-sources
+Obsoletes: selinux-policy-mls-sources
 Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
 Prereq: coreutils
 
-%description %{polname2} 
-SELinux Reference policy %{polname2} base module.
+%description mls 
+SELinux Reference policy mls base module.
 
-%pre %{polname2} 
-%saveFileContext %{polname2}
+%pre mls 
+%saveFileContext mls
 
-%post %{polname2} 
-%rebuildpolicy %{polname2} 
-%relabel %{polname2}
+%post mls 
+%rebuildpolicy mls 
+%relabel mls
 
-%triggerpostun %{polname2} -- %{polname2} <= 2.0.7
-%{rebuildpolicy} %{polname2} 
+%triggerpostun mls -- mls <= 2.0.7
+%{rebuildpolicy} mls 
 
-%files %{polname2}
-%fileList %{polname2}
+%files mls
+%fileList mls
 
 %if 0
-%package %{polname3} 
-Summary: SELinux %{polname3} base policy
+%package strict 
+Summary: SELinux strict base policy
 Group: System Environment/Base
 Provides: selinux-policy-base
-Obsoletes: selinux-policy-%{polname3}-sources
+Obsoletes: selinux-policy-strict-sources
 Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
 Prereq: coreutils
 
-%description %{polname3} 
-SELinux Reference policy %{polname3} base module.
+%description strict 
+SELinux Reference policy strict base module.
 
-%pre %{polname3} 
-%saveFileContext %{polname3}
+%pre strict 
+%saveFileContext strict
 
-%post %{polname3} 
-%rebuildpolicy %{polname3} 
-%relabel %{polname3}
+%post strict 
+%rebuildpolicy strict 
+%relabel strict
 
-%triggerpostun %{polname3} -- %{polname3} <= 2.0.7
-%{rebuildpolicy} %{polname3} 
+%triggerpostun strict -- strict <= 2.0.7
+%{rebuildpolicy} strict 
 
-%files %{polname3}
-%fileList %{polname3}
+%files strict
+%fileList strict
 
 %endif
 
 
 %changelog
+* Tue Dec 13 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-1
+- Update from upstream
+- Allow unconfined_t to transition to rpm_script_t
+
+* Tue Dec 13 2005 Dan Walsh <dwalsh@redhat.com> 2.1.4-2
+- Clean up spec
+- range_transition crond to SystemHigh
+
 * Mon Dec 12 2005 Dan Walsh <dwalsh@redhat.com> 2.1.4-1
 - Fixes for hal
 - Update to upstream
