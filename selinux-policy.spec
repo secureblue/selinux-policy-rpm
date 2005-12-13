@@ -9,8 +9,8 @@
 %define CHECKPOLICYVER 1.28-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.1.3
-Release: 2
+Version: 2.1.4
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -246,8 +246,9 @@ SELinux Reference policy %{polname3} base module.
 
 
 %changelog
-* Mon Dec 12 2005 Dan Walsh <dwalsh@redhat.com> 2.1.3-2
+* Mon Dec 12 2005 Dan Walsh <dwalsh@redhat.com> 2.1.4-1
 - Fixes for hal
+- Update to upstream
 
 * Mon Dec 12 2005 Dan Walsh <dwalsh@redhat.com> 2.1.3-1
 - Turn back on execmem since we need it for java, firefox, ooffice
