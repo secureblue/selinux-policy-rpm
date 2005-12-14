@@ -6,7 +6,7 @@
 %define CHECKPOLICYVER 1.28-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.1.5
+Version: 2.1.6
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -242,6 +242,10 @@ SELinux Reference policy strict base module.
 
 
 %changelog
+* Wed Dec 14 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-2
+- Add file context for /var/cvs
+- Dontaudit webalizer search of homedir
+
 * Tue Dec 13 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-1
 - Update from upstream
 - Allow unconfined_t to transition to rpm_script_t
