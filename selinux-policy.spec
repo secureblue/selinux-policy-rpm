@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -40,6 +40,7 @@ Prereq: coreutils
 SELinux Reference policy targeted base module.
 
 %define installCmds() \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} bare \
 cp -f ${RPM_SOURCE_DIR}/modules-%1.conf  ./policy/modules.conf \
 cp -f ${RPM_SOURCE_DIR}/booleans-%1.conf ./policy/booleans.conf \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} base.pp \
@@ -242,6 +243,10 @@ SELinux Reference policy strict base module.
 
 
 %changelog
+* Thu Dec 14 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-4
+- Fixes to allow automount to use portmap
+- Fixes to start kernel in s0-s15:c0.c255
+
 * Wed Dec 14 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-3
 - Add java unconfined/execmem policy 
 
