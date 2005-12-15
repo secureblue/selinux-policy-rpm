@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -242,6 +242,9 @@ SELinux Reference policy strict base module.
 
 
 %changelog
+* Wed Dec 14 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-3
+- Add java unconfined/execmem policy 
+
 * Wed Dec 14 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-2
 - Add file context for /var/cvs
 - Dontaudit webalizer search of homedir
