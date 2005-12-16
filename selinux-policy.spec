@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 5
+Release: 6
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -243,11 +243,14 @@ SELinux Reference policy strict base module.
 
 
 %changelog
-* Thu Dec 14 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-5
+* Fri Dec 16 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-6
+- Update mls file from old version
+
+* Thu Dec 15 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-5
 - Add sids back in
 - Rebuild with update checkpolicy
 
-* Thu Dec 14 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-4
+* Thu Dec 15 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-4
 - Fixes to allow automount to use portmap
 - Fixes to start kernel in s0-s15:c0.c255
 
