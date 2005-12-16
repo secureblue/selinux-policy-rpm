@@ -3,11 +3,11 @@
 %define monolithic n
 %define POLICYVER 20
 %define POLICYCOREUTILSVER 1.29.1-1
-%define CHECKPOLICYVER 1.28-1
+%define CHECKPOLICYVER 1.28-2
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 4
+Release: 5
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -243,6 +243,10 @@ SELinux Reference policy strict base module.
 
 
 %changelog
+* Thu Dec 14 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-5
+- Add sids back in
+- Rebuild with update checkpolicy
+
 * Thu Dec 14 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-4
 - Fixes to allow automount to use portmap
 - Fixes to start kernel in s0-s15:c0.c255
