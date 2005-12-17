@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 9
+Release: 10
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -51,6 +51,9 @@ make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} 
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/active \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/contexts/files \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT install-appconfig \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} enableaudit \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} base.pp \
+install -m0644 base.pp ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/enableaudit.pp \
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
@@ -66,7 +69,8 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %defattr(-,root,root) \
 %dir %{_usr}/share/selinux \
 %dir %{_usr}/share/selinux/%1 \
-%config %{_usr}/share/selinux/%1/base.pp \
+%{_usr}/share/selinux/%1/base.pp \
+%{_usr}/share/selinux/%1/enableaudit.pp \
 %dir %{_sysconfdir}/selinux \
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config \
 %dir %{_sysconfdir}/selinux/%1 \
@@ -243,6 +247,9 @@ SELinux Reference policy strict base module.
 
 
 %changelog
+* Fri Dec 16 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-10
+- Add enableaudit.pp
+
 * Fri Dec 16 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-9
 - Fix mls policy
 
