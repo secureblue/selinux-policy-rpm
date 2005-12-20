@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 12
+Release: 13
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -258,8 +258,11 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
-* Tue Dec 20 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-12
+* Tue Dec 20 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-13
 - Add dri libs to textrel_shlib_t
+- Add system_r role for java
+- Add unconfined_exec_t for vncserver
+- Allow slapd to use kerberos
 
 * Mon Dec 19 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-11
 - Add man pages
