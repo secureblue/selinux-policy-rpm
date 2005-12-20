@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 10
+Release: 11
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -28,6 +28,12 @@ BuildRequires: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCO
 PreReq: policycoreutils >= %{POLICYCOREUTILSVER}
 Obsoletes: policy 
 
+%description 
+SELinux Base package
+
+%files 
+%{_mandir}/man8/*
+
 %package targeted
 Summary: SELinux targeted base policy
 Group: System Environment/Base
@@ -35,6 +41,7 @@ Provides: selinux-policy-base
 Obsoletes: selinux-policy-targeted-sources
 Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
 Prereq: coreutils
+Requires: selinux-policy
 
 %description targeted
 SELinux Reference policy targeted base module.
@@ -132,6 +139,9 @@ SELinux Reference Policy - modular.
 # Build targeted policy
 make conf
 %{__rm} -fR $RPM_BUILD_ROOT
+mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man8/
+install -m 644 man/man8/*.8 ${RPM_BUILD_ROOT}%{_mandir}/man8/
+
 %installCmds targeted targeted-mcs %{direct_initrc}
 
 # Build mls policy
@@ -201,6 +211,7 @@ Provides: selinux-policy-base
 Obsoletes: selinux-policy-mls-sources
 Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
 Prereq: coreutils
+Requires: selinux-policy
 
 %description mls 
 SELinux Reference policy mls base module.
@@ -226,6 +237,7 @@ Provides: selinux-policy-base
 Obsoletes: selinux-policy-strict-sources
 Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
 Prereq: coreutils
+Requires: selinux-policy
 
 %description strict 
 SELinux Reference policy strict base module.
@@ -245,33 +257,35 @@ SELinux Reference policy strict base module.
 
 %endif
 
-
 %changelog
-* Fri Dec 16 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-10
+* Mon Dec 19 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-11
+- Add man pages
+
+* Fri Dec 16 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-10
 - Add enableaudit.pp
 
-* Fri Dec 16 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-9
+* Fri Dec 16 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-9
 - Fix mls policy
 
-* Fri Dec 16 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-8
+* Fri Dec 16 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-8
 - Update mls file from old version
 
-* Thu Dec 15 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-5
+* Thu Dec 15 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-5
 - Add sids back in
 - Rebuild with update checkpolicy
 
-* Thu Dec 15 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-4
+* Thu Dec 15 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-4
 - Fixes to allow automount to use portmap
 - Fixes to start kernel in s0-s15:c0.c255
 
-* Wed Dec 14 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-3
+* Wed Dec 14 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-3
 - Add java unconfined/execmem policy 
 
-* Wed Dec 14 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-2
+* Wed Dec 14 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-2
 - Add file context for /var/cvs
 - Dontaudit webalizer search of homedir
 
-* Tue Dec 13 2005 Dan Walsh <dwalsh@redhat.com> 2.1.5-1
+* Tue Dec 13 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-1
 - Update from upstream
 
 * Tue Dec 13 2005 Dan Walsh <dwalsh@redhat.com> 2.1.4-2
