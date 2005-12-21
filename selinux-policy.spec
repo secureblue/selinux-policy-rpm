@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 13
+Release: 14
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -258,6 +258,9 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
+* Wed Dec 21 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-14
+- Lots of fixes to make mls policy work
+
 * Tue Dec 20 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-13
 - Add dri libs to textrel_shlib_t
 - Add system_r role for java
