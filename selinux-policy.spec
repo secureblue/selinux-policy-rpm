@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 14
+Release: 15
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -258,6 +258,9 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
+* Wed Dec 21 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-15
+- Fix passwd command on mls
+
 * Wed Dec 21 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-14
 - Lots of fixes to make mls policy work
 
