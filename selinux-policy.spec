@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 17
+Release: 18
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -258,6 +258,9 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
+* Wed Dec 28 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-18
+- Fix /dev/ub[a-z] file context
+
 * Tue Dec 27 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-17
 - Fix library specification
 - Give kudzu execmem privs
