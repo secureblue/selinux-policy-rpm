@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 18
+Release: 19
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -98,9 +98,9 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/removable_context \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/userhelper_context \
 %dir %{_sysconfdir}/selinux/%1/contexts/files \
-%ghost %config %{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
-%ghost %config %{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
-%ghost %config %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
+%ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
+%ghost %{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
+%ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 %config %{_sysconfdir}/selinux/%1/contexts/files/media
 
 %define saveFileContext() \
@@ -258,6 +258,9 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
+* Fri Dec 30 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-19
+- Add Logwatch policy
+
 * Wed Dec 28 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-18
 - Fix /dev/ub[a-z] file context
 
