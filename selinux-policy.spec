@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 19
+Release: 20
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -258,7 +258,7 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
-* Fri Dec 30 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-19
+* Fri Dec 30 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-20
 - Add Logwatch policy
 
 * Wed Dec 28 2005 Dan Walsh <dwalsh@redhat.com> 2.1.6-18
