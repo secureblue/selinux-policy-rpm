@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 23
+Release: 24
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -114,7 +114,7 @@ fi
 
 %define rebuildpolicy() \
 semodule -b /usr/share/selinux/%1/base.pp -s %1 \
-for file in $(ls /usr/share/selinux/%1 | grep -v base.pp) \
+for file in $(ls /usr/share/selinux/%1 | grep -v -e base.pp -e enableaudit.pp ) \
 do \
 	semodule -i /usr/share/selinux/%1/$file -s %1;\
 done; \
@@ -258,6 +258,9 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
+* Tue Jan 3 2006 Dan Walsh <dwalsh@redhat.com> 2.1.6-24
+- Fix  "libsemanage.parse_module_headers: Data did not represent a module." problem
+
 * Tue Jan 3 2006 Dan Walsh <dwalsh@redhat.com> 2.1.6-23
 - Allow load_policy to read /etc/mtab
 
