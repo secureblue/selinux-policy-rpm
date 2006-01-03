@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.6
-Release: 22
+Release: 23
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -258,6 +258,9 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
+* Tue Jan 3 2006 Dan Walsh <dwalsh@redhat.com> 2.1.6-23
+- Allow load_policy to read /etc/mtab
+
 * Mon Jan 2 2006 Dan Walsh <dwalsh@redhat.com> 2.1.6-22
 - Fix dovecot to allow dovecot_auth to look at /tmp
 
