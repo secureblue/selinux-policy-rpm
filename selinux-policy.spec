@@ -2,16 +2,16 @@
 %define direct_initrc y
 %define monolithic n
 %define POLICYVER 20
-%define POLICYCOREUTILSVER 1.29.1-1
-%define CHECKPOLICYVER 1.28-2
+%define POLICYCOREUTILSVER 1.29.3-1
+%define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.1.6
-Release: 24
+Version: 2.1.7
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20051208.patch
+patch: policy-20060104.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: seusers-targeted
@@ -41,7 +41,7 @@ Provides: selinux-policy-base
 Obsoletes: selinux-policy-targeted-sources
 Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
 Prereq: coreutils
-Requires: selinux-policy
+Prereq: selinux-policy = %{version}-%{release}
 
 %description targeted
 SELinux Reference policy targeted base module.
@@ -211,7 +211,7 @@ Provides: selinux-policy-base
 Obsoletes: selinux-policy-mls-sources
 Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
 Prereq: coreutils
-Requires: selinux-policy
+Prereq: selinux-policy = %{version}-%{release}
 
 %description mls 
 SELinux Reference policy mls base module.
@@ -237,7 +237,7 @@ Provides: selinux-policy-base
 Obsoletes: selinux-policy-strict-sources
 Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
 Prereq: coreutils
-Requires: selinux-policy
+Prereq: selinux-policy = %{version}-%{release}
 
 %description strict 
 SELinux Reference policy strict base module.
@@ -258,6 +258,9 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
+* Wed Jan 4 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-1
+- Update to upstream
+
 * Tue Jan 3 2006 Dan Walsh <dwalsh@redhat.com> 2.1.6-24
 - Fix  "libsemanage.parse_module_headers: Data did not represent a module." problem
 
