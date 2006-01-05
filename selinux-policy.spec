@@ -2,12 +2,12 @@
 %define direct_initrc y
 %define monolithic n
 %define POLICYVER 20
-%define POLICYCOREUTILSVER 1.29.3-1
+%define POLICYCOREUTILSVER 1.29.5-1
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.7
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -258,6 +258,9 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
+* Thu Jan 5 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-2
+- Allow su to read /etc/mtab
+
 * Wed Jan 4 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-1
 - Update to upstream
 
