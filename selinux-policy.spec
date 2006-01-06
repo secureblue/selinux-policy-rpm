@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.7
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -61,6 +61,10 @@ make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} 
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} enableaudit \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} base.pp \
 install -m0644 base.pp ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/enableaudit.pp \
+for file in $(ls ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1 | grep -v -e base.pp -e enableaudit.pp ) \
+do \
+	rm ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/$file; \
+done; \
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
@@ -258,6 +262,9 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
+* Thu Jan 5 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-3
+- Handle new location of hal scripts
+
 * Thu Jan 5 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-2
 - Allow su to read /etc/mtab
 
