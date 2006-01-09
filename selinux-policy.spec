@@ -6,8 +6,8 @@
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.1.7
-Release: 3
+Version: 2.1.8
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -262,7 +262,13 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
-* Thu Jan 5 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-3
+* Mon Jan 9 2006 Dan Walsh <dwalsh@redhat.com> 2.1.8-1
+- Update to upstream
+
+* Fri Jan 7 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-4
+- Add wine and fix hal problems
+
+* Thu Jan 6 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-3
 - Handle new location of hal scripts
 
 * Thu Jan 5 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-2
