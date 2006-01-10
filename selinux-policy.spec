@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.8
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -262,6 +262,9 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
+* Tue Jan 10 2006 Dan Walsh <dwalsh@redhat.com> 2.1.8-3
+- More Fixes for hal and readahead
+
 * Mon Jan 9 2006 Dan Walsh <dwalsh@redhat.com> 2.1.8-2
 - Fixes for hal and readahead
 
