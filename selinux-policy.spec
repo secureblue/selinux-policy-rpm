@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.9
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -262,6 +262,10 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
+* Wed Jan 11 2006 Jeremy Katz <katzj@redhat.com> - 2.1.9-2
+- fix pup transitions (#177262)
+- fix xen disks (#177599)
+
 * Tue Jan 10 2006 Dan Walsh <dwalsh@redhat.com> 2.1.9-1
 - Update to upstream
 
