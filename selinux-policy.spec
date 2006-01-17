@@ -6,7 +6,7 @@
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.1.10
+Version: 2.1.11
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -262,6 +262,10 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
+* Sat Jan 14 2006 Dan Walsh <dwalsh@redhat.com> 2.1.11-1
+- Update to upstream
+- Fix ftp Man page
+
 * Fri Jan 13 2006 Dan Walsh <dwalsh@redhat.com> 2.1.10-1
 - Update to upstream
 
