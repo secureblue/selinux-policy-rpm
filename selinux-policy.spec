@@ -7,7 +7,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.1.12
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -262,8 +262,9 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
-* Tue Jan 17 2006 Dan Walsh <dwalsh@redhat.com> 2.1.12-1
+* Tue Jan 17 2006 Dan Walsh <dwalsh@redhat.com> 2.1.12-2
 - Update to upstream
+- Add rules to allow rpcd to work with unlabeled_networks.
 
 * Sat Jan 14 2006 Dan Walsh <dwalsh@redhat.com> 2.1.11-1
 - Update to upstream
