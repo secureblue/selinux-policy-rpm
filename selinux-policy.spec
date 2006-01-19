@@ -6,7 +6,7 @@
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.1.13
+Version: 2.2.2
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -262,6 +262,16 @@ SELinux Reference policy strict base module.
 %endif
 
 %changelog
+* Wed Jan 18 2006 Dan Walsh <dwalsh@redhat.com> 2.2.2-1
+- Update to upstream
+- Turn off execheap execstack for unconfined users
+- Add mono/wine policy to allow execheap and execstack for them
+- Add execheap for Xdm policy
+
+* Wed Jan 18 2006 Dan Walsh <dwalsh@redhat.com> 2.2.1-1
+- Update to upstream
+- Fixes to fetchmail,
+
 * Tue Jan 17 2006 Dan Walsh <dwalsh@redhat.com> 2.1.13-1
 - Update to upstream
 
