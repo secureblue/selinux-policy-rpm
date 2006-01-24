@@ -1,12 +1,11 @@
 %define distro redhat
-%define direct_initrc y
 %define monolithic n
 %define POLICYVER 20
 %define POLICYCOREUTILSVER 1.29.5-1
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.2
+Version: 2.2.4
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -20,6 +19,10 @@ Source5: modules-mls.conf
 Source6: booleans-mls.conf
 Source7: seusers-mls
 Source8: setrans-mls.conf
+Source9: modules-strict.conf
+Source10: booleans-strict.conf
+Source11: seusers-strict
+Source12: setrans-strict.conf
 
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/serefpolicy-buildroot
@@ -61,10 +64,6 @@ make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} 
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} enableaudit \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} base.pp \
 install -m0644 base.pp ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/enableaudit.pp \
-for file in $(ls ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1 | grep -v -e base.pp -e enableaudit.pp ) \
-do \
-	rm ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/$file; \
-done; \
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
@@ -80,8 +79,7 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %defattr(-,root,root) \
 %dir %{_usr}/share/selinux \
 %dir %{_usr}/share/selinux/%1 \
-%{_usr}/share/selinux/%1/base.pp \
-%{_usr}/share/selinux/%1/enableaudit.pp \
+%{_usr}/share/selinux/%1/*.pp \
 %dir %{_sysconfdir}/selinux \
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config \
 %dir %{_sysconfdir}/selinux/%1 \
@@ -146,19 +144,25 @@ make conf
 mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man8/
 install -m 644 man/man8/*.8 ${RPM_BUILD_ROOT}%{_mandir}/man8/
 
-%installCmds targeted targeted-mcs %{direct_initrc}
+
+
+# Build targeted policy
+# Commented out because only targeted ref policy currently builds
+make clean
+make conf
+%installCmds targeted targeted-mcs y
+
+# Build strict policy
+# Commented out because only targeted ref policy currently builds
+make clean
+make conf
+%installCmds strict strict-mcs y
 
 # Build mls policy
 make clean
 make conf
 %installCmds mls strict-mls n
 
-
-# Build strict policy
-# Commented out because only targeted ref policy currently builds
-# make clean
-# make conf
-#%#installCmds strict strict-mcs %{direct_initrc}
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
@@ -233,7 +237,6 @@ SELinux Reference policy mls base module.
 %files mls
 %fileList mls
 
-%if 0
 %package strict 
 Summary: SELinux strict base policy
 Group: System Environment/Base
@@ -259,9 +262,14 @@ SELinux Reference policy strict base module.
 %files strict
 %fileList strict
 
-%endif
-
 %changelog
+* Mon Jan 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.4-1
+- Update to upstream
+
+* Wed Jan 18 2006 Dan Walsh <dwalsh@redhat.com> 2.2.3-1
+- Update to upstream
+- Fixes for booting and logging in on MLS machine
+
 * Wed Jan 18 2006 Dan Walsh <dwalsh@redhat.com> 2.2.2-1
 - Update to upstream
 - Turn off execheap execstack for unconfined users
