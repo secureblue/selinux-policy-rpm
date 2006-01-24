@@ -5,7 +5,7 @@
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.4
+Version: 2.2.5
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -263,6 +263,10 @@ SELinux Reference policy strict base module.
 %fileList strict
 
 %changelog
+* Mon Jan 24 2006 Dan Walsh <dwalsh@redhat.com> 2.2.4-1
+- Many changes for MLS 
+- Turn on strict policy
+
 * Mon Jan 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.4-1
 - Update to upstream
 
