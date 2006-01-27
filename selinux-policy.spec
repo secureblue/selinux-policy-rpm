@@ -5,8 +5,8 @@
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.6
-Release: 2
+Version: 2.2.7
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -163,6 +163,10 @@ make clean
 make conf
 %installCmds mls strict-mls n
 
+# Install sources
+make clean
+make 
+make DESTDIR=$RPM_BUILD_ROOT install-headers
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
@@ -262,7 +266,28 @@ SELinux Reference policy strict base module.
 %files strict
 %fileList strict
 
+%package devel
+Summary: SELinux policy devel sources
+Group: System Environment/Base
+Prereq: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER} make
+Prereq: selinux-policy = %{version}-%{release}
+
+%description devel
+SELinux Reference policy development files
+
+%files devel
+%defattr(-,root,root) 
+%dir %{_usr}/share/selinux/refpolicy
+%dir %{_usr}/share/selinux/refpolicy/include
+%{_usr}/share/selinux/refpolicy/include/*
+
 %changelog
+* Thu Jan 26 2006 Dan Walsh <dwalsh@redhat.com> 2.2.7-1
+- Update to upstream
+
+* Thu Jan 26 2006 Dan Walsh <dwalsh@redhat.com> 2.2.6-3
+- Separate out role of secadm for mls
+
 * Thu Jan 26 2006 Dan Walsh <dwalsh@redhat.com> 2.2.6-2
 - Add inotifyfs handling
 
