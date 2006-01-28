@@ -6,7 +6,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.8
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -282,9 +282,9 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/include/*
 
 %changelog
-* Thu Jan 26 2006 Dan Walsh <dwalsh@redhat.com> 2.2.8-1
+* Fri Jan 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.8-2
 - Update to upstream
-- Fix rhgb
+- Fix rhgb, and other Xorg startups
 
 * Thu Jan 26 2006 Dan Walsh <dwalsh@redhat.com> 2.2.7-1
 - Update to upstream
