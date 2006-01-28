@@ -282,6 +282,10 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/include/*
 
 %changelog
+* Thu Jan 26 2006 Dan Walsh <dwalsh@redhat.com> 2.2.8-1
+- Update to upstream
+- Fix rhgb
+
 * Thu Jan 26 2006 Dan Walsh <dwalsh@redhat.com> 2.2.7-1
 - Update to upstream
 
