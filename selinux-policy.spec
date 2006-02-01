@@ -1,12 +1,12 @@
 %define distro redhat
 %define monolithic n
 %define POLICYVER 20
-%define POLICYCOREUTILSVER 1.29.5-1
+%define POLICYCOREUTILSVER 1.29.17-1
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.9
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -282,6 +282,13 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/include/*
 
 %changelog
+
+* Wed Feb 1 2006 Dan Walsh <dwalsh@redhat.com> 2.2.9-2
+- Fix for spamd to use ldap
+
+* Fri Jan 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.9-1
+- Update to upstream
+
 * Fri Jan 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.8-2
 - Update to upstream
 - Fix rhgb, and other Xorg startups
