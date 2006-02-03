@@ -1,12 +1,12 @@
 %define distro redhat
 %define monolithic n
 %define POLICYVER 20
-%define POLICYCOREUTILSVER 1.29.17-1
+%define POLICYCOREUTILSVER 1.29.18-1
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.9
-Release: 2
+Version: 2.2.10
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -23,6 +23,8 @@ Source9: modules-strict.conf
 Source10: booleans-strict.conf
 Source11: seusers-strict
 Source12: setrans-strict.conf
+Source13: policygentool
+Source14: Makefile.devel
 
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/serefpolicy-buildroot
@@ -36,6 +38,7 @@ SELinux Base package
 
 %files 
 %{_mandir}/man8/*
+%doc /usr/share/doc/%{name}-%{version}
 
 %package targeted
 Summary: SELinux targeted base policy
@@ -49,10 +52,12 @@ Prereq: selinux-policy = %{version}-%{release}
 %description targeted
 SELinux Reference policy targeted base module.
 
-%define installCmds() \
+%define setupCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} bare \
 cp -f ${RPM_SOURCE_DIR}/modules-%1.conf  ./policy/modules.conf \
 cp -f ${RPM_SOURCE_DIR}/booleans-%1.conf ./policy/booleans.conf \
+
+%define installCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} base.pp \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} modules \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_usr}/share/selinux/%1/ \
@@ -115,11 +120,11 @@ if [ -s /etc/selinux/config ]; then \
 fi
 
 %define rebuildpolicy() \
-semodule -b /usr/share/selinux/%1/base.pp -s %1 \
-for file in $(ls /usr/share/selinux/%1 | grep -v -e base.pp -e enableaudit.pp ) \
-do \
-	semodule -i /usr/share/selinux/%1/$file -s %1;\
-done; \
+( cd /usr/share/selinux/%1; \
+semodule -b base.pp -s %1; \
+x=`ls | grep -v -e base.pp -e enableaudit.pp | awk '{ print "-i " $1 }'`; \
+[ -z "$x" ] || semodule $x -s %1; \
+);\
 rm -f %{_sysconfdir}/selinux/%1/policy/policy.*.rpmnew
 
 %define relabel() \
@@ -150,23 +155,29 @@ install -m 644 man/man8/*.8 ${RPM_BUILD_ROOT}%{_mandir}/man8/
 # Commented out because only targeted ref policy currently builds
 make clean
 make conf
+%setupCmds targeted targeted-mcs y
 %installCmds targeted targeted-mcs y
 
 # Build strict policy
 # Commented out because only targeted ref policy currently builds
 make clean
 make conf
+make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} bare 
+make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} conf
 %installCmds strict strict-mcs y
 
 # Build mls policy
 make clean
 make conf
+%setupCmds mls strict-mls n
 %installCmds mls strict-mls n
 
-# Install sources
+# Install devel
 make clean
 make 
-make DESTDIR=$RPM_BUILD_ROOT install-headers
+make DESTDIR=$RPM_BUILD_ROOT PKGNAME=%{name}-%{version} install-headers install-docs
+install -m 755 ${RPM_SOURCE_DIR}/policygentool ${RPM_BUILD_ROOT}/usr/share/selinux/refpolicy/
+install -m 755 ${RPM_SOURCE_DIR}/Makefile.devel ${RPM_BUILD_ROOT}/usr/share/selinux/refpolicy/Makefile
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
@@ -280,8 +291,13 @@ SELinux Reference policy development files
 %dir %{_usr}/share/selinux/refpolicy
 %dir %{_usr}/share/selinux/refpolicy/include
 %{_usr}/share/selinux/refpolicy/include/*
+%{_usr}/share/selinux/refpolicy/Makefile
+%{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Wed Feb 1 2006 Dan Walsh <dwalsh@redhat.com> 2.2.10-1
+- Fixes for the -devel package
 
 * Wed Feb 1 2006 Dan Walsh <dwalsh@redhat.com> 2.2.9-2
 - Fix for spamd to use ldap
