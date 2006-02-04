@@ -5,7 +5,7 @@
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.10
+Version: 2.2.11
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -121,9 +121,8 @@ fi
 
 %define rebuildpolicy() \
 ( cd /usr/share/selinux/%1; \
-semodule -b base.pp -s %1; \
 x=`ls | grep -v -e base.pp -e enableaudit.pp | awk '{ print "-i " $1 }'`; \
-[ -z "$x" ] || semodule $x -s %1; \
+semodule -b base.pp $x -s %1; \
 );\
 rm -f %{_sysconfdir}/selinux/%1/policy/policy.*.rpmnew
 
@@ -295,6 +294,10 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Fri Feb 3 2006 Dan Walsh <dwalsh@redhat.com> 2.2.11-1
+- Fixes for mcs
+- Turn on mount and fsadm for unconfined_t
 
 * Wed Feb 1 2006 Dan Walsh <dwalsh@redhat.com> 2.2.10-1
 - Fixes for the -devel package
