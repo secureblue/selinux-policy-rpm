@@ -6,7 +6,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.11
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -294,6 +294,9 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Mon Feb 6 2006 Dan Walsh <dwalsh@redhat.com> 2.2.11-2
+- Fix for spamd to use razor port
 
 * Fri Feb 3 2006 Dan Walsh <dwalsh@redhat.com> 2.2.11-1
 - Fixes for mcs
