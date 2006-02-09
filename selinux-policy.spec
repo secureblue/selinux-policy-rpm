@@ -5,12 +5,12 @@
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.11
-Release: 2
+Version: 2.2.12
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20060104.patch
+patch: policy-20060207.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: seusers-targeted
@@ -294,6 +294,10 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Tue Feb 7 2006 Dan Walsh <dwalsh@redhat.com> 2.2.12-1
+- Update from upstream
+
 
 * Mon Feb 6 2006 Dan Walsh <dwalsh@redhat.com> 2.2.11-2
 - Fix for spamd to use razor port
