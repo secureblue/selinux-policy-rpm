@@ -5,7 +5,7 @@
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.12
+Version: 2.2.13
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -294,6 +294,9 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Fri Feb 10 2006 Dan Walsh <dwalsh@redhat.com> 2.2.13-1
+- Add semodule policy
 
 * Tue Feb 7 2006 Dan Walsh <dwalsh@redhat.com> 2.2.12-1
 - Update from upstream
