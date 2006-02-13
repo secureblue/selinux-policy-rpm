@@ -61,7 +61,7 @@ cp -f ${RPM_SOURCE_DIR}/modules-%1.conf  ./policy/modules.conf \
 cp -f ${RPM_SOURCE_DIR}/booleans-%1.conf ./policy/booleans.conf \
 
 %define installCmds() \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} base.pp \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} USER_EXTRAS="-u ${RPM_SOURCE_DIR}/users_extra-%1" base.pp \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} modules \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_usr}/share/selinux/%1/ \
 %{__cp} *.pp $RPM_BUILD_ROOT/%{_usr}/share/selinux/%1/ \
@@ -75,13 +75,11 @@ install -m0644 base.pp ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/enableaudit.pp 
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
-touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/users_extra \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 install -m0644 ${RPM_SOURCE_DIR}/seusers-%1 ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/modules/active/seusers \
-install -m0644 ${RPM_SOURCE_DIR}/users_extra-%1 ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/modules/active/users_extra \
 install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/setrans.conf \
 %nil
 
@@ -95,11 +93,9 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %ghost %{_sysconfdir}/selinux/%1/seusers \
-%ghost %{_sysconfdir}/selinux/%1/users_extra \
 %dir %{_sysconfdir}/selinux/%1/modules \
 %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
 %verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
-%verify(not md5 size mtime) %attr(600,root,root) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
 %ghost %{_sysconfdir}/selinux/%1/policy/policy.* \
 %dir %{_sysconfdir}/selinux/%1/contexts \
