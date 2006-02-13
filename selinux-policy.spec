@@ -6,7 +6,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.14
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -25,6 +25,9 @@ Source11: seusers-strict
 Source12: setrans-strict.conf
 Source13: policygentool
 Source14: Makefile.devel
+Source15: users_extra-targeted
+Source16: users_extra-strict
+Source17: users_extra-mls
 
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/serefpolicy-buildroot
@@ -72,11 +75,13 @@ install -m0644 base.pp ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/enableaudit.pp 
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
+touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/users_extra \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 install -m0644 ${RPM_SOURCE_DIR}/seusers-%1 ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/modules/active/seusers \
+install -m0644 ${RPM_SOURCE_DIR}/users_extra-%1 ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/modules/active/users_extra \
 install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/setrans.conf \
 %nil
 
@@ -90,9 +95,11 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %ghost %{_sysconfdir}/selinux/%1/seusers \
+%ghost %{_sysconfdir}/selinux/%1/users_extra \
 %dir %{_sysconfdir}/selinux/%1/modules \
 %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
 %verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
+%verify(not md5 size mtime) %attr(600,root,root) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
 %ghost %{_sysconfdir}/selinux/%1/policy/policy.* \
 %dir %{_sysconfdir}/selinux/%1/contexts \
@@ -294,6 +301,9 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Mon Feb 13 2006 Dan Walsh <dwalsh@redhat.com> 2.2.14-2
+- Add users_extra files
 
 * Fri Feb 10 2006 Dan Walsh <dwalsh@redhat.com> 2.2.14-1
 - Update to upstream
