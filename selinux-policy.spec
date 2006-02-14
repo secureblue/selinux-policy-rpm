@@ -5,8 +5,8 @@
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.14
-Release: 2
+Version: 2.2.15
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -24,10 +24,9 @@ Source10: booleans-strict.conf
 Source11: seusers-strict
 Source12: setrans-strict.conf
 Source13: policygentool
-Source14: Makefile.devel
-Source15: users_extra-targeted
-Source16: users_extra-strict
-Source17: users_extra-mls
+Source14: users_extra-targeted
+Source15: users_extra-strict
+Source16: users_extra-mls
 
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/serefpolicy-buildroot
@@ -179,7 +178,7 @@ make clean
 make 
 make DESTDIR=$RPM_BUILD_ROOT PKGNAME=%{name}-%{version} install-headers install-docs
 install -m 755 ${RPM_SOURCE_DIR}/policygentool ${RPM_BUILD_ROOT}/usr/share/selinux/refpolicy/
-install -m 755 ${RPM_SOURCE_DIR}/Makefile.devel ${RPM_BUILD_ROOT}/usr/share/selinux/refpolicy/Makefile
+ln -sf ./include/Makefile ${RPM_BUILD_ROOT}/usr/share/selinux/refpolicy/Makefile
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
@@ -297,6 +296,9 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Tue Feb 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.15-1
+- Update to upsteam
 
 * Mon Feb 13 2006 Dan Walsh <dwalsh@redhat.com> 2.2.14-2
 - Add users_extra files
