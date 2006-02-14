@@ -6,7 +6,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.15
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -296,6 +296,10 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Tue Feb 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.15-2
+- Fix spamd reading of ~/
+- fix nvidia spec
 
 * Tue Feb 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.15-1
 - Update to upsteam
