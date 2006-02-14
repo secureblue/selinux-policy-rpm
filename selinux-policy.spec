@@ -6,7 +6,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.15
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -297,7 +297,8 @@ SELinux Reference policy development files
 
 %changelog
 
-* Tue Feb 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.15-2
+* Tue Feb 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.15-3
+- Fix bluetooth handling of usb devices
 - Fix spamd reading of ~/
 - fix nvidia spec
 
