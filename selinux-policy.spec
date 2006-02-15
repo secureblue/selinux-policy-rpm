@@ -6,7 +6,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.15
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -296,6 +296,11 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Wed Feb 15 2006 Dan Walsh <dwalsh@redhat.com> 2.2.15-4
+- Add router port for zebra
+- Add imaze port for spamd
+- Fixes for amanda and java
 
 * Tue Feb 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.15-3
 - Fix bluetooth handling of usb devices
