@@ -5,28 +5,22 @@
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.15
-Release: 4
+Version: 2.2.16
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-20060207.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
-Source3: seusers-targeted
 Source4: setrans-targeted.conf
 Source5: modules-mls.conf
-Source6: booleans-mls.conf
-Source7: seusers-mls
+Source6: booleans-mls.conf	
 Source8: setrans-mls.conf
 Source9: modules-strict.conf
 Source10: booleans-strict.conf
-Source11: seusers-strict
 Source12: setrans-strict.conf
 Source13: policygentool
-Source14: users_extra-targeted
-Source15: users_extra-strict
-Source16: users_extra-mls
 
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/serefpolicy-buildroot
@@ -56,18 +50,19 @@ SELinux Reference policy targeted base module.
 
 %define setupCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} bare \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} conf \
 cp -f ${RPM_SOURCE_DIR}/modules-%1.conf  ./policy/modules.conf \
 cp -f ${RPM_SOURCE_DIR}/booleans-%1.conf ./policy/booleans.conf \
 
 %define installCmds() \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} USER_EXTRAS="-u ${RPM_SOURCE_DIR}/users_extra-%1" base.pp \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} base.pp \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} modules \
-%{__mkdir} -p $RPM_BUILD_ROOT/%{_usr}/share/selinux/%1/ \
-%{__cp} *.pp $RPM_BUILD_ROOT/%{_usr}/share/selinux/%1/ \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT install \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT install-appconfig \
+#%{__cp} *.pp $RPM_BUILD_ROOT/%{_usr}/share/selinux/%1/ \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/policy \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/active \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/contexts/files \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT install-appconfig \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} enableaudit \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} base.pp \
 install -m0644 base.pp ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/enableaudit.pp \
@@ -78,7 +73,6 @@ touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
-install -m0644 ${RPM_SOURCE_DIR}/seusers-%1 ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/modules/active/seusers \
 install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/setrans.conf \
 %nil
 
@@ -94,7 +88,7 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %ghost %{_sysconfdir}/selinux/%1/seusers \
 %dir %{_sysconfdir}/selinux/%1/modules \
 %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
-%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
+#%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
 %ghost %{_sysconfdir}/selinux/%1/policy/policy.* \
 %dir %{_sysconfdir}/selinux/%1/contexts \
@@ -145,31 +139,22 @@ SELinux Reference Policy - modular.
 	
 %install
 # Build targeted policy
-make conf
 %{__rm} -fR $RPM_BUILD_ROOT
 mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man8/
 install -m 644 man/man8/*.8 ${RPM_BUILD_ROOT}%{_mandir}/man8/
 
-
-
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-make clean
-make conf
 %setupCmds targeted targeted-mcs y
 %installCmds targeted targeted-mcs y
 
 # Build strict policy
 # Commented out because only targeted ref policy currently builds
-make clean
-make conf
 make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} bare 
 make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} conf
 %installCmds strict strict-mcs y
 
 # Build mls policy
-make clean
-make conf
 %setupCmds mls strict-mls n
 %installCmds mls strict-mls n
 
@@ -211,7 +196,7 @@ SETLOCALDEFS=0
 
 " > /etc/selinux/config
 
-	ln -sf /etc/selinux/config /etc/sysconfig/selinux 
+	ln -sf ../selinux/config /etc/sysconfig/selinux 
 	restorecon /etc/selinux/config 2> /dev/null
 else
 	# if first time update booleans.local needs to be copied to sandbox
@@ -296,6 +281,10 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Thu Feb 16 2006 Dan Walsh <dwalsh@redhat.com> 2.2.16-1
+- Update to upstream 
+- fix sysconfig/selinux link
 
 * Wed Feb 15 2006 Dan Walsh <dwalsh@redhat.com> 2.2.15-4
 - Add router port for zebra
