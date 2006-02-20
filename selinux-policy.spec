@@ -1,11 +1,14 @@
 %define distro redhat
 %define monolithic n
+%define BUILD_STRICT 0
+%define BUILD_TARGETED 0
+%define BUILD_MLS 1
 %define POLICYVER 20
 %define POLICYCOREUTILSVER 1.29.18-1
 %define CHECKPOLICYVER 1.28-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.16
+Version: 2.2.17
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -36,18 +39,6 @@ SELinux Base package
 %{_mandir}/man8/*
 %doc /usr/share/doc/%{name}-%{version}
 
-%package targeted
-Summary: SELinux targeted base policy
-Group: System Environment/Base
-Provides: selinux-policy-base
-Obsoletes: selinux-policy-targeted-sources
-Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
-Prereq: coreutils
-Prereq: selinux-policy = %{version}-%{release}
-
-%description targeted
-SELinux Reference policy targeted base module.
-
 %define setupCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} bare \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} conf \
@@ -63,6 +54,8 @@ make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} 
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/policy \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/active \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/contexts/files \
+touch $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
+touch $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} enableaudit \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} base.pp \
 install -m0644 base.pp ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/enableaudit.pp \
@@ -87,6 +80,8 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %ghost %{_sysconfdir}/selinux/%1/seusers \
 %dir %{_sysconfdir}/selinux/%1/modules \
+%{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
+%{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
 %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
 #%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
@@ -143,6 +138,7 @@ SELinux Reference Policy - modular.
 mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man8/
 install -m 644 man/man8/*.8 ${RPM_BUILD_ROOT}%{_mandir}/man8/
 
+%if 0
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
 %setupCmds targeted targeted-mcs y
@@ -153,6 +149,7 @@ install -m 644 man/man8/*.8 ${RPM_BUILD_ROOT}%{_mandir}/man8/
 make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} bare 
 make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} conf
 %installCmds strict strict-mcs y
+%endif
 
 # Build mls policy
 %setupCmds mls strict-mls n
@@ -167,6 +164,19 @@ ln -sf ./include/Makefile ${RPM_BUILD_ROOT}/usr/share/selinux/refpolicy/Makefile
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
+
+%if 0
+%package targeted
+Summary: SELinux targeted base policy
+Group: System Environment/Base
+Provides: selinux-policy-base
+Obsoletes: selinux-policy-targeted-sources
+Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
+Prereq: coreutils
+Prereq: selinux-policy = %{version}-%{release}
+
+%description targeted
+SELinux Reference policy targeted base module.
 
 %files targeted
 %fileList targeted
@@ -212,6 +222,7 @@ fi
 
 %triggerpostun targeted -- selinux-policy-targeted <= 2.0.7
 %rebuildpolicy targeted
+%endif
 
 %package mls 
 Summary: SELinux mls base policy
@@ -238,6 +249,7 @@ SELinux Reference policy mls base module.
 %files mls
 %fileList mls
 
+%if 0
 %package strict 
 Summary: SELinux strict base policy
 Group: System Environment/Base
@@ -262,6 +274,8 @@ SELinux Reference policy strict base module.
 
 %files strict
 %fileList strict
+
+%endif
 
 %package devel
 Summary: SELinux policy devel sources
