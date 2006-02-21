@@ -8,8 +8,8 @@
 %define CHECKPOLICYVER 1.29.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.18
-Release: 2
+Version: 2.2.19
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -288,6 +288,9 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Tue Feb 21 2006 Dan Walsh <dwalsh@redhat.com> 2.2.19-1
+- Update from upstream
 
 * Tue Feb 21 2006 Dan Walsh <dwalsh@redhat.com> 2.2.18-2
 - allow cron to read apache files
