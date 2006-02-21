@@ -9,7 +9,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.18
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
