@@ -4,8 +4,8 @@
 %define BUILD_TARGETED 0
 %define BUILD_MLS 1
 %define POLICYVER 20
-%define POLICYCOREUTILSVER 1.29.18-1
-%define CHECKPOLICYVER 1.28-3
+%define POLICYCOREUTILSVER 1.29.26-1
+%define CHECKPOLICYVER 1.29.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.18
@@ -288,6 +288,9 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Tue Feb 21 2006 Dan Walsh <dwalsh@redhat.com> 2.2.18-2
+- allow cron to read apache files
 
 * Tue Feb 21 2006 Dan Walsh <dwalsh@redhat.com> 2.2.18-1
 - Fix vpnc policy to work from NetworkManager
