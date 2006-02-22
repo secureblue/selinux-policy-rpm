@@ -61,6 +61,7 @@ make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} 
 install -m0644 base.pp ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/enableaudit.pp \
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config \
+touch $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/selinux \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
@@ -76,6 +77,7 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %{_usr}/share/selinux/%1/*.pp \
 %dir %{_sysconfdir}/selinux \
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config \
+%ghost %{_sysconfdir}/sysconfig/selinux \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %ghost %{_sysconfdir}/selinux/%1/seusers \
@@ -158,7 +160,8 @@ make clean
 make 
 make DESTDIR=$RPM_BUILD_ROOT PKGNAME=%{name}-%{version} install-headers install-docs
 install -m 755 ${RPM_SOURCE_DIR}/policygentool ${RPM_BUILD_ROOT}/usr/share/selinux/refpolicy/
-ln -sf ./include/Makefile ${RPM_BUILD_ROOT}/usr/share/selinux/refpolicy/Makefile
+install -m 755 doc/Makefile.example ${RPM_BUILD_ROOT}/usr/share/selinux/refpolicy/Makefile
+
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
