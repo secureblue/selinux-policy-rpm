@@ -8,14 +8,15 @@
 %define CHECKPOLICYVER 1.29.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.19
-Release: 3
+Version: 2.2.20
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-20060207.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
+Source3: Makefile.devel
 Source4: setrans-targeted.conf
 Source5: modules-mls.conf
 Source6: booleans-mls.conf	
@@ -37,7 +38,11 @@ SELinux Base package
 
 %files 
 %{_mandir}/man8/*
-%doc /usr/share/doc/%{name}-%{version}
+%doc %{_usr}/share/doc/%{name}-%{version}
+%dir %{_usr}/share/selinux
+%dir %{_sysconfdir}/selinux
+%ghost %config(noreplace) %{_sysconfdir}/selinux/config
+%ghost %{_sysconfdir}/sysconfig/selinux
 
 %define setupCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} bare \
@@ -60,8 +65,6 @@ make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} 
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} base.pp \
 install -m0644 base.pp ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/enableaudit.pp \
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
-touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config \
-touch $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/selinux \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
@@ -72,12 +75,8 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 
 %define fileList() \
 %defattr(-,root,root) \
-%dir %{_usr}/share/selinux \
 %dir %{_usr}/share/selinux/%1 \
 %{_usr}/share/selinux/%1/*.pp \
-%dir %{_sysconfdir}/selinux \
-%ghost %config(noreplace) %{_sysconfdir}/selinux/config \
-%ghost %{_sysconfdir}/sysconfig/selinux \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %ghost %{_sysconfdir}/selinux/%1/seusers \
@@ -139,6 +138,11 @@ SELinux Reference Policy - modular.
 %{__rm} -fR $RPM_BUILD_ROOT
 mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man8/
 install -m 644 man/man8/*.8 ${RPM_BUILD_ROOT}%{_mandir}/man8/
+mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux
+mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
+mkdir -p %{_usr}/share/selinux
+touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config
+touch $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/selinux
 
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
@@ -157,10 +161,10 @@ make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{m
 
 # Install devel
 make clean
-make 
-make DESTDIR=$RPM_BUILD_ROOT PKGNAME=%{name}-%{version} install-headers install-docs
-install -m 755 ${RPM_SOURCE_DIR}/policygentool ${RPM_BUILD_ROOT}/usr/share/selinux/refpolicy/
-install -m 755 doc/Makefile.example ${RPM_BUILD_ROOT}/usr/share/selinux/refpolicy/Makefile
+make NAME=devel TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT PKGNAME=%{name}-%{version} install-headers install-docs
+install -m 755 ${RPM_SOURCE_DIR}/policygentool ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
+install -m 755 ${RPM_SOURCE_DIR}/Makefile.devel ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/Makefile
+install -m 755 ${RPM_SOURCE_DIR}/Makefile.devel ${RPM_BUILD_ROOT}%{_usr}/share/doc/%{name}-%{version}/Makefile.example
 
 
 %clean
@@ -284,15 +288,15 @@ SELinux Reference policy development files
 
 %files devel
 %defattr(-,root,root) 
-%dir %{_usr}/share/selinux/refpolicy
-%dir %{_usr}/share/selinux/refpolicy/include
-%{_usr}/share/selinux/refpolicy/include/*
-%{_usr}/share/selinux/refpolicy/Makefile
-%{_usr}/share/selinux/refpolicy/policygentool
+%dir %{_usr}/share/selinux/devel
+%dir %{_usr}/share/selinux/devel/include
+%{_usr}/share/selinux/devel/include/*
+%{_usr}/share/selinux/devel/Makefile
+%{_usr}/share/selinux/devel/policygentool
 
 %changelog
 
-* Wed Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.19-3
+* Wed Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.20-1
 - Fix load_policy to work on MLS
 - Fix cron_rw_system_pipes for postfix_postdrop_t
 - Allow audotmount to run showmount
