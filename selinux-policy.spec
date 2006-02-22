@@ -9,7 +9,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.19
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -291,6 +291,11 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Wed Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.19-3
+- Fix load_policy to work on MLS
+- Fix cron_rw_system_pipes for postfix_postdrop_t
+- Allow audotmount to run showmount
 
 * Tue Feb 21 2006 Dan Walsh <dwalsh@redhat.com> 2.2.19-2
 - Fix swapon
