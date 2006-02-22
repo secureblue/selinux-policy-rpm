@@ -24,8 +24,6 @@ PYTHON ?= python
 # set default build options if missing
 NAME ?= $(shell . /etc/selinux/config; echo $$SELINUXTYPE)
 MLSENABLED := $(shell cat /selinux/mls)
-MODPKGDIR := $(SHAREDIR)/$(NAME)
-
 ifeq ($(MLSENABLED),1)
 MCSFLAG=-mcs
 endif
@@ -34,6 +32,16 @@ TYPE ?= $(NAME)${MCSFLAG}
 DIRECT_INITRC ?= n
 POLY ?= n
 QUIET ?= y
+
+genxml := $(PYTHON) $(HEADERDIR)/support/segenxml.py
+
+docs = doc
+polxml = $(docs)/policy.xml
+xmldtd = $(HEADERDIR)/support/policy.dtd
+layerxml = metadata.xml
+
+globaltun = $(HEADERDIR)/global_tunables.xml
+globalbool = $(HEADERDIR)/global_booleans.xml
 
 # compile strict policy if requested.
 ifneq ($(findstring strict,$(TYPE)),)
@@ -73,21 +81,33 @@ ifeq ($(DIRECT_INITRC),y)
 	M4PARAM += -D direct_sysadm_daemon
 endif
 
-ifneq ($(VERBOSE),y)
-	quiet := @
+ifeq ($(QUIET),y)
+	verbose := @
 endif
 
 M4PARAM += -D hide_broken_symptoms
 
 # policy headers
-m4support := $(wildcard $(HEADERDIR)/*.spt)
-all_interfaces := $(wildcard $(HEADERDIR)/*.if)
-rolemap := $(HEADERDIR)/rolemap
+m4support = $(wildcard $(HEADERDIR)/support/*.spt)
+all_layers = $(filter-out $(HEADERDIR)/support,$(shell find $(wildcard $(HEADERDIR)/*) -maxdepth 0 -type d))
+all_interfaces = $(foreach layer,$(all_layers),$(wildcard $(layer)/*.if))
+rolemap = $(HEADERDIR)/rolemap
 
-detected_mods := $(wildcard *.te)
-detected_ifs := $(detected_mods:.te=.if)
-all_packages := $(detected_mods:.te=.pp)
-install_mods := $(MODPKGDIR)/$(all_packages)
+detected_layers =  $(filter-out CVS tmp $(docs),$(shell find $(wildcard *) -maxdepth 0 -type d))
+3rd_party_mods = $(wildcard *.te)
+3rd_party_ifs = $(3rd_party_mods:.te=.if)
+detected_mods = $(3rd_party_mods) $(foreach layer,$(detected_layers),$(wildcard $(layer)/*.te))
+detected_ifs = $(3rd_party_ifs) $(foreach layer,$(detected_layers),$(wildcard $(layer)/*.if))
+all_packages = $(notdir $(detected_mods:.te=.pp))
+
+vpath %.te $(detected_layers)
+vpath %.if $(detected_layers)
+vpath %.fc $(detected_layers)
+
+# if there are modules in the current directory, add them into the third party layer
+ifneq "$(3rd_party_ifs)" ""
+        genxml += -3 .
+endif
 
 ########################################
 #
@@ -107,12 +127,18 @@ define peruser-expansion
 	$(verbose) echo "')" >> $2
 endef
 
+.PHONY: clean all xml
+.SUFFIXES:
+.SUFFIXES: .pp
+
 ########################################
 #
 # Main targets
 #
 
 all: $(all_packages)
+
+xml: $(polxml)
 
 ########################################
 #
@@ -136,6 +162,26 @@ tmp/all_interfaces.conf: $(m4support) $(all_interfaces) $(detected_ifs)
 	@test -d tmp || mkdir -p tmp
 	$(verbose) m4 $^ | sed -e s/dollarsstar/\$$\*/g > $@
 
+
+########################################
+#
+# Documentation generation
+#
+
+# minimal dependencies here, because we don't want to rebuild
+# this and its dependents every time the dependencies
+# change.  Also use all .if files here, rather then just the
+# enabled modules.
+$(polxml): $(detected_ifs) $(foreach dir,$(all_layers),$(dir)/$(layerxml))
+	@echo "Creating $@"
+	@mkdir -p doc
+	$(verbose) echo '<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>' > $@
+	$(verbose) echo '<!DOCTYPE policy SYSTEM "$(xmldtd)">' >> $@
+	$(verbose) $(genxml) -m $(layerxml) --tunables-xml $(globaltun) --booleans-xml $(globalbool) $(all_layers) $(detected_layers) >> $@
+	$(verbose) if test -x $(XMLLINT) && test -f $(xmldtd); then \
+		$(XMLLINT) --noout --dtdvalid $(xmldtd) $@ ;\
+	fi
+
 ########################################
 #
 # Clean the environment
@@ -144,5 +190,3 @@ tmp/all_interfaces.conf: $(m4support) $(all_interfaces) $(detected_ifs)
 clean:
 	rm -fR tmp
 	rm -f *.pp
-
-.PHONY: clean install all default

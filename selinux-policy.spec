@@ -9,7 +9,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.19
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -288,6 +288,11 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/refpolicy/policygentool
 
 %changelog
+
+* Tue Feb 21 2006 Dan Walsh <dwalsh@redhat.com> 2.2.19-2
+- Fix swapon
+- allow httpd_sys_script_t to be entered via a shell
+- Allow httpd_sys_script_t to read eventpolfs
 
 * Tue Feb 21 2006 Dan Walsh <dwalsh@redhat.com> 2.2.19-1
 - Update from upstream
