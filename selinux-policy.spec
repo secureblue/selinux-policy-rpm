@@ -8,7 +8,7 @@
 %define CHECKPOLICYVER 1.29.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.20
+Version: 2.2.21
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -295,6 +295,9 @@ SELinux Reference policy development files
 %{_usr}/share/selinux/devel/policygentool
 
 %changelog
+
+* Thu Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-1
+- Update to upstream
 
 * Wed Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.20-1
 - Fix load_policy to work on MLS
