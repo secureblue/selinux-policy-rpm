@@ -9,7 +9,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.21
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -53,24 +53,24 @@ SELinux Base package
 
 
 %define setupCmds() \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} bare \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} conf \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 bare \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4  conf \
 cp -f ${RPM_SOURCE_DIR}/modules-%1.conf  ./policy/modules.conf \
 cp -f ${RPM_SOURCE_DIR}/booleans-%1.conf ./policy/booleans.conf \
 
 %define installCmds() \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} base.pp \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} modules \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT install \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT install-appconfig \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 base.pp \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 modules \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT POLY=%4 install \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT POLY=%4 install-appconfig \
 #%{__cp} *.pp $RPM_BUILD_ROOT/%{_usr}/share/selinux/%1/ \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/policy \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/active \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/contexts/files \
 touch $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
 touch $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} enableaudit \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} base.pp \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4  enableaudit \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4  base.pp \
 install -m0644 base.pp ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/enableaudit.pp \
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
@@ -156,7 +156,7 @@ touch $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/selinux
 
 # Install devel
 make clean
-make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT PKGNAME=%{name}-%{version} install-headers install-docs
+make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT PKGNAME=%{name}-%{version} POLY=y install-headers install-docs
 mkdir ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
 mv ${RPM_BUILD_ROOT}%{_usr}/share/selinux/targeted/include ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/include
 install -m 755 ${RPM_SOURCE_DIR}/policygentool ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
@@ -165,18 +165,18 @@ install -m 644 doc/example.* ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
 
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-%setupCmds targeted targeted-mcs y
-%installCmds targeted targeted-mcs y
+%setupCmds targeted targeted-mcs y y
+%installCmds targeted targeted-mcs y y
 
 # Build strict policy
 # Commented out because only targeted ref policy currently builds
-make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} bare 
-make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} conf
+make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=y bare 
+make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=y conf
 %installCmds strict strict-mcs y
 
 # Build mls policy
-%setupCmds mls strict-mls n
-%installCmds mls strict-mls n
+%setupCmds mls strict-mls n y
+%installCmds mls strict-mls n y
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
@@ -292,8 +292,11 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 
 %changelog
 
+* Thu Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-4
+- Turn on polyinstatiation
+
 * Thu Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-3
-- Don't transition from uncofined_t to fsadm_t
+- Don't transition from unconfined_t to fsadm_t
 
 * Thu Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-2
 - Fix policy update model.
