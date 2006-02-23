@@ -9,7 +9,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.21
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -32,6 +32,7 @@ BuildArch: noarch
 BuildRequires: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
 PreReq: policycoreutils >= %{POLICYCOREUTILSVER}
 Obsoletes: policy 
+Obsoletes: selinux-policy-devel
 
 %description 
 SELinux Base package
@@ -41,8 +42,15 @@ SELinux Base package
 %doc %{_usr}/share/doc/%{name}-%{version}
 %dir %{_usr}/share/selinux
 %dir %{_sysconfdir}/selinux
+%dir %{_usr}/share/selinux/devel
+%dir %{_usr}/share/selinux/devel/include
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config
 %ghost %{_sysconfdir}/sysconfig/selinux
+%{_usr}/share/selinux/devel/include/*
+%{_usr}/share/selinux/devel/Makefile
+%{_usr}/share/selinux/devel/policygentool
+%{_usr}/share/selinux/devel/example.*
+
 
 %define setupCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} bare \
@@ -71,6 +79,7 @@ touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/setrans.conf \
+ln -sf ../devel/include ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/include \
 %nil
 
 %define fileList() \
@@ -100,7 +109,8 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
-%config %{_sysconfdir}/selinux/%1/contexts/files/media
+%config %{_sysconfdir}/selinux/%1/contexts/files/media \
+%{_usr}/share/selinux/%1/include
 
 %define saveFileContext() \
 if [ -s /etc/selinux/config ]; then \
@@ -113,7 +123,7 @@ fi
 
 %define rebuildpolicy() \
 ( cd /usr/share/selinux/%1; \
-x=`ls | grep -v -e base.pp -e enableaudit.pp | awk '{ print "-i " $1 }'`; \
+x=`ls *.pp | grep -v -e base.pp -e enableaudit.pp | awk '{ print "-i " $1 }'`; \
 semodule -b base.pp $x -s %1; \
 );\
 rm -f %{_sysconfdir}/selinux/%1/policy/policy.*.rpmnew
@@ -144,6 +154,15 @@ mkdir -p %{_usr}/share/selinux
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config
 touch $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/selinux
 
+# Install devel
+make clean
+make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT PKGNAME=%{name}-%{version} install-headers install-docs
+mkdir ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
+mv ${RPM_BUILD_ROOT}%{_usr}/share/selinux/targeted/include ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/include
+install -m 755 ${RPM_SOURCE_DIR}/policygentool ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
+install -m 644 ${RPM_SOURCE_DIR}/Makefile.devel ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/Makefile
+install -m 644 doc/example.* ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
+
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
 %setupCmds targeted targeted-mcs y
@@ -158,14 +177,6 @@ make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{m
 # Build mls policy
 %setupCmds mls strict-mls n
 %installCmds mls strict-mls n
-
-# Install devel
-make clean
-make NAME=devel TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT PKGNAME=%{name}-%{version} install-headers install-docs
-install -m 755 ${RPM_SOURCE_DIR}/policygentool ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
-install -m 755 ${RPM_SOURCE_DIR}/Makefile.devel ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/Makefile
-install -m 755 ${RPM_SOURCE_DIR}/Makefile.devel ${RPM_BUILD_ROOT}%{_usr}/share/doc/%{name}-%{version}/Makefile.example
-
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
@@ -243,8 +254,9 @@ SELinux Reference policy mls base module.
 %saveFileContext mls
 
 %post mls 
-%rebuildpolicy mls 
+%rebuildpolicy mls
 %relabel mls
+ln -sf ../devel/include /usr/share/selinux/mls/include
 
 %triggerpostun mls -- mls <= 2.0.7
 %{rebuildpolicy} mls 
@@ -268,8 +280,9 @@ SELinux Reference policy strict base module.
 %saveFileContext strict
 
 %post strict 
-%rebuildpolicy strict 
+%rebuildpolicy strict
 %relabel strict
+ln -sf ../devel/include /usr/share/selinux/strict/include
 
 %triggerpostun strict -- strict <= 2.0.7
 %{rebuildpolicy} strict 
@@ -277,24 +290,10 @@ SELinux Reference policy strict base module.
 %files strict
 %fileList strict
 
-%package devel
-Summary: SELinux policy devel sources
-Group: System Environment/Base
-Prereq: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER} make
-Prereq: selinux-policy = %{version}-%{release}
-
-%description devel
-SELinux Reference policy development files
-
-%files devel
-%defattr(-,root,root) 
-%dir %{_usr}/share/selinux/devel
-%dir %{_usr}/share/selinux/devel/include
-%{_usr}/share/selinux/devel/include/*
-%{_usr}/share/selinux/devel/Makefile
-%{_usr}/share/selinux/devel/policygentool
-
 %changelog
+
+* Thu Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-2
+- Fix policy update model.
 
 * Thu Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-1
 - Update to upstream
