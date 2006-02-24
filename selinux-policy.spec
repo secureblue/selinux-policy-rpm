@@ -9,7 +9,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.21
-Release: 4
+Release: 5
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -291,6 +291,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+
+* Fri Feb 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-5
+- Fix problem with privoxy talking to Tor
 
 * Thu Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-4
 - Turn on polyinstatiation
