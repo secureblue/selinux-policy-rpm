@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.21
-Release: 6
+Release: 7
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -292,6 +292,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+
+* Fri Feb 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-7
+- Fixes for new version of cups
 
 * Fri Feb 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-6
 - Turn off polyinstatiate util after FC5
