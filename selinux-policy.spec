@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.21
-Release: 8
+Release: 9
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -160,6 +160,7 @@ make clean
 make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT PKGNAME=%{name}-%{version} POLY=%{polyinstatiate} install-headers install-docs
 mkdir ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
 mv ${RPM_BUILD_ROOT}%{_usr}/share/selinux/targeted/include ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/include
+rm -f ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/include/include
 install -m 755 ${RPM_SOURCE_DIR}/policygentool ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
 install -m 644 ${RPM_SOURCE_DIR}/Makefile.devel ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/Makefile
 install -m 644 doc/example.* ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
@@ -292,6 +293,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+
+* Sat Feb 26 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-9
+- NSCD socket is in nscd_var_run_t needs to be able to search dir
 
 * Fri Feb 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-8
 - Fixes Apache interface file
