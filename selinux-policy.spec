@@ -9,8 +9,8 @@
 %define CHECKPOLICYVER 1.29.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.21
-Release: 9
+Version: 2.2.22
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -293,20 +293,24 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Mon Feb 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.22-1
+- Update to upstream
+- Merged my latest fixes
+- Fix cups policy to handle unix domain sockets
 
-* Sat Feb 26 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-9
+* Sat Feb 25 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-9
 - NSCD socket is in nscd_var_run_t needs to be able to search dir
 
-* Fri Feb 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-8
+* Fri Feb 24 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-8
 - Fixes Apache interface file
 
-* Fri Feb 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-7
+* Fri Feb 24 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-7
 - Fixes for new version of cups
 
-* Fri Feb 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-6
+* Fri Feb 24 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-6
 - Turn off polyinstatiate util after FC5
 
-* Fri Feb 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-5
+* Fri Feb 24 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-5
 - Fix problem with privoxy talking to Tor
 
 * Thu Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-4
