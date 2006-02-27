@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.22
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -293,6 +293,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Mon Feb 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.22-2
+- Additional fixes for nvidia and cups
+
 * Mon Feb 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.22-1
 - Update to upstream
 - Merged my latest fixes
