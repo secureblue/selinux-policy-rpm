@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.23
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -296,6 +296,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Sat Mar 4 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-2
+- Fix cups html interface
+
 * Sat Mar 4 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-1
 - Add hal changes suggested by Jeremy
 - add policyhelp to point at policy html pages
