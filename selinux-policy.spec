@@ -9,8 +9,8 @@
 %define CHECKPOLICYVER 1.29.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.22
-Release: 2
+Version: 2.2.23
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -51,27 +51,27 @@ SELinux Base package
 %{_usr}/share/selinux/devel/Makefile
 %{_usr}/share/selinux/devel/policygentool
 %{_usr}/share/selinux/devel/example.*
-
+%attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
 
 %define setupCmds() \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%{polyinstatiate} bare \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%{polyinstatiate}  conf \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%3 bare \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%3  conf \
 cp -f ${RPM_SOURCE_DIR}/modules-%1.conf  ./policy/modules.conf \
 cp -f ${RPM_SOURCE_DIR}/booleans-%1.conf ./policy/booleans.conf \
 
 %define installCmds() \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%{polyinstatiate} base.pp \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%{polyinstatiate} modules \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT POLY=%{polyinstatiate} install \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT POLY=%{polyinstatiate} install-appconfig \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%3 base.pp \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%3 modules \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT POLY=%3 install \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT POLY=%3 install-appconfig \
 #%{__cp} *.pp $RPM_BUILD_ROOT/%{_usr}/share/selinux/%1/ \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/policy \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/active \
 %{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/contexts/files \
 touch $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
 touch $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%{polyinstatiate}  enableaudit \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%{polyinstatiate}  base.pp \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%3  enableaudit \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%3 base.pp \
 install -m0644 base.pp ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/enableaudit.pp \
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
@@ -98,7 +98,7 @@ ln -sf ../devel/include ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/include \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
 %ghost %{_sysconfdir}/selinux/%1/policy/policy.* \
 %dir %{_sysconfdir}/selinux/%1/contexts \
-%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/customizable_types \
+%config %{_sysconfdir}/selinux/%1/contexts/customizable_types \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/dbus_contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/default_contexts \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/default_type \
@@ -157,28 +157,31 @@ touch $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/selinux
 
 # Install devel
 make clean
-make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT PKGNAME=%{name}-%{version} POLY=%{polyinstatiate} install-headers install-docs
+make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT PKGNAME=%{name}-%{version} POLY=%3 install-headers install-docs
 mkdir ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
 mv ${RPM_BUILD_ROOT}%{_usr}/share/selinux/targeted/include ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/include
 rm -f ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/include/include
 install -m 755 ${RPM_SOURCE_DIR}/policygentool ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
 install -m 644 ${RPM_SOURCE_DIR}/Makefile.devel ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/Makefile
 install -m 644 doc/example.* ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
+echo  "htmlview file:///usr/share/doc/selinux-policy-%{version}/html/index.html"
+> ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/policyhelp
+chmod +x ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/policyhelp
 
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-%setupCmds targeted targeted-mcs y 
-%installCmds targeted targeted-mcs y 
+%setupCmds targeted targeted-mcs y n
+%installCmds targeted targeted-mcs y  n
 
 # Build strict policy
 # Commented out because only targeted ref policy currently builds
-make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=%{polyinstatiate} bare 
-make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=%{polyinstatiate} conf
-%installCmds strict strict-mcs y
+make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=n bare 
+make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=n conf
+%installCmds strict strict-mcs y n
 
 # Build mls policy
-%setupCmds mls strict-mls n 
-%installCmds mls strict-mls n 
+%setupCmds mls strict-mls n y
+%installCmds mls strict-mls n y 
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
@@ -293,6 +296,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Tue Feb 28 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-1
+- add policyhelp to point at policy html pages
+
 * Mon Feb 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.22-2
 - Additional fixes for nvidia and cups
 
