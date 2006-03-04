@@ -296,7 +296,8 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
-* Tue Feb 28 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-1
+* Sat Mar 4 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-1
+- Add hal changes suggested by Jeremy
 - add policyhelp to point at policy html pages
 
 * Mon Feb 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.22-2
