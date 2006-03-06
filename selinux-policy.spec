@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.23
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -296,6 +296,10 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Mon Mar 6 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-4
+- Fixes for cups
+- Make cryptosetup work with hal
+
 * Sun Mar 5 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-3
 - Load Policy needs translock
 
