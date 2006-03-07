@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.23
-Release: 5
+Release: 6
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -296,6 +296,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Tue Mar 7 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-5
+- Add Xen support
+
 * Mon Mar 6 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-4
 - Fixes for cups
 - Make cryptosetup work with hal
