@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.23
-Release: 7
+Release: 8
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -204,7 +204,7 @@ SELinux Reference policy targeted base module.
 %pre targeted
 %saveFileContext targeted
 
-%post targeted
+%post
 if [ ! -s /etc/selinux/config ]; then
 	#
 	#	New install so we will default to targeted policy
@@ -229,14 +229,17 @@ SETLOCALDEFS=0
 	ln -sf ../selinux/config /etc/sysconfig/selinux 
 	restorecon /etc/selinux/config 2> /dev/null
 else
+	. /etc/selinux/config
 	# if first time update booleans.local needs to be copied to sandbox
-	[ -f /etc/selinux/targeted/booleans.local ] && mv /etc/selinux/targeted/booleans.local /etc/selinux/targeted/modules/active/
-	[ -f /etc/selinux/targeted/seusers ] && cp -f /etc/selinux/targeted/seusers /etc/selinux/targeted/modules/active/seusers
+	[ -f /etc/selinux/${SELINUXTYPE}/booleans.local ] && mv /etc/selinux/${SELINUXTYPE}/booleans.local /etc/selinux/targeted/modules/active/
+	[ -f /etc/selinux/${SELINUXTYPE}/seusers ] && cp -f /etc/selinux/${SELINUXTYPE}/seusers /etc/selinux/${SELINUXTYPE}/modules/active/seusers
 	grep -q "^SETLOCALDEFS" /etc/selinux/config || echo -n "
 # SETLOCALDEFS= Check local definition changes
 SETLOCALDEFS=0 
 ">> /etc/selinux/config
 fi
+
+%post targeted
 %rebuildpolicy targeted
 %relabel targeted
 
@@ -296,6 +299,11 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Wed Mar 8 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-8
+- Blkid changes
+- Allow udev access to usb_device_t
+- Fix post script to create targeted policy config file
+
 * Wed Mar 8 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-7
 - Allow lvm tools to create drevice dir
 
