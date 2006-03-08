@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.23
-Release: 8
+Release: 9
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -299,6 +299,10 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Wed Mar 8 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-9
+- Fix blkid specification
+- Allow postfix to execute mailman_que
+
 * Wed Mar 8 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-8
 - Blkid changes
 - Allow udev access to usb_device_t
