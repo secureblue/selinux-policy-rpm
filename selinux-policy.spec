@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.23
-Release: 6
+Release: 7
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -296,6 +296,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Wed Mar 8 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-7
+- Allow lvm tools to create drevice dir
+
 * Tue Mar 7 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-5
 - Add Xen support
 
