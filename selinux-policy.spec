@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.23
-Release: 10
+Release: 11
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -299,6 +299,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Thu Mar  9 2006 Jeremy Katz <katzj@redhat.com> - 2.2.23-11
+- more xen policy fixups
+
 * Wed Mar  8 2006 Jeremy Katz <katzj@redhat.com> - 2.2.23-10
 - more xen fixage (#184393)
 
