@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.23
-Release: 14
+Release: 15
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -299,6 +299,10 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Thu Mar 9 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-15
+- Get rid of mount/fsdisk scan of /dev messages
+- Additional fixes for suspend/resume
+
 * Thu Mar 9 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-14
 - Fake make to rebuild enableaudit.pp
 
