@@ -298,7 +298,7 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
-* Mon Mar 13 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-17
+* Tue Mar 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-17
 - MLS Fixes
 	dmidecode needs mls_file_read_up
 - add ypxfr_t
