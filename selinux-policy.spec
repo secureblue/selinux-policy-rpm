@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.23
-Release: 16
+Release: 17
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -298,6 +298,15 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Mon Mar 13 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-17
+- MLS Fixes
+	dmidecode needs mls_file_read_up
+- add ypxfr_t
+- run init needs access to nscd
+- udev needs setuid
+- another xen log file
+- Dontaudit mount getattr proc_kcore_t
+
 * Tue Mar 14 2006 Karsten Hopp <karsten@redhat.de> 2.2.23-16
 - fix buildroot usage (#185391)
 
