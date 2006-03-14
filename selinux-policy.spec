@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.23
-Release: 17
+Release: 18
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -142,7 +142,7 @@ SELinux Reference Policy - modular.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
-%patch0 -p1 
+%patch -p1 
 	
 %install
 # Build targeted policy
@@ -298,6 +298,10 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Tue Mar 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-18
+- Allow secadmin to shutdown system
+- Allow sendmail to exec newalias
+
 * Tue Mar 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-17
 - MLS Fixes
 	dmidecode needs mls_file_read_up
