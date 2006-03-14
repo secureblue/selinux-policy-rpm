@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.23
-Release: 15
+Release: 16
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -151,7 +151,6 @@ mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man8/
 install -m 644 man/man8/*.8 ${RPM_BUILD_ROOT}%{_mandir}/man8/
 mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux
 mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
-mkdir -p %{_usr}/share/selinux
 touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config
 touch $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/selinux
 
@@ -299,6 +298,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Tue Mar 14 2006 Karsten Hopp <karsten@redhat.de> 2.2.23-16
+- fix buildroot usage (#185391)
+
 * Thu Mar 9 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-15
 - Get rid of mount/fsdisk scan of /dev messages
 - Additional fixes for suspend/resume
