@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.23
-Release: 18
+Release: 19
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -298,6 +298,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Wed Mar 15 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-19
+- Get transition rules to create policy.20 at SystemHigh
+
 * Tue Mar 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-18
 - Allow secadmin to shutdown system
 - Allow sendmail to exec newalias
