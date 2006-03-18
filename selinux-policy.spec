@@ -5,12 +5,12 @@
 %define BUILD_TARGETED 0
 %define BUILD_MLS 1
 %define POLICYVER 20
-%define POLICYCOREUTILSVER 1.29.26-1
-%define CHECKPOLICYVER 1.29.4-1
+%define POLICYCOREUTILSVER 1.30-1
+%define CHECKPOLICYVER 1.30-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.23
-Release: 19
+Version: 2.2.24
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -133,7 +133,7 @@ rm -f %{_sysconfdir}/selinux/%1/policy/policy.*.rpmnew
 . %{_sysconfdir}/selinux/config; \
 FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 if [ "${SELINUXTYPE}" == %1 -a -f ${FILE_CONTEXT}.pre ]; then \
-	fixfiles -C ${FILE_CONTEXT}.pre restore; \
+	/usr/sbin/fixfiles -C ${FILE_CONTEXT}.pre restore; \
 	rm -f ${FILE_CONTEXT}.pre; \
 fi; 
 
@@ -298,6 +298,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
+* Wed Mar 17 2006 Dan Walsh <dwalsh@redhat.com> 2.2.24-1
+- Update to upstream
+
 * Wed Mar 15 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-19
 - Get transition rules to create policy.20 at SystemHigh
 
