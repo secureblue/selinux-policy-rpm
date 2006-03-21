@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.24
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -133,7 +133,7 @@ rm -f %{_sysconfdir}/selinux/%1/policy/policy.*.rpmnew
 . %{_sysconfdir}/selinux/config; \
 FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 if [ "${SELINUXTYPE}" == %1 -a -f ${FILE_CONTEXT}.pre ]; then \
-	/usr/sbin/fixfiles -C ${FILE_CONTEXT}.pre restore; \
+	fixfiles -C ${FILE_CONTEXT}.pre restore; \
 	rm -f ${FILE_CONTEXT}.pre; \
 fi; 
 
