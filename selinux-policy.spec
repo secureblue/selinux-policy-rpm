@@ -9,8 +9,8 @@
 %define CHECKPOLICYVER 1.30-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.24
-Release: 2
+Version: 2.2.25
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
