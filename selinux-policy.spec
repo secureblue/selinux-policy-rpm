@@ -10,7 +10,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.25
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -298,7 +298,11 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %fileList strict
 
 %changelog
-* Wed Mar 17 2006 Dan Walsh <dwalsh@redhat.com> 2.2.24-1
+* Wed Mar 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.25-2
+- Fix pam_console handling of usb_device
+- dontaudit logwatch reading /mnt dir
+
+* Fri Mar 17 2006 Dan Walsh <dwalsh@redhat.com> 2.2.24-1
 - Update to upstream
 
 * Wed Mar 15 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-19
