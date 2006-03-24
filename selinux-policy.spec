@@ -1,20 +1,26 @@
 %define distro redhat
 %define polyinstatiate n
 %define monolithic n
-%define BUILD_STRICT 0
-%define BUILD_TARGETED 0
+%if %{?BUILD_STRICT:0}%{!?BUILD_STRICT:1}
+%define BUILD_STRICT 1
+%endif
+%if %{?BUILD_TARGETED:0}%{!?BUILD_TARGETED:1}
+%define BUILD_TARGETED 1
+%endif
+%if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
+%endif
 %define POLICYVER 20
 %define POLICYCOREUTILSVER 1.30-1
-%define CHECKPOLICYVER 1.30-1
+%define CHECKPOLICYVER 1.30.1-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.25
-Release: 2
+Version: 2.2.26
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20060207.patch
+patch: policy-20060323.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -143,7 +149,10 @@ SELinux Reference Policy - modular.
 %prep 
 %setup -q -n serefpolicy-%{version}
 %patch -p1 
-	
+echo BUILD_MLS = %{BUILD_MLS}
+echo BUILD_TARGETED = %{BUILD_TARGETED}
+echo BUILD_STRICT = %{BUILD_STRICT}
+
 %install
 # Build targeted policy
 %{__rm} -fR $RPM_BUILD_ROOT
@@ -163,45 +172,32 @@ rm -f ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/include/include
 install -m 755 ${RPM_SOURCE_DIR}/policygentool ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
 install -m 644 ${RPM_SOURCE_DIR}/Makefile.devel ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/Makefile
 install -m 644 doc/example.* ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
-echo  "htmlview file:///usr/share/doc/selinux-policy-%{version}/html/index.html"
-> ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/policyhelp
+echo  "htmlview file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/policyhelp
 chmod +x ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/policyhelp
 
+%if %{BUILD_TARGETED}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
 %setupCmds targeted targeted-mcs y n
 %installCmds targeted targeted-mcs y  n
+%endif
 
+%if %{BUILD_STRICT}
 # Build strict policy
 # Commented out because only targeted ref policy currently builds
 make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=n bare 
 make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=n conf
 %installCmds strict strict-mcs y n
+%endif
 
+%if %{BUILD_MLS}
 # Build mls policy
 %setupCmds mls strict-mls n y
 %installCmds mls strict-mls n y 
+%endif
 
 %clean
 %{__rm} -fR $RPM_BUILD_ROOT
-
-%package targeted
-Summary: SELinux targeted base policy
-Group: System Environment/Base
-Provides: selinux-policy-base
-Obsoletes: selinux-policy-targeted-sources
-Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
-Prereq: coreutils
-Prereq: selinux-policy = %{version}-%{release}
-
-%description targeted
-SELinux Reference policy targeted base module.
-
-%files targeted
-%fileList targeted
-
-%pre targeted
-%saveFileContext targeted
 
 %post
 if [ ! -s /etc/selinux/config ]; then
@@ -238,6 +234,22 @@ SETLOCALDEFS=0
 ">> /etc/selinux/config
 fi
 
+%if %{BUILD_TARGETED}
+%package targeted
+Summary: SELinux targeted base policy
+Group: System Environment/Base
+Provides: selinux-policy-base
+Obsoletes: selinux-policy-targeted-sources
+Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
+Prereq: coreutils
+Prereq: selinux-policy = %{version}-%{release}
+
+%description targeted
+SELinux Reference policy targeted base module.
+
+%pre targeted
+%saveFileContext targeted
+
 %post targeted
 %rebuildpolicy targeted
 %relabel targeted
@@ -245,6 +257,12 @@ fi
 %triggerpostun targeted -- selinux-policy-targeted <= 2.0.7
 %rebuildpolicy targeted
 
+%files targeted
+%fileList targeted
+
+%endif
+
+%if %{BUILD_MLS}
 %package mls 
 Summary: SELinux mls base policy
 Group: System Environment/Base
@@ -270,6 +288,10 @@ ln -sf ../devel/include /usr/share/selinux/mls/include
 
 %files mls
 %fileList mls
+
+%endif
+
+%if %{BUILD_STRICT}
 
 %package strict 
 Summary: SELinux strict base policy
@@ -297,7 +319,12 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %files strict
 %fileList strict
 
+%endif
+
 %changelog
+* Wed Mar 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.25-3
+- Fix policyhelp
+
 * Wed Mar 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.25-2
 - Fix pam_console handling of usb_device
 - dontaudit logwatch reading /mnt dir
