@@ -12,10 +12,10 @@
 %endif
 %define POLICYVER 20
 %define POLICYCOREUTILSVER 1.30-1
-%define CHECKPOLICYVER 1.30.1-1
+%define CHECKPOLICYVER 1.29.1-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.26
+Version: 2.2.28
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -149,9 +149,6 @@ SELinux Reference Policy - modular.
 %prep 
 %setup -q -n serefpolicy-%{version}
 %patch -p1 
-echo BUILD_MLS = %{BUILD_MLS}
-echo BUILD_TARGETED = %{BUILD_TARGETED}
-echo BUILD_STRICT = %{BUILD_STRICT}
 
 %install
 # Build targeted policy
@@ -322,6 +319,12 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Mon Mar 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.28-1
+- Update to upstream
+
+* Wed Mar 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.27-1
+- Update to upstream
+
 * Wed Mar 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.25-3
 - Fix policyhelp
 
