@@ -184,6 +184,7 @@ chmod +x ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/policyhelp
 # Commented out because only targeted ref policy currently builds
 make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=n bare 
 make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=n conf
+cp -f ${RPM_SOURCE_DIR}/modules-strict.conf  ./policy/modules.conf 
 %installCmds strict strict-mcs y n
 %endif
 
