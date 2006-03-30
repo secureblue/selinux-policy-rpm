@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.28
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -320,6 +320,10 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Mon Mar 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.28-2
+- Fix ftp policy
+- Fix secadm running of auditctl
+
 * Mon Mar 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.28-1
 - Update to upstream
 
