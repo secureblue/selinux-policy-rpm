@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.28
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -320,7 +320,10 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
-* Mon Mar 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.28-2
+* Fri Mar 30 2006 Dan Walsh <dwalsh@redhat.com> 2.2.28-3
+- Allow automount and dbus to read cert files
+
+* Fri Mar 30 2006 Dan Walsh <dwalsh@redhat.com> 2.2.28-2
 - Fix ftp policy
 - Fix secadm running of auditctl
 
