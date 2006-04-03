@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.29
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -320,6 +320,11 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Mon Mar 30 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-2
+- Add mono dbus support
+- Lots of file_context fixes for textrel_shlib_t in FC5
+- Turn off execmem auditallow since they are filling log files
+
 * Fri Mar 30 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-1
 - Update to upstream
 
