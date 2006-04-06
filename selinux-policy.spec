@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.29
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -320,6 +320,10 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Mon Mar 30 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-4
+- More textrel_shlib_t file path fixes
+- Add ada support
+
 * Mon Mar 30 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-3
 - Get auditctl working in MLS policy
 
