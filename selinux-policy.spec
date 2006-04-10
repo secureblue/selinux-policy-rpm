@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.29
-Release: 5
+Release: 6
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -324,6 +324,12 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Mon Apr 10 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-6
+- Allow secadm_t ability to relabel all files
+- Allow ftp to search xferlog_t directories
+- Allow mysql to communicate with ldap
+- Allow rsync to bind to rsync_port_t
+
 * Mon Apr 10 2006 Russell Coker <rcoker@redhat.com> 2.2.29-5
 - Fixed mailman with Postfix #183928
 - Allowed semanage to create file_context files.
