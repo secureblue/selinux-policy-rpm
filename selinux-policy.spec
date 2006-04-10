@@ -16,11 +16,13 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.29
-Release: 4
+Release: 5
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20060323.patch
+patch1: policy-20060323.patch
+patch2: file_contexts.patch
+patch3: policy-200604.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -148,7 +150,9 @@ SELinux Reference Policy - modular.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
-%patch -p1 
+%patch1 -p1 
+%patch2 -p1 
+%patch3 -p1 
 
 %install
 # Build targeted policy
@@ -320,6 +324,26 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Mon Apr 10 2006 Russell Coker <rcoker@redhat.com> 2.2.29-5
+- Fixed mailman with Postfix #183928
+- Allowed semanage to create file_context files.
+- Allowed amanda_t to access inetd_t TCP sockets and allowed amanda_recover_t
+  to bind to reserved ports.  #149030
+- Don't allow devpts_t to be associated with tmp_t.
+- Allow hald_t to stat all mountpoints.
+- Added boolean samba_share_nfs to allow smbd_t full access to NFS mounts.
+  #169947
+- Make mount run in mount_t domain from unconfined_t to prevent mislabeling of
+  /etc/mtab.
+- Changed the file_contexts to not have a regex before the first ^/[a-z]/
+  whenever possible, makes restorecon slightly faster.
+- Correct the label of /etc/named.caching-nameserver.conf
+- Now label /usr/src/kernels/.+/lib(/.*)? as usr_t instead of
+  /usr/src(/.*)?/lib(/.*)? - I don't think we need anything else under /usr/src
+  hit by this.
+- Granted xen access to /boot, allowed mounting on xend_var_lib_t, and allowed
+  xenstored_t rw access to the xen device node.
+
 * Mon Mar 30 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-4
 - More textrel_shlib_t file path fixes
 - Add ada support
