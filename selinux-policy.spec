@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.30
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -326,6 +326,13 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Tue Apr 11 2006 Dan Walsh <dwalsh@redhat.com> 2.2.30-2
+- Change libraries.fc to stop shlib_t form overriding texrel_shlib_t
+
+* Tue Apr 11 2006 Dan Walsh <dwalsh@redhat.com> 2.2.30-1
+- Fix samba creating dirs in homedir
+- Fix NFS so its booleans would work
+
 * Mon Apr 10 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-6
 - Allow secadm_t ability to relabel all files
 - Allow ftp to search xferlog_t directories
