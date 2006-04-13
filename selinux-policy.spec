@@ -15,15 +15,12 @@
 %define CHECKPOLICYVER 1.30.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.30
-Release: 2
+Version: 2.2.31
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch1: policy-20060323.patch
-patch2: file_contexts.patch
-patch3: policy-200604.patch
-patch4: policy-20060411.patch
+patch1: policy-20060411.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -152,9 +149,6 @@ SELinux Reference Policy - modular.
 %prep 
 %setup -q -n serefpolicy-%{version}
 %patch1 -p1
-%patch2 -p1
-%patch3 -p1 
-%patch4 -p1 
 
 %install
 # Build targeted policy
@@ -326,6 +320,10 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Thu Apr 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.31-1
+- Update to latest from upstream
+- Allow mono and unconfined to talk to initrc_t dbus objects
+
 * Tue Apr 11 2006 Dan Walsh <dwalsh@redhat.com> 2.2.30-2
 - Change libraries.fc to stop shlib_t form overriding texrel_shlib_t
 
