@@ -15,7 +15,7 @@
 %define CHECKPOLICYVER 1.30.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.31
+Version: 2.2.32
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -122,6 +122,7 @@ ln -sf ../devel/include ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/include \
 %define saveFileContext() \
 if [ -s /etc/selinux/config ]; then \
 	. %{_sysconfdir}/selinux/config; \
+	restorecon -R %{_sysconfdir}/selinux/%1; \
 	FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 	if [ "${SELINUXTYPE}" == %1 -a -f ${FILE_CONTEXT} ]; then \
 		cp -f ${FILE_CONTEXT} ${FILE_CONTEXT}.pre; \
@@ -320,6 +321,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Fri Apr 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.32-1
+- Update to latest from upstream
+
 * Thu Apr 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.31-1
 - Update to latest from upstream
 - Allow mono and unconfined to talk to initrc_t dbus objects
