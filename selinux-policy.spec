@@ -16,11 +16,11 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.32
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch1: policy-20060411.patch
+patch: policy-20060411.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -149,7 +149,7 @@ SELinux Reference Policy - modular.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
-%patch1 -p1
+%patch -p1
 
 %install
 # Build targeted policy
@@ -321,6 +321,11 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Sat Apr 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.32-2
+- Add unconfined_mount_t
+- Allow privoxy to connect to httpd_cache
+- fix cups labeleing on /var/cache/cups
+
 * Fri Apr 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.32-1
 - Update to latest from upstream
 
