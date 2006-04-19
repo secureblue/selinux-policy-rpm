@@ -15,7 +15,7 @@
 %define CHECKPOLICYVER 1.30.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.33
+Version: 2.2.34
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -233,6 +233,15 @@ SETLOCALDEFS=0
 ">> /etc/selinux/config
 fi
 
+%postun
+setenforce 0 2> /dev/null
+if [ ! -s /etc/selinux/config ]; then
+	echo "SELINUX=disabled" > /etc/selinux/config
+else
+	sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+fi
+
+
 %if %{BUILD_TARGETED}
 %package targeted
 Summary: SELinux targeted base policy
@@ -321,6 +330,10 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Wed Apr 19 2006 Dan Walsh <dwalsh@redhat.com> 2.2.34-1
+- Update to latest from upstream
+- Allow selinux-policy to be removed and kernel not to crash
+
 * Tue Apr 18 2006 Dan Walsh <dwalsh@redhat.com> 2.2.33-1
 - Update to latest from upstream
 - Add James Antill patch for xen
