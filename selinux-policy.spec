@@ -15,8 +15,8 @@
 %define CHECKPOLICYVER 1.30.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.32
-Release: 2
+Version: 2.2.33
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -321,6 +321,11 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Tue Apr 18 2006 Dan Walsh <dwalsh@redhat.com> 2.2.33-1
+- Update to latest from upstream
+- Add James Antill patch for xen
+- Many fixes for pegasus
+
 * Sat Apr 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.32-2
 - Add unconfined_mount_t
 - Allow privoxy to connect to httpd_cache
