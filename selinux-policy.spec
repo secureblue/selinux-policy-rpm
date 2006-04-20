@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.34
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -330,7 +330,11 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
-* Wed Apr 19 2006 Dan Walsh <dwalsh@redhat.com> 2.2.34-1
+* Thu Apr 20 2006 Dan Walsh <dwalsh@redhat.com> 2.2.34-2
+- Allow procmail to sendmail
+- Allow nfs to share dosfs
+
+* Thu Apr 20 2006 Dan Walsh <dwalsh@redhat.com> 2.2.34-1
 - Update to latest from upstream
 - Allow selinux-policy to be removed and kernel not to crash
 
