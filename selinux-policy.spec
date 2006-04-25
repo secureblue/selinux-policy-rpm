@@ -15,8 +15,8 @@
 %define CHECKPOLICYVER 1.30.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.34
-Release: 3
+Version: 2.2.35
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -234,11 +234,13 @@ SETLOCALDEFS=0
 fi
 
 %postun
-setenforce 0 2> /dev/null
-if [ ! -s /etc/selinux/config ]; then
-	echo "SELINUX=disabled" > /etc/selinux/config
-else
-	sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+if [ $1 = 0 ]; then
+	setenforce 0 2> /dev/null
+	if [ ! -s /etc/selinux/config ]; then
+		echo "SELINUX=disabled" > /etc/selinux/config
+	else
+		sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+	fi
 fi
 
 
@@ -330,6 +332,10 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Mon Apr 24 2006 Dan Walsh <dwalsh@redhat.com> 2.2.35-1
+- Update to upstream
+- Fix postun to only disable selinux on full removal of the packages
+
 * Fri Apr 21 2006 Dan Walsh <dwalsh@redhat.com> 2.2.34-3
 - Allow mono to chat with unconfined
 
