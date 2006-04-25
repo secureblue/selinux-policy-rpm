@@ -16,11 +16,12 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.35
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-20060411.patch
+patch2: xm.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -150,6 +151,7 @@ SELinux Reference Policy - modular.
 %prep 
 %setup -q -n serefpolicy-%{version}
 %patch -p1
+%patch2 -p1
 
 %install
 # Build targeted policy
@@ -332,6 +334,10 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Tue Apr 25 2006 James Antill <jantill@redhat.com> 2.2.35-2
+- Add xm policy
+- Fix policygentool
+
 * Mon Apr 24 2006 Dan Walsh <dwalsh@redhat.com> 2.2.35-1
 - Update to upstream
 - Fix postun to only disable selinux on full removal of the packages

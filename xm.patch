@@ -1,0 +1,136 @@
+diff -ru serefpolicy-2.2.35-orig/policy/modules/system/xen.fc serefpolicy-2.2.35/policy/modules/system/xen.fc
+--- serefpolicy-2.2.35-orig/policy/modules/system/xen.fc	2006-04-24 20:14:54.000000000 -0400
++++ serefpolicy-2.2.35/policy/modules/system/xen.fc	2006-04-25 11:01:03.000000000 -0400
+@@ -14,3 +14,4 @@
+ /var/run/xend\.pid	--      gen_context(system_u:object_r:xend_var_run_t,s0)
+ /var/run/xenstore\.pid	--	gen_context(system_u:object_r:xenstored_var_run_t,s0)
+ /var/run/xenstored(/.*)?	gen_context(system_u:object_r:xenstored_var_run_t,s0)
++/usr/sbin/xm		--	gen_context(system_u:object_r:xm_exec_t,s0)
+--- serefpolicy-2.2.35-orig/policy/modules/system/xen.if	2006-04-25 10:27:36.000000000 -0400
++++ serefpolicy-2.2.35/policy/modules/system/xen.if	2006-04-25 11:03:07.000000000 -0400
+@@ -83,3 +83,66 @@
+ 	allow $1 xenstored_var_run_t:sock_file { getattr write };
+ 	allow $1 xenstored_t:unix_stream_socket connectto;
+ ')
++
++########################################
++## <summary>
++##	Connect to xend over an unix stream socket.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`xen_connect',`
++	gen_require(`
++		type xend_t, xend_var_run_t;
++	')
++
++	files_search_pids($1)
++	allow $1 xend_var_run_t:dir search;
++	allow $1 xend_var_run_t:sock_file getattr;
++	allow $1 xend_t:unix_stream_socket connectto;
++')
++
++########################################
++## <summary>
++##	Write to xend over an unix stream socket.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`xen_writeto',`
++	gen_require(`
++		type xend_var_run_t;
++	')
++
++	allow $1 xend_var_run_t:sock_file write;
++')
++
++
++########################################
++## <summary>
++##	Execute a domain transition to run xm.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`xm_domtrans',`
++	gen_requires(`
++		type xm_t, xm_exec_t;
++	')
++
++	domain_auto_trans($1,xm_exec_t,xm_t)
++
++	allow $1 xm_t:fd use;
++	allow xm_t $1:fd use;
++	allow xm_t:$1:fifo_file rw_file_perms;
++	allow xm_t $1:process sigchld;
++')
+Only in serefpolicy-2.2.35/policy/modules/system: xen.if~
+--- serefpolicy-2.2.35-orig/policy/modules/system/xen.te	2006-04-25 10:27:36.000000000 -0400
++++ serefpolicy-2.2.35/policy/modules/system/xen.te	2006-04-25 11:01:03.000000000 -0400
+@@ -224,3 +224,55 @@
+ miscfiles_read_localization(xenstored_t)
+ 
+ xen_append_log(xenstored_t)
++
++########################################
++#
++# Declarations
++#
++
++type xm_t;
++type xm_exec_t;
++domain_type(xm_t)
++init_daemon_domain(xm_t, xm_exec_t)
++
++########################################
++#
++# xm local policy
++#
++# Check in /etc/selinux/refpolicy/include for macros to use instead of allow rules.
++
++# Some common macros (you might be able to remove some)
++files_read_etc_files(xm_t)
++libs_use_ld_so(xm_t)
++libs_use_shared_libs(xm_t)
++miscfiles_read_localization(xm_t)
++# internal communication is often done using fifo and unix sockets.
++allow xm_t self:fifo_file { read write };
++allow xm_t self:unix_stream_socket create_stream_socket_perms;
++
++
++# james -- aujdit2allow
++
++corecmd_exec_bin(xm_t)
++corecmd_exec_sbin(xm_t)
++
++kernel_read_system_state(xm_t)
++kernel_read_kernel_sysctls(xm_t)
++kernel_read_xen_state(xm_t)
++kernel_write_xen_state(xm_t)
++term_use_all_terms(xm_t)
++
++dev_read_urand(xm_t)
++
++xen_append_log(xm_t)
++xen_connect(xm_t)
++xen_writeto(xm_t)
++
++xen_stream_connect_xenstore(xm_t)
++allow xm_t self:capability dac_override;
++
++
++# allow xm_t root_t:dir search;
++# Need to relabel files for xen
++auth_read_all_files_except_shadow(xm_t)
++
