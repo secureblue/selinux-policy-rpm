@@ -15,13 +15,12 @@
 %define CHECKPOLICYVER 1.30.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.35
-Release: 2
+Version: 2.2.36
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-20060411.patch
-patch2: xm.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -151,7 +150,6 @@ SELinux Reference Policy - modular.
 %prep 
 %setup -q -n serefpolicy-%{version}
 %patch -p1
-%patch2 -p1
 
 %install
 # Build targeted policy
@@ -269,6 +267,8 @@ SELinux Reference policy targeted base module.
 %triggerpostun targeted -- selinux-policy-targeted <= 2.0.7
 %rebuildpolicy targeted
 
+%rebuildpolicy targeted
+
 %files targeted
 %fileList targeted
 
@@ -294,9 +294,6 @@ SELinux Reference policy mls base module.
 %rebuildpolicy mls
 %relabel mls
 ln -sf ../devel/include /usr/share/selinux/mls/include
-
-%triggerpostun mls -- mls <= 2.0.7
-%{rebuildpolicy} mls 
 
 %files mls
 %fileList mls
@@ -325,6 +322,12 @@ SELinux Reference policy strict base module.
 %relabel strict
 ln -sf ../devel/include /usr/share/selinux/strict/include
 
+%triggerpostun strict -- selinux-policy-strict <= 2.2.35-2
+cd /usr/share/selinux/strict
+x=`ls *.pp | grep -v -e base.pp -e enableaudit.pp | awk '{ print "-i " $1 }'`
+semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init -r libraries -r locallogin -r logging -r lvm -r miscfiles -r modutils -r mount -r mta -r netutils -r selinuxutil -r storage -r sysnetwork -r udev -r userdomain -r vpnc -r xend $x -s strict
+
+
 %triggerpostun strict -- strict <= 2.0.7
 %{rebuildpolicy} strict 
 
@@ -334,6 +337,9 @@ ln -sf ../devel/include /usr/share/selinux/strict/include
 %endif
 
 %changelog
+* Tue Apr 25 2006 Dan Walsh <dwalsh@redhat.com> 2.2.36-1
+- Update to upstream
+
 * Tue Apr 25 2006 James Antill <jantill@redhat.com> 2.2.35-2
 - Add xm policy
 - Fix policygentool
