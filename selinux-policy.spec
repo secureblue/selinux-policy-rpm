@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.36
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -337,6 +337,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon May 1 2006 Dan Walsh <dwalsh@redhat.com> 2.2.36-2
+- Fix libjvm spec
+
 * Tue Apr 25 2006 Dan Walsh <dwalsh@redhat.com> 2.2.36-1
 - Update to upstream
 
