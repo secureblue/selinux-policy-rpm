@@ -15,8 +15,8 @@
 %define CHECKPOLICYVER 1.30.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.36
-Release: 2
+Version: 2.2.37
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -267,8 +267,6 @@ SELinux Reference policy targeted base module.
 %triggerpostun targeted -- selinux-policy-targeted <= 2.0.7
 %rebuildpolicy targeted
 
-%rebuildpolicy targeted
-
 %files targeted
 %fileList targeted
 
@@ -337,6 +335,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed May 3 2006 Dan Walsh <dwalsh@redhat.com> 2.2.37-1
+- Update to upstream
+
 * Mon May 1 2006 Dan Walsh <dwalsh@redhat.com> 2.2.36-2
 - Fix libjvm spec
 
@@ -367,7 +368,7 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 - Add James Antill patch for xen
 - Many fixes for pegasus
 
-* Sat Apr 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.32-2
+* Sat Apr 15 2006 Dan Walsh <dwalsh@redhat.com> 2.2.32-2
 - Add unconfined_mount_t
 - Allow privoxy to connect to httpd_cache
 - fix cups labeleing on /var/cache/cups
@@ -375,7 +376,7 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 * Fri Apr 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.32-1
 - Update to latest from upstream
 
-* Thu Apr 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.31-1
+* Fri Apr 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.31-1
 - Update to latest from upstream
 - Allow mono and unconfined to talk to initrc_t dbus objects
 
@@ -412,14 +413,14 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 - Granted xen access to /boot, allowed mounting on xend_var_lib_t, and allowed
   xenstored_t rw access to the xen device node.
 
-* Mon Mar 30 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-4
+* Tue Apr 4 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-4
 - More textrel_shlib_t file path fixes
 - Add ada support
 
-* Mon Mar 30 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-3
+* Mon Apr 3 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-3
 - Get auditctl working in MLS policy
 
-* Mon Mar 30 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-2
+* Mon Apr 3 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-2
 - Add mono dbus support
 - Lots of file_context fixes for textrel_shlib_t in FC5
 - Turn off execmem auditallow since they are filling log files
