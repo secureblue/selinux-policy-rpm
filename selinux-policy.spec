@@ -15,12 +15,12 @@
 %define CHECKPOLICYVER 1.30.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.37
+Version: 2.2.38
 Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20060411.patch
+patch: policy-20060505.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -335,6 +335,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri May 5 2006 Dan Walsh <dwalsh@redhat.com> 2.2.38-1
+- Update to upstream
+
 * Wed May 3 2006 Dan Walsh <dwalsh@redhat.com> 2.2.37-1
 - Update to upstream
 
