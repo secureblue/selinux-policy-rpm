@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.38
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -34,7 +34,7 @@ Source12: setrans-strict.conf
 Source13: policygentool
 
 Url: http://serefpolicy.sourceforge.net
-BuildRoot: %{_tmppath}/serefpolicy-buildroot
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
 PreReq: policycoreutils >= %{POLICYCOREUTILSVER}
@@ -68,25 +68,25 @@ cp -f ${RPM_SOURCE_DIR}/booleans-%1.conf ./policy/booleans.conf \
 %define installCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%3 base.pp \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%3 modules \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT POLY=%3 install \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT POLY=%3 install-appconfig \
-#%{__cp} *.pp $RPM_BUILD_ROOT/%{_usr}/share/selinux/%1/ \
-%{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/policy \
-%{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/active \
-%{__mkdir} -p $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/contexts/files \
-touch $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
-touch $RPM_BUILD_ROOT/%{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} POLY=%3 install \
+make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} POLY=%3 install-appconfig \
+#%{__cp} *.pp %{buildroot}/%{_usr}/share/selinux/%1/ \
+%{__mkdir} -p %{buildroot}/%{_sysconfdir}/selinux/%1/policy \
+%{__mkdir} -p %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active \
+%{__mkdir} -p %{buildroot}/%{_sysconfdir}/selinux/%1/contexts/files \
+touch %{buildroot}/%{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
+touch %{buildroot}/%{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%3  enableaudit \
 make -W base.conf NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%3 base.pp \
-install -m0644 base.pp ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/enableaudit.pp \
-rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/booleans \
-touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/seusers \
-touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
-touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
-touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
-touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
-install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux/%1/setrans.conf \
-ln -sf ../devel/include ${RPM_BUILD_ROOT}%{_usr}/share/selinux/%1/include \
+install -m0644 base.pp %{buildroot}%{_usr}/share/selinux/%1/enableaudit.pp \
+rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/booleans \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/seusers \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
+install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
+ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1/include \
 %nil
 
 %define fileList() \
@@ -153,25 +153,25 @@ SELinux Reference Policy - modular.
 
 %install
 # Build targeted policy
-%{__rm} -fR $RPM_BUILD_ROOT
-mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man8/
-install -m 644 man/man8/*.8 ${RPM_BUILD_ROOT}%{_mandir}/man8/
-mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/selinux
-mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
-touch $RPM_BUILD_ROOT%{_sysconfdir}/selinux/config
-touch $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/selinux
+%{__rm} -fR %{buildroot}
+mkdir -p %{buildroot}%{_mandir}/man8/
+install -m 644 man/man8/*.8 %{buildroot}%{_mandir}/man8/
+mkdir -p %{buildroot}%{_sysconfdir}/selinux
+mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
+touch %{buildroot}%{_sysconfdir}/selinux/config
+touch %{buildroot}%{_sysconfdir}/sysconfig/selinux
 
 # Install devel
 make clean
-make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=$RPM_BUILD_ROOT PKGNAME=%{name}-%{version} POLY=%3 install-headers install-docs
-mkdir ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
-mv ${RPM_BUILD_ROOT}%{_usr}/share/selinux/targeted/include ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/include
-rm -f ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/include/include
-install -m 755 ${RPM_SOURCE_DIR}/policygentool ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
-install -m 644 ${RPM_SOURCE_DIR}/Makefile.devel ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/Makefile
-install -m 644 doc/example.* ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/
-echo  "htmlview file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/policyhelp
-chmod +x ${RPM_BUILD_ROOT}%{_usr}/share/selinux/devel/policyhelp
+make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=%3 install-headers install-docs
+mkdir %{buildroot}%{_usr}/share/selinux/devel/
+mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
+rm -f %{buildroot}%{_usr}/share/selinux/devel/include/include
+install -m 755 ${RPM_SOURCE_DIR}/policygentool %{buildroot}%{_usr}/share/selinux/devel/
+install -m 644 ${RPM_SOURCE_DIR}/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
+install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
+echo  "htmlview file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
+chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 
 %if %{BUILD_TARGETED}
 # Build targeted policy
@@ -196,7 +196,7 @@ cp -f ${RPM_SOURCE_DIR}/modules-strict.conf  ./policy/modules.conf
 %endif
 
 %clean
-%{__rm} -fR $RPM_BUILD_ROOT
+%{__rm} -fR %{buildroot}
 
 %post
 if [ ! -s /etc/selinux/config ]; then
@@ -335,6 +335,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed May 10 2006 Dan Walsh <dwalsh@redhat.com> 2.2.38-3
+- Clean up spec file
+- Transition from unconfined_t to prelink_t
+
 * Mon May 8 2006 Dan Walsh <dwalsh@redhat.com> 2.2.38-2
 - Allow execution of cvs command
 
