@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.38
-Release: 5
+Release: 6
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -335,6 +335,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri May 12 2006 Dan Walsh <dwalsh@redhat.com> 2.2.38-6
+- Allow auditctl to search all directories
+
 * Thu May 11 2006 Dan Walsh <dwalsh@redhat.com> 2.2.38-5
 - Add acquire service for mono.
 
