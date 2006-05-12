@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.38
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -335,6 +335,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu May 11 2006 Dan Walsh <dwalsh@redhat.com> 2.2.38-4
+- Turn off allow_execmem boolean
+- Allow ftp dac_override when allowed to access users homedirs
+
 * Wed May 10 2006 Dan Walsh <dwalsh@redhat.com> 2.2.38-3
 - Clean up spec file
 - Transition from unconfined_t to prelink_t
