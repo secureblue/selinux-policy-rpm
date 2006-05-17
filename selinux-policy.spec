@@ -15,8 +15,8 @@
 %define CHECKPOLICYVER 1.30.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.39
-Release: 2
+Version: 2.2.40
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -335,6 +335,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue May 16 2006 Dan Walsh <dwalsh@redhat.com> 2.2.40-1
+- Update from upstream
+
 * Mon May 15 2006 Dan Walsh <dwalsh@redhat.com> 2.2.39-2
 - Fixes for amavis
 
