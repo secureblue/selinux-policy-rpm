@@ -335,8 +335,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Wed May 17 2006 Dan Walsh <dwalsh@redhat.com> 2.2.41-1
+* Thu May 18 2006 Dan Walsh <dwalsh@redhat.com> 2.2.41-1
 - allow hal to read boot_t files
+- Upgrade to upstream
 
 * Wed May 17 2006 Dan Walsh <dwalsh@redhat.com> 2.2.40-2
 - allow hal to read boot_t files
