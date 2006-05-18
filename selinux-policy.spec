@@ -15,7 +15,7 @@
 %define CHECKPOLICYVER 1.30.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.40
+Version: 2.2.41
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -335,6 +335,12 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed May 17 2006 Dan Walsh <dwalsh@redhat.com> 2.2.41-1
+- allow hal to read boot_t files
+
+* Wed May 17 2006 Dan Walsh <dwalsh@redhat.com> 2.2.40-2
+- allow hal to read boot_t files
+
 * Tue May 16 2006 Dan Walsh <dwalsh@redhat.com> 2.2.40-1
 - Update from upstream
 
