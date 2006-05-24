@@ -11,7 +11,7 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 20
-%define POLICYCOREUTILSVER 1.30-1
+%define POLICYCOREUTILSVER 1.30.8-1
 %define CHECKPOLICYVER 1.30.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
