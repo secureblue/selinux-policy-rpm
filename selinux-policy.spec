@@ -12,11 +12,11 @@
 %endif
 %define POLICYVER 20
 %define POLICYCOREUTILSVER 1.30.8-1
-%define CHECKPOLICYVER 1.30.1-2
+%define CHECKPOLICYVER 1.30.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.42
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -335,6 +335,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed May 24 2006 Dan Walsh <dwalsh@redhat.com> 2.2.42-3
+- fixes for java, openldap and webalizer
+
 * Mon May 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.42-2
 - Xen fixes
 
