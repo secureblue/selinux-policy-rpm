@@ -15,8 +15,8 @@
 %define CHECKPOLICYVER 1.30.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.42
-Release: 3
+Version: 2.2.43
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -335,6 +335,15 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Sat May 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.43-2
+- Update to upstream
+
+* Fri May 26 2006 Dan Walsh <dwalsh@redhat.com> 2.2.43-1
+- Update to upstream
+
+* Fri May 26 2006 Dan Walsh <dwalsh@redhat.com> 2.2.42-4
+- fixes for spamd
+
 * Wed May 24 2006 Dan Walsh <dwalsh@redhat.com> 2.2.42-3
 - fixes for java, openldap and webalizer
 
