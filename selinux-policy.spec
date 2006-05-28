@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.43
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -335,6 +335,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Sun May 28 2006 Dan Walsh <dwalsh@redhat.com> 2.2.43-3
+- Fix for hplip and Picasa
+
 * Sat May 27 2006 Dan Walsh <dwalsh@redhat.com> 2.2.43-2
 - Update to upstream
 
