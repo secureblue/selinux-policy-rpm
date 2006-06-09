@@ -49,10 +49,11 @@ SELinux Base package
 %doc %{_usr}/share/doc/%{name}-%{version}
 %dir %{_usr}/share/selinux
 %dir %{_sysconfdir}/selinux
-%dir %{_usr}/share/selinux/devel
-%dir %{_usr}/share/selinux/devel/include
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config
 %ghost %{_sysconfdir}/sysconfig/selinux
+
+%dir %{_usr}/share/selinux/devel
+%dir %{_usr}/share/selinux/devel/include
 %{_usr}/share/selinux/devel/include/*
 %{_usr}/share/selinux/devel/Makefile
 %{_usr}/share/selinux/devel/policygentool
