@@ -15,8 +15,8 @@
 %define CHECKPOLICYVER 1.30.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.45
-Release: 2
+Version: 2.2.46
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -336,6 +336,12 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Jun 13 2006 Dan Walsh <dwalsh@redhat.com> 2.2.46-1
+- Update to upstream
+
+* Mon Jun 12 2006 Dan Walsh <dwalsh@redhat.com> 2.2.45-3
+- Fix semanage
+
 * Mon Jun 12 2006 Dan Walsh <dwalsh@redhat.com> 2.2.45-2
 - Allow useradd to create_home_dir in MLS environment
 
