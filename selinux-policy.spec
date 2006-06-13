@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.46
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -336,6 +336,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Jun 13 2006 Dan Walsh <dwalsh@redhat.com> 2.2.46-2
+- Fix spec of realplay
+
 * Tue Jun 13 2006 Dan Walsh <dwalsh@redhat.com> 2.2.46-1
 - Update to upstream
 
