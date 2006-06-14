@@ -15,8 +15,8 @@
 %define CHECKPOLICYVER 1.30.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.46
-Release: 2
+Version: 2.2.47
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -336,6 +336,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Jun 13 2006 Dan Walsh <dwalsh@redhat.com> 2.2.47-1
+- Update from Upstream
+
 * Tue Jun 13 2006 Dan Walsh <dwalsh@redhat.com> 2.2.46-2
 - Fix spec of realplay
 
