@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.47
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -51,7 +51,6 @@ SELinux Base package
 %dir %{_sysconfdir}/selinux
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config
 %ghost %{_sysconfdir}/sysconfig/selinux
-
 %dir %{_usr}/share/selinux/devel
 %dir %{_usr}/share/selinux/devel/include
 %{_usr}/share/selinux/devel/include/*
@@ -336,6 +335,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Jun 15 2006 Dan Walsh <dwalsh@redhat.com> 2.2.47-2
+- Fix policygentool gen_requires
+
 * Tue Jun 13 2006 Dan Walsh <dwalsh@redhat.com> 2.2.47-1
 - Update from Upstream
 
