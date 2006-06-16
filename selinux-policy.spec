@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.47
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -86,7 +86,7 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
-ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1/include \
+ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1 \
 %nil
 
 %define fileList() \
@@ -166,7 +166,6 @@ make clean
 make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=%3 install-headers install-docs
 mkdir %{buildroot}%{_usr}/share/selinux/devel/
 mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
-rm -f %{buildroot}%{_usr}/share/selinux/devel/include/include
 install -m 755 ${RPM_SOURCE_DIR}/policygentool %{buildroot}%{_usr}/share/selinux/devel/
 install -m 644 ${RPM_SOURCE_DIR}/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
 install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
@@ -187,6 +186,7 @@ make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{m
 make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=n conf
 cp -f ${RPM_SOURCE_DIR}/modules-strict.conf  ./policy/modules.conf 
 %installCmds strict strict-mcs y n
+ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/strict 
 %endif
 
 %if %{BUILD_MLS}
@@ -291,7 +291,6 @@ SELinux Reference policy mls base module.
 %post mls 
 %rebuildpolicy mls
 %relabel mls
-ln -sf ../devel/include /usr/share/selinux/mls/include
 
 %files mls
 %fileList mls
@@ -318,7 +317,6 @@ SELinux Reference policy strict base module.
 %post strict 
 %rebuildpolicy strict
 %relabel strict
-ln -sf ../devel/include /usr/share/selinux/strict/include
 
 %triggerpostun strict -- selinux-policy-strict <= 2.2.35-2
 cd /usr/share/selinux/strict
@@ -335,7 +333,7 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Thu Jun 15 2006 Dan Walsh <dwalsh@redhat.com> 2.2.47-2
+* Thu Jun 15 2006 Dan Walsh <dwalsh@redhat.com> 2.2.47-3
 - Fix policygentool gen_requires
 
 * Tue Jun 13 2006 Dan Walsh <dwalsh@redhat.com> 2.2.47-1
