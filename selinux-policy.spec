@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.47
-Release: 4
+Release: 5
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -51,6 +51,16 @@ SELinux Base package
 %dir %{_sysconfdir}/selinux
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config
 %ghost %{_sysconfdir}/sysconfig/selinux
+
+%package devel
+Summary: SELinux policy development
+Group: System Environment/Base
+Requires: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
+
+%description devel
+SELinux Policy development package
+
+%files devel
 %dir %{_usr}/share/selinux/devel
 %dir %{_usr}/share/selinux/devel/include
 %{_usr}/share/selinux/devel/include/*
@@ -333,6 +343,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Jun 20 2006 Dan Walsh <dwalsh@redhat.com> 2.2.47-5
+- Break out selinux-devel package
+
 * Fri Jun 16 2006 Dan Walsh <dwalsh@redhat.com> 2.2.47-4
 - Add ibmasmfs
 
