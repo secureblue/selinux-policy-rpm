@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.2.48
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -54,7 +54,8 @@ SELinux Base package
 %package devel
 Summary: SELinux policy development
 Group: System Environment/Base
-Requires: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
+Prereq: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
+Prereq: selinux-policy = %{version}-%{release}
 
 %description devel
 SELinux Policy development package
@@ -341,6 +342,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Jun 20 2006 Dan Walsh <dwalsh@redhat.com> 2.2.48-2
+- Fix requires
+
 * Tue Jun 20 2006 Dan Walsh <dwalsh@redhat.com> 2.2.48-1
 - Update to upstream
 
