@@ -11,12 +11,12 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 20
-%define POLICYCOREUTILSVER 1.30.8-1
+%define POLICYCOREUTILSVER 1.30.14-3
 %define CHECKPOLICYVER 1.30.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.47
-Release: 5
+Version: 2.2.48
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -131,7 +131,6 @@ ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1 \
 %define saveFileContext() \
 if [ -s /etc/selinux/config ]; then \
 	. %{_sysconfdir}/selinux/config; \
-	restorecon -R %{_sysconfdir}/selinux/%1; \
 	FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 	if [ "${SELINUXTYPE}" == %1 -a -f ${FILE_CONTEXT} ]; then \
 		cp -f ${FILE_CONTEXT} ${FILE_CONTEXT}.pre; \
@@ -342,6 +341,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Jun 20 2006 Dan Walsh <dwalsh@redhat.com> 2.2.48-1
+- Update to upstream
+
 * Tue Jun 20 2006 Dan Walsh <dwalsh@redhat.com> 2.2.47-5
 - Break out selinux-devel package
 
