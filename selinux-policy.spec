@@ -39,7 +39,6 @@ BuildArch: noarch
 BuildRequires: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
 PreReq: policycoreutils >= %{POLICYCOREUTILSVER}
 Obsoletes: policy 
-Obsoletes: selinux-policy-devel
 
 %description 
 SELinux Base package
