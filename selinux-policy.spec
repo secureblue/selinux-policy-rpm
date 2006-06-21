@@ -15,7 +15,7 @@
 %define CHECKPOLICYVER 1.30.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.2.48
+Version: 2.2.49
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -342,6 +342,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Jun 21 2006 Dan Walsh <dwalsh@redhat.com> 2.2.49-1
+- Update to upstream
+
 * Tue Jun 20 2006 Dan Walsh <dwalsh@redhat.com> 2.2.48-1
 - Update to upstream
 
