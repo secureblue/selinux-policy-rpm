@@ -15,7 +15,7 @@
 %define CHECKPOLICYVER 1.30.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.3.1
+Version: 2.3.2
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -107,8 +107,8 @@ ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %ghost %{_sysconfdir}/selinux/%1/seusers \
 %dir %{_sysconfdir}/selinux/%1/modules \
-%{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
-%{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
 %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
 #%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
@@ -342,6 +342,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Jul 7 2006 Dan Walsh <dwalsh@redhat.com> 2.3.2-1
+- Update to upstream
+
 * Thu Jun 22 2006 Dan Walsh <dwalsh@redhat.com> 2.3.1-1
 - Update to upstream
 - Add new class for kernel key ring
