@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.2
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -332,7 +332,6 @@ cd /usr/share/selinux/strict
 x=`ls *.pp | grep -v -e base.pp -e enableaudit.pp | awk '{ print "-i " $1 }'`
 semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init -r libraries -r locallogin -r logging -r lvm -r miscfiles -r modutils -r mount -r mta -r netutils -r selinuxutil -r storage -r sysnetwork -r udev -r userdomain -r vpnc -r xend $x -s strict
 
-
 %triggerpostun strict -- strict <= 2.0.7
 %{rebuildpolicy} strict 
 
@@ -342,6 +341,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Jul 7 2006 Dan Walsh <dwalsh@redhat.com> 2.3.2-2
+- Multiple fixes
+
 * Fri Jul 7 2006 Dan Walsh <dwalsh@redhat.com> 2.3.2-1
 - Update to upstream
 
