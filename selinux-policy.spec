@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.3
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -341,6 +341,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Jul 17 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-2
+- Remove spamassassin_can_network boolean
+
 * Fri Jul 14 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-1
 - Update to upstream
 - Fix lpr domain for mls
