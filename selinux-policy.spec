@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.3
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -341,6 +341,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Jul 18 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-4
+- setroubleshootd fixes
+
 * Mon Jul 17 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-3
 - Allow prelink to read bin_t symlink
 - allow xfs to read random devices
