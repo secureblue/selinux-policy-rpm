@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.3
-Release: 5
+Release: 6
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -341,6 +341,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Jul 19 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-6
+- Cups needs to be able to read domain state off of printer client
+
 * Wed Jul 19 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-5
 - add boolean to allow zebra to write config files
 
