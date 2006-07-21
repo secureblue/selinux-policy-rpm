@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.3
-Release: 6
+Release: 7
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -341,6 +341,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Jul 21 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-7
+- Fixes to make setroubleshoot work
+
 * Wed Jul 19 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-6
 - Cups needs to be able to read domain state off of printer client
 
