@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.3
-Release: 7
+Release: 8
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -341,6 +341,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Jul 21 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-8
+- Fixes for mls use of ssh
+- named  has a new conf file
+
 * Fri Jul 21 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-7
 - Fixes to make setroubleshoot work
 
