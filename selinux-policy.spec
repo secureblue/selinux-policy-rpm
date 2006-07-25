@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.3
-Release: 10
+Release: 11
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -341,6 +341,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Jul 25 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-11
+- Allow pidof from initrc to ptrace higher level domains
+
 * Mon Jul 24 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-10
 - Add policy for /var/run/ldapi
 
