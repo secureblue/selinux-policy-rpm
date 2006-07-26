@@ -68,12 +68,18 @@ SELinux Policy development package
 %{_usr}/share/selinux/devel/policygentool
 %{_usr}/share/selinux/devel/example.*
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
+%dir %{_usr}/share/selinux/targeted
+%dir %{_usr}/share/selinux/strict
+%dir %{_usr}/share/selinux/mls
 
 %define setupCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%3 bare \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%3  conf \
 cp -f ${RPM_SOURCE_DIR}/modules-%1.conf  ./policy/modules.conf \
 cp -f ${RPM_SOURCE_DIR}/booleans-%1.conf ./policy/booleans.conf \
+
+%define moduleList() %([ -f %{_sourcedir}/modules-%{1}.conf ] && \
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "-i %%s.pp ", $1 }' %{_sourcedir}/modules-%{1}.conf )
 
 %define installCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%3 base.pp \
@@ -101,7 +107,6 @@ ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1 \
 
 %define fileList() \
 %defattr(-,root,root) \
-%dir %{_usr}/share/selinux/%1 \
 %{_usr}/share/selinux/%1/*.pp \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
@@ -140,8 +145,7 @@ fi
 
 %define rebuildpolicy() \
 ( cd /usr/share/selinux/%1; \
-x=`ls *.pp | grep -v -e base.pp -e enableaudit.pp | awk '{ print "-i " $1 }'`; \
-semodule -b base.pp $x -s %1; \
+semodule -b base.pp %{expand:%%moduleList %1} -s %1; \
 );\
 rm -f %{_sysconfdir}/selinux/%1/policy/policy.*.rpmnew
 
@@ -169,6 +173,9 @@ mkdir -p %{buildroot}%{_sysconfdir}/selinux
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
 touch %{buildroot}%{_sysconfdir}/selinux/config
 touch %{buildroot}%{_sysconfdir}/sysconfig/selinux
+
+# Always create policy module package directories
+mkdir -p %{buildroot}%{_usr}/share/selinux/{targeted,strict,mls}/
 
 # Install devel
 make clean
@@ -333,7 +340,7 @@ x=`ls *.pp | grep -v -e base.pp -e enableaudit.pp | awk '{ print "-i " $1 }'`
 semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init -r libraries -r locallogin -r logging -r lvm -r miscfiles -r modutils -r mount -r mta -r netutils -r selinuxutil -r storage -r sysnetwork -r udev -r userdomain -r vpnc -r xend $x -s strict
 
 %triggerpostun strict -- strict <= 2.0.7
-%{rebuildpolicy} strict 
+%rebuildpolicy strict 
 
 %files strict
 %fileList strict
@@ -341,8 +348,11 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Tue Jul 25 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-11
+* Wed Jul 26 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-11
+- Added Paul Howorth patch to only load policy packages shipped 
+  with this package
 - Allow pidof from initrc to ptrace higher level domains
+- Allow firstboot to communicate with hal via dbus
 
 * Mon Jul 24 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-10
 - Add policy for /var/run/ldapi
