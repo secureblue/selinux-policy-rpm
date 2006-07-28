@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.3
-Release: 12
+Release: 13
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -348,11 +348,14 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Jul 26 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-13
+- Add nagios policy
+
 * Wed Jul 26 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-12
 -  fixes for setroubleshoot
 
 * Wed Jul 26 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-11
-- Added Paul Howorth patch to only load policy packages shipped 
+- Added Paul Howarth patch to only load policy packages shipped 
   with this package
 - Allow pidof from initrc to ptrace higher level domains
 - Allow firstboot to communicate with hal via dbus
