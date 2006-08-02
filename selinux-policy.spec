@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.3
-Release: 17
+Release: 18
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -348,6 +348,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Aug 2 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-18
+- yet more xen rules
+ 
 * Tue Aug 1 2006 Dan Walsh <dwalsh@redhat.com> 2.3.3-17
 - more xen rules
 
