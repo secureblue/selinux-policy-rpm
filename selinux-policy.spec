@@ -15,7 +15,7 @@
 %define CHECKPOLICYVER 1.30.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.3.5
+Version: 2.3.6
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -259,7 +259,6 @@ if [ $1 = 0 ]; then
 	fi
 fi
 
-
 %if %{BUILD_TARGETED}
 %package targeted
 Summary: SELinux targeted base policy
@@ -348,6 +347,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Aug 8 2006 Dan Walsh <dwalsh@redhat.com> 2.3.6-1
+- Quiet down anaconda audit messages
+
 * Mon Aug 7 2006 Dan Walsh <dwalsh@redhat.com> 2.3.5-1
 - Fix setroubleshootd
 
