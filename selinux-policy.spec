@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.6
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -37,7 +37,7 @@ Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
-PreReq: policycoreutils >= %{POLICYCOREUTILSVER}
+PreReq: policycoreutils >= %{POLICYCOREUTILSVER} libsemanage > 1.6.13-1
 Obsoletes: policy 
 
 %description 
@@ -347,6 +347,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Aug 9 2006 Dan Walsh <dwalsh@redhat.com> 2.3.6-2
+- More fixes for strict policy
+
 * Tue Aug 8 2006 Dan Walsh <dwalsh@redhat.com> 2.3.6-1
 - Quiet down anaconda audit messages
 
