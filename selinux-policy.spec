@@ -347,7 +347,7 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Th Aug 10 2006 Dan Walsh <dwalsh@redhat.com> 2.3.6-3
+* Thu Aug 10 2006 Dan Walsh <dwalsh@redhat.com> 2.3.6-3
 - Misc fixes
 
 * Wed Aug 9 2006 Dan Walsh <dwalsh@redhat.com> 2.3.6-2
