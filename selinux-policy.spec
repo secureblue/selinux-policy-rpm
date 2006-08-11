@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.6
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -347,6 +347,11 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Aug 10 2006 Dan Walsh <dwalsh@redhat.com> 2.3.6-4
+- Change allow_execstack to default to on, for RHEL5 Beta.  
+  This is required because of a Java compiler problem.
+  Hope to turn off for next beta
+
 * Thu Aug 10 2006 Dan Walsh <dwalsh@redhat.com> 2.3.6-3
 - Misc fixes
 
