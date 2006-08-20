@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.8
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -347,6 +347,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Sun Aug 20 2006 Dan Walsh <dwalsh@redhat.com> 2.3.8-2
+- Fixes for stunnel and postgresql
+
 * Fri Aug 18 2006 Dan Walsh <dwalsh@redhat.com> 2.3.8-1
 - Update from upstream
 
