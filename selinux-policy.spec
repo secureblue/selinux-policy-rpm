@@ -15,7 +15,7 @@
 %define CHECKPOLICYVER 1.30.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.3.8
+Version: 2.3.9
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -347,6 +347,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Sun Aug 23 2006 Dan Walsh <dwalsh@redhat.com> 2.3.8-1
+- Update to upstream
+
 * Sun Aug 20 2006 Dan Walsh <dwalsh@redhat.com> 2.3.8-2
 - Fixes for stunnel and postgresql
 - Update from upstream
