@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.9
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -347,7 +347,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Sun Aug 23 2006 Dan Walsh <dwalsh@redhat.com> 2.3.8-1
+* Thu Aug 24 2006 Dan Walsh <dwalsh@redhat.com> 2.3.9-2
+- Fixes for setroubleshoot
+
+* Wed Aug 23 2006 Dan Walsh <dwalsh@redhat.com> 2.3.9-1
 - Update to upstream
 
 * Sun Aug 20 2006 Dan Walsh <dwalsh@redhat.com> 2.3.8-2
