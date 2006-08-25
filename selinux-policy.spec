@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.9
-Release: 4
+Release: 5
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -347,6 +347,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Aug 25 2006 Dan Walsh <dwalsh@redhat.com> 2.3.9-5
+- Allow setroubleshoot to getattr on all dirs to gather RPM data
+
 * Thu Aug 24 2006 Dan Walsh <dwalsh@redhat.com> 2.3.9-4
 - Set /usr/lib/ia32el/ia32x_loader to unconfined_execmem_exec_t for ia32 platform
 - Fix spec for /dev/adsp
