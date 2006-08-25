@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.9
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -347,6 +347,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Aug 24 2006 Dan Walsh <dwalsh@redhat.com> 2.3.9-4
+- Set /usr/lib/ia32el/ia32x_loader to unconfined_execmem_exec_t for ia32 platform
+- Fix spec for /dev/adsp
+
 * Thu Aug 24 2006 Dan Walsh <dwalsh@redhat.com> 2.3.9-3
 - Fix xen tty devices
 
