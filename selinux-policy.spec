@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.9
-Release: 5
+Release: 6
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -347,6 +347,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Aug 28 2006 Dan Walsh <dwalsh@redhat.com> 2.3.9-6
+- Fix install problems
+
 * Fri Aug 25 2006 Dan Walsh <dwalsh@redhat.com> 2.3.9-5
 - Allow setroubleshoot to getattr on all dirs to gather RPM data
 
