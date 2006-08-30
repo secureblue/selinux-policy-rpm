@@ -15,12 +15,12 @@
 %define CHECKPOLICYVER 1.30.4-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.3.9
-Release: 6
+Version: 2.3.10
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20060802.patch
+patch: policy-20060829.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -37,7 +37,7 @@ Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
-PreReq: policycoreutils >= %{POLICYCOREUTILSVER} libsemanage > 1.6.13-1
+PreReq: policycoreutils >= %{POLICYCOREUTILSVER} libsemanage > 1.6.16-1
 Obsoletes: policy 
 
 %description 
@@ -347,6 +347,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Aug 29 2006 Dan Walsh <dwalsh@redhat.com> 2.3.10-1
+- Upgrade to upstream
+
 * Mon Aug 28 2006 Dan Walsh <dwalsh@redhat.com> 2.3.9-6
 - Fix install problems
 
