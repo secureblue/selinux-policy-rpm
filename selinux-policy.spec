@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.13
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -348,6 +348,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Sep 7 2006 Dan Walsh <dwalsh@redhat.com> 2.3.13-3
+- Fix location of xel log files
+- Fix handling of sysadm_r -> rpm_exec_t 
+
 * Thu Sep 7 2006 Dan Walsh <dwalsh@redhat.com> 2.3.13-2
 - Fixes for autofs, lp
 
