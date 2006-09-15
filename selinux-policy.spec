@@ -11,8 +11,8 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 20
-%define POLICYCOREUTILSVER 1.30.14-3
-%define CHECKPOLICYVER 1.30.4-1
+%define POLICYCOREUTILSVER 1.30.28-8
+%define CHECKPOLICYVER 1.30.9-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.13
@@ -193,7 +193,7 @@ chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 # Commented out because only targeted ref policy currently builds
 %setupCmds targeted targeted-mcs y y
 %installCmds targeted targeted-mcs y y
-make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=n validatefc 
+make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=y validatefc 
 %endif
 
 %if %{BUILD_STRICT}
