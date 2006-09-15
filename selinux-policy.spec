@@ -15,12 +15,12 @@
 %define CHECKPOLICYVER 1.30.9-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.3.13
-Release: 6
+Version: 2.3.14
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20060829.patch
+patch: policy-20060915.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -193,7 +193,7 @@ chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 # Commented out because only targeted ref policy currently builds
 %setupCmds targeted targeted-mcs y y
 %installCmds targeted targeted-mcs y y
-#make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=y validatefc 
+make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=y validatefc 
 %endif
 
 %if %{BUILD_STRICT}
@@ -348,6 +348,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Sep 15 2006 Dan Walsh <dwalsh@redhat.com> 2.3.14-1
+- Upgrade to upstream
+
 * Thu Sep 14 2006 Dan Walsh <dwalsh@redhat.com> 2.3.13-6
 - Fix ppp connections from network manager
 
