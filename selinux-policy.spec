@@ -193,7 +193,7 @@ chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 # Commented out because only targeted ref policy currently builds
 %setupCmds targeted targeted-mcs y y
 %installCmds targeted targeted-mcs y y
-make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=y validatefc 
+#make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=y validatefc 
 %endif
 
 %if %{BUILD_STRICT}
