@@ -11,12 +11,13 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 20
+%define libsepolver 1.12.26-1
 %define POLICYCOREUTILSVER 1.30.29-1
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.14
-Release: 4
+Release: 5
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -37,7 +38,7 @@ Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
-PreReq: policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 1.6.16-1
+PreReq: policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 1.6.16-2
 Obsoletes: policy 
 
 %description 
@@ -348,7 +349,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Mon Sep 18 2006 Dan Walsh <dwalsh@redhat.com> 2.3.14-4
+* Mon Sep 19 2006 Dan Walsh <dwalsh@redhat.com> 2.3.14-5
+- Fixes to make pppd work
+
+* Mon Sep 19 2006 Dan Walsh <dwalsh@redhat.com> 2.3.14-4
 - Multiple policy fixes
 - Change max categories to 1023
 
