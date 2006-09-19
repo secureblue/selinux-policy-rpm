@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.14
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -348,6 +348,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Sep 18 2006 Dan Walsh <dwalsh@redhat.com> 2.3.14-4
+- Multiple policy fixes
+- Change max categories to 1023
+
 * Sat Sep 16 2006 Dan Walsh <dwalsh@redhat.com> 2.3.14-3
 - Fix transition on mcstransd
 
