@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.14
-Release: 6
+Release: 7
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -349,10 +349,13 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Mon Sep 19 2006 Dan Walsh <dwalsh@redhat.com> 2.3.14-6
+* Wed Sep 20 2006 Dan Walsh <dwalsh@redhat.com> 2.3.14-7
+- Fix cron jobs to run under the correct context
+
+* Tue Sep 19 2006 Dan Walsh <dwalsh@redhat.com> 2.3.14-6
 - Fixes to make pppd work
 
-* Mon Sep 19 2006 Dan Walsh <dwalsh@redhat.com> 2.3.14-4
+* Mon Sep 18 2006 Dan Walsh <dwalsh@redhat.com> 2.3.14-4
 - Multiple policy fixes
 - Change max categories to 1023
 
