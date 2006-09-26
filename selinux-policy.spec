@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.3.15
-Release: 2
+Version: 2.3.16
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -349,6 +349,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Sep 25 2006 Dan Walsh <dwalsh@redhat.com> 2.3.16-1
+- Update with upstream
+
 * Mon Sep 25 2006 Dan Walsh <dwalsh@redhat.com> 2.3.15-2
 - mls fixes 
 
