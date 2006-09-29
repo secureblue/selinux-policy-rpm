@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.16
-Release: 8
+Release: 9
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -38,7 +38,7 @@ Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
-PreReq: policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 1.6.16-2
+PreReq: policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 1.6.17-1
 Obsoletes: policy 
 
 %description 
@@ -349,6 +349,11 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Sep 28 2006 Dan Walsh <dwalsh@redhat.com> 2.3.16-9
+- Remove bluetooth-helper transition
+- Add selinux_validate for semanage
+- Require new version of libsemanage
+
 * Fri Sep 28 2006 Dan Walsh <dwalsh@redhat.com> 2.3.16-8
 - Fix prelink
 
