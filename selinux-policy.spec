@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.18
-Release: 6
+Release: 7
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -349,6 +349,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Oct 6 2006 Dan Walsh <dwalsh@redhat.com> 2.3.18-7
+- Fix boot_runtime_t problem on ppc.  Should not be creating these files.
+
 * Thu Oct 5 2006 Dan Walsh <dwalsh@redhat.com> 2.3.18-6
 - Fix context mounts on reboot
 - Fix ccs creation of directory in /var/log
