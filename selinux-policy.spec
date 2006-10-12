@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Oct 12 2006 James Antill <jantill@redhat.com> 2.3.18-10
+- More iSCSI changes for #209854
+
 * Tue Oct 10 2006 James Antill <jantill@redhat.com> 2.3.18-9
 - Test ISCSI fixes for #209854
 
