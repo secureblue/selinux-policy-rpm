@@ -17,11 +17,12 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.18
-Release: 8
+Release: 10
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-20060915.patch
+patch2: serefpolicy-2.3.18-iscsi.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -164,6 +165,7 @@ SELinux Reference Policy - modular.
 %prep 
 %setup -q -n serefpolicy-%{version}
 %patch -p1
+%patch2 -p1
 
 %install
 # Build targeted policy
@@ -349,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Oct 10 2006 James Antill <jantill@redhat.com> 2.3.18-9
+- Test ISCSI fixes for #209854
+
 * Sun Oct 8 2006 Dan Walsh <dwalsh@redhat.com> 2.3.18-8
 - allow semodule to rmdir selinux_config_t dir
 
