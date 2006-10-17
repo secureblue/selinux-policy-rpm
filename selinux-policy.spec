@@ -16,13 +16,12 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.3.18
-Release: 10
+Version: 2.3.19
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20060915.patch
-patch2: serefpolicy-2.3.18-iscsi.patch
+patch: policy-20061016.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -134,6 +133,8 @@ ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1 \
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 %config %{_sysconfdir}/selinux/%1/contexts/files/media \
+%dir %{_sysconfdir}/selinux/%1/contexts/users \
+%{_sysconfdir}/selinux/%1/contexts/users/root \
 %{_usr}/share/selinux/%1/include
 
 %define saveFileContext() \
@@ -165,7 +166,6 @@ SELinux Reference Policy - modular.
 %prep 
 %setup -q -n serefpolicy-%{version}
 %patch -p1
-%patch2 -p1
 
 %install
 # Build targeted policy
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Oct 16 2006 Dan Walsh <dwalsh@redhat.com> 2.3.19-1
+- Update to upstream
+
 * Thu Oct 12 2006 James Antill <jantill@redhat.com> 2.3.18-10
 - More iSCSI changes for #209854
 
