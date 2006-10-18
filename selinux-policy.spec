@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.3.19
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Oct 18 2006 Dan Walsh <dwalsh@redhat.com> 2.3.19-3
+- Lots of fixes for ricci
+
+
 * Mon Oct 16 2006 Dan Walsh <dwalsh@redhat.com> 2.3.19-2
 - Fix number of cats
 
