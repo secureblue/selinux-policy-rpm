@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.3.19
-Release: 4
+Version: 2.4
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Oct 19 2006 Dan Walsh <dwalsh@redhat.com> 2.4-1
+- Refupdate from upstream
+
 * Thu Oct 19 2006 Dan Walsh <dwalsh@redhat.com> 2.3.19-4
 - Add lots of fixes for mls cups
 
