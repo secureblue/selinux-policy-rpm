@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Oct 23 2006 Dan Walsh <dwalsh@redhat.com> 2.4-3
+- Allow hal to use power_device_t
+
 * Fri Oct 20 2006 Dan Walsh <dwalsh@redhat.com> 2.4-2
 - Allow procemail to look at autofs_t
 - Allow xen_image_t to work as a fixed device
