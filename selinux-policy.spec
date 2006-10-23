@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.4
-Release: 3
+Version: 2.4.1
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Oct 23 2006 Dan Walsh <dwalsh@redhat.com> 2.4.1-1
+* Mon Oct 23 2006 Dan Walsh <dwalsh@redhat.com> 2.4-4
+- Allow noxattrfs to associate with other noxattrfs 
+
 * Mon Oct 23 2006 Dan Walsh <dwalsh@redhat.com> 2.4-3
 - Allow hal to use power_device_t
 
