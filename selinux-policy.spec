@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.1
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,7 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Mon Oct 23 2006 Dan Walsh <dwalsh@redhat.com> 2.4.1-1
+* Mon Oct 23 2006 Dan Walsh <dwalsh@redhat.com> 2.4.1-2
+- Update xen to read nfs files
+
 * Mon Oct 23 2006 Dan Walsh <dwalsh@redhat.com> 2.4-4
 - Allow noxattrfs to associate with other noxattrfs 
 
