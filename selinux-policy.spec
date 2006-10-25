@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.1
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Oct 23 2006 Dan Walsh <dwalsh@redhat.com> 2.4.1-4
+- Fixes for ricci using saslauthd
+
 * Mon Oct 23 2006 Dan Walsh <dwalsh@redhat.com> 2.4.1-3
 - Allow mountpoint on home_dir_t and home_t
 
