@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.1
-Release: 4
+Release: 5
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Oct 27 2006 Dan Walsh <dwalsh@redhat.com> 2.4.1-5
+- Allow ricci-modstorage to look at lvm_etc_t
+
 * Mon Oct 23 2006 Dan Walsh <dwalsh@redhat.com> 2.4.1-4
 - Fixes for ricci using saslauthd
 
