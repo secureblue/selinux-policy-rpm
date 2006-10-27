@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.4.1
-Release: 5
+Version: 2.4.2
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Oct 27 2006 Dan Walsh <dwalsh@redhat.com> 2.4.2-1
+- Allow mount.nfs to work
+
 * Fri Oct 27 2006 Dan Walsh <dwalsh@redhat.com> 2.4.1-5
 - Allow ricci-modstorage to look at lvm_etc_t
 
