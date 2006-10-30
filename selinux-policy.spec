@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.2
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -297,6 +297,7 @@ Summary: SELinux mls base policy
 Group: System Environment/Base
 Provides: selinux-policy-base
 Obsoletes: selinux-policy-mls-sources
+Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER}
 Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
 Prereq: coreutils
 Prereq: selinux-policy = %{version}-%{release}
@@ -326,6 +327,7 @@ Obsoletes: selinux-policy-strict-sources
 Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
 Prereq: coreutils
 Prereq: selinux-policy = %{version}-%{release}
+Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER}
 
 %description strict 
 SELinux Reference policy strict base module.
@@ -351,6 +353,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Oct 30 2006 Dan Walsh <dwalsh@redhat.com> 2.4.2-3
+- Allow daemons to dump core files to /
+
 * Fri Oct 27 2006 Dan Walsh <dwalsh@redhat.com> 2.4.2-2
 - Fixes for ricci
 
