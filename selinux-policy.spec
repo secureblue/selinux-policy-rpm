@@ -10,14 +10,14 @@
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
-%define POLICYVER 20
+%define POLICYVER 21
 %define libsepolver 1.12.26-1
 %define POLICYCOREUTILSVER 1.30.29-1
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.2
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Oct 27 2006 Dan Walsh <dwalsh@redhat.com> 2.4.2-2
+- Fixes for ricci
+
 * Fri Oct 27 2006 Dan Walsh <dwalsh@redhat.com> 2.4.2-1
 - Allow mount.nfs to work
 
