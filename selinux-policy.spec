@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.2
-Release: 3
+Release: 4
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -353,6 +353,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Oct 31 2006 Dan Walsh <dwalsh@redhat.com> 2.4.2-4
+- Add perms for swat
+
 * Mon Oct 30 2006 Dan Walsh <dwalsh@redhat.com> 2.4.2-3
 - Allow daemons to dump core files to /
 
