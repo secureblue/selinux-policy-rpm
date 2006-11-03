@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.2
-Release: 4
+Release: 8
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -353,6 +353,21 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Nov 3 2006 Dan Walsh <dwalsh@redhat.com> 2.4.2-8
+- Lots of fixes for ricci
+
+* Fri Nov 3 2006 Dan Walsh <dwalsh@redhat.com> 2.4.2-7
+- Allow xen to read/write fixed devices with a boolean
+- Allow apache to search /var/log
+
+* Thu Nov 2 2006 James Antill <james.antill@redhat.com> 2.4.2-6
+- Fix policygentool specfile problem.
+- Allow apache to send signals to it's logging helpers.
+- Resolves: rhbz#212731
+
+* Wed Nov 1 2006 Dan Walsh <dwalsh@redhat.com> 2.4.2-5
+- Add perms for swat
+
 * Tue Oct 31 2006 Dan Walsh <dwalsh@redhat.com> 2.4.2-4
 - Add perms for swat
 
