@@ -16,12 +16,12 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.4.2
-Release: 8
+Version: 2.4.3
+Release: 1
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20061016.patch
+patch: policy-20061106.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -69,9 +69,6 @@ SELinux Policy development package
 %{_usr}/share/selinux/devel/policygentool
 %{_usr}/share/selinux/devel/example.*
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
-%dir %{_usr}/share/selinux/targeted
-%dir %{_usr}/share/selinux/strict
-%dir %{_usr}/share/selinux/mls
 
 %define setupCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 bare \
@@ -108,7 +105,9 @@ ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1 \
 
 %define fileList() \
 %defattr(-,root,root) \
+%dir %{_usr}/share/selinux/%1 \
 %{_usr}/share/selinux/%1/*.pp \
+%{_usr}/share/selinux/%1/include \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %ghost %{_sysconfdir}/selinux/%1/seusers \
@@ -134,8 +133,7 @@ ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1 \
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 %config %{_sysconfdir}/selinux/%1/contexts/files/media \
 %dir %{_sysconfdir}/selinux/%1/contexts/users \
-%{_sysconfdir}/selinux/%1/contexts/users/root \
-%{_usr}/share/selinux/%1/include
+%{_sysconfdir}/selinux/%1/contexts/users/root 
 
 %define saveFileContext() \
 if [ -s /etc/selinux/config ]; then \
@@ -353,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Nov 3 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-1
+- Merge with upstream
+
 * Fri Nov 3 2006 Dan Walsh <dwalsh@redhat.com> 2.4.2-8
 - Lots of fixes for ricci
 
