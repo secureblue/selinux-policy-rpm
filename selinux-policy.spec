@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.3
-Release: 1
+Release: 2
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -133,7 +133,7 @@ ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1 \
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 %config %{_sysconfdir}/selinux/%1/contexts/files/media \
 %dir %{_sysconfdir}/selinux/%1/contexts/users \
-%{_sysconfdir}/selinux/%1/contexts/users/root 
+%{_sysconfdir}/selinux/%1/contexts/users/root
 
 %define saveFileContext() \
 if [ -s /etc/selinux/config ]; then \
@@ -351,7 +351,11 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Fri Nov 3 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-1
+* Tue Nov 7 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-2
+- Fix rpc_port_types
+- Add aide policy for mls
+
+* Mon Nov 6 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-1
 - Merge with upstream
 
 * Fri Nov 3 2006 Dan Walsh <dwalsh@redhat.com> 2.4.2-8
