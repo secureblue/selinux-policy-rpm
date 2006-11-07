@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.3
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Nov 7 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-3
+- Remove ability for sysadm_t to look at audit.log
+
 * Tue Nov 7 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-2
 - Fix rpc_port_types
 - Add aide policy for mls
