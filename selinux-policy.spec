@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.3
-Release: 5
+Release: 6
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Nov 8 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-6
+- Fix unconfined access to shadow file
+
 * Wed Nov 8 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-5
 - Allow xend to create files in xen_image_t directories
 
