@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.3
-Release: 7
+Release: 8
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,7 +351,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Thu Nov 8 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-7
+* Thu Nov 9 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-8
+- Allow xen to search automount
+
+* Thu Nov 9 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-7
 - Fix spec of jre files 
 
 * Wed Nov 8 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-6
