@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.3
-Release: 9
+Release: 10
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Nov 10 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-10
+- Allow xen to connect to xen port
+
 * Fri Nov 10 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-9
 - Allow cups to search samba_etc_t directory
 - Allow xend_t to list auto_mountpoints
