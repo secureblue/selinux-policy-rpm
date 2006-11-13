@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.3
-Release: 10
+Release: 11
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Nov 13 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-11
+- Fix path to realplayer.bin
+
 * Fri Nov 10 2006 Dan Walsh <dwalsh@redhat.com> 2.4.3-10
 - Allow xen to connect to xen port
 
