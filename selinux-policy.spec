@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.4
-Release: 2
+Release: 3
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Nov 15 2006 Dan Walsh <dwalsh@redhat.com> 2.4.4-3
+- Fixes for nvidia driver
+
 * Tue Nov 14 2006 Dan Walsh <dwalsh@redhat.com> 2.4.4-2
 - Allow semanage to signal mcstrans
 
