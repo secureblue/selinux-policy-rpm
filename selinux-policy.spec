@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Nov 20 2006 Dan Walsh <dwalsh@redhat.com> 2.4.5-2
+- Fixes for hwclock, clamav, ftp
+
 * Wed Nov 15 2006 Dan Walsh <dwalsh@redhat.com> 2.4.5-1
 - Move to upstream version which accepted my patches
 
