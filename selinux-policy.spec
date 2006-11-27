@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.5
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Nov 21 2006 Dan Walsh <dwalsh@redhat.com> 2.4.5-4
+- Fix context for helix players file_context #216942
+
 * Mon Nov 20 2006 Dan Walsh <dwalsh@redhat.com> 2.4.5-3
 - Fix load_policy to be able to mls_write_down so it can talk to the terminal
 
