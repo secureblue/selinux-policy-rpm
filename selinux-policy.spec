@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.4.5
-Release: 4%{?dist}
+Version: 2.4.6
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,14 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Nov 28 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-1
+- Dontaudit appending hal_var_lib files 
+Resolves: #217452
+Resolves: #217571
+Resolves: #217611
+Resolves: #217640
+Resolves: #217725
+
 * Mon Nov 21 2006 Dan Walsh <dwalsh@redhat.com> 2.4.5-4
 - Fix context for helix players file_context #216942
 
