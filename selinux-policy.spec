@@ -354,6 +354,8 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 * Thu Nov 28 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-3
 - Allow login programs to polyinstatiate homedirs
 Resolves: #216184
+- Allow quotacheck to create database files
+Resolves: #212957
 
 * Tue Nov 28 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-1
 - Dontaudit appending hal_var_lib files 
