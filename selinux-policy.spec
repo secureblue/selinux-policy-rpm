@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.6
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,11 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Dec 1 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-4
+- ncsd needs to use avahi sockets
+Resolves: #217640
+Resolves: #218014
+
 * Thu Nov 28 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-3
 - Allow login programs to polyinstatiate homedirs
 Resolves: #216184
