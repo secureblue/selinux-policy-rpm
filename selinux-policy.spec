@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.6
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Dec 1 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-5
+- More fixes for quota
+Resolves: #212957
+
 * Fri Dec 1 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-4
 - ncsd needs to use avahi sockets
 Resolves: #217640
