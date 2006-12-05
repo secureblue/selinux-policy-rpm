@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.6
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -180,7 +180,7 @@ mkdir -p %{buildroot}%{_usr}/share/selinux/{targeted,strict,mls}/
 
 # Install devel
 make clean
-make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
+make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
 mkdir %{buildroot}%{_usr}/share/selinux/devel/
 mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
 install -m 755 ${RPM_SOURCE_DIR}/policygentool %{buildroot}%{_usr}/share/selinux/devel/
@@ -351,6 +351,12 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Dec 4 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-6
+- Fix polyinstatiation
+- Fix pcscd handling of terminal
+Resolves: #218149
+Resolves: #218350
+
 * Fri Dec 1 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-5
 - More fixes for quota
 Resolves: #212957
