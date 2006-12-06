@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.6
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Dec 6 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-7
+- Fix handling of keyrings
+
+
 * Mon Dec 4 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-6
 - Fix polyinstatiation
 - Fix pcscd handling of terminal
