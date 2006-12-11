@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.6
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Dec 8 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-9
+- More fixes for MLS
+
 * Wed Dec 6 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-8
 - More Fixes polyinstatiation
 Resolves: #216184
