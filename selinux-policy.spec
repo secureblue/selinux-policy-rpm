@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.6
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,8 +351,13 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Dec 12 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-10
+- Allow initrc to create files in /var directories
+Resolves: #219227
+
 * Fri Dec 8 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-9
 - More fixes for MLS
+Resolves: #181566
 
 * Wed Dec 6 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-8
 - More Fixes polyinstatiation
