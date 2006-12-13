@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Dec 12 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-11
+Resolves: #218978
+
 * Thu Dec 12 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-10
 - Allow initrc to create files in /var directories
 Resolves: #219227
