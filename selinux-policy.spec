@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.6
-Release: 12%{?dist}
+Release: 14%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,7 +351,18 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Wed Dec 13 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-12
+* Thu Dec 14 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-14
+- Allow cron to polyinstatiate 
+- Fix creation of boot flags
+Resolves: #207433
+
+* Thu Dec 14 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-13
+- Fixes for irqbalance
+Resolves: #219606
+
+* Thu Dec 14 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-12
+- Fix vixie-cron to work on mls
+Resolves: #207433
 
 * Wed Dec 13 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-11
 Resolves: #218978
