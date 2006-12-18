@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.6
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Dec 18 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-15
+- allow automount to setgid
+Resolves: #219999
+
 * Thu Dec 14 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-14
 - Allow cron to polyinstatiate 
 - Fix creation of boot flags
