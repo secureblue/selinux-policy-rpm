@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.6
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,12 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Dec 19 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-16
+- Allow semanage to exec it self.  Label genhomedircon as semanage_exec_t
+Resolves: #219421
+- Allow sysadm_lpr_t to manage other print spool jobs
+Resolves: #220080
+
 * Mon Dec 18 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-15
 - allow automount to setgid
 Resolves: #219999
