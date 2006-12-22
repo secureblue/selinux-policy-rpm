@@ -351,6 +351,8 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Dec 20 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-17
+
 * Tue Dec 19 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-16
 - Allow semanage to exec it self.  Label genhomedircon as semanage_exec_t
 Resolves: #219421
