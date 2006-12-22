@@ -351,7 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Wed Dec 20 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-17
+* Fri Dec 22 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-17
+- Fix to allow ftp to bind to ports > 1024
+Resolves: #219349
 
 * Tue Dec 19 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-16
 - Allow semanage to exec it self.  Label genhomedircon as semanage_exec_t
