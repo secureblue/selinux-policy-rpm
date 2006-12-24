@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Sat Dec 23 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-18
+- Many fixes for strict policy and by extension mls.
+
 * Fri Dec 22 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-17
 - Fix to allow ftp to bind to ports > 1024
 Resolves: #219349
