@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.6
-Release: 18%{?dist}
+Release: 19%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Dec 28 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-19
+- Add gconf policy and make it work with strict
+
 * Sat Dec 23 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-18
 - Many fixes for strict policy and by extension mls.
 
