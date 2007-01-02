@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.4.6
-Release: 20%{?dist}
+Release: 21%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -351,6 +351,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Jan 29 2007 Dan Walsh <dwalsh@redhat.com> 2.4.6-21
+- Allow spamassassin to read var_lib_t dir
+Resolves: #219234
+
 * Fri Dec 29 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-20
 - fix mplayer to work under strict policy
 - Allow iptables to use nscd
