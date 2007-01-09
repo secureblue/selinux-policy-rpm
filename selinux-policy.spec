@@ -368,13 +368,8 @@ Resolves: #203290
 - Allow sshd to change passwd
 - Stop newrole -l from working on non securetty
 Resolves: #200110
-
-
-* Wed Jan 3 2007 Dan Walsh <dwalsh@redhat.com> 2.4.6-22
 - Fixes to run prelink in MLS machine
 Resolves: #221233
-
-* Tue Jan 29 2007 Dan Walsh <dwalsh@redhat.com> 2.4.6-21
 - Allow spamassassin to read var_lib_t dir
 Resolves: #219234
 
