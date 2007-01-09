@@ -16,12 +16,12 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.4.6
-Release: 21%{?dist}
+Version: 2.5.1
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20061106.patch
+patch: policy-20070102.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -33,6 +33,9 @@ Source9: modules-strict.conf
 Source10: booleans-strict.conf
 Source12: setrans-strict.conf
 Source13: policygentool
+Source14: securetty_contexts-targeted
+Source15: securetty_contexts-mls
+Source16: securetty_contexts-strict
 
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -99,6 +102,7 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
+install -m0644 ${RPM_SOURCE_DIR}/securetty_contexts-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_contexts \
 install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
 ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1 \
 %nil
@@ -120,6 +124,7 @@ ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1 \
 %ghost %{_sysconfdir}/selinux/%1/policy/policy.* \
 %dir %{_sysconfdir}/selinux/%1/contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/customizable_types \
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/securetty_contexts \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/dbus_contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/default_contexts \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/default_type \
@@ -160,6 +165,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
+Based off of reference policy: Checked out revision 2175.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
@@ -351,6 +357,23 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Jan 8 2007 Dan Walsh <dwalsh@redhat.com> 2.5.1-1
+- Allow prelink when run from rpm to create tmp files
+Resolves: #221865
+- Remove file_context for exportfs
+Resolves: #221181
+- Allow spamassassin to create ~/.spamassissin
+Resolves: #203290
+- Allow ssh access to the krb tickets
+- Allow sshd to change passwd
+- Stop newrole -l from working on non securetty
+Resolves: #200110
+
+
+* Wed Jan 3 2007 Dan Walsh <dwalsh@redhat.com> 2.4.6-22
+- Fixes to run prelink in MLS machine
+Resolves: #221233
+
 * Tue Jan 29 2007 Dan Walsh <dwalsh@redhat.com> 2.4.6-21
 - Allow spamassassin to read var_lib_t dir
 Resolves: #219234
