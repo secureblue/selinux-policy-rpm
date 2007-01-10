@@ -357,6 +357,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Jan 10 2007 Dan Walsh <dwalsh@redhat.com> 2.5.1-2
+- Fixes for prelink, ktalkd, netlabel
+
 * Mon Jan 8 2007 Dan Walsh <dwalsh@redhat.com> 2.5.1-1
 - Allow prelink when run from rpm to create tmp files
 Resolves: #221865
