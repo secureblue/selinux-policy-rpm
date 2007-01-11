@@ -12,7 +12,7 @@
 %endif
 %define POLICYVER 21
 %define libsepolver 1.12.26-1
-%define POLICYCOREUTILSVER 1.30.29-1
+%define POLICYCOREUTILSVER 1.33.12-1
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
@@ -33,9 +33,9 @@ Source9: modules-strict.conf
 Source10: booleans-strict.conf
 Source12: setrans-strict.conf
 Source13: policygentool
-Source14: securetty_contexts-targeted
-Source15: securetty_contexts-mls
-Source16: securetty_contexts-strict
+Source14: securetty_types-targeted
+Source15: securetty_types-mls
+Source16: securetty_types-strict
 
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -102,7 +102,7 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
-install -m0644 ${RPM_SOURCE_DIR}/securetty_contexts-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_contexts \
+install -m0644 ${RPM_SOURCE_DIR}/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
 install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
 ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1 \
 %nil
@@ -124,7 +124,7 @@ ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1 \
 %ghost %{_sysconfdir}/selinux/%1/policy/policy.* \
 %dir %{_sysconfdir}/selinux/%1/contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/customizable_types \
-%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/securetty_contexts \
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/securetty_types \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/dbus_contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/default_contexts \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/default_type \
