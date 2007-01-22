@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -200,7 +200,6 @@ chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 # Commented out because only targeted ref policy currently builds
 %setupCmds targeted targeted-mcs y y
 %installCmds targeted targeted-mcs y y
-make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=y MLS_CATS=1024 MCS_CATS=1024 validatefc 
 %endif
 
 %if %{BUILD_STRICT}
@@ -357,6 +356,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Jan 10 2007 Dan Walsh <dwalsh@redhat.com> 2.5.1-4
+- Begin adding user confinement to targeted policy 
+
 * Wed Jan 10 2007 Dan Walsh <dwalsh@redhat.com> 2.5.1-2
 - Fixes for prelink, ktalkd, netlabel
 
