@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.5.1
-Release: 5%{?dist}
+Version: 2.5.2
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -165,7 +165,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2175.
+Based off of reference policy: Checked out revision 2178.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
@@ -356,6 +356,11 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Jan 25 2007 Dan Walsh <dwalsh@redhat.com> 2.5.2-1
+- Add ability to generate webadm_t policy
+- Lots of new interfaces for httpd
+- Allow sshd to login as unconfined_t
+
 * Mon Jan 22 2007 Dan Walsh <dwalsh@redhat.com> 2.5.1-5
 - Continue fixing, additional user domains
 
