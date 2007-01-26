@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -356,6 +356,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Jan 25 2007 Dan Walsh <dwalsh@redhat.com> 2.5.2-2
+- Fix squid cachemgr labeling
+
 * Thu Jan 25 2007 Dan Walsh <dwalsh@redhat.com> 2.5.2-1
 - Add ability to generate webadm_t policy
 - Lots of new interfaces for httpd
