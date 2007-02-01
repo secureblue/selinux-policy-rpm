@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.2
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -356,6 +356,11 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Feb 1 2007 Dan Walsh <dwalsh@redhat.com> 2.5.2-4
+- Fix spamassisin so crond can update spam files
+- Fixes to allow kpasswd to work
+- Fixes for bluetooth
+
 * Fri Jan 25 2007 Dan Walsh <dwalsh@redhat.com> 2.5.2-3
 - Remove some targeted diffs in file context file
 
