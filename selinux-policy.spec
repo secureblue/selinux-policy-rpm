@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.2
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -356,6 +356,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Sun Feb 4 2007 Dan Walsh <dwalsh@redhat.com> 2.5.2-5
+- Fix ssh_agent to be marked as an executable
+- Allow Hal to rw sound device 
+
 * Thu Feb 1 2007 Dan Walsh <dwalsh@redhat.com> 2.5.2-4
 - Fix spamassisin so crond can update spam files
 - Fixes to allow kpasswd to work
