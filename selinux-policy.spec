@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.2
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -356,6 +356,14 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Feb 5 2007 Dan Walsh <dwalsh@redhat.com> 2.5.2-6
+- Allow mozilla, evolution and thunderbird to read dev_random.
+Resolves: #227002
+- Allow spamd to connect to smtp port
+Resolves: #227184
+- Fixes to make ypxfr work
+Resolves: #227237
+
 * Sun Feb 4 2007 Dan Walsh <dwalsh@redhat.com> 2.5.2-5
 - Fix ssh_agent to be marked as an executable
 - Allow Hal to rw sound device 
