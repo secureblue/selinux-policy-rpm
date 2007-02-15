@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.3
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -357,6 +357,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* THu Feb 15 2007 Dan Walsh <dwalsh@redhat.com> 2.5.3-3
+- Add sepolgen support
+- Add bugzilla policy
+
 * Wed Feb 14 2007 Dan Walsh <dwalsh@redhat.com> 2.5.3-2
 - Fix file context for nemiver
 
