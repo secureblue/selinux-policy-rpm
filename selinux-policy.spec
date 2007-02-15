@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -104,14 +104,12 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 install -m0644 ${RPM_SOURCE_DIR}/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
 install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
-ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/%1 \
 %nil
 
 %define fileList() \
 %defattr(-,root,root) \
 %dir %{_usr}/share/selinux/%1 \
 %{_usr}/share/selinux/%1/*.pp \
-%{_usr}/share/selinux/%1/include \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %ghost %{_sysconfdir}/selinux/%1/seusers \
@@ -209,7 +207,6 @@ make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{m
 make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=n MLS_CATS=1024 MCS_CATS=1024 conf
 cp -f ${RPM_SOURCE_DIR}/modules-strict.conf  ./policy/modules.conf 
 %installCmds strict strict-mcs y n
-ln -sf ../devel/include %{buildroot}%{_usr}/share/selinux/strict 
 %endif
 
 %if %{BUILD_MLS}
@@ -356,8 +353,11 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Sun Feb 11 2007 Dan Walsh <dwalsh@redhat.com> 2.5.3-7
-- 
+* Wed Feb 14 2007 Dan Walsh <dwalsh@redhat.com> 2.5.3-2
+- Fix file context for nemiver
+
+* Sun Feb 11 2007 Dan Walsh <dwalsh@redhat.com> 2.5.3-1
+- Remove include sym link
 
 * Mon Feb 5 2007 Dan Walsh <dwalsh@redhat.com> 2.5.2-6
 - Allow mozilla, evolution and thunderbird to read dev_random.
