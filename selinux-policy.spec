@@ -12,7 +12,7 @@
 %endif
 %define POLICYVER 21
 %define libsepolver 1.12.26-1
-%define POLICYCOREUTILSVER 1.33.12-1
+%define POLICYCOREUTILSVER 2.0.1-2
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
@@ -72,6 +72,9 @@ SELinux Policy development package
 %{_usr}/share/selinux/devel/policygentool
 %{_usr}/share/selinux/devel/example.*
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
+
+%post devel
+[ -x /usr/bin/sepolgen-ifgen ] && /usr/bin/sepolgen-ifgen  > /dev/null
 
 %define setupCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 bare \
@@ -168,6 +171,7 @@ Based off of reference policy: Checked out revision 2180.
 %prep 
 %setup -q -n serefpolicy-%{version}
 %patch -p1
+%patch -p2
 
 %install
 # Build targeted policy
