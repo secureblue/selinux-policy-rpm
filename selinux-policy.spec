@@ -171,7 +171,6 @@ Based off of reference policy: Checked out revision 2180.
 %prep 
 %setup -q -n serefpolicy-%{version}
 %patch -p1
-%patch -p2
 
 %install
 # Build targeted policy
@@ -357,7 +356,7 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* THu Feb 15 2007 Dan Walsh <dwalsh@redhat.com> 2.5.3-3
+* Thu Feb 15 2007 Dan Walsh <dwalsh@redhat.com> 2.5.3-3
 - Add sepolgen support
 - Add bugzilla policy
 
