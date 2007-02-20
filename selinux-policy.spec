@@ -16,12 +16,12 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.5.3
-Release: 3%{?dist}
+Version: 2.5.4
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20070102.patch
+patch: policy-20070219.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -166,7 +166,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2180.
+Based off of reference policy: Checked out revision 2181.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
