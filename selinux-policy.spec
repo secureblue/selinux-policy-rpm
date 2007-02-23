@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.4
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -214,8 +214,8 @@ cp -f ${RPM_SOURCE_DIR}/modules-strict.conf  ./policy/modules.conf
 
 %if %{BUILD_MLS}
 # Build mls policy
-%setupCmds mls strict-mls n y
-%installCmds mls strict-mls n y 
+%setupCmds mls strict-mls y y
+%installCmds mls strict-mls y y 
 %endif
 
 %clean
@@ -356,6 +356,14 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Feb 21 2007 Dan Walsh <dwalsh@redhat.com> 2.5.4-2
+- Revert Nemiver change
+- Set sudo as a corecmd so prelink will work,  remove sudoedit mapping, since this will not work, it does not transition.
+- Allow samba to execute useradd
+
+* Tue Feb 20 2007 Dan Walsh <dwalsh@redhat.com> 2.5.4-1
+- Upgrade to the latest from upstream
+
 * Thu Feb 15 2007 Dan Walsh <dwalsh@redhat.com> 2.5.3-3
 - Add sepolgen support
 - Add bugzilla policy
