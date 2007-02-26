@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.5.4
-Release: 2%{?dist}
+Version: 2.5.5
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -166,7 +166,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2182.
+Based off of reference policy: Checked out revision 2189.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
@@ -356,6 +356,8 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Feb 23 2007 Dan Walsh <dwalsh@redhat.com> 2.5.5-1
+
 * Wed Feb 21 2007 Dan Walsh <dwalsh@redhat.com> 2.5.4-2
 - Revert Nemiver change
 - Set sudo as a corecmd so prelink will work,  remove sudoedit mapping, since this will not work, it does not transition.
