@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -356,7 +356,11 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Feb 23 2007 Dan Walsh <dwalsh@redhat.com> 2.5.5-2
+- Policy for consolekit
+
 * Fri Feb 23 2007 Dan Walsh <dwalsh@redhat.com> 2.5.5-1
+- Update to latest from upstream
 
 * Wed Feb 21 2007 Dan Walsh <dwalsh@redhat.com> 2.5.4-2
 - Revert Nemiver change
