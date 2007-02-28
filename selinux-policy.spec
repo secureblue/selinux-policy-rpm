@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.5.5
-Release: 2%{?dist}
+Version: 2.5.6
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -166,7 +166,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2189.
+Based off of reference policy: Checked out revision 2202.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
@@ -356,6 +356,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Feb 28 2007 Dan Walsh <dwalsh@redhat.com> 2.5.6-1
+- Update to remove security_t:filesystem getattr problems
+
 * Fri Feb 23 2007 Dan Walsh <dwalsh@redhat.com> 2.5.5-2
 - Policy for consolekit
 
