@@ -16,7 +16,7 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.5.6
+Version: 2.5.7
 Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
@@ -356,6 +356,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Mar 1 2007 Dan Walsh <dwalsh@redhat.com> 2.5.7-1
+- Update to latest from upstream
+- Add fail2ban policy
+
 * Wed Feb 28 2007 Dan Walsh <dwalsh@redhat.com> 2.5.6-1
 - Update to remove security_t:filesystem getattr problems
 
