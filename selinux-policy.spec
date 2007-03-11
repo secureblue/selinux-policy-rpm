@@ -16,7 +16,7 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.5.7
+Version: 2.5.8
 Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
@@ -166,7 +166,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2204.
+Based off of reference policy: Checked out revision 2215.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
@@ -356,6 +356,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Mar 1 2007 Dan Walsh <dwalsh@redhat.com> 2.5.8-1
+- More of my patches from upstream
+
 * Thu Mar 1 2007 Dan Walsh <dwalsh@redhat.com> 2.5.7-1
 - Update to latest from upstream
 - Add fail2ban policy
