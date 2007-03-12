@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.8
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -356,7 +356,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Thu Mar 1 2007 Dan Walsh <dwalsh@redhat.com> 2.5.8-1
+* Mon Mar 12 2007 Dan Walsh <dwalsh@redhat.com> 2.5.8-2
+- Fix handling of unlabled_t packets
+
+* Thu Mar 8 2007 Dan Walsh <dwalsh@redhat.com> 2.5.8-1
 - More of my patches from upstream
 
 * Thu Mar 1 2007 Dan Walsh <dwalsh@redhat.com> 2.5.7-1
