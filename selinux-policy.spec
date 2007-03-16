@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.8
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -356,6 +356,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Mar 15 2007 Dan Walsh <dwalsh@redhat.com> 2.5.8-5
+- Fix prelink to be able to manage usr dirs.
+
 * Tue Mar 13 2007 Dan Walsh <dwalsh@redhat.com> 2.5.8-4
 - Allow insmod to launch init scripts
 
