@@ -357,7 +357,7 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 
 %changelog
 * Mon Mar 19 2007 Dan Walsh <dwalsh@redhat.com> 2.5.8-6
-- Remove enable_audit booleans
+- Remove disable_trans booleans
 - hald_acl_t needs to talk to nscd
 
 * Thu Mar 15 2007 Dan Walsh <dwalsh@redhat.com> 2.5.8-5
