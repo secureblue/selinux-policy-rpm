@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.8
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -356,6 +356,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Mar 19 2007 Dan Walsh <dwalsh@redhat.com> 2.5.8-6
+- Remove enable_audit booleans
+- hald_acl_t needs to talk to nscd
+
 * Thu Mar 15 2007 Dan Walsh <dwalsh@redhat.com> 2.5.8-5
 - Fix prelink to be able to manage usr dirs.
 
