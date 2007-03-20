@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.5.8
-Release: 8%{?dist}
+Version: 2.5.9
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -356,6 +356,8 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Mar 20 2007 Dan Walsh <dwalsh@redhat.com> 2.5.9-1
+
 * Mon Mar 19 2007 Dan Walsh <dwalsh@redhat.com> 2.5.8-8
 - Fixes for samba_var_t
 
