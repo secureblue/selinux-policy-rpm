@@ -17,11 +17,12 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.9
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-20070219.patch
+patch1: policy-udev_tbl.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -171,6 +172,7 @@ Based off of reference policy: Checked out revision 2215.
 %prep 
 %setup -q -n serefpolicy-%{version}
 %patch -p1
+%patch1 -p1
 
 %install
 # Build targeted policy
@@ -356,6 +358,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Mar 21 2007 Dan Walsh <dwalsh@redhat.com> 2.5.9-5
+- Fix labeling on udev.tbl dirs
+
 * Tue Mar 20 2007 Dan Walsh <dwalsh@redhat.com> 2.5.9-4
 - Fixes for logwatch
 
