@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.10
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -356,6 +356,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Mar 23 2007 Dan Walsh <dwalsh@redhat.com> 2.5.10-2
+- Allow samba to run groupadd
+
 * Thu Mar 22 2007 Dan Walsh <dwalsh@redhat.com> 2.5.10-1
 - Update to upstream
 
