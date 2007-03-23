@@ -12,17 +12,16 @@
 %endif
 %define POLICYVER 21
 %define libsepolver 1.12.26-1
-%define POLICYCOREUTILSVER 2.0.1-2
+%define POLICYCOREUTILSVER 2.0.7-5
 %define CHECKPOLICYVER 1.30.11-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.5.9
-Release: 5%{?dist}
+Version: 2.5.10
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-20070219.patch
-patch1: policy-udev_tbl.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -75,7 +74,7 @@ SELinux Policy development package
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
 
 %post devel
-[ -x /usr/bin/sepolgen-ifgen ] && /usr/bin/sepolgen-ifgen  > /dev/null
+[ -x /usr/sbin/sepolgen-ifgen ] && /usr/sbin/sepolgen-ifgen  > /dev/null
 
 %define setupCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 bare \
@@ -172,7 +171,6 @@ Based off of reference policy: Checked out revision 2215.
 %prep 
 %setup -q -n serefpolicy-%{version}
 %patch -p1
-%patch1 -p1
 
 %install
 # Build targeted policy
@@ -358,6 +356,12 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Mar 22 2007 Dan Walsh <dwalsh@redhat.com> 2.5.10-1
+- Update to upstream
+
+* Thu Mar 22 2007 Dan Walsh <dwalsh@redhat.com> 2.5.9-6
+- Allow mdadm to access generic scsi devices
+
 * Wed Mar 21 2007 Dan Walsh <dwalsh@redhat.com> 2.5.9-5
 - Fix labeling on udev.tbl dirs
 
