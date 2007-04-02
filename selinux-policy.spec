@@ -166,7 +166,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2247.
+Based off of reference policy: Checked out revision 2253.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
