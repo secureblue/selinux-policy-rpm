@@ -11,13 +11,13 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 21
-%define libsepolver 1.12.26-1
+%define libsepolver 2.0.1-2
 %define POLICYCOREUTILSVER 2.0.7-5
-%define CHECKPOLICYVER 1.30.11-1
+%define CHECKPOLICYVER 2.0.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.5.10
-Release: 2%{?dist}
+Version: 2.5.11
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -166,7 +166,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2215.
+Based off of reference policy: Checked out revision 2247.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
@@ -187,15 +187,6 @@ mkdir -p %{buildroot}%{_usr}/share/selinux/{targeted,strict,mls}/
 
 # Install devel
 make clean
-make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
-mkdir %{buildroot}%{_usr}/share/selinux/devel/
-mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
-install -m 755 ${RPM_SOURCE_DIR}/policygentool %{buildroot}%{_usr}/share/selinux/devel/
-install -m 644 ${RPM_SOURCE_DIR}/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
-install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
-echo  "htmlview file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
-chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
-
 %if %{BUILD_TARGETED}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
@@ -217,6 +208,16 @@ cp -f ${RPM_SOURCE_DIR}/modules-strict.conf  ./policy/modules.conf
 %setupCmds mls strict-mls y y
 %installCmds mls strict-mls y y 
 %endif
+
+make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
+mkdir %{buildroot}%{_usr}/share/selinux/devel/
+mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
+install -m 755 ${RPM_SOURCE_DIR}/policygentool %{buildroot}%{_usr}/share/selinux/devel/
+install -m 644 ${RPM_SOURCE_DIR}/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
+install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
+echo  "htmlview file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
+chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
+
 
 %clean
 %{__rm} -fR %{buildroot}
@@ -356,6 +357,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Mar 26 2007 Dan Walsh <dwalsh@redhat.com> 2.5.11-1
+- Update to upstream
+
 * Fri Mar 23 2007 Dan Walsh <dwalsh@redhat.com> 2.5.10-2
 - Allow samba to run groupadd
 
