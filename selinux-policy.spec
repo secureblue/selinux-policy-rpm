@@ -159,7 +159,8 @@ rm -f %{_sysconfdir}/selinux/%1/policy/policy.*.rpmnew
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
 FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
-if [ "${SELINUXTYPE}" == %1 -a -f ${FILE_CONTEXT}.pre ]; then \
+selinuxenabled; \
+if [ $? == 0  -a "${SELINUXTYPE}" == %1 -a -f ${FILE_CONTEXT}.pre ]; then \
 	fixfiles -C ${FILE_CONTEXT}.pre restore; \
 	rm -f ${FILE_CONTEXT}.pre; \
 fi; 
