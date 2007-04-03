@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.11
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -358,6 +358,11 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Apr 3 2007 Dan Walsh <dwalsh@redhat.com> 2.5.11-2
+- Allow syslog-ng to read /var
+- Allow locate to getattr on all filesystems
+- nscd needs setcap
+
 * Mon Mar 26 2007 Dan Walsh <dwalsh@redhat.com> 2.5.11-1
 - Update to upstream
 
