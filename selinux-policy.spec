@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.11
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -358,6 +358,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Apr 4 2007 Dan Walsh <dwalsh@redhat.com> 2.5.11-4
+- Fixes for samba domain controller.
+- Allow ConsoleKit to look at ttys
+
 * Tue Apr 3 2007 Dan Walsh <dwalsh@redhat.com> 2.5.11-3
 - Fix interface call
 
