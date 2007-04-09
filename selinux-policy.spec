@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.11
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -358,6 +358,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Apr 9 2007 Dan Walsh <dwalsh@redhat.com> 2.5.11-6
+- Fix hald_acl_t to be able to getattr/setattr on usb devices
+- Dontaudit write to unconfined_pipes for load_policy
+
 * Thu Apr 5 2007 Dan Walsh <dwalsh@redhat.com> 2.5.11-5
 - Allow bluetooth to read inotifyfs
 
