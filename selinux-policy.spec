@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.11
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -358,6 +358,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Apr 9 2007 Dan Walsh <dwalsh@redhat.com> 2.5.11-7
+- Fixes for pyzor, cyrus, consoletype on everything installs
+
 * Mon Apr 9 2007 Dan Walsh <dwalsh@redhat.com> 2.5.11-6
 - Fix hald_acl_t to be able to getattr/setattr on usb devices
 - Dontaudit write to unconfined_pipes for load_policy
