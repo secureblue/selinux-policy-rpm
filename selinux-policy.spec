@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.11
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -358,6 +358,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Apr 10 2007 Dan Walsh <dwalsh@redhat.com> 2.5.11-8
+- Fix Sonypic backlight
+- Allow snmp to look at squid_conf_t
+
 * Mon Apr 9 2007 Dan Walsh <dwalsh@redhat.com> 2.5.11-7
 - Fixes for pyzor, cyrus, consoletype on everything installs
 
