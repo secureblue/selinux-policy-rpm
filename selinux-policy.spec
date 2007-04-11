@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.5.11
-Release: 8%{?dist}
+Version: 2.5.12
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -167,7 +167,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2253.
+Based off of reference policy: Checked out revision 2261.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
@@ -358,6 +358,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Apr 10 2007 Dan Walsh <dwalsh@redhat.com> 2.5.12-1
+- Update to upstream
+
 * Tue Apr 10 2007 Dan Walsh <dwalsh@redhat.com> 2.5.11-8
 - Fix Sonypic backlight
 - Allow snmp to look at squid_conf_t
