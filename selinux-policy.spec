@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.12
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -358,6 +358,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri Apr 12 2007 Dan Walsh <dwalsh@redhat.com> 2.5.12-3
+- fixes for fusefs
+
 * Thu Apr 12 2007 Dan Walsh <dwalsh@redhat.com> 2.5.12-2
 - Fix samba_net to allow it to view samba_var_t
 
