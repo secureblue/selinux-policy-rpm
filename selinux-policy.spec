@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.12
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -358,6 +358,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Tue Apr 17 2007 Dan Walsh <dwalsh@redhat.com> 2.5.12-5
+- Allow insmod_t to mount kvmfs_t filesystems
+
 * Tue Apr 17 2007 Dan Walsh <dwalsh@redhat.com> 2.5.12-4
 - Rwho policy
 - Fixes for consolekit
