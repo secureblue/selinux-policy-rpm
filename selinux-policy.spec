@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.5.12
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -358,6 +358,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu Apr 19 2007 Dan Walsh <dwalsh@redhat.com> 2.5.12-11
+- Allow iptbales to read etc_runtime_t
+
 * Thu Apr 19 2007 Dan Walsh <dwalsh@redhat.com> 2.5.12-10
 - MLS Fixes
 
