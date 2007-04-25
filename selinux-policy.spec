@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.6.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -358,6 +358,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed Apr 25 2007 Dan Walsh <dwalsh@redhat.com> 2.6.1-2
+- Fixes for unix_update
+- Fix logwatch to be able to search all dirs
+
 * Mon Apr 23 2007 Dan Walsh <dwalsh@redhat.com> 2.6.1-1
 - Upstream bumped the version
 
