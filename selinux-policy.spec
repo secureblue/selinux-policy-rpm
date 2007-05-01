@@ -16,12 +16,12 @@
 %define CHECKPOLICYVER 2.0.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.6.1
-Release: 3%{?dist}
+Version: 2.6.2
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20070219.patch
+patch: policy-20070501.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -246,7 +246,7 @@ SETLOCALDEFS=0
 " > /etc/selinux/config
 
 	ln -sf ../selinux/config /etc/sysconfig/selinux 
-	restorecon /etc/selinux/config 2> /dev/null
+	restorecon -R /etc/selinux/config /var/log 2> /dev/null
 else
 	. /etc/selinux/config
 	# if first time update booleans.local needs to be copied to sandbox
@@ -358,6 +358,12 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon Apr 30 2007 Dan Walsh <dwalsh@redhat.com> 2.6.2-1
+- Update to latest from upstream
+
+* Fri Apr 27 2007 Dan Walsh <dwalsh@redhat.com> 2.6.1-4
+- Allow pcscd_t to send itself signals
+
 * Fri Apr 27 2007 Dan Walsh <dwalsh@redhat.com> 2.6.1-3
 - 
 
