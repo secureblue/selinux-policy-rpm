@@ -162,12 +162,13 @@ FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 selinuxenabled; \
 if [ $? == 0  -a "${SELINUXTYPE}" == %1 -a -f ${FILE_CONTEXT}.pre ]; then \
 	fixfiles -C ${FILE_CONTEXT}.pre restore; \
+	restorecon -R /var/log 2> /dev/null; \
 	rm -f ${FILE_CONTEXT}.pre; \
 fi; 
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2261.
+Based off of reference policy: Checked out revision 2282.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
@@ -246,7 +247,7 @@ SETLOCALDEFS=0
 " > /etc/selinux/config
 
 	ln -sf ../selinux/config /etc/sysconfig/selinux 
-	restorecon -R /etc/selinux/config /var/log 2> /dev/null
+	restorecon /etc/selinux/config 2> /dev/null
 else
 	. /etc/selinux/config
 	# if first time update booleans.local needs to be copied to sandbox
