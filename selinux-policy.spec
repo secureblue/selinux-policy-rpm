@@ -139,7 +139,7 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf %{buildroot}%{_sysconfdir}/seli
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 %config %{_sysconfdir}/selinux/%1/contexts/files/media \
 %dir %{_sysconfdir}/selinux/%1/contexts/users \
-%{_sysconfdir}/selinux/%1/contexts/users/root
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/root
 
 %define saveFileContext() \
 if [ -s /etc/selinux/config ]; then \
