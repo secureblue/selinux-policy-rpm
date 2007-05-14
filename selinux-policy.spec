@@ -359,6 +359,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Mon May 14 2007 Dan Walsh <dwalsh@redhat.com> 2.6.4-1
+- Update to latest from upstream
+
 * Fri May 4 2007 Dan Walsh <dwalsh@redhat.com> 2.6.3-1
 - Update to latest from upstream
 
