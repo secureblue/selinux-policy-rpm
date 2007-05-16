@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.6.4
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -359,6 +359,11 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed May 16 2007 Dan Walsh <dwalsh@redhat.com> 2.6.4-3
+- Fixes for suspend resume.  
+	- insmod domtrans to alsactl
+	- insmod writes to hal log
+
 * Wed May 16 2007 Dan Walsh <dwalsh@redhat.com> 2.6.4-2
 - Allow unconfined_t to transition to NetworkManager_t
 - Fix netlabel policy
