@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.6.4
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -359,6 +359,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Wed May 16 2007 Dan Walsh <dwalsh@redhat.com> 2.6.4-2
+- Allow unconfined_t to transition to NetworkManager_t
+- Fix netlabel policy
+
 * Mon May 14 2007 Dan Walsh <dwalsh@redhat.com> 2.6.4-1
 - Update to latest from upstream
 
