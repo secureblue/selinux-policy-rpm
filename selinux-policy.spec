@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.6.4
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -359,6 +359,9 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Thu May 17 2007 Dan Walsh <dwalsh@redhat.com> 2.6.4-6
+- allow alsactl to read kernel state
+
 * Wed May 16 2007 Dan Walsh <dwalsh@redhat.com> 2.6.4-5
 - More fixes for alsactl
 - Transition from hal and modutils
