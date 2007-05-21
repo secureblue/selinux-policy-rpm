@@ -16,12 +16,12 @@
 %define CHECKPOLICYVER 2.0.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.6.4
-Release: 6%{?dist}
+Version: 2.6.5
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20070501.patch
+patch: policy-20070518.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -168,7 +168,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2282.
+Based off of reference policy: Checked out revision 2300.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
@@ -359,6 +359,11 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
+* Fri May 18 2007 Dan Walsh <dwalsh@redhat.com> 2.6.5-1
+
+* Fri May 18 2007 Dan Walsh <dwalsh@redhat.com> 2.6.4-7
+- Allow kerberos servers to use ldap for backing store
+
 * Thu May 17 2007 Dan Walsh <dwalsh@redhat.com> 2.6.4-6
 - allow alsactl to read kernel state
 
