@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 2.6.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -359,7 +359,10 @@ semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init
 %endif
 
 %changelog
-* Fri May 18 2007 Dan Walsh <dwalsh@redhat.com> 2.6.5-1
+* Fri May 18 2007 Dan Walsh <dwalsh@redhat.com> 2.6.5-2
+- Fix for amands
+- Allow semanage to read pp files
+- Allow rhgb to read xdm_xserver_tmp
 
 * Fri May 18 2007 Dan Walsh <dwalsh@redhat.com> 2.6.4-7
 - Allow kerberos servers to use ldap for backing store
