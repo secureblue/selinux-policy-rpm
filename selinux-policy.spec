@@ -1,9 +1,6 @@
 %define distro redhat
 %define polyinstatiate n
 %define monolithic n
-%if %{?BUILD_STRICT:0}%{!?BUILD_STRICT:1}
-%define BUILD_STRICT 1
-%endif
 %if %{?BUILD_TARGETED:0}%{!?BUILD_TARGETED:1}
 %define BUILD_TARGETED 1
 %endif
@@ -16,12 +13,12 @@
 %define CHECKPOLICYVER 2.0.1-2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 2.6.5
-Release: 2%{?dist}
+Version: 3.0.1
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20070518.patch
+patch: policy-20070525.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -29,13 +26,9 @@ Source4: setrans-targeted.conf
 Source5: modules-mls.conf
 Source6: booleans-mls.conf	
 Source8: setrans-mls.conf
-Source9: modules-strict.conf
-Source10: booleans-strict.conf
-Source12: setrans-strict.conf
 Source13: policygentool
 Source14: securetty_types-targeted
 Source15: securetty_types-mls
-Source16: securetty_types-strict
 
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -168,7 +161,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2300.
+Based off of reference policy: Checked out revision 2312.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
@@ -185,7 +178,7 @@ touch %{buildroot}%{_sysconfdir}/selinux/config
 touch %{buildroot}%{_sysconfdir}/sysconfig/selinux
 
 # Always create policy module package directories
-mkdir -p %{buildroot}%{_usr}/share/selinux/{targeted,strict,mls}/
+mkdir -p %{buildroot}%{_usr}/share/selinux/{targeted,mls}/
 
 # Install devel
 make clean
@@ -194,15 +187,6 @@ make clean
 # Commented out because only targeted ref policy currently builds
 %setupCmds targeted targeted-mcs y y
 %installCmds targeted targeted-mcs y y
-%endif
-
-%if %{BUILD_STRICT}
-# Build strict policy
-# Commented out because only targeted ref policy currently builds
-make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=n MLS_CATS=1024 MCS_CATS=1024 bare 
-make NAME=strict TYPE=strict-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} POLY=n MLS_CATS=1024 MCS_CATS=1024 conf
-cp -f ${RPM_SOURCE_DIR}/modules-strict.conf  ./policy/modules.conf 
-%installCmds strict strict-mcs y n
 %endif
 
 %if %{BUILD_MLS}
@@ -237,8 +221,7 @@ if [ ! -s /etc/selinux/config ]; then
 #	disabled - No SELinux policy is loaded.
 SELINUX=enforcing
 # SELINUXTYPE= can take one of these two values:
-#	targeted - Only targeted network daemons are protected.
-#	strict - Full SELinux protection.
+#	targeted - Targeted processes are protected,
 #	mls - Multi Level Security protection.
 SELINUXTYPE=targeted 
 # SETLOCALDEFS= Check local definition changes
@@ -323,42 +306,13 @@ SELinux Reference policy mls base module.
 
 %endif
 
-%if %{BUILD_STRICT}
-
-%package strict 
-Summary: SELinux strict base policy
-Group: System Environment/Base
-Provides: selinux-policy-base
-Obsoletes: selinux-policy-strict-sources
-Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
-Prereq: coreutils
-Prereq: selinux-policy = %{version}-%{release}
-Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER}
-
-%description strict 
-SELinux Reference policy strict base module.
-
-%pre strict 
-%saveFileContext strict
-
-%post strict 
-%rebuildpolicy strict
-%relabel strict
-
-%triggerpostun strict -- selinux-policy-strict <= 2.2.35-2
-cd /usr/share/selinux/strict
-x=`ls *.pp | grep -v -e base.pp -e enableaudit.pp | awk '{ print "-i " $1 }'`
-semodule -b base.pp -r bootloader -r clock -r dpkg -r fstools -r hotplug -r init -r libraries -r locallogin -r logging -r lvm -r miscfiles -r modutils -r mount -r mta -r netutils -r selinuxutil -r storage -r sysnetwork -r udev -r userdomain -r vpnc -r xend $x -s strict
-
-%triggerpostun strict -- strict <= 2.0.7
-%rebuildpolicy strict 
-
-%files strict
-%fileList strict
-
-%endif
-
 %changelog
+* Fri May 25 2007 Dan Walsh <dwalsh@redhat.com> 3.0.1-1
+- Remove ifdef strict policy from upstream
+
+* Fri May 18 2007 Dan Walsh <dwalsh@redhat.com> 2.6.5-3
+- Remove ifdef strict to allow user_u to login 
+
 * Fri May 18 2007 Dan Walsh <dwalsh@redhat.com> 2.6.5-2
 - Fix for amands
 - Allow semanage to read pp files
