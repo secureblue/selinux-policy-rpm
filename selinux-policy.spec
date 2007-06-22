@@ -4,13 +4,16 @@
 %if %{?BUILD_TARGETED:0}%{!?BUILD_TARGETED:1}
 %define BUILD_TARGETED 1
 %endif
+%if %{?BUILD_OLPC:0}%{!?BUILD_OLPC:1}
+%define BUILD_OLPC 0
+%endif
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 21
-%define libsepolver 2.0.1-2
-%define POLICYCOREUTILSVER 2.0.7-5
-%define CHECKPOLICYVER 2.0.1-2
+%define libsepolver 2.0.3-2
+%define POLICYCOREUTILSVER 2.0.21-1
+%define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.1
@@ -26,6 +29,10 @@ Source4: setrans-targeted.conf
 Source5: modules-mls.conf
 Source6: booleans-mls.conf	
 Source8: setrans-mls.conf
+Source9: modules-olpc.conf
+Source10: booleans-olpc.conf	
+Source11: setrans-olpc.conf
+Source12: securetty_types-olpc
 Source13: policygentool
 Source14: securetty_types-targeted
 Source15: securetty_types-mls
@@ -68,6 +75,7 @@ SELinux Policy development package
 
 %post devel
 [ -x /usr/sbin/sepolgen-ifgen ] && /usr/sbin/sepolgen-ifgen  > /dev/null
+exit 0
 
 %define setupCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 bare \
@@ -132,7 +140,10 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf %{buildroot}%{_sysconfdir}/seli
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 %config %{_sysconfdir}/selinux/%1/contexts/files/media \
 %dir %{_sysconfdir}/selinux/%1/contexts/users \
-%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/root
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/root \
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/guest_u \
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/user_u \
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u 
 
 %define saveFileContext() \
 if [ -s /etc/selinux/config ]; then \
@@ -143,7 +154,7 @@ if [ -s /etc/selinux/config ]; then \
 	fi \
 fi
 
-%define rebuildpolicy() \
+%define loadpolicy() \
 ( cd /usr/share/selinux/%1; \
 semodule -b base.pp %{expand:%%moduleList %1} -s %1; \
 );\
@@ -161,7 +172,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2312.
+Based off of reference policy: Checked out revision 2336.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
@@ -185,17 +196,24 @@ make clean
 %if %{BUILD_TARGETED}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-%setupCmds targeted targeted-mcs y y
-%installCmds targeted targeted-mcs y y
+%setupCmds targeted targeted-mcs n y
+%installCmds targeted targeted-mcs n y
 %endif
 
 %if %{BUILD_MLS}
 # Build mls policy
-%setupCmds mls strict-mls y y
-%installCmds mls strict-mls y y 
+%setupCmds mls strict-mls n y
+%installCmds mls strict-mls n y 
 %endif
 
-make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
+%if %{BUILD_OLPC}
+# Build targeted policy
+# Commented out because only targeted ref policy currently builds
+%setupCmds olpc targeted-mcs n y
+%installCmds olpc targeted-mcs n y
+%endif
+
+make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
 mkdir %{buildroot}%{_usr}/share/selinux/devel/
 mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
 install -m 755 ${RPM_SOURCE_DIR}/policygentool %{buildroot}%{_usr}/share/selinux/devel/
@@ -251,6 +269,7 @@ if [ $1 = 0 ]; then
 		sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
 	fi
 fi
+exit 0
 
 %if %{BUILD_TARGETED}
 %package targeted
@@ -269,14 +288,42 @@ SELinux Reference policy targeted base module.
 %saveFileContext targeted
 
 %post targeted
-%rebuildpolicy targeted
+%loadpolicy targeted
 %relabel targeted
+exit 0
 
-%triggerpostun targeted -- selinux-policy-targeted <= 2.0.7
-%rebuildpolicy targeted
+%triggerpostun targeted -- selinux-policy-targeted < 3.0.1
+semanage login -m -s "system_u" __default__ 2> /dev/null
+semanage user -a -P unconfined -R "unconfined_r system_r" unconfined_u 2> /dev/null
+restorecon -R /root 2> /dev/null
+exit 0
 
 %files targeted
 %fileList targeted
+%endif
+
+%if %{BUILD_OLPC}
+%package olpc 
+Summary: SELinux olpc base policy
+Group: System Environment/Base
+Provides: selinux-policy-base
+Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
+Prereq: coreutils
+Prereq: selinux-policy = %{version}-%{release}
+
+%description olpc 
+SELinux Reference policy olpc base module.
+
+%pre olpc 
+%saveFileContext olpc
+
+%post olpc 
+%loadpolicy olpc
+%relabel olpc
+exit 0
+
+%files olpc
+%fileList olpc
 
 %endif
 
@@ -298,8 +345,9 @@ SELinux Reference policy mls base module.
 %saveFileContext mls
 
 %post mls 
-%rebuildpolicy mls
+%loadpolicy mls
 %relabel mls
+exit 0
 
 %files mls
 %fileList mls
