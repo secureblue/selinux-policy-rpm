@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.1
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -355,6 +355,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 26 2007 Dan Walsh <dwalsh@redhat.com> 3.0.1-3
+- Fix syslog declaration
+
 * Wed Jun 26 2007 Dan Walsh <dwalsh@redhat.com> 3.0.1-2
 - Allow avahi to access inotify
 - Remove a lot of bogus security_t:filesystem avcs
