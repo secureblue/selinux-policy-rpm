@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.1
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -355,6 +355,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 2 2007 Dan Walsh <dwalsh@redhat.com> 3.0.1-5
+- Default to user_u:system_r:unconfined_t 
+
 * Sun Jul 1 2007 Dan Walsh <dwalsh@redhat.com> 3.0.1-4
 - fix squid
 - Fix rpm running as uid
