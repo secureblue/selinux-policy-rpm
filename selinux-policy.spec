@@ -16,12 +16,12 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.0.1
-Release: 6%{?dist}
+Version: 3.0.2
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20070525.patch
+patch: policy-20070703.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -293,6 +293,7 @@ SELinux Reference policy targeted base module.
 exit 0
 
 %triggerpostun targeted -- selinux-policy-targeted < 3.0.1
+setsebool -P use_nfs_home_dirs=1
 semanage login -m -s "system_u" __default__ 2> /dev/null
 semanage user -a -P unconfined -R "unconfined_r system_r" unconfined_u 2> /dev/null
 restorecon -R /root 2> /dev/null
