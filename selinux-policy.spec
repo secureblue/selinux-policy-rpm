@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -356,6 +356,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Jul 6 2007 Dan Walsh <dwalsh@redhat.com> 3.0.2-2
+- Allow prelink to read kernel sysctls
+
 * Mon Jul 2 2007 Dan Walsh <dwalsh@redhat.com> 3.0.1-5
 - Default to user_u:system_r:unconfined_t 
 
