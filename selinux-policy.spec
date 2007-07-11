@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.2
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -356,6 +356,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jul 10 2007 Dan Walsh <dwalsh@redhat.com> 3.0.2-4
+- Add brctl policy
+
 * Fri Jul 6 2007 Dan Walsh <dwalsh@redhat.com> 3.0.2-3
 - Fix root login to include system_r
 
