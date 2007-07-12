@@ -145,7 +145,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/man/man8/ftpd_selinux.8 sere
  .TP
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/flask/access_vectors serefpolicy-3.0.2/policy/flask/access_vectors
 --- nsaserefpolicy/policy/flask/access_vectors	2007-06-19 16:23:34.000000000 -0400
-+++ serefpolicy-3.0.2/policy/flask/access_vectors	2007-07-11 10:06:28.000000000 -0400
++++ serefpolicy-3.0.2/policy/flask/access_vectors	2007-07-12 10:05:03.000000000 -0400
 @@ -598,6 +598,8 @@
  	shmempwd
  	shmemgrp
@@ -155,6 +155,15 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/flask/access_vectors 
  }
  
  # Define the access vector interpretation for controlling
+@@ -623,6 +625,8 @@
+ 	send
+ 	recv
+ 	relabelto
++	flow_in
++	flow_out
+ }
+ 
+ class key
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/global_tunables serefpolicy-3.0.2/policy/global_tunables
 --- nsaserefpolicy/policy/global_tunables	2007-05-29 14:10:59.000000000 -0400
 +++ serefpolicy-3.0.2/policy/global_tunables	2007-07-11 10:06:28.000000000 -0400
@@ -5963,7 +5972,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/rpc.
  	fs_search_auto_mountpoints($1_t)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/rpc.te serefpolicy-3.0.2/policy/modules/services/rpc.te
 --- nsaserefpolicy/policy/modules/services/rpc.te	2007-07-03 07:06:27.000000000 -0400
-+++ serefpolicy-3.0.2/policy/modules/services/rpc.te	2007-07-11 10:06:28.000000000 -0400
++++ serefpolicy-3.0.2/policy/modules/services/rpc.te	2007-07-11 16:56:38.000000000 -0400
 @@ -76,9 +76,11 @@
  miscfiles_read_certs(rpcd_t)
  
@@ -5976,7 +5985,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/rpc.
  ')
  
  ########################################
-@@ -91,6 +93,9 @@
+@@ -91,9 +93,13 @@
  allow nfsd_t exports_t:file { getattr read };
  allow nfsd_t { nfsd_rw_t nfsd_ro_t }:dir list_dir_perms;
  
@@ -5986,7 +5995,11 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/rpc.
  # for /proc/fs/nfs/exports - should we have a new type?
  kernel_read_system_state(nfsd_t) 
  kernel_read_network_state(nfsd_t) 
-@@ -123,6 +128,7 @@
++kernel_dontaudit_getattr_core_if(nfsd_t) 
+ 
+ corenet_tcp_bind_all_rpc_ports(nfsd_t)
+ corenet_udp_bind_all_rpc_ports(nfsd_t)
+@@ -123,6 +129,7 @@
  tunable_policy(`nfs_export_all_rw',`
  	fs_read_noxattr_fs_files(nfsd_t) 
  	auth_manage_all_files_except_shadow(nfsd_t)
@@ -5994,7 +6007,16 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/rpc.
  ')
  
  tunable_policy(`nfs_export_all_ro',`
-@@ -158,6 +164,11 @@
+@@ -143,6 +150,8 @@
+ manage_files_pattern(gssd_t,gssd_tmp_t,gssd_tmp_t)
+ files_tmp_filetrans(gssd_t, gssd_tmp_t, { file dir })
+ 
++auth_use_nsswitch(gssd_t)
++
+ kernel_read_network_state(gssd_t)
+ kernel_read_network_state_symlinks(gssd_t)	
+ kernel_search_network_sysctl(gssd_t)	
+@@ -158,6 +167,11 @@
  
  miscfiles_read_certs(gssd_t)
  
@@ -6663,7 +6685,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xserver.if serefpolicy-3.0.2/policy/modules/services/xserver.if
 --- nsaserefpolicy/policy/modules/services/xserver.if	2007-07-03 07:06:27.000000000 -0400
-+++ serefpolicy-3.0.2/policy/modules/services/xserver.if	2007-07-11 10:06:28.000000000 -0400
++++ serefpolicy-3.0.2/policy/modules/services/xserver.if	2007-07-12 09:36:57.000000000 -0400
 @@ -353,9 +353,6 @@
  	# allow ps to show xauth
  	ps_process_pattern($2,$1_xauth_t)
@@ -6717,7 +6739,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  	# Allow connections to X server.
  	files_search_tmp($2)
  
-@@ -565,16 +570,38 @@
+@@ -565,15 +570,26 @@
  	userdom_dontaudit_write_user_home_content_files($1,$2)
  
  	xserver_ro_session_template(xdm,$2,$3)
@@ -6726,6 +6748,10 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  
  	xserver_read_xdm_tmp_files($2)
  
+-	# Client write xserver shm
+-	tunable_policy(`allow_write_xshm',`
+-		allow $2 $1_xserver_t:shm rw_shm_perms;
+-		allow $2 $1_xserver_tmpfs_t:file rw_file_perms;
 +	xserver_xdm_stream_connect($2)
 +
 +	# Read .Xauthority file
@@ -6743,22 +6769,10 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
 +
 +	optional_policy(`
 +		xserver_rw_session_template($1,$2,$3)
-+	')
-+
-+	ifdef(`TODO',`
-+	this does not work properly
-+	$1 would be a user not xdm
-+	user_xserver_t does not exist
- 	# Client write xserver shm
- 	tunable_policy(`allow_write_xshm',`
- 		allow $2 $1_xserver_t:shm rw_shm_perms;
- 		allow $2 $1_xserver_tmpfs_t:file rw_file_perms;
  	')
-+	')
  ')
  
- ########################################
-@@ -626,6 +653,24 @@
+@@ -626,6 +642,24 @@
  
  ########################################
  ## <summary>
@@ -6783,7 +6797,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ##	Transition to a user Xauthority domain.
  ## </summary>
  ## <desc>
-@@ -659,6 +704,73 @@
+@@ -659,6 +693,73 @@
  
  ########################################
  ## <summary>
@@ -6857,7 +6871,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ##	Transition to a user Xauthority domain.
  ## </summary>
  ## <desc>
-@@ -1136,7 +1248,7 @@
+@@ -1136,7 +1237,7 @@
  		type xdm_xserver_tmp_t;
  	')
  
@@ -6866,7 +6880,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ')
  
  ########################################
-@@ -1325,3 +1437,24 @@
+@@ -1325,3 +1426,24 @@
  	files_search_tmp($1)
  	stream_connect_pattern($1,xdm_xserver_tmp_t,xdm_xserver_tmp_t,xdm_xserver_t)
  ')
@@ -8903,10 +8917,13 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/raid.t
  allow mdadm_t self:fifo_file rw_fifo_file_perms;
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinuxutil.fc serefpolicy-3.0.2/policy/modules/system/selinuxutil.fc
 --- nsaserefpolicy/policy/modules/system/selinuxutil.fc	2007-05-30 11:47:29.000000000 -0400
-+++ serefpolicy-3.0.2/policy/modules/system/selinuxutil.fc	2007-07-11 10:06:29.000000000 -0400
-@@ -40,6 +40,7 @@
++++ serefpolicy-3.0.2/policy/modules/system/selinuxutil.fc	2007-07-12 09:43:40.000000000 -0400
+@@ -38,8 +38,9 @@
+ /usr/sbin/restorecond		--	gen_context(system_u:object_r:restorecond_exec_t,s0)
+ /usr/sbin/run_init		--	gen_context(system_u:object_r:run_init_exec_t,s0)
  /usr/sbin/setfiles.*		--	gen_context(system_u:object_r:setfiles_exec_t,s0)
- /usr/sbin/setsebool		--	gen_context(system_u:object_r:semanage_exec_t,s0)
+-/usr/sbin/setsebool		--	gen_context(system_u:object_r:semanage_exec_t,s0)
++/usr/sbin/setsebool		--	gen_context(system_u:object_r:setsebool_exec_t,s0)
  /usr/sbin/semanage		--	gen_context(system_u:object_r:semanage_exec_t,s0)
 +/usr/sbin/genhomedircon		--	gen_context(system_u:object_r:semanage_exec_t,s0)
  /usr/sbin/semodule		--	gen_context(system_u:object_r:semanage_exec_t,s0)
@@ -8925,7 +8942,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  ########################################
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinuxutil.te serefpolicy-3.0.2/policy/modules/system/selinuxutil.te
 --- nsaserefpolicy/policy/modules/system/selinuxutil.te	2007-05-30 11:47:29.000000000 -0400
-+++ serefpolicy-3.0.2/policy/modules/system/selinuxutil.te	2007-07-11 10:06:29.000000000 -0400
++++ serefpolicy-3.0.2/policy/modules/system/selinuxutil.te	2007-07-12 09:43:18.000000000 -0400
 @@ -24,11 +24,9 @@
  files_type(selinux_config_t)
  
@@ -8940,7 +8957,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  
  #
  # default_context_t is the type applied to
-@@ -81,23 +79,20 @@
+@@ -81,25 +79,26 @@
  type restorecond_exec_t;
  init_daemon_domain(restorecond_t,restorecond_exec_t)
  domain_obj_id_change_exemption(restorecond_t)
@@ -8967,8 +8984,14 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
 +domain_interactive_fd(semanage_t)
  role system_r types semanage_t;
  
++type setsebool_exec_t;
++application_domain(semanage_t, setsebool_exec_t)
++domain_interactive_fd(semanage_t)
++
  type semanage_store_t;
-@@ -157,6 +152,11 @@
+ files_type(semanage_store_t)
+ 
+@@ -157,6 +156,11 @@
  
  userdom_use_all_users_fds(checkpolicy_t)
  
@@ -8980,7 +9003,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  ########################################
  #
  # Load_policy local policy
-@@ -179,6 +179,7 @@
+@@ -179,6 +183,7 @@
  fs_getattr_xattr_fs(load_policy_t)
  
  mls_file_read_up(load_policy_t)
@@ -8988,7 +9011,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  
  selinux_get_fs_mount(load_policy_t)
  selinux_load_policy(load_policy_t)
-@@ -201,10 +202,15 @@
+@@ -201,10 +206,15 @@
  	# cjp: cover up stray file descriptors.
  	dontaudit load_policy_t selinux_config_t:file write;
  	optional_policy(`
@@ -9005,7 +9028,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  ########################################
  #
  # Newrole local policy
-@@ -222,7 +228,7 @@
+@@ -222,7 +232,7 @@
  allow newrole_t self:msg { send receive };
  allow newrole_t self:unix_dgram_socket sendto;
  allow newrole_t self:unix_stream_socket { create_stream_socket_perms connectto };
@@ -9014,7 +9037,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  
  read_files_pattern(newrole_t,selinux_config_t,selinux_config_t)
  read_lnk_files_pattern(newrole_t,selinux_config_t,selinux_config_t)
-@@ -260,7 +266,9 @@
+@@ -260,7 +270,9 @@
  term_dontaudit_use_unallocated_ttys(newrole_t)
  
  auth_domtrans_chk_passwd(newrole_t)
@@ -9024,7 +9047,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  
  corecmd_list_bin(newrole_t)
  corecmd_read_bin_symlinks(newrole_t)
-@@ -280,6 +288,7 @@
+@@ -280,6 +292,7 @@
  libs_use_ld_so(newrole_t)
  libs_use_shared_libs(newrole_t)
  
@@ -9032,7 +9055,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  logging_send_syslog_msg(newrole_t)
  
  miscfiles_read_localization(newrole_t)
-@@ -368,7 +377,7 @@
+@@ -368,7 +381,7 @@
  allow run_init_t self:process setexec;
  allow run_init_t self:capability setuid;
  allow run_init_t self:fifo_file rw_file_perms;
@@ -9041,7 +9064,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  
  # often the administrator runs such programs from a directory that is owned
  # by a different user or has restrictive SE permissions, do not want to audit
-@@ -382,6 +391,7 @@
+@@ -382,6 +395,7 @@
  term_dontaudit_list_ptys(run_init_t)
  
  auth_domtrans_chk_passwd(run_init_t)
@@ -9049,7 +9072,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  auth_dontaudit_read_shadow(run_init_t)
  
  corecmd_exec_bin(run_init_t)
-@@ -438,7 +448,7 @@
+@@ -438,7 +452,7 @@
  allow semanage_t self:capability { dac_override audit_write };
  allow semanage_t self:unix_stream_socket create_stream_socket_perms;
  allow semanage_t self:unix_dgram_socket create_socket_perms;
@@ -9058,7 +9081,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  
  allow semanage_t policy_config_t:file { read write };
  
-@@ -449,7 +459,10 @@
+@@ -449,7 +463,10 @@
  kernel_read_system_state(semanage_t)
  kernel_read_kernel_sysctls(semanage_t)
  
@@ -9069,7 +9092,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  
  dev_read_urand(semanage_t)
  
-@@ -473,6 +486,8 @@
+@@ -473,6 +490,8 @@
  
  # Running genhomedircon requires this for finding all users
  auth_use_nsswitch(semanage_t)
@@ -9078,7 +9101,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  
  libs_use_ld_so(semanage_t)
  libs_use_shared_libs(semanage_t)
-@@ -497,6 +512,17 @@
+@@ -497,6 +516,17 @@
  # netfilter_contexts:
  seutil_manage_default_contexts(semanage_t)
  
@@ -9096,7 +9119,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  # cjp: need a more general way to handle this:
  ifdef(`enable_mls',`
  	# read secadm tmp files
-@@ -524,6 +550,8 @@
+@@ -524,6 +554,8 @@
  allow setfiles_t { policy_src_t policy_config_t file_context_t selinux_config_t default_context_t }:file r_file_perms;
  allow setfiles_t { policy_src_t policy_config_t file_context_t selinux_config_t default_context_t }:lnk_file r_file_perms;
  
@@ -9105,7 +9128,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  kernel_read_system_state(setfiles_t)
  kernel_relabelfrom_unlabeled_dirs(setfiles_t)
  kernel_relabelfrom_unlabeled_files(setfiles_t)
-@@ -540,6 +568,7 @@
+@@ -540,6 +572,7 @@
  
  fs_getattr_xattr_fs(setfiles_t)
  fs_list_all(setfiles_t)
@@ -9113,7 +9136,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinu
  fs_search_auto_mountpoints(setfiles_t)
  fs_relabelfrom_noxattr_fs(setfiles_t)
  
-@@ -595,6 +624,10 @@
+@@ -595,6 +628,10 @@
  
  ifdef(`hide_broken_symptoms',`
  	optional_policy(`

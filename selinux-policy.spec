@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.2
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -356,6 +356,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jul 12 2007 Dan Walsh <dwalsh@redhat.com> 3.0.2-6
+- Fix xserver.if definition to not break sepolgen.if
+
 * Wed Jul 11 2007 Dan Walsh <dwalsh@redhat.com> 3.0.2-5
 - Add new devices
 
