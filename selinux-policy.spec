@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.2
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -288,6 +288,7 @@ SELinux Reference policy targeted base module.
 %saveFileContext targeted
 
 %post targeted
+semodule -r moilscanner 2>/dev/null
 %loadpolicy targeted
 %relabel targeted
 exit 0
@@ -356,6 +357,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Jul 14 2007 Dan Walsh <dwalsh@redhat.com> 3.0.2-8
+- Fix moilscanner update problem
+
 * Thu Jul 12 2007 Dan Walsh <dwalsh@redhat.com> 3.0.2-7
 - Begin adding policy to separate setsebool from semanage
 - Fix xserver.if definition to not break sepolgen.if
