@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.0.2
-Release: 8%{?dist}
+Version: 3.0.3
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -172,7 +172,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2348.
+Based off of reference policy: Checked out revision 2370.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
@@ -357,6 +357,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jul 17 2007 Dan Walsh <dwalsh@redhat.com> 3.0.2-9
+- Allow execution of gconf
+
 * Sat Jul 14 2007 Dan Walsh <dwalsh@redhat.com> 3.0.2-8
 - Fix moilscanner update problem
 
