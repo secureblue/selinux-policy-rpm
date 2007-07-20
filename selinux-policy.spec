@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.3
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -359,6 +359,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Jul 20 2007 Dan Walsh <dwalsh@redhat.com> 3.0.3-3
+- Allow cups to use generic usb
+- fix inetd to be able to run random apps (git)
+
 * Thu Jul 19 2007 Dan Walsh <dwalsh@redhat.com> 3.0.3-2
 - Add proper contexts for rsyslogd
 
