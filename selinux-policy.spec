@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.3
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -293,13 +293,13 @@ semodule -r moilscanner 2>/dev/null
 %relabel targeted
 exit 0
 
-%triggerpostun targeted -- selinux-policy-targeted < 3.0.3.2
+%triggerpostun targeted -- selinux-policy-targeted <= 3.0.3-4
 setsebool -P use_nfs_home_dirs=1
+restorecon -R /root /etc/selinux/targeted 2> /dev/null
 semanage login -m -s "system_u" __default__ 2> /dev/null
 semanage user -a -P unconfined -R "unconfined_r system_r" unconfined_u 2> /dev/null
-semanage user -a -P guest -R guest_r guest_u
-semanage user -a -P xguest -R xguest_r xguest_u
-restorecon -R /root 2> /dev/null
+semanage user -a -P guest -R guest_r guest_u 2> /dev/null
+semanage user -a -P xguest -R xguest_r xguest_u 
 exit 0
 
 %files targeted
@@ -359,6 +359,11 @@ exit 0
 %endif
 
 %changelog
+* Fri Jul 20 2007 Dan Walsh <dwalsh@redhat.com> 3.0.3-4
+- Add anon_inodefs
+- Allow unpriv user exec pam_exec_t
+- Fix trigger
+
 * Fri Jul 20 2007 Dan Walsh <dwalsh@redhat.com> 3.0.3-3
 - Allow cups to use generic usb
 - fix inetd to be able to run random apps (git)
