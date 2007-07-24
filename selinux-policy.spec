@@ -293,7 +293,7 @@ semodule -r moilscanner 2>/dev/null
 %relabel targeted
 exit 0
 
-%triggerpostun targeted -- selinux-policy-targeted <= 3.0.3-4
+%triggerpostun targeted -- selinux-policy-targeted <= 3.0.3-5
 setsebool -P use_nfs_home_dirs=1
 restorecon -R /root /etc/selinux/targeted 2> /dev/null
 semanage login -m -s "system_u" __default__ 2> /dev/null
