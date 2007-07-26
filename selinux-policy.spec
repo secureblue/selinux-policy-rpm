@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.0.3
-Release: 6%{?dist}
+Version: 3.0.4
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -293,7 +293,7 @@ semodule -r moilscanner 2>/dev/null
 %relabel targeted
 exit 0
 
-%triggerpostun targeted -- selinux-policy-targeted <= 3.0.3-5
+%triggerpostun targeted -- selinux-policy-targeted < 3.0.4-1
 setsebool -P use_nfs_home_dirs=1
 restorecon -R /root /etc/selinux/targeted 2> /dev/null
 semanage login -m -s "system_u" __default__ 2> /dev/null
@@ -359,6 +359,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jul 23 2007 Dan Walsh <dwalsh@redhat.com> 3.0.4-1
+- Update with latest changes from upstream
+
 * Tue Jul 23 2007 Dan Walsh <dwalsh@redhat.com> 3.0.3-6
 - Fix prelink to handle execmod
 
