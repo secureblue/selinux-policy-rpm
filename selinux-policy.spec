@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.4
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -359,6 +359,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jul 23 2007 Dan Walsh <dwalsh@redhat.com> 3.0.4-2
+- Add context for dbus machine id
+
 * Tue Jul 23 2007 Dan Walsh <dwalsh@redhat.com> 3.0.4-1
 - Update with latest changes from upstream
 
