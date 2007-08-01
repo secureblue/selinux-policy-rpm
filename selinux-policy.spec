@@ -12,7 +12,7 @@
 %endif
 %define POLICYVER 21
 %define libsepolver 2.0.3-2
-%define POLICYCOREUTILSVER 2.0.22-11
+%define POLICYCOREUTILSVER 2.0.22-10
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
