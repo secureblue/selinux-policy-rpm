@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.4
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -359,6 +359,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Aug 1 2007 Dan Walsh <dwalsh@redhat.com> 3.0.4-5
+- Fix new usb devices and dmfm
+
 * Mon Jul 30 2007 Dan Walsh <dwalsh@redhat.com> 3.0.4-4
 - Eliminate mount_ntfs_t policy, merge into mount_t
 
