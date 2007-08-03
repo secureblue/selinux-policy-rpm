@@ -143,7 +143,7 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf %{buildroot}%{_sysconfdir}/seli
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/root \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/guest_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/user_u \
-%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u 
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u
 
 %define saveFileContext() \
 if [ -s /etc/selinux/config ]; then \
@@ -303,8 +303,8 @@ semanage user -a -P xguest -R xguest_r xguest_u
 exit 0
 
 %files targeted
+%config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/xguest_u
 %fileList targeted
-%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/xguest_u
 %endif
 
 %if %{BUILD_OLPC}
