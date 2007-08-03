@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.0.4
-Release: 5%{?dist}
+Version: 3.0.5
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -142,6 +142,7 @@ install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf %{buildroot}%{_sysconfdir}/seli
 %dir %{_sysconfdir}/selinux/%1/contexts/users \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/root \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/guest_u \
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/xguest_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/user_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u 
 
@@ -196,21 +197,21 @@ make clean
 %if %{BUILD_TARGETED}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-%setupCmds targeted targeted-mcs n y
-%installCmds targeted targeted-mcs n y
+%setupCmds targeted mcs n y
+%installCmds targeted mcs n y
 %endif
 
 %if %{BUILD_MLS}
 # Build mls policy
-%setupCmds mls strict-mls n y
-%installCmds mls strict-mls n y 
+%setupCmds mls mls n y
+%installCmds mls mls n y 
 %endif
 
 %if %{BUILD_OLPC}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-%setupCmds olpc targeted-mcs n y
-%installCmds olpc targeted-mcs n y
+%setupCmds olpc mcs n y
+%installCmds olpc mcs n y
 %endif
 
 make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
@@ -359,6 +360,12 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 2 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-1
+- Update from upstream
+
+* Wed Aug 1 2007 Dan Walsh <dwalsh@redhat.com> 3.0.4-6
+- Add nasd support
+
 * Wed Aug 1 2007 Dan Walsh <dwalsh@redhat.com> 3.0.4-5
 - Fix new usb devices and dmfm
 
