@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -360,6 +360,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 6 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-2
+- Fixes for ldconfig
+
 * Thu Aug 2 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-1
 - Update from upstream
 
