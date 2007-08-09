@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.5
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -248,7 +248,7 @@ SETLOCALDEFS=0
 " > /etc/selinux/config
 
 	ln -sf ../selinux/config /etc/sysconfig/selinux 
-	restorecon /etc/selinux/config 2> /dev/null
+	restorecon /etc/selinux/config 2> /dev/null || :
 else
 	. /etc/selinux/config
 	# if first time update booleans.local needs to be copied to sandbox
@@ -360,6 +360,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 6 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-3
+- Fix nagios cgi
+- allow squid to communicate with winbind
+
 * Mon Aug 6 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-2
 - Fixes for ldconfig
 
