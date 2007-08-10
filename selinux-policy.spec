@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.5
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -360,6 +360,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 10 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-5
+- Fix dhcpc startup of service 
+
 * Fri Aug 10 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-4
 - Fix dbus chat to not happen for xguest and guest users
 
