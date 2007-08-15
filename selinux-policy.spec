@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.5
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -360,6 +360,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 14 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-7
+- allow dovecot to search mountpoints
+
 * Sat Aug 11 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-6
 - Fix Makefile for building policy modules
 
