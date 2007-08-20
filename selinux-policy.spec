@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.5
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -360,6 +360,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 20 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-10
+- Add ldconfig_cache_t
+
 * Sat Aug 18 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-9
 - Allow sshd to write to proc_t for afs login
 
