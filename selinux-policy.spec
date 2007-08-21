@@ -12,12 +12,12 @@
 %endif
 %define POLICYVER 21
 %define libsepolver 2.0.3-2
-%define POLICYCOREUTILSVER 2.0.22-10
+%define POLICYCOREUTILSVER 2.0.23-1
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.5
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -74,7 +74,7 @@ SELinux Policy development package
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
 
 %post devel
-[ -x /usr/sbin/sepolgen-ifgen ] && /usr/sbin/sepolgen-ifgen  > /dev/null
+[ -x /usr/bin/sepolgen-ifgen ] && /usr/bin/sepolgen-ifgen  > /dev/null
 exit 0
 
 %define setupCmds() \
@@ -338,7 +338,7 @@ Summary: SELinux mls base policy
 Group: System Environment/Base
 Provides: selinux-policy-base
 Obsoletes: selinux-policy-mls-sources
-Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER}
+Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER} setransd
 Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
 Prereq: coreutils
 Prereq: selinux-policy = %{version}-%{release}
@@ -360,6 +360,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 21 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-11
+- Add setransd for mls policy
+
 * Mon Aug 20 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-10
 - Add ldconfig_cache_t
 
