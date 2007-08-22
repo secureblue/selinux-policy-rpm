@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.0.5
-Release: 11%{?dist}
+Version: 3.0.6
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -172,7 +172,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2370.
+Based off of reference policy: Checked out revision 2393.
 
 %prep 
 %setup -q -n serefpolicy-%{version}
