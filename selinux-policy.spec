@@ -360,6 +360,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Aug 22 2007 Dan Walsh <dwalsh@redhat.com> 3.0.6-1
+- Upgrade to upstream to grab postgressql changes
+
 * Tue Aug 21 2007 Dan Walsh <dwalsh@redhat.com> 3.0.5-11
 - Add setransd for mls policy
 
