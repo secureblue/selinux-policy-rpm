@@ -79,8 +79,8 @@ exit 0
 %define setupCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 bare \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024  conf \
-cp -f ${RPM_BUILD_ROOT}/modules-%1.conf  ./policy/modules.conf \
-cp -f ${RPM_BUILD_ROOT}/booleans-%1.conf ./policy/booleans.conf \
+cp -f $RPM_SOURCE_DIR/modules-%1.conf  ./policy/modules.conf \
+cp -f $RPM_SOURCE_DIR/booleans-%1.conf ./policy/booleans.conf \
 
 %define moduleList() %([ -f $RPM_BUILD_ROOT/modules-%{1}.conf ] && \
 awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "-i %%s.pp ", $1 }' $RPM_BUILD_ROOT/modules-%{1}.conf )
@@ -102,8 +102,8 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
-install -m0644 ${RPM_BUILD_ROOT}/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
-install -m0644 ${RPM_BUILD_ROOT}/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
+install -m0644 $RPM_SOURCE_DIR/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
+install -m0644 $RPM_SOURCE_DIR/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
 %nil
 
 %define fileList() \
