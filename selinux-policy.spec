@@ -40,7 +40,7 @@ Source15: securetty_types-mls
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
-BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4
+BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 1.6.17-1
 
 %description 
