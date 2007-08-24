@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.6
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -97,9 +97,6 @@ make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} 
 %{__mkdir} -p %{buildroot}/%{_sysconfdir}/selinux/%1/contexts/files \
 touch %{buildroot}/%{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
 touch %{buildroot}/%{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4  MLS_CATS=1024 MCS_CATS=1024 enableaudit \
-make -W base.conf NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 base.pp \
-install -m0644 base.pp %{buildroot}%{_usr}/share/selinux/%1/enableaudit.pp \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/booleans \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/seusers \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
@@ -360,6 +357,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.6-2
+- Allow xserver to be started by unconfined process and talk to tty
+
 * Wed Aug 22 2007 Dan Walsh <dwalsh@redhat.com> 3.0.6-1
 - Upgrade to upstream to grab postgressql changes
 
