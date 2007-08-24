@@ -17,8 +17,8 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.6
-Release: 2%{?dist}
-License: GPL
+Release: 3%{?dist}
+License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-20070703.patch
@@ -40,9 +40,8 @@ Source15: securetty_types-mls
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
-BuildRequires: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
-PreReq: policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 1.6.17-1
-Obsoletes: policy 
+BuildRequires: checkpolicy >= %{CHECKPOLICYVER} m4
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 1.6.17-1
 
 %description 
 SELinux Base package
@@ -58,8 +57,8 @@ SELinux Base package
 %package devel
 Summary: SELinux policy development
 Group: System Environment/Base
-Prereq: checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
-Prereq: selinux-policy = %{version}-%{release}
+Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
+Requires: selinux-policy = %{version}-%{release} policycoreutils >= %{POLICYCOREUTILSVER}
 
 %description devel
 SELinux Policy development package
@@ -80,11 +79,11 @@ exit 0
 %define setupCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 bare \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024  conf \
-cp -f ${RPM_SOURCE_DIR}/modules-%1.conf  ./policy/modules.conf \
-cp -f ${RPM_SOURCE_DIR}/booleans-%1.conf ./policy/booleans.conf \
+cp -f ${RPM_BUILD_ROOT}/modules-%1.conf  ./policy/modules.conf \
+cp -f ${RPM_BUILD_ROOT}/booleans-%1.conf ./policy/booleans.conf \
 
-%define moduleList() %([ -f %{_sourcedir}/modules-%{1}.conf ] && \
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "-i %%s.pp ", $1 }' %{_sourcedir}/modules-%{1}.conf )
+%define moduleList() %([ -f $RPM_BUILD_ROOT/modules-%{1}.conf ] && \
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "-i %%s.pp ", $1 }' $RPM_BUILD_ROOT/modules-%{1}.conf )
 
 %define installCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 base.pp \
@@ -103,8 +102,8 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/homedir_template \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
-install -m0644 ${RPM_SOURCE_DIR}/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
-install -m0644 ${RPM_SOURCE_DIR}/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
+install -m0644 ${RPM_BUILD_ROOT}/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
+install -m0644 ${RPM_BUILD_ROOT}/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
 %nil
 
 %define fileList() \
@@ -171,8 +170,10 @@ fi;
 SELinux Reference Policy - modular.
 Based off of reference policy: Checked out revision 2393.
 
+%build
+
 %prep 
-%setup -q -n serefpolicy-%{version}
+%setup -n serefpolicy-%{version} -q
 %patch -p1
 
 %install
@@ -213,8 +214,8 @@ make clean
 make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
 mkdir %{buildroot}%{_usr}/share/selinux/devel/
 mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
-install -m 755 ${RPM_SOURCE_DIR}/policygentool %{buildroot}%{_usr}/share/selinux/devel/
-install -m 644 ${RPM_SOURCE_DIR}/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
+install -m 755 ${RPM_BUILD_ROOT}/policygentool %{buildroot}%{_usr}/share/selinux/devel/
+install -m 644 ${RPM_BUILD_ROOT}/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
 install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
 echo  "htmlview file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
@@ -272,11 +273,10 @@ exit 0
 %package targeted
 Summary: SELinux targeted base policy
 Group: System Environment/Base
-Provides: selinux-policy-base
-Obsoletes: selinux-policy-targeted-sources
-Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
-Prereq: coreutils
-Prereq: selinux-policy = %{version}-%{release}
+Obsoletes: selinux-policy-targeted-sources < 2
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
+Requires(pre): coreutils
+Requires(pre): selinux-policy = %{version}-%{release}
 
 %description targeted
 SELinux Reference policy targeted base module.
@@ -288,7 +288,13 @@ SELinux Reference policy targeted base module.
 semodule -s targeted -r moilscanner 2>/dev/null
 %loadpolicy targeted
 %relabel targeted
+if [ $1 = 0 ]; then
+semanage user -a -P unconfined -R "unconfined_r system_r" unconfined_u 
+semanage user -a -P guest -R guest_r guest_u
+semanage user -a -P xguest -R xguest_r xguest_u 
+fi
 exit 0
+
 
 %triggerpostun targeted -- selinux-policy-targeted < 3.0.4-1
 setsebool -P use_nfs_home_dirs=1
@@ -296,7 +302,7 @@ restorecon -R /root /etc/selinux/targeted 2> /dev/null
 semanage login -m -s "system_u" __default__ 2> /dev/null
 semanage user -a -P unconfined -R "unconfined_r system_r" unconfined_u 2> /dev/null
 semanage user -a -P guest -R guest_r guest_u 2> /dev/null
-semanage user -a -P xguest -R xguest_r xguest_u 
+semanage user -a -P xguest -R xguest_r xguest_u 2> /dev/null
 exit 0
 
 %files targeted
@@ -308,10 +314,9 @@ exit 0
 %package olpc 
 Summary: SELinux olpc base policy
 Group: System Environment/Base
-Provides: selinux-policy-base
-Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
-Prereq: coreutils
-Prereq: selinux-policy = %{version}-%{release}
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
+Requires(pre): coreutils
+Requires(pre): selinux-policy = %{version}-%{release}
 
 %description olpc 
 SELinux Reference policy olpc base module.
@@ -333,12 +338,11 @@ exit 0
 %package mls 
 Summary: SELinux mls base policy
 Group: System Environment/Base
-Provides: selinux-policy-base
-Obsoletes: selinux-policy-mls-sources
+Obsoletes: selinux-policy-mls-sources < 2
 Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER} setransd
-Prereq: policycoreutils >= %{POLICYCOREUTILSVER}
-Prereq: coreutils
-Prereq: selinux-policy = %{version}-%{release}
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
+Requires(pre): coreutils
+Requires(pre): selinux-policy = %{version}-%{release}
 
 %description mls 
 SELinux Reference policy mls base module.
@@ -357,6 +361,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.6-3
+- Cleanup  spec file
+
 * Fri Aug 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.6-2
 - Allow xserver to be started by unconfined process and talk to tty
 
