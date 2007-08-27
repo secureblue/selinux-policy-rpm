@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.0.6
-Release: 3%{?dist}
+Version: 3.0.7
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -82,8 +82,8 @@ make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} 
 cp -f $RPM_SOURCE_DIR/modules-%1.conf  ./policy/modules.conf \
 cp -f $RPM_SOURCE_DIR/booleans-%1.conf ./policy/booleans.conf \
 
-%define moduleList() %([ -f $RPM_SOURCE_DIR/modules-%{1}.conf ] && \
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "-i %%s.pp ", $1 }' $RPM_SOURCE_DIR/modules-%{1}.conf )
+%define moduleList() %([ -f %{_sourcedir}/modules-%{1}.conf ] && \
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "-i %%s.pp ", $1 }' %{_sourcedir}/modules-%{1}.conf )
 
 %define installCmds() \
 make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 base.pp \
@@ -289,6 +289,7 @@ semodule -s targeted -r moilscanner 2>/dev/null
 %loadpolicy targeted
 %relabel targeted
 if [ $1 = 0 ]; then
+semanage login -m -s "system_u" __default__ 2> /dev/null
 semanage user -a -P unconfined -R "unconfined_r system_r" unconfined_u 
 semanage user -a -P guest -R guest_r guest_u
 semanage user -a -P xguest -R xguest_r xguest_u 
@@ -361,6 +362,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 27 2007 Dan Walsh <dwalsh@redhat.com> 3.0.7-1
+- Update an readd modules
+
 * Fri Aug 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.6-3
 - Cleanup  spec file
 
