@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.7
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -362,6 +362,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 28 2007 Dan Walsh <dwalsh@redhat.com> 3.0.7-2
+- Allow login programs to read symlinks on homedirs
+
 * Mon Aug 27 2007 Dan Walsh <dwalsh@redhat.com> 3.0.7-1
 - Update an readd modules
 
