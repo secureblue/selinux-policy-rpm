@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.7
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -162,7 +162,7 @@ FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 selinuxenabled; \
 if [ $? == 0  -a "${SELINUXTYPE}" == %1 -a -f ${FILE_CONTEXT}.pre ]; then \
 	fixfiles -C ${FILE_CONTEXT}.pre restore; \
-	restorecon -R /var/log 2> /dev/null; \
+	restorecon -R /var/log /var/run 2> /dev/null; \
 	rm -f ${FILE_CONTEXT}.pre; \
 fi; 
 
@@ -362,6 +362,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 28 2007 Dan Walsh <dwalsh@redhat.com> 3.0.7-3
+- Allow sendmail to create etc_aliases_t
+
 * Tue Aug 28 2007 Dan Walsh <dwalsh@redhat.com> 3.0.7-2
 - Allow login programs to read symlinks on homedirs
 
