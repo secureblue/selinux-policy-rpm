@@ -194,8 +194,8 @@ make clean
 %if %{BUILD_TARGETED}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-%setupCmds targeted mcs n y
-%installCmds targeted mcs n y
+%setupCmds targeted mcs y y
+%installCmds targeted mcs y y
 %endif
 
 %if %{BUILD_MLS}
@@ -207,8 +207,8 @@ make clean
 %if %{BUILD_OLPC}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-%setupCmds olpc mcs n y
-%installCmds olpc mcs n y
+%setupCmds olpc mcs y y
+%installCmds olpc mcs y y
 %endif
 
 make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
