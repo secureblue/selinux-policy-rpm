@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.7
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -362,6 +362,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 6 2007 Dan Walsh <dwalsh@redhat.com> 3.0.7-5
+- Fix java labeling 
+
 * Thu Sep 6 2007 Dan Walsh <dwalsh@redhat.com> 3.0.7-4
 - Define user_home_type as home_type
 
