@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.7
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -194,8 +194,8 @@ make clean
 %if %{BUILD_TARGETED}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-%setupCmds targeted mcs y y
-%installCmds targeted mcs y y
+%setupCmds targeted mcs n y
+%installCmds targeted mcs n y
 %endif
 
 %if %{BUILD_MLS}
@@ -207,8 +207,8 @@ make clean
 %if %{BUILD_OLPC}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-%setupCmds olpc mcs y y
-%installCmds olpc mcs y y
+%setupCmds olpc mcs n y
+%installCmds olpc mcs n y
 %endif
 
 make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
@@ -362,6 +362,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 7 2007 Dan Walsh <dwalsh@redhat.com> 3.0.7-7
+- Turn off direct transition
+
 * Fri Sep 7 2007 Dan Walsh <dwalsh@redhat.com> 3.0.7-6
 - Allow wine to run in system role
 
