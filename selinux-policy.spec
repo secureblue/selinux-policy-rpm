@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.7
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -362,6 +362,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 7 2007 Dan Walsh <dwalsh@redhat.com> 3.0.7-6
+- Allow wine to run in system role
+
 * Thu Sep 6 2007 Dan Walsh <dwalsh@redhat.com> 3.0.7-5
 - Fix java labeling 
 
