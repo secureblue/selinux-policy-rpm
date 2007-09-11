@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.7
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -362,6 +362,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 11 2007 Dan Walsh <dwalsh@redhat.com> 3.0.7-9
+- Allow xfs to bind to port 7100
+
 * Mon Sep 10 2007 Dan Walsh <dwalsh@redhat.com> 3.0.7-8
 - Allow newalias/sendmail dac_override
 - Allow bind to bind to all udp ports
