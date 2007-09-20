@@ -288,7 +288,7 @@ SELinux Reference policy targeted base module.
 semodule -s targeted -r moilscanner 2>/dev/null
 %loadpolicy targeted
 %relabel targeted
-if [ $1 = 0 ]; then
+if [ $1 = 1 ]; then
 semanage login -m -s "system_u" __default__ 2> /dev/null
 semanage user -a -P unconfined -R "unconfined_r system_r" unconfined_u 
 semanage user -a -P guest -R guest_r guest_u
