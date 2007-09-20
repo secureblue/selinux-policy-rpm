@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -364,6 +364,7 @@ exit 0
 %changelog
 * Wed Sep 19 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-4
 - Fix to add xguest account when inititial install
+- Allow mono, java, wine to run in userdomains
 
 * Wed Sep 19 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-3
 - Allow xserver to search devpts_t
