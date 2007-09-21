@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -362,6 +362,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 21 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-8
+- Allow also to search var_lib
+- New context for dbus launcher 
+
 * Fri Sep 21 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-7
 - Allow cupsd_config_t to read/write usb_device_t
 - Support for finger print reader,
