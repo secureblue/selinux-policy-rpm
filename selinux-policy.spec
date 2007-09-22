@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -362,6 +362,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Sep 22 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-9
+- Fix service start stop terminal avc's
+
 * Fri Sep 21 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-8
 - Allow also to search var_lib
 - New context for dbus launcher 
