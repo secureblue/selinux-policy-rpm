@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -362,6 +362,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Sep 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-11
+- Fix maxima
+
 * Mon Sep 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-10
 - Eliminate rpm_t:fifo_file avcs
 - Fix dbus path for helper app
