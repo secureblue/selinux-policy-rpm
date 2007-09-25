@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -272,6 +272,7 @@ exit 0
 %if %{BUILD_TARGETED}
 %package targeted
 Summary: SELinux targeted base policy
+Provides: selinux-policy-base
 Group: System Environment/Base
 Obsoletes: selinux-policy-targeted-sources < 2
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
@@ -315,6 +316,7 @@ exit 0
 %package olpc 
 Summary: SELinux olpc base policy
 Group: System Environment/Base
+Provides: selinux-policy-base
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
@@ -339,6 +341,7 @@ exit 0
 %package mls 
 Summary: SELinux mls base policy
 Group: System Environment/Base
+Provides: selinux-policy-base
 Obsoletes: selinux-policy-mls-sources < 2
 Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER} setransd
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
@@ -362,6 +365,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Sep 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-12
+- Allow nsswitch apps to read samba_var_t
+
 * Mon Sep 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-11
 - Fix maxima
 
