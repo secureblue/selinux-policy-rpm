@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -365,6 +365,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-14
+- Allow xdm to talk to input device (fingerprint reader)
+- Allow octave to run as java
+
 * Tue Sep 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-13
 - Allow login programs to set ioctl on /proc
 
