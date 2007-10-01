@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -298,13 +298,13 @@ fi
 exit 0
 
 
-%triggerpostun targeted -- selinux-policy-targeted < 3.0.4-1
+%triggerpostun targeted -- selinux-policy-targeted < 3.0.8-14-1
 setsebool -P use_nfs_home_dirs=1
-restorecon -R /root /etc/selinux/targeted 2> /dev/null
 semanage login -m -s "system_u" __default__ 2> /dev/null
 semanage user -a -P unconfined -R "unconfined_r system_r" unconfined_u 2> /dev/null
-semanage user -a -P guest -R guest_r guest_u 2> /dev/null
+semanage user -a -P guest -R guest_r guest_u 2> /dev/null 
 semanage user -a -P xguest -R xguest_r xguest_u 2> /dev/null
+restorecon -R /root /etc/selinux/targeted 2> /dev/null
 exit 0
 
 %files targeted
@@ -365,6 +365,11 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-15
+- Allow tmpreadper to read man_t
+- Allow racoon to bind to all nodes
+- Fixes for finger print reader
+
 * Tue Sep 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-14
 - Allow xdm to talk to input device (fingerprint reader)
 - Allow octave to run as java
