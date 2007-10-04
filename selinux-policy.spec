@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -152,7 +152,7 @@ fi
 
 %define loadpolicy() \
 ( cd /usr/share/selinux/%1; \
-semodule -b base.pp %{expand:%%moduleList %1} -s %1; \
+semodule %2 -b base.pp %{expand:%%moduleList %1} -s %1; \
 );\
 rm -f %{_sysconfdir}/selinux/%1/policy/policy.*.rpmnew
 
@@ -287,13 +287,16 @@ SELinux Reference policy targeted base module.
 
 %post targeted
 semodule -s targeted -r moilscanner 2>/dev/null
-%loadpolicy targeted
-%relabel targeted
 if [ $1 = 1 ]; then
 semanage login -m -s "system_u" __default__ 2> /dev/null
 semanage user -a -P unconfined -R "unconfined_r system_r" unconfined_u 
 semanage user -a -P guest -R guest_r guest_u
 semanage user -a -P xguest -R xguest_r xguest_u 
+# Don't load on initial install
+%loadpolicy targeted
+else
+%loadpolicy targeted
+%relabel targeted
 fi
 exit 0
 
@@ -329,7 +332,9 @@ SELinux Reference policy olpc base module.
 
 %post olpc 
 %loadpolicy olpc
+if [ $1 != 1 ]; then
 %relabel olpc
+fi
 exit 0
 
 %files olpc
@@ -356,7 +361,9 @@ SELinux Reference policy mls base module.
 
 %post mls 
 %loadpolicy mls
+if [ $1 != 1 ]; then
 %relabel mls
+fi
 exit 0
 
 %files mls
@@ -365,6 +372,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 2 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-17
+- Check asound.state
+
 * Mon Oct 1 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-16
 - Fix exim policy
 
