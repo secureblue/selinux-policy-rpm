@@ -150,9 +150,9 @@ fi
 
 %define loadpolicy() \
 ( cd /usr/share/selinux/%1; \
-semodule %2 -b base.pp %{expand:%%moduleList %1} -s %1; \
+semodule -b base.pp %{expand:%%moduleList %1} -s %1; \
 );\
-rm -f %{_sysconfdir}/selinux/%1/policy/policy.*.rpmnew
+rm -f %{_sysconfdir}/selinux/%1/policy/policy.*.rpmnew;
 
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
@@ -285,15 +285,14 @@ SELinux Reference policy targeted base module.
 
 %post targeted
 semodule -s targeted -r moilscanner 2>/dev/null
+%loadpolicy targeted
+
 if [ $1 = 1 ]; then
 semanage login -m -s "system_u" __default__ 2> /dev/null
 semanage user -a -P unconfined -R "unconfined_r system_r" unconfined_u 
 semanage user -a -P guest -R guest_r guest_u
 semanage user -a -P xguest -R xguest_r xguest_u 
-# Don't load on initial install
-%loadpolicy targeted
 else
-%loadpolicy targeted
 %relabel targeted
 fi
 exit 0
@@ -330,6 +329,7 @@ SELinux Reference policy olpc base module.
 
 %post olpc 
 %loadpolicy olpc
+
 if [ $1 != 1 ]; then
 %relabel olpc
 fi
@@ -359,6 +359,7 @@ SELinux Reference policy mls base module.
 
 %post mls 
 %loadpolicy mls
+
 if [ $1 != 1 ]; then
 %relabel mls
 fi
