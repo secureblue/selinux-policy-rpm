@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 19%{?dist}
+Release: 20%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -47,7 +47,7 @@ Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 1.6.17-1
 SELinux Base package
 
 %files 
-%{_mandir}/man8/*
+%{_mandir}/*
 %doc %{_usr}/share/doc/%{name}-%{version}
 %dir %{_usr}/share/selinux
 %dir %{_sysconfdir}/selinux
@@ -177,8 +177,8 @@ Based off of reference policy: Checked out revision 2393.
 %install
 # Build targeted policy
 %{__rm} -fR %{buildroot}
-mkdir -p %{buildroot}%{_mandir}/man8/
-install -m 644 man/man8/*.8 %{buildroot}%{_mandir}/man8/
+mkdir -p %{buildroot}%{_mandir}
+cp -R  man %{buildroot}%{_mandir}
 mkdir -p %{buildroot}%{_sysconfdir}/selinux
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
 touch %{buildroot}%{_sysconfdir}/selinux/config
@@ -371,6 +371,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 9 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-20
+- Fixes for consolekit and startx sessions
+
 * Mon Oct 8 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-19
 - Dontaudit consoletype talking to unconfined_t
 
