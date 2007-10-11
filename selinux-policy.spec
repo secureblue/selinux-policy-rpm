@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 20%{?dist}
+Release: 21%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -371,6 +371,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Oct 10 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-21
+- Make alsa work
+
 * Tue Oct 9 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-20
 - Fixes for consolekit and startx sessions
 
