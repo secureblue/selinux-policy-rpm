@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 21%{?dist}
+Release: 22%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -77,8 +77,8 @@ SELinux Policy development package
 exit 0
 
 %define setupCmds() \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 bare \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024  conf \
+make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 bare \
+make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024  conf \
 cp -f $RPM_SOURCE_DIR/modules-%1.conf  ./policy/modules.conf \
 cp -f $RPM_SOURCE_DIR/booleans-%1.conf ./policy/booleans.conf \
 
@@ -86,10 +86,10 @@ cp -f $RPM_SOURCE_DIR/booleans-%1.conf ./policy/booleans.conf \
 awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "-i %%s.pp ", $1 }' %{_sourcedir}/modules-%{1}.conf )
 
 %define installCmds() \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 base.pp \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 modules \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 install \
-make NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 install-appconfig \
+make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 base.pp \
+make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 modules \
+make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 install \
+make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 install-appconfig \
 #%{__cp} *.pp %{buildroot}/%{_usr}/share/selinux/%1/ \
 %{__mkdir} -p %{buildroot}/%{_sysconfdir}/selinux/%1/policy \
 %{__mkdir} -p %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active \
@@ -192,24 +192,24 @@ make clean
 %if %{BUILD_TARGETED}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-%setupCmds targeted mcs n y
-%installCmds targeted mcs n y
+%setupCmds targeted mcs n y allow
+%installCmds targeted mcs n y allow
 %endif
 
 %if %{BUILD_MLS}
 # Build mls policy
-%setupCmds mls mls n y
-%installCmds mls mls n y 
+%setupCmds mls mls n y deny
+%installCmds mls mls n y deny
 %endif
 
 %if %{BUILD_OLPC}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-%setupCmds olpc mcs n y
-%installCmds olpc mcs n y
+%setupCmds olpc mcs n y allow
+%installCmds olpc mcs n y allow
 %endif
 
-make NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
+make UNK_PERMS=allow NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
 mkdir %{buildroot}%{_usr}/share/selinux/devel/
 mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
 install -m 755 $RPM_SOURCE_DIR/policygentool %{buildroot}%{_usr}/share/selinux/devel/
@@ -371,6 +371,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 12 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-22
+- Pass the UNK_PERMS param to makefile
+- Fix gdm location
+
 * Wed Oct 10 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-21
 - Make alsa work
 
