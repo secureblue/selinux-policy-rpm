@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 22%{?dist}
+Release: 24%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -288,10 +288,12 @@ semodule -s targeted -r moilscanner 2>/dev/null
 %loadpolicy targeted
 
 if [ $1 = 1 ]; then
-semanage login -m -s "system_u" __default__ 2> /dev/null
 semanage user -a -P unconfined -R "unconfined_r system_r" unconfined_u 
+semanage login -m -s "unconfined_u" __default__ 2> /dev/null
+semanage login -m -s "system_u" root 2> /dev/null
 semanage user -a -P guest -R guest_r guest_u
 semanage user -a -P xguest -R xguest_r xguest_u 
+restorecon -R /root /var/log /var/run 2> /dev/null
 else
 %relabel targeted
 fi
@@ -371,6 +373,13 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 16 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-24
+- Allow rpm to chat with networkmanager
+
+* Mon Oct 15 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-23
+- Fixes for ipsec and exim mail
+- Change default to unconfined user
+
 * Fri Oct 12 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-22
 - Pass the UNK_PERMS param to makefile
 - Fix gdm location
