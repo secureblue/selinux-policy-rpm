@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 24%{?dist}
+Release: 25%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -373,6 +373,11 @@ exit 0
 %endif
 
 %changelog
+* Thu Oct 16 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-25
+- Fix vpn to bind to port 4500
+- Allow ssh to create shm
+- Allow rshd to bind to ports > 1023
+
 * Tue Oct 16 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-24
 - Allow rpm to chat with networkmanager
 
