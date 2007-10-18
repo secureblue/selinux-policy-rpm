@@ -377,6 +377,7 @@ exit 0
 - Fix vpn to bind to port 4500
 - Allow ssh to create shm
 - Allow rshd to bind to ports > 1023
+- Add Kismet policy
 
 * Tue Oct 16 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-24
 - Allow rpm to chat with networkmanager
