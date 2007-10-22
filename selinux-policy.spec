@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.0.8
-Release: 28%{?dist}
+Release: 29%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -373,6 +373,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Oct 22 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-29
+- Allow XServer to read /proc/self/cmdline
+
 * Fri Oct 17 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-28
 - Fixes for hald_mac 
 - Treat unconfined_home_dir_t as a home dir
