@@ -3481,7 +3481,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/domain
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/domain.te serefpolicy-3.1.0/policy/modules/kernel/domain.te
 --- nsaserefpolicy/policy/modules/kernel/domain.te	2007-10-12 08:56:01.000000000 -0400
-+++ serefpolicy-3.1.0/policy/modules/kernel/domain.te	2007-10-24 15:06:50.000000000 -0400
++++ serefpolicy-3.1.0/policy/modules/kernel/domain.te	2007-10-25 10:13:20.000000000 -0400
 @@ -6,6 +6,22 @@
  # Declarations
  #
@@ -3505,16 +3505,17 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/domain
  # Mark process types as domains
  attribute domain;
  
-@@ -80,6 +96,8 @@
+@@ -80,6 +96,9 @@
  allow domain self:lnk_file { read_lnk_file_perms lock ioctl };
  allow domain self:file rw_file_perms;
  kernel_read_proc_symlinks(domain)
 +# Every domain gets the key ring, so we should default to no one allowed to look at it
 +kernel_dontaudit_search_key(domain)
++kernel_dontaudit_link_key(domain)
  
  # create child processes in the domain
  allow domain self:process { fork sigchld };
-@@ -134,3 +152,22 @@
+@@ -134,3 +153,22 @@
  
  # act on all domains keys
  allow unconfined_domain_type domain:key *;
@@ -3944,16 +3945,24 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/files.
  #
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/filesystem.te serefpolicy-3.1.0/policy/modules/kernel/filesystem.te
 --- nsaserefpolicy/policy/modules/kernel/filesystem.te	2007-10-24 15:00:24.000000000 -0400
-+++ serefpolicy-3.1.0/policy/modules/kernel/filesystem.te	2007-10-24 15:06:50.000000000 -0400
-@@ -29,6 +29,7 @@
++++ serefpolicy-3.1.0/policy/modules/kernel/filesystem.te	2007-10-25 19:49:07.000000000 -0400
+@@ -21,6 +21,7 @@
+ 
+ # Use xattrs for the following filesystem types.
+ # Requires that a security xattr handler exist for the filesystem.
++fs_use_xattr ecryptfs gen_context(system_u:object_r:fs_t,s0);
+ fs_use_xattr encfs gen_context(system_u:object_r:fs_t,s0);
+ fs_use_xattr ext2 gen_context(system_u:object_r:fs_t,s0);
+ fs_use_xattr ext3 gen_context(system_u:object_r:fs_t,s0);
+@@ -28,6 +29,7 @@
+ fs_use_xattr gfs2 gen_context(system_u:object_r:fs_t,s0);
  fs_use_xattr jffs2 gen_context(system_u:object_r:fs_t,s0);
  fs_use_xattr jfs gen_context(system_u:object_r:fs_t,s0);
- fs_use_xattr xfs gen_context(system_u:object_r:fs_t,s0);
 +fs_use_xattr lustre gen_context(system_u:object_r:fs_t,s0);
+ fs_use_xattr xfs gen_context(system_u:object_r:fs_t,s0);
  
  # Use the allocating task SID to label inodes in the following filesystem
- # types, and label the filesystem itself with the specified context.
-@@ -110,6 +111,7 @@
+@@ -110,6 +112,7 @@
  
  type ramfs_t;
  fs_type(ramfs_t)
@@ -3961,7 +3970,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/filesy
  genfscon ramfs / gen_context(system_u:object_r:ramfs_t,s0)
  
  type romfs_t;
-@@ -127,6 +129,11 @@
+@@ -127,6 +130,11 @@
  genfscon spufs / gen_context(system_u:object_r:spufs_t,s0)
  files_mountpoint(spufs_t)
  
@@ -3975,7 +3984,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/filesy
  files_mountpoint(vxfs_t)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/kernel.if serefpolicy-3.1.0/policy/modules/kernel/kernel.if
 --- nsaserefpolicy/policy/modules/kernel/kernel.if	2007-08-20 18:23:04.000000000 -0400
-+++ serefpolicy-3.1.0/policy/modules/kernel/kernel.if	2007-10-24 15:06:50.000000000 -0400
++++ serefpolicy-3.1.0/policy/modules/kernel/kernel.if	2007-10-25 10:22:34.000000000 -0400
 @@ -352,6 +352,24 @@
  
  ########################################
@@ -4001,7 +4010,32 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/kernel
  ##	Allow link to the kernel key ring.
  ## </summary>
  ## <param name="domain">
-@@ -1867,6 +1885,27 @@
+@@ -370,6 +388,24 @@
+ 
+ ########################################
+ ## <summary>
++##	dontaudit link to the kernel key ring.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`kernel_dontaudit_link_key',`
++	gen_require(`
++		type kernel_t;
++	')
++
++	dontaudit $1 kernel_t:key link;
++')
++
++########################################
++## <summary>
+ ##	Allows caller to read the ring buffer.
+ ## </summary>
+ ## <param name="domain">
+@@ -1867,6 +1903,27 @@
  
  ########################################
  ## <summary>
@@ -5108,8 +5142,18 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/auto
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/automount.te serefpolicy-3.1.0/policy/modules/services/automount.te
 --- nsaserefpolicy/policy/modules/services/automount.te	2007-10-12 08:56:07.000000000 -0400
-+++ serefpolicy-3.1.0/policy/modules/services/automount.te	2007-10-24 15:06:50.000000000 -0400
-@@ -69,6 +69,7 @@
++++ serefpolicy-3.1.0/policy/modules/services/automount.te	2007-10-26 09:15:09.000000000 -0400
+@@ -52,7 +52,8 @@
+ files_root_filetrans(automount_t,automount_tmp_t,dir)
+ 
+ manage_files_pattern(automount_t,automount_var_run_t,automount_var_run_t)
+-files_pid_filetrans(automount_t,automount_var_run_t,file)
++manage_fifo_files_pattern(automount_t,automount_var_run_t,automount_var_run_t)
++files_pid_filetrans(automount_t,automount_var_run_t,{ file fifo_file })
+ 
+ kernel_read_kernel_sysctls(automount_t)
+ kernel_read_irq_sysctls(automount_t)
+@@ -69,6 +70,7 @@
  files_mounton_all_mountpoints(automount_t)
  files_mount_all_file_type_fs(automount_t)
  files_unmount_all_file_type_fs(automount_t)
@@ -5117,7 +5161,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/auto
  
  fs_mount_all_fs(automount_t)
  fs_unmount_all_fs(automount_t)
-@@ -126,6 +127,8 @@
+@@ -126,6 +128,8 @@
  fs_mount_autofs(automount_t)
  fs_manage_autofs_symlinks(automount_t)
  
@@ -5126,7 +5170,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/auto
  term_dontaudit_getattr_pty_dirs(automount_t)
  
  libs_use_ld_so(automount_t)
-@@ -170,6 +173,11 @@
+@@ -170,6 +174,11 @@
  ')
  
  optional_policy(`
@@ -5317,7 +5361,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cron
 +/var/lib/misc(/.*)?			gen_context(system_u:object_r:system_crond_var_lib_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cron.if serefpolicy-3.1.0/policy/modules/services/cron.if
 --- nsaserefpolicy/policy/modules/services/cron.if	2007-10-12 08:56:07.000000000 -0400
-+++ serefpolicy-3.1.0/policy/modules/services/cron.if	2007-10-24 15:06:50.000000000 -0400
++++ serefpolicy-3.1.0/policy/modules/services/cron.if	2007-10-26 09:03:28.000000000 -0400
 @@ -35,6 +35,7 @@
  #
  template(`cron_per_role_template',`
@@ -5402,15 +5446,21 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cron
  
  	##############################
  	#
-@@ -195,6 +175,7 @@
+@@ -192,9 +172,13 @@
+ 	# dac_override is to create the file in the directory under /tmp
+ 	allow $1_crontab_t self:capability { fowner setuid setgid chown dac_override };
+ 	allow $1_crontab_t self:process signal_perms;
++	allow $1_crontab_t self:fifo_file rw_fifo_file_perms;
  
  	# Transition from the user domain to the derived domain.
  	domtrans_pattern($2, crontab_exec_t, $1_crontab_t)
 +	allow $2 $1_crontab_t:fd use;
++
++	auth_domtrans_upd_passwd_chk($1_crontab_t)
  
  	# crontab shows up in user ps
  	ps_process_pattern($2,$1_crontab_t)
-@@ -205,9 +186,6 @@
+@@ -205,9 +189,6 @@
  	# Allow crond to read those crontabs in cron spool.
  	allow crond_t $1_cron_spool_t:file manage_file_perms;
  
@@ -5420,7 +5470,15 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cron
  	# create files in /var/spool/cron
  	manage_files_pattern($1_crontab_t,cron_spool_t,$1_cron_spool_t)
  	filetrans_pattern($1_crontab_t,cron_spool_t,$1_cron_spool_t,file)
-@@ -243,10 +221,12 @@
+@@ -236,6 +217,7 @@
+ 	libs_use_shared_libs($1_crontab_t)
+ 
+ 	logging_send_syslog_msg($1_crontab_t)
++	logging_send_audit_msgs($1_crontab_t)
+ 
+ 	miscfiles_read_localization($1_crontab_t)
+ 
+@@ -243,10 +225,12 @@
  
  	userdom_manage_user_tmp_dirs($1,$1_crontab_t)
  	userdom_manage_user_tmp_files($1,$1_crontab_t)
@@ -5433,7 +5491,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cron
  
  	tunable_policy(`fcron_crond',`
  		# fcron wants an instant update of a crontab change for the administrator
-@@ -438,6 +418,25 @@
+@@ -438,6 +422,25 @@
  
  ########################################
  ## <summary>
@@ -5722,7 +5780,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cups
 +/usr/local/Brother/inf(/.*)?	gen_context(system_u:object_r:cupsd_rw_etc_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cups.te serefpolicy-3.1.0/policy/modules/services/cups.te
 --- nsaserefpolicy/policy/modules/services/cups.te	2007-10-12 08:56:07.000000000 -0400
-+++ serefpolicy-3.1.0/policy/modules/services/cups.te	2007-10-24 15:06:50.000000000 -0400
++++ serefpolicy-3.1.0/policy/modules/services/cups.te	2007-10-25 10:21:03.000000000 -0400
 @@ -48,9 +48,8 @@
  type hplip_t;
  type hplip_exec_t;
@@ -5892,7 +5950,15 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cups
  	seutil_sigchld_newrole(cupsd_t)
  ')
  
-@@ -377,6 +398,14 @@
+@@ -331,6 +352,7 @@
+ dev_read_sysfs(cupsd_config_t)
+ dev_read_urand(cupsd_config_t)
+ dev_read_rand(cupsd_config_t)
++dev_rw_generic_usb_dev(cupsd_config_t)
+ 
+ fs_getattr_all_fs(cupsd_config_t)
+ fs_search_auto_mountpoints(cupsd_config_t)
+@@ -377,6 +399,14 @@
  ')
  
  optional_policy(`
@@ -5907,7 +5973,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cups
  	cron_system_entry(cupsd_config_t, cupsd_config_exec_t)
  ')
  
-@@ -393,6 +422,7 @@
+@@ -393,6 +423,7 @@
  optional_policy(`
  	hal_domtrans(cupsd_config_t)
  	hal_read_tmp_files(cupsd_config_t)
@@ -5915,7 +5981,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cups
  ')
  
  optional_policy(`
-@@ -525,11 +555,9 @@
+@@ -525,11 +556,9 @@
  allow hplip_t cupsd_etc_t:dir search;
  
  cups_stream_connect(hplip_t)
@@ -5930,7 +5996,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cups
  
  manage_files_pattern(hplip_t,hplip_var_run_t,hplip_var_run_t)
  files_pid_filetrans(hplip_t,hplip_var_run_t,file)
-@@ -560,7 +588,9 @@
+@@ -560,7 +589,9 @@
  dev_read_urand(hplip_t)
  dev_read_rand(hplip_t)
  dev_rw_generic_usb_dev(hplip_t)
@@ -5941,7 +6007,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cups
  
  fs_getattr_all_fs(hplip_t)
  fs_search_auto_mountpoints(hplip_t)
-@@ -587,8 +617,6 @@
+@@ -587,8 +618,6 @@
  userdom_dontaudit_search_sysadm_home_dirs(hplip_t)
  userdom_dontaudit_search_all_users_home_content(hplip_t)
  
@@ -5950,7 +6016,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cups
  optional_policy(`
  	seutil_sigchld_newrole(hplip_t)
  ')
-@@ -668,3 +696,15 @@
+@@ -668,3 +697,15 @@
  optional_policy(`
  	udev_read_db(ptal_t)
  ')
@@ -6383,9 +6449,17 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/dove
 +	mta_manage_spool(dovecot_deliver_t)
 +')
 +
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/exim.fc serefpolicy-3.1.0/policy/modules/services/exim.fc
+--- nsaserefpolicy/policy/modules/services/exim.fc	2007-10-24 15:00:24.000000000 -0400
++++ serefpolicy-3.1.0/policy/modules/services/exim.fc	2007-10-24 15:28:23.000000000 -0400
+@@ -1,3 +1,4 @@
++
+ /usr/sbin/exim		--	gen_context(system_u:object_r:exim_exec_t,s0)
+ /var/log/exim(/.*)?		gen_context(system_u:object_r:exim_log_t,s0)
+ /var/run/exim.pid	--	gen_context(system_u:object_r:exim_var_run_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/exim.te serefpolicy-3.1.0/policy/modules/services/exim.te
 --- nsaserefpolicy/policy/modules/services/exim.te	2007-10-24 15:17:31.000000000 -0400
-+++ serefpolicy-3.1.0/policy/modules/services/exim.te	2007-10-24 15:26:52.000000000 -0400
++++ serefpolicy-3.1.0/policy/modules/services/exim.te	2007-10-26 09:02:45.000000000 -0400
 @@ -21,9 +21,20 @@
  ## </desc>
  gen_tunable(exim_manage_user_files,false)
@@ -7222,7 +7296,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/mta.
  ## <summary>
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/mta.te serefpolicy-3.1.0/policy/modules/services/mta.te
 --- nsaserefpolicy/policy/modules/services/mta.te	2007-10-12 08:56:07.000000000 -0400
-+++ serefpolicy-3.1.0/policy/modules/services/mta.te	2007-10-24 15:06:50.000000000 -0400
++++ serefpolicy-3.1.0/policy/modules/services/mta.te	2007-10-26 09:08:35.000000000 -0400
 @@ -6,6 +6,7 @@
  # Declarations
  #
@@ -7285,7 +7359,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/mta.
  ')
  
  optional_policy(`
-+	exim_domtrans(system_mail_t)
++	exim_append_log(system_mail_t)
 +')
 +
 +optional_policy(`
@@ -7595,7 +7669,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/netw
 +/var/log/wpa_supplicant\.log	--	gen_context(system_u:object_r:NetworkManager_log_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/networkmanager.te serefpolicy-3.1.0/policy/modules/services/networkmanager.te
 --- nsaserefpolicy/policy/modules/services/networkmanager.te	2007-10-12 08:56:07.000000000 -0400
-+++ serefpolicy-3.1.0/policy/modules/services/networkmanager.te	2007-10-24 15:06:50.000000000 -0400
++++ serefpolicy-3.1.0/policy/modules/services/networkmanager.te	2007-10-24 15:39:06.000000000 -0400
 @@ -13,6 +13,9 @@
  type NetworkManager_var_run_t;
  files_pid_file(NetworkManager_var_run_t)
@@ -7643,7 +7717,16 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/netw
  ')
  
  optional_policy(`
-@@ -162,6 +166,7 @@
+@@ -151,6 +155,8 @@
+ optional_policy(`
+ 	nscd_socket_use(NetworkManager_t)
+ 	nscd_signal(NetworkManager_t)
++	nscd_script_domtrans(NetworkManager_t)
++	nscd_domtrans(NetworkManager_t)
+ ')
+ 
+ optional_policy(`
+@@ -162,6 +168,7 @@
  	ppp_domtrans(NetworkManager_t)
  	ppp_read_pid_files(NetworkManager_t)
  	ppp_signal(NetworkManager_t)
@@ -7651,7 +7734,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/netw
  ')
  
  optional_policy(`
-@@ -173,8 +178,10 @@
+@@ -173,8 +180,10 @@
  ')
  
  optional_policy(`
@@ -7774,10 +7857,53 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/nis.
  corenet_dontaudit_tcp_bind_all_reserved_ports(ypxfr_t)
  corenet_dontaudit_udp_bind_all_reserved_ports(ypxfr_t)
  corenet_tcp_connect_all_ports(ypxfr_t)
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/nscd.fc serefpolicy-3.1.0/policy/modules/services/nscd.fc
+--- nsaserefpolicy/policy/modules/services/nscd.fc	2006-11-16 17:15:20.000000000 -0500
++++ serefpolicy-3.1.0/policy/modules/services/nscd.fc	2007-10-24 15:39:38.000000000 -0400
+@@ -9,3 +9,5 @@
+ /var/run/\.nscd_socket	-s	gen_context(system_u:object_r:nscd_var_run_t,s0)
+ 
+ /var/run/nscd(/.*)?		gen_context(system_u:object_r:nscd_var_run_t,s0)
++
++/etc/rc\.d/init\.d/nscd	--	gen_context(system_u:object_r:httpd_script_exec_t,s0)
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/nscd.if serefpolicy-3.1.0/policy/modules/services/nscd.if
+--- nsaserefpolicy/policy/modules/services/nscd.if	2007-03-26 10:39:04.000000000 -0400
++++ serefpolicy-3.1.0/policy/modules/services/nscd.if	2007-10-24 15:39:27.000000000 -0400
+@@ -204,3 +204,22 @@
+ 	role $2 types nscd_t;
+ 	dontaudit nscd_t $3:chr_file rw_term_perms;
+ ')
++
++########################################
++## <summary>
++##	Execute nscd server in the ntpd domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	The type of the process performing this action.
++##	</summary>
++## </param>
++#
++interface(`nscd_script_domtrans',`
++	gen_require(`
++		type nscd_script_exec_t;
++	')
++
++	init_script_domtrans_spec($1,nscd_script_exec_t)
++')
++
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/nscd.te serefpolicy-3.1.0/policy/modules/services/nscd.te
 --- nsaserefpolicy/policy/modules/services/nscd.te	2007-10-12 08:56:07.000000000 -0400
-+++ serefpolicy-3.1.0/policy/modules/services/nscd.te	2007-10-24 15:06:50.000000000 -0400
-@@ -28,14 +28,14 @@
++++ serefpolicy-3.1.0/policy/modules/services/nscd.te	2007-10-24 15:39:54.000000000 -0400
+@@ -23,19 +23,22 @@
+ type nscd_log_t;
+ logging_log_file(nscd_log_t)
+ 
++type nscd_script_exec_t;
++init_script_type(nscd_script_exec_t)
++
+ ########################################
+ #
  # Local policy
  #
  
@@ -7795,7 +7921,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/nscd
  allow nscd_t self:tcp_socket create_socket_perms;
  allow nscd_t self:udp_socket create_socket_perms;
  
-@@ -50,6 +50,8 @@
+@@ -50,6 +53,8 @@
  manage_sock_files_pattern(nscd_t,nscd_var_run_t,nscd_var_run_t)
  files_pid_filetrans(nscd_t,nscd_var_run_t,{ file sock_file })
  
@@ -7804,7 +7930,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/nscd
  kernel_read_kernel_sysctls(nscd_t)
  kernel_list_proc(nscd_t)
  kernel_read_proc_symlinks(nscd_t)
-@@ -73,6 +75,8 @@
+@@ -73,6 +78,8 @@
  corenet_udp_sendrecv_all_nodes(nscd_t)
  corenet_tcp_sendrecv_all_ports(nscd_t)
  corenet_udp_sendrecv_all_ports(nscd_t)
@@ -7813,7 +7939,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/nscd
  corenet_tcp_connect_all_ports(nscd_t)
  corenet_sendrecv_all_client_packets(nscd_t)
  corenet_rw_tun_tap_dev(nscd_t)
-@@ -93,6 +97,7 @@
+@@ -93,6 +100,7 @@
  libs_use_ld_so(nscd_t)
  libs_use_shared_libs(nscd_t)
  
@@ -7821,7 +7947,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/nscd
  logging_send_syslog_msg(nscd_t)
  
  miscfiles_read_localization(nscd_t)
-@@ -114,3 +119,12 @@
+@@ -114,3 +122,12 @@
  	xen_dontaudit_rw_unix_stream_sockets(nscd_t)
  	xen_append_log(nscd_t)
  ')
@@ -8322,6 +8448,18 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/post
  ########################################
  #
  # postgresql Local policy
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ppp.fc serefpolicy-3.1.0/policy/modules/services/ppp.fc
+--- nsaserefpolicy/policy/modules/services/ppp.fc	2006-11-16 17:15:20.000000000 -0500
++++ serefpolicy-3.1.0/policy/modules/services/ppp.fc	2007-10-26 08:54:35.000000000 -0400
+@@ -25,7 +25,7 @@
+ #
+ # /var
+ #
+-/var/run/(i)?ppp.*pid		--	gen_context(system_u:object_r:pppd_var_run_t,s0)
++/var/run/(i)?ppp.*pid[^/]*	--	gen_context(system_u:object_r:pppd_var_run_t,s0)
+ /var/run/pppd[0-9]*\.tdb	--	gen_context(system_u:object_r:pppd_var_run_t,s0)
+ /var/run/ppp(/.*)?			gen_context(system_u:object_r:pppd_var_run_t,s0)
+ # Fix pptp sockets
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ppp.if serefpolicy-3.1.0/policy/modules/services/ppp.if
 --- nsaserefpolicy/policy/modules/services/ppp.if	2007-03-26 10:39:04.000000000 -0400
 +++ serefpolicy-3.1.0/policy/modules/services/ppp.if	2007-10-24 15:06:50.000000000 -0400
@@ -13330,7 +13468,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/mount.
 +
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/raid.te serefpolicy-3.1.0/policy/modules/system/raid.te
 --- nsaserefpolicy/policy/modules/system/raid.te	2007-10-12 08:56:08.000000000 -0400
-+++ serefpolicy-3.1.0/policy/modules/system/raid.te	2007-10-24 15:06:50.000000000 -0400
++++ serefpolicy-3.1.0/policy/modules/system/raid.te	2007-10-25 09:40:53.000000000 -0400
 @@ -19,7 +19,7 @@
  # Local policy
  #
@@ -14409,7 +14547,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/unconf
 +
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/unconfined.te serefpolicy-3.1.0/policy/modules/system/unconfined.te
 --- nsaserefpolicy/policy/modules/system/unconfined.te	2007-10-12 08:56:08.000000000 -0400
-+++ serefpolicy-3.1.0/policy/modules/system/unconfined.te	2007-10-24 15:06:50.000000000 -0400
++++ serefpolicy-3.1.0/policy/modules/system/unconfined.te	2007-10-26 08:47:03.000000000 -0400
 @@ -5,17 +5,23 @@
  #
  # Declarations
@@ -14489,7 +14627,15 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/unconf
  	unconfined_domain(httpd_unconfined_script_t)
  ')
  
-@@ -107,6 +122,10 @@
+@@ -73,6 +88,7 @@
+ 	cron_per_role_template(unconfined, unconfined_t, unconfined_r)
+ 	# this is disallowed usage:
+ 	unconfined_domain(unconfined_crond_t)
++	unconfined_domain(unconfined_crontab_t)
+ ')
+ 
+ optional_policy(`
+@@ -107,6 +123,10 @@
  	optional_policy(`
  		oddjob_dbus_chat(unconfined_t)
  	')
@@ -14500,7 +14646,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/unconf
  ')
  
  optional_policy(`
-@@ -118,11 +137,11 @@
+@@ -118,11 +138,11 @@
  ')
  
  optional_policy(`
@@ -14514,7 +14660,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/unconf
  ')
  
  optional_policy(`
-@@ -134,11 +153,7 @@
+@@ -134,11 +154,7 @@
  ')
  
  optional_policy(`
@@ -14527,7 +14673,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/unconf
  ')
  
  optional_policy(`
-@@ -155,32 +170,23 @@
+@@ -155,32 +171,23 @@
  
  optional_policy(`
  	postfix_run_map(unconfined_t, unconfined_r, { unconfined_devpts_t unconfined_tty_device_t })
@@ -14564,7 +14710,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/unconf
  ')
  
  optional_policy(`
-@@ -205,11 +211,22 @@
+@@ -205,11 +212,22 @@
  ')
  
  optional_policy(`
@@ -14589,7 +14735,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/unconf
  ')
  
  ########################################
-@@ -225,8 +242,19 @@
+@@ -225,8 +243,19 @@
  
  	init_dbus_chat_script(unconfined_execmem_t)
  	unconfined_dbus_chat(unconfined_execmem_t)
