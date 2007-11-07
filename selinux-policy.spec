@@ -70,6 +70,7 @@ SELinux Policy development package
 %{_usr}/share/selinux/devel/Makefile
 %{_usr}/share/selinux/devel/policygentool
 %{_usr}/share/selinux/devel/example.*
+%{_usr}/share/selinux/devel/policy.*
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
 
 %post devel
@@ -166,7 +167,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2393.
+Based off of reference policy: Checked out revision 2483.
 
 %build
 
@@ -215,6 +216,7 @@ mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/
 install -m 755 $RPM_SOURCE_DIR/policygentool %{buildroot}%{_usr}/share/selinux/devel/
 install -m 644 $RPM_SOURCE_DIR/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
 install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
+install -m 644 doc/policy.* %{buildroot}%{_usr}/share/selinux/devel/
 echo  "htmlview file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 
@@ -288,7 +290,7 @@ semodule -s targeted -r moilscanner 2>/dev/null
 %loadpolicy targeted
 
 if [ $1 = 1 ]; then
-semanage user -a -P unconfined -R "unconfined_r system_r" unconfined_u 
+semanage user -a -P unconfined -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 
 semanage login -m -s "unconfined_u" __default__ 2> /dev/null
 semanage login -m -s "system_u" root 2> /dev/null
 semanage user -a -P guest -R guest_r guest_u
@@ -299,6 +301,10 @@ else
 fi
 exit 0
 
+
+%triggerpostun targeted -- selinux-policy-targeted < 3.0.8-44-1
+semanage user -m -r s0-s0:c0.c1023 unconfined_u 2> /dev/null
+exit 0
 
 %triggerpostun targeted -- selinux-policy-targeted < 3.0.8-14-1
 setsebool -P use_nfs_home_dirs=1
