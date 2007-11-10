@@ -16,7 +16,7 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.1.0
+Version: 3.1.1
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -179,7 +179,7 @@ Based off of reference policy: Checked out revision 2483.
 # Build targeted policy
 %{__rm} -fR %{buildroot}
 mkdir -p %{buildroot}%{_mandir}
-cp -R  man %{buildroot}%{_mandir}
+cp -R  man/* %{buildroot}%{_mandir}
 mkdir -p %{buildroot}%{_sysconfdir}/selinux
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
 touch %{buildroot}%{_sysconfdir}/selinux/config
@@ -379,6 +379,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Nov 10 2007 Dan Walsh <dwalsh@redhat.com> 3.1.1-1
+- Update to upstream
+
 * Mon Oct 22 2007 Dan Walsh <dwalsh@redhat.com> 3.1.0-1
 - Update to upstream
 
