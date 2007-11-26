@@ -167,7 +167,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2483.
+Based off of reference policy: Checked out revision 2530.
 
 %build
 
@@ -379,6 +379,11 @@ exit 0
 %endif
 
 %changelog
+* Mon Nov 19 2007 Dan Walsh <dwalsh@redhat.com> 3.1.2-1
+- Merge with upstream
+- Allow xsever to read hwdata_t
+- Allow login programs to setkeycreate
+
 * Sat Nov 10 2007 Dan Walsh <dwalsh@redhat.com> 3.1.1-1
 - Update to upstream
 
