@@ -16,12 +16,12 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.1.2
-Release: 2%{?dist}
+Version: 3.2.1
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20071114.patch
+patch: policy-20071130.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -41,7 +41,7 @@ Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
-Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 1.6.17-1
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.14-3
 
 %description 
 SELinux Base package
@@ -379,6 +379,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Nov 30 2007 Dan Walsh <dwalsh@redhat.com> 3.2.1-1
+- Remove user based home directory separation
+
 * Wed Nov 28 2007 Dan Walsh <dwalsh@redhat.com> 3.1.2-2
 - Remove user specific crond_t
 
