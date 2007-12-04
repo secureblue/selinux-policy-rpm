@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.1
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -379,7 +379,9 @@ exit 0
 %endif
 
 %changelog
-* Sun Dec 2 2007 Dan Walsh <dwalsh@redhat.com> 3.2.1-2
+* Mon Dec 3 2007 Dan Walsh <dwalsh@redhat.com> 3.2.1-3
+- Allow rpm_script to transition to unconfined_execmem_t
+
 * Fri Nov 30 2007 Dan Walsh <dwalsh@redhat.com> 3.2.1-1
 - Remove user based home directory separation
 
