@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.2.1
-Release: 3%{?dist}
+Version: 3.2.2
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -167,7 +167,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2530.
+Based off of reference policy: Checked out revision 2541.
 
 %build
 
@@ -379,6 +379,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 4 2007 Dan Walsh <dwalsh@redhat.com> 3.2.2-1
+- Update to upstreamddddddddddddd
+- Allow httpd_sys_script_t to search users homedirs
+
 * Mon Dec 3 2007 Dan Walsh <dwalsh@redhat.com> 3.2.1-3
 - Allow rpm_script to transition to unconfined_execmem_t
 
@@ -388,7 +392,7 @@ exit 0
 * Wed Nov 28 2007 Dan Walsh <dwalsh@redhat.com> 3.1.2-2
 - Remove user specific crond_t
 
-* Mon Nov 19 2007 Dan Walsh <dwalsh@redhat.com> 3.1.2-1
+* Mon Nov 19 2007 Dan Walsh <dwaldddddddddddddddddddddddddddddddddddddddddddddsh@redhat.com> 3.1.2-1
 - Merge with upstream
 - Allow xsever to read hwdata_t
 - Allow login programs to setkeycreate
