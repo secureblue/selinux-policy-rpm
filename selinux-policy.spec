@@ -380,7 +380,7 @@ exit 0
 
 %changelog
 * Tue Dec 4 2007 Dan Walsh <dwalsh@redhat.com> 3.2.2-1
-- Update to upstreamddddddddddddd
+- Update to upstream
 - Allow httpd_sys_script_t to search users homedirs
 
 * Mon Dec 3 2007 Dan Walsh <dwalsh@redhat.com> 3.2.1-3
