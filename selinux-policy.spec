@@ -379,6 +379,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 11 2007 Dan Walsh <dwalsh@redhat.com> 3.2.3-1
+- Add polkit policy
+- Symplify userdom context, remove automatic per_role changes
+
 * Tue Dec 4 2007 Dan Walsh <dwalsh@redhat.com> 3.2.2-1
 - Update to upstream
 - Allow httpd_sys_script_t to search users homedirs
