@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -379,6 +379,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 11 2007 Dan Walsh <dwalsh@redhat.com> 3.2.3-2
+- Fixes for polkit
+- Allow xserver to ptrace
+
 * Tue Dec 11 2007 Dan Walsh <dwalsh@redhat.com> 3.2.3-1
 - Add polkit policy
 - Symplify userdom context, remove automatic per_role changes
