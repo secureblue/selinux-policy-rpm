@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.2.3
-Release: 2%{?dist}
+Version: 3.2.4
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -379,6 +379,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec 12 2007 Dan Walsh <dwalsh@redhat.com> 3.2.4-1
+- Update to upstream
+
 * Tue Dec 11 2007 Dan Walsh <dwalsh@redhat.com> 3.2.3-2
 - Fixes for polkit
 - Allow xserver to ptrace
