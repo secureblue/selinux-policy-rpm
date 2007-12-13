@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.4
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -316,8 +316,9 @@ restorecon -R /root /etc/selinux/targeted 2> /dev/null
 exit 0
 
 %files targeted
-%config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/xguest_u
 %fileList targeted
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/unconfined_u
+%config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/xguest_u
 %endif
 
 %if %{BUILD_OLPC}
@@ -379,6 +380,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Dec 13 2007 Dan Walsh <dwalsh@redhat.com> 3.2.4-1
+- Dontaudit dbus user client search of /root
+
 * Wed Dec 12 2007 Dan Walsh <dwalsh@redhat.com> 3.2.4-1
 - Update to upstream
 
