@@ -138,7 +138,7 @@ install -m0644 $RPM_SOURCE_DIR/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinu
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/root \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/guest_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/user_u \
-%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u 
 
 %define saveFileContext() \
 if [ -s /etc/selinux/config ]; then \
@@ -316,9 +316,9 @@ restorecon -R /root /etc/selinux/targeted 2> /dev/null
 exit 0
 
 %files targeted
-%fileList targeted
-%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/unconfined_u
+%config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/xguest_u
+%fileList targeted
 %endif
 
 %if %{BUILD_OLPC}
