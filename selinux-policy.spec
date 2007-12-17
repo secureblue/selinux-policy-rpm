@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.4
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -302,16 +302,18 @@ fi
 exit 0
 
 
-%triggerpostun targeted -- selinux-policy-targeted < 3.0.8-44-1
-semanage user -m -r s0-s0:c0.c1023 unconfined_u 2> /dev/null
-exit 0
-
-%triggerpostun targeted -- selinux-policy-targeted < 3.0.8-14-1
+%triggerpostun targeted -- selinux-policy-targeted < 3.2.4-3.fc9
 setsebool -P use_nfs_home_dirs=1
-semanage login -m -s "system_u" __default__ 2> /dev/null
-semanage user -a -P unconfined -R "unconfined_r system_r" unconfined_u 2> /dev/null
-semanage user -a -P guest -R guest_r guest_u 2> /dev/null 
-semanage user -a -P xguest -R xguest_r xguest_u 2> /dev/null
+semanage user -l | grep -s unconfined_u 
+if [ $? == 0 ]; then
+   semanage user -m -P unconfined -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
+else
+   semanage user -a -P unconfined -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
+fi
+seuser=`semanage login -l | grep __default__ | awk '{ print $2 }'`
+[ $seuser == "system_u" ]   && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 __default__
+seuser=`semanage login -l | grep root | awk '{ print $2 }'`
+[ $seuser == "system_u" ]   && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 root
 restorecon -R /root /etc/selinux/targeted 2> /dev/null
 exit 0
 
@@ -380,6 +382,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Dec 17 2007 Dan Walsh <dwalsh@redhat.com> 3.2.4-3
+- Modify default login to unconfined_u
+
 * Thu Dec 13 2007 Dan Walsh <dwalsh@redhat.com> 3.2.4-1
 - Dontaudit dbus user client search of /root
 
