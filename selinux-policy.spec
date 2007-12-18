@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.4
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -382,6 +382,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 18 2007 Dan Walsh <dwalsh@redhat.com> 3.2.4-4
+- Allow cron to run unconfined apps
+
 * Mon Dec 17 2007 Dan Walsh <dwalsh@redhat.com> 3.2.4-3
 - Modify default login to unconfined_u
 
