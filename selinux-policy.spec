@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.4
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -382,6 +382,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec 19 2007 Dan Walsh <dwalsh@redhat.com> 3.2.4-5
+- Fix munin file context
+
 * Tue Dec 18 2007 Dan Walsh <dwalsh@redhat.com> 3.2.4-4
 - Allow cron to run unconfined apps
 
