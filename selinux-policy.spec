@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -104,6 +104,7 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 install -m0644 $RPM_SOURCE_DIR/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
 install -m0644 $RPM_SOURCE_DIR/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
+echo -n > %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
 %nil
 
 %define fileList() \
@@ -382,6 +383,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec 19 2007 Dan Walsh <dwalsh@redhat.com> 3.2.5-2
+- Zero out customizable types
+
 * Wed Dec 19 2007 Dan Walsh <dwalsh@redhat.com> 3.2.5-1
 - Fix definiton of admin_home_t
 
