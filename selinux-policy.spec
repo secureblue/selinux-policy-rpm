@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -72,6 +72,9 @@ SELinux Policy development package
 %{_usr}/share/selinux/devel/example.*
 %{_usr}/share/selinux/devel/policy.*
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
+
+%check devel
+/usr/bin/sepolgen-ifgen -i %{buildroot}%{_usr}/share/selinux/devel/include -o /dev/null
 
 %post devel
 [ -x /usr/bin/sepolgen-ifgen ] && /usr/bin/sepolgen-ifgen 
@@ -383,6 +386,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Dec 20 2007 Dan Walsh <dwalsh@redhat.com> 3.2.5-3
+- Run rpm in system_r
+
 * Wed Dec 19 2007 Dan Walsh <dwalsh@redhat.com> 3.2.5-2
 - Zero out customizable types
 
