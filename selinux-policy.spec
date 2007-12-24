@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -386,6 +386,12 @@ exit 0
 %endif
 
 %changelog
+* Mon Dec 24 2007 Dan Walsh <dwalsh@redhat.com> 3.2.5-6
+- Fix role transition fro unconfined_r to system_r when running rpm
+
+* Sat Dec 21 2007 Dan Walsh <dwalsh@redhat.com> 3.2.5-5
+- Fixes for xguest
+
 * Thu Dec 20 2007 Dan Walsh <dwalsh@redhat.com> 3.2.5-4
 - Let all uncofined domains communicate with dbus unconfined
 
