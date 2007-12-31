@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -295,8 +295,8 @@ semodule -s targeted -r moilscanner 2>/dev/null
 
 if [ $1 = 1 ]; then
 semanage user -a -P unconfined -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 
-semanage login -m -s "unconfined_u" __default__ 2> /dev/null
-semanage login -m -s "system_u" root 2> /dev/null
+semanage login -m -s "unconfined_u" -r s0-s0:c0.c1023 __default__ 2> /dev/null
+semanage login -m -s "unconfined_u" -r s0-s0:c0.c1023 root 2> /dev/null
 semanage user -a -P guest -R guest_r guest_u
 semanage user -a -P xguest -R xguest_r xguest_u 
 restorecon -R /root /var/log /var/run 2> /dev/null
@@ -386,6 +386,11 @@ exit 0
 %endif
 
 %changelog
+* Mon Dec 31 2007 Dan Walsh <dwalsh@redhat.com> 3.2.5-7
+- Fix munin log,
+- Eliminate duplicate mozilla file context
+- fix wpa_supplicant spec
+
 * Mon Dec 24 2007 Dan Walsh <dwalsh@redhat.com> 3.2.5-6
 - Fix role transition from unconfined_r to system_r when running rpm
 - Allow unconfined_domains to communicate with user dbus instances
