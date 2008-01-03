@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -386,6 +386,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 2 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-8
+- Change user and staff roles to work correctly with varied perms
+
 * Mon Dec 31 2007 Dan Walsh <dwalsh@redhat.com> 3.2.5-7
 - Fix munin log,
 - Eliminate duplicate mozilla file context
