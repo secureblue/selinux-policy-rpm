@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -306,19 +306,20 @@ fi
 exit 0
 
 
-%triggerpostun targeted -- selinux-policy-targeted < 3.2.4-3.fc9
+%triggerpostun targeted -- selinux-policy-targeted < 3.2.5-9.fc9
 setsebool -P use_nfs_home_dirs=1
 semanage user -l | grep -s unconfined_u 
 if [ $? == 0 ]; then
-   semanage user -m -P unconfined -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
+   semanage user -m -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
 else
-   semanage user -a -P unconfined -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
+   semanage user -a -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
 fi
 seuser=`semanage login -l | grep __default__ | awk '{ print $2 }'`
 [ $seuser == "system_u" ]   && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 __default__
 seuser=`semanage login -l | grep root | awk '{ print $2 }'`
 [ $seuser == "system_u" ]   && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 root
 restorecon -R /root /etc/selinux/targeted 2> /dev/null
+semodule -r qmail 2> /dev/null
 exit 0
 
 %files targeted
@@ -386,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 7 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-9
+- Update gpg to allow reading of inotify
+
 * Wed Jan 2 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-8
 - Change user and staff roles to work correctly with varied perms
 
