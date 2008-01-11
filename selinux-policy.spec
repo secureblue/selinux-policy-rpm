@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 7 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-10
+- dontaudit pam_t and dbusd writing to user_home_t
+
 * Mon Jan 7 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-9
 - Update gpg to allow reading of inotify
 
