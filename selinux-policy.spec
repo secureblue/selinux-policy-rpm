@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 14 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-12
+- Allow users to execute all files in homedir, if boolean set
+- Allow mount to read samba config
+
 * Sun Jan 13 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-11
 - Fixes for xguest to run java plugin
 
