@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan 15 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-13
+- Allow setroubleshoot to read policy config and send audit messages
+
 * Mon Jan 14 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-12
 - Allow users to execute all files in homedir, if boolean set
 - Allow mount to read samba config
