@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 21 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-15
+- Allow login programs to talk dbus to oddjob
+
 * Thu Jan 17 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-14
 - Add procmail_log support
 - Lots of fixes for munin
