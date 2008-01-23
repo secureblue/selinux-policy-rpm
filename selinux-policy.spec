@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 23 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-18
+- Allow pam_selinux_permit to kill all processes
+
 * Mon Jan 21 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-17
 - Allow ptrace or user processes by users of same type
 - Add boolean for transition to nsplugin
