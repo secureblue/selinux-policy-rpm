@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 18%{?dist}
+Release: 19%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jan 24 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-19
+- Fix nsplugin to allow flashplugin to work in enforcing mode
+
 * Wed Jan 23 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-18
 - Allow pam_selinux_permit to kill all processes
 
