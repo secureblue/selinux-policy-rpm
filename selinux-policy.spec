@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 20%{?dist}
+Release: 21%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 28 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-21
+- Allow all user roles to executae samba net command
+
 * Fri Jan 25 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-20
 - Allow usertypes to read/write noxattr file systems
 
