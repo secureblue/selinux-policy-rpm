@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 23%{?dist}
+Release: 24%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,7 +387,7 @@ exit 0
 %endif
 
 %changelog
-* Wed Jan 30 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-23
+* Wed Jan 30 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-24
 - Allow allow_httpd_mod_auth_pam to work
 
 * Wed Jan 30 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-22
