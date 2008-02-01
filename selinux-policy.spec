@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.5
-Release: 24%{?dist}
+Release: 25%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 1 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-25
+- Allow fail2ban to create a socket in /var/run
+
 * Wed Jan 30 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-24
 - Allow allow_httpd_mod_auth_pam to work
 
