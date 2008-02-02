@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.2.5
-Release: 25%{?dist}
+Version: 3.2.6
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,11 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 1 2008 Dan Walsh <dwalsh@redhat.com> 3.2.6-1
+- Update to upstream
+- Add libvirt policy
+- add qemu policy
+
 * Fri Feb 1 2008 Dan Walsh <dwalsh@redhat.com> 3.2.5-25
 - Allow fail2ban to create a socket in /var/run
 
