@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.6
-Release: 2%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,12 @@ exit 0
 %endif
 
 %changelog
+* Sun Feb 3 2008 Dan Walsh <dwalsh@redhat.com> 3.2.6-4
+- Fixes for nsplugin
+
+* Sat Feb 2 2008 Dan Walsh <dwalsh@redhat.com> 3.2.6-3
+- More fixes for qemu
+
 * Sat Feb 2 2008 Dan Walsh <dwalsh@redhat.com> 3.2.6-2
 - Additional ports for vnc and allow qemu and libvirt to search all directories
 
