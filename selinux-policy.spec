@@ -387,6 +387,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.6-6
+- Add policy for kerneloops
+- Add policy for gnomeclock
+
 * Mon Feb 4 2008 Dan Walsh <dwalsh@redhat.com> 3.2.6-5
 - Fixes for libvirt
 
