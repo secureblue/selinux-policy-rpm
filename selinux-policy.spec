@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.6
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.6-7
+- Fixes for staff_t
+
 * Tue Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.6-6
 - Add policy for kerneloops
 - Add policy for gnomeclock
