@@ -11,13 +11,13 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 21
-%define libsepolver 2.0.3-2
-%define POLICYCOREUTILSVER 2.0.23-1
+%define libsepolver 2.0.20-1
+%define POLICYCOREUTILSVER 2.0.42-1
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.2.6
-Release: 6%{?dist}
+Version: 3.2.7
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -171,7 +171,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2560.
+Based off of reference policy: Checked out revision 2594.
 
 %build
 
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-1
+- Update to upstream
+
 * Tue Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.6-7
 - Fixes for staff_t
 
