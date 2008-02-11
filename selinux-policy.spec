@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.7
-Release: 1%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,13 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-3
+- More fixes for polkit
+
+* Thu Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-2
+- Eliminate transition from unconfined_t to qemu by default
+- Fixes for gpg
+
 * Tue Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-1
 - Update to upstream
 
