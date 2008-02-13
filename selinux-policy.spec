@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.7
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-5
+- Add additional login users interfaces
+  -     userdom_admin_login_user_template(staff)
+
 * Thu Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-3
 - More fixes for polkit
 
