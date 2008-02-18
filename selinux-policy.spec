@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.2.7
-Release: 6%{?dist}
+Version: 3.2.8
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 15 2008 Dan Walsh <dwalsh@redhat.com> 3.2.8-1
+- Merge with upstream
+
 * Thu Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-6
 - Allow udev to send audit messages
 
