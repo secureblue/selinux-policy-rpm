@@ -388,6 +388,9 @@ exit 0
 
 %changelog
 * Wed Feb 20 2008 Dan Walsh <dwalsh@redhat.com> 3.2.9-1
+- Fixes from yum-cron
+- Update to latest upstream
+
 
 * Tue Feb 19 2008 Dan Walsh <dwalsh@redhat.com> 3.2.8-2
 - Fix userdom_list_user_files
