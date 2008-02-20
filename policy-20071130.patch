@@ -15292,7 +15292,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/post
  /usr/sbin/postkick	--	gen_context(system_u:object_r:postfix_master_exec_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/postfix.if serefpolicy-3.2.9/policy/modules/services/postfix.if
 --- nsaserefpolicy/policy/modules/services/postfix.if	2007-12-04 11:02:50.000000000 -0500
-+++ serefpolicy-3.2.9/policy/modules/services/postfix.if	2008-02-20 14:28:23.000000000 -0500
++++ serefpolicy-3.2.9/policy/modules/services/postfix.if	2008-02-20 17:00:40.000000000 -0500
 @@ -206,9 +206,8 @@
  		type postfix_etc_t;
  	')
@@ -20054,7 +20054,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/squi
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/squid.te serefpolicy-3.2.9/policy/modules/services/squid.te
 --- nsaserefpolicy/policy/modules/services/squid.te	2007-12-19 05:32:17.000000000 -0500
-+++ serefpolicy-3.2.9/policy/modules/services/squid.te	2008-02-20 14:28:23.000000000 -0500
++++ serefpolicy-3.2.9/policy/modules/services/squid.te	2008-02-20 16:57:35.000000000 -0500
 @@ -31,12 +31,15 @@
  type squid_var_run_t;
  files_pid_file(squid_var_run_t)
@@ -20300,7 +20300,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
  	optional_policy(`
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.te serefpolicy-3.2.9/policy/modules/services/ssh.te
 --- nsaserefpolicy/policy/modules/services/ssh.te	2007-12-19 05:32:17.000000000 -0500
-+++ serefpolicy-3.2.9/policy/modules/services/ssh.te	2008-02-20 14:28:23.000000000 -0500
++++ serefpolicy-3.2.9/policy/modules/services/ssh.te	2008-02-20 17:08:49.000000000 -0500
 @@ -24,7 +24,7 @@
  
  # Type for the ssh-agent executable.
@@ -20323,18 +20323,19 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
  #################################
  #
  # sshd local policy
-@@ -80,6 +86,10 @@
+@@ -80,6 +86,11 @@
  corenet_tcp_bind_xserver_port(sshd_t)
  corenet_sendrecv_xserver_server_packets(sshd_t)
  
 +userdom_read_all_users_home_dirs_symlinks(sshd_t)
 +userdom_read_all_users_home_content_files(sshd_t)
 +userdom_read_all_users_home_content_symlinks(sshd_t)
++userdom_read_unpriv_users_home_content_files(sshd_t)
 +
  tunable_policy(`ssh_sysadm_login',`
  	# Relabel and access ptys created by sshd
  	# ioctl is necessary for logout() processing for utmp entry and for w to
-@@ -101,6 +111,10 @@
+@@ -101,6 +112,10 @@
  ')
  
  optional_policy(`
@@ -20345,7 +20346,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
  	daemontools_service_domain(sshd_t, sshd_exec_t)
  ')
  
-@@ -119,7 +133,11 @@
+@@ -119,7 +134,11 @@
  ')
  
  optional_policy(`
@@ -24023,8 +24024,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/qemu.f
 +/usr/bin/qemu.*	--	gen_context(system_u:object_r:qemu_exec_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/qemu.if serefpolicy-3.2.9/policy/modules/system/qemu.if
 --- nsaserefpolicy/policy/modules/system/qemu.if	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.2.9/policy/modules/system/qemu.if	2008-02-20 14:28:23.000000000 -0500
-@@ -0,0 +1,218 @@
++++ serefpolicy-3.2.9/policy/modules/system/qemu.if	2008-02-20 17:01:42.000000000 -0500
+@@ -0,0 +1,290 @@
 +
 +## <summary>policy for qemu</summary>
 +
@@ -24243,10 +24244,82 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/qemu.i
 +	allow qemu_unconfined_t $3:chr_file rw_file_perms;
 +')
 +
++
++########################################
++## <summary>
++##	Creates types and rules for a basic
++##	qemu process domain.
++## </summary>
++## <param name="prefix">
++##	<summary>
++##	Prefix for the domain.
++##	</summary>
++## </param>
++#
++template(`qemu_domain_template',`
++
++	type $1_t;
++	domain_type($1_t)
++
++	domain_use_interactive_fds($1_t)
++
++	allow $1_t self:process { execstack execmem signal getsched };
++	allow $1_t self:tcp_socket create_stream_socket_perms;
++
++	## internal communication is often done using fifo and unix sockets.
++	allow $1_t self:fifo_file rw_file_perms;
++	allow $1_t self:unix_stream_socket create_stream_socket_perms;
++	allow $1_t self:shm create_shm_perms;
++
++	corenet_all_recvfrom_unlabeled($1_t)
++	corenet_all_recvfrom_netlabel($1_t)
++	corenet_tcp_sendrecv_all_if($1_t)
++	corenet_tcp_sendrecv_all_nodes($1_t)
++	corenet_tcp_sendrecv_all_ports($1_t)
++	corenet_tcp_bind_all_nodes($1_t)
++	corenet_tcp_bind_vnc_port($1_t)
++	corenet_rw_tun_tap_dev($1_t)
++
++	kernel_read_system_state($1_t)
++
++	dev_rw_kvm($1_t)
++
++	files_read_etc_files($1_t)
++	files_read_usr_files($1_t)
++	files_read_var_files($1_t)
++	files_search_all($1_t)
++
++	fs_rw_anon_inodefs_files($1_t)
++	fs_rw_tmpfs_files($1_t)
++
++	storage_raw_write_removable_device($1_t)
++	storage_raw_read_removable_device($1_t)
++
++	term_use_ptmx($1_t)
++	term_getattr_pty_fs($1_t)
++	term_use_generic_ptys($1_t)
++
++	libs_use_ld_so($1_t)
++	libs_use_shared_libs($1_t)
++
++	miscfiles_read_localization($1_t)
++
++	sysnet_read_config($1_t)
++
++	virt_manage_image($1_t)
++	virt_read_config($1_t)
++
++	optional_policy(`
++		xserver_stream_connect_xdm_xserver($1_t)
++		xserver_read_xdm_tmp_files($1_t)
++		xserver_xdm_rw_shm($1_t)
++	')
++')
++
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/qemu.te serefpolicy-3.2.9/policy/modules/system/qemu.te
 --- nsaserefpolicy/policy/modules/system/qemu.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.2.9/policy/modules/system/qemu.te	2008-02-20 14:28:23.000000000 -0500
-@@ -0,0 +1,83 @@
++++ serefpolicy-3.2.9/policy/modules/system/qemu.te	2008-02-20 17:01:56.000000000 -0500
+@@ -0,0 +1,40 @@
 +policy_module(qemu,1.0.0)
 +
 +########################################
@@ -24254,7 +24327,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/qemu.t
 +# Declarations
 +#
 +
-+type qemu_t;
++qemu_domain_template(qemu)
 +type qemu_exec_t;
 +application_domain(qemu_t, qemu_exec_t)
 +role system_r types qemu_t;
@@ -24267,59 +24340,15 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/qemu.t
 +# qemu local policy
 +#
 +
-+# Init script handling
-+domain_use_interactive_fds(qemu_t)
-+
-+allow qemu_t self:process { execstack execmem signal getsched };
-+allow qemu_t self:tcp_socket create_stream_socket_perms;
-+
-+## internal communication is often done using fifo and unix sockets.
-+allow qemu_t self:fifo_file rw_file_perms;
-+allow qemu_t self:unix_stream_socket create_stream_socket_perms;
-+allow qemu_t self:shm create_shm_perms;
-+
-+corenet_all_recvfrom_unlabeled(qemu_t)
-+corenet_all_recvfrom_netlabel(qemu_t)
-+corenet_tcp_sendrecv_all_if(qemu_t)
-+corenet_tcp_sendrecv_all_nodes(qemu_t)
-+corenet_tcp_sendrecv_all_ports(qemu_t)
-+corenet_tcp_bind_all_nodes(qemu_t)
-+corenet_tcp_bind_vnc_port(qemu_t)
-+corenet_rw_tun_tap_dev(qemu_t)
-+
-+kernel_read_system_state(qemu_t)
-+
-+dev_rw_kvm(qemu_t)
-+
-+files_read_etc_files(qemu_t)
-+files_read_usr_files(qemu_t)
-+files_read_var_files(qemu_t)
-+files_search_all(qemu_t)
-+
-+fs_rw_anon_inodefs_files(qemu_t)
-+fs_rw_tmpfs_files(qemu_t)
-+
-+storage_raw_write_removable_device(qemu_t)
-+storage_raw_read_removable_device(qemu_t)
-+
-+term_use_ptmx(qemu_t)
-+term_getattr_pty_fs(qemu_t)
-+term_use_generic_ptys(qemu_t)
-+
-+libs_use_ld_so(qemu_t)
-+libs_use_shared_libs(qemu_t)
-+
-+miscfiles_read_localization(qemu_t)
-+
-+sysnet_read_config(qemu_t)
-+
-+virt_manage_image(qemu_t)
-+virt_read_config(qemu_t)
-+
-+optional_policy(`
-+	xserver_stream_connect_xdm_xserver(qemu_t)
-+	xserver_read_xdm_tmp_files(qemu_t)
-+	xserver_xdm_rw_shm(qemu_t)
++tunable_policy(`qemu_full_network',`
++	allow qemu_t self:udp_socket create_socket_perms;
++	corenet_udp_sendrecv_all_if(qemu_t)
++	corenet_udp_sendrecv_all_nodes(qemu_t)
++	corenet_udp_sendrecv_all_ports(qemu_t)
++	corenet_udp_bind_all_nodes(qemu_t)
++	corenet_udp_bind_all_ports(qemu_t)
++	corenet_tcp_bind_all_ports(qemu_t)
++	corenet_tcp_connect_all_ports(qemu_t)
 +')
 +
 +########################################
@@ -24329,6 +24358,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/qemu.t
 +
 +unconfined_domain_noaudit(qemu_unconfined_t)
 +allow qemu_unconfined_t self:process { execstack execmem };
++
 +
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/raid.te serefpolicy-3.2.9/policy/modules/system/raid.te
 --- nsaserefpolicy/policy/modules/system/raid.te	2007-12-19 05:32:17.000000000 -0500
@@ -25815,7 +25845,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
 +/root(/.*)?	 	gen_context(system_u:object_r:admin_home_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdomain.if serefpolicy-3.2.9/policy/modules/system/userdomain.if
 --- nsaserefpolicy/policy/modules/system/userdomain.if	2008-02-15 09:52:56.000000000 -0500
-+++ serefpolicy-3.2.9/policy/modules/system/userdomain.if	2008-02-20 14:28:23.000000000 -0500
++++ serefpolicy-3.2.9/policy/modules/system/userdomain.if	2008-02-20 15:39:23.000000000 -0500
 @@ -29,9 +29,14 @@
  	')
  
@@ -25864,7 +25894,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
 -
 -	dev_dontaudit_getattr_all_blk_files($1_t)
 -	dev_dontaudit_getattr_all_chr_files($1_t)
-+	allow $1_usertype $1_usertype:process { signal_perms getsched setsched share getpgid setpgid setcap getsession getattr };
++	allow $1_usertype $1_usertype:process { ptrace signal_perms getsched setsched share getpgid setpgid setcap getsession getattr };
 +	allow $1_usertype $1_usertype:fd use;
 +	allow $1_usertype $1_t:key { create view read write search link setattr };
 +
