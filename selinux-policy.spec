@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.2.9
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 21 2008 Dan Walsh <dwalsh@redhat.com> 3.2.9-2
+- Add fusectl file system
+
 * Wed Feb 20 2008 Dan Walsh <dwalsh@redhat.com> 3.2.9-1
 - Fixes from yum-cron
 - Update to latest upstream
