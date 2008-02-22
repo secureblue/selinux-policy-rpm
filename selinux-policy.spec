@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.2.9
-Release: 2%{?dist}
+Version: 3.3.0
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -128,6 +128,7 @@ echo -n > %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
 %config %{_sysconfdir}/selinux/%1/contexts/customizable_types \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/securetty_types \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/dbus_contexts \
+%config %{_sysconfdir}/selinux/%1/contexts/x_contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/default_contexts \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/default_type \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/failsafe_context \
@@ -171,7 +172,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2594.
+Based off of reference policy: Checked out revision 2624.
 
 %build
 
@@ -387,6 +388,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 22 2008 Dan Walsh <dwalsh@redhat.com> 3.3.0-1
+- Add xace support
+
 * Thu Feb 21 2008 Dan Walsh <dwalsh@redhat.com> 3.2.9-2
 - Add fusectl file system
 
