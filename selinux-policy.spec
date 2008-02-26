@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -388,7 +388,9 @@ exit 0
 %endif
 
 %changelog
-* Tue Feb 26 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-3
+* Tue Feb 26 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-4
+- Add cyphesis policy
+
 
 * Tue Feb 26 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-2
 - Fix Makefile.devel to build mls modules
