@@ -16,7 +16,7 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.3.0
+Version: 3.3.1
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -388,6 +388,12 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 26 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-1
+- Update to upstream fixes
+
+* Fri Feb 22 2008 Dan Walsh <dwalsh@redhat.com> 3.3.0-2
+- Allow staff to mounton user_home_t
+
 * Fri Feb 22 2008 Dan Walsh <dwalsh@redhat.com> 3.3.0-1
 - Add xace support
 
