@@ -388,6 +388,11 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 27 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-6
+- Prepare policy for beta release
+- Change some of the system domains back to unconfined
+- Turn on some of the booleans
+
 * Tue Feb 26 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-5
 - Allow nsplugin_config execstack/execmem
 - Allow nsplugin_t to read alsa config
@@ -395,7 +400,6 @@ exit 0
 
 * Tue Feb 26 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-4
 - Add cyphesis policy
-
 
 * Tue Feb 26 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-2
 - Fix Makefile.devel to build mls modules
