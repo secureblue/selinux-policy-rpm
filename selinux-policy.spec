@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -388,6 +388,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 28 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-7
+-
+
 * Wed Feb 27 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-6
 - Prepare policy for beta release
 - Change some of the system domains back to unconfined
