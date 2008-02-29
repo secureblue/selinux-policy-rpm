@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -388,6 +388,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 29 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-9
+- More xselinux rules
+
 * Thu Feb 28 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-8
 - Change httpd_$1_script_r*_t to httpd_$1_content_r*_t
 
