@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -388,6 +388,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Mar 3 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-10
+- Allow bitlebee to read locale_t
+
 * Fri Feb 29 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-9
 - More xselinux rules
 
