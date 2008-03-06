@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -388,6 +388,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 6 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-12
+- Fix initrc_context generation for MLS
+
 * Mon Mar 3 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-11
 - Fixes for libvirt
 
