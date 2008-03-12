@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -388,6 +388,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Mar 12 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-16
+- Change init_t to an unconfined_domain
+
 * Tue Mar 11 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-15
 - Allow init to transition to initrc_t on shell exec.
 - Fix init to be able to sendto init_t.
