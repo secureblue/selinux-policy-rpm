@@ -17,12 +17,11 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-20071130.patch
-Patch2: policy-init.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -180,7 +179,6 @@ Based off of reference policy: Checked out revision 2624.
 %prep 
 %setup -n serefpolicy-%{version} -q
 %patch -p1
-%patch2 -p1
 
 %install
 # Build targeted policy
@@ -390,6 +388,14 @@ exit 0
 %endif
 
 %changelog
+* Tue Mar 11 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-15
+- Allow init to transition to initrc_t on shell exec.
+- Fix init to be able to sendto init_t.
+- Allow syslog to connect to mysql
+- Allow lvm to manage its own fifo_files
+- Allow bugzilla to use ldap
+- More mls fixes 
+
 * Tue Mar 11 2008 Bill Nottingham <notting@redhat.com> 3.3.1-14
 - fixes for init policy (#436988)
 - fix build
