@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -388,6 +388,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 13 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-17
+- prewika needs to contact mysql
+- Allow syslog to read system_map files
+
 * Wed Mar 12 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-16
 - Change init_t to an unconfined_domain
 
