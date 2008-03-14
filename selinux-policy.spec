@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 19%{?dist}
+Release: 20%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -121,7 +121,7 @@ echo -n > %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
 %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
-#%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
+#%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/ seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
 %ghost %{_sysconfdir}/selinux/%1/policy/policy.* \
 %dir %{_sysconfdir}/selinux/%1/contexts \
@@ -157,8 +157,7 @@ fi
 %define loadpolicy() \
 ( cd /usr/share/selinux/%1; \
 semodule -b base.pp %{expand:%%moduleList %1} -s %1; \
-);\
-rm -f %{_sysconfdir}/selinux/%1/policy/policy.*.rpmnew;
+) > /dev/null 2>&1; \
 
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
@@ -253,7 +252,7 @@ SETLOCALDEFS=0
 	ln -sf ../selinux/config /etc/sysconfig/selinux 
 	restorecon /etc/selinux/config 2> /dev/null || :
 else
-	. /etc/selinux/config
+			. /etc/selinux/config
 	# if first time update booleans.local needs to be copied to sandbox
 	[ -f /etc/selinux/${SELINUXTYPE}/booleans.local ] && mv /etc/selinux/${SELINUXTYPE}/booleans.local /etc/selinux/targeted/modules/active/
 	[ -f /etc/selinux/${SELINUXTYPE}/seusers ] && cp -f /etc/selinux/${SELINUXTYPE}/seusers /etc/selinux/${SELINUXTYPE}/modules/active/seusers
@@ -291,17 +290,17 @@ SELinux Reference policy targeted base module.
 %saveFileContext targeted
 
 %post targeted
-semodule -s targeted -r moilscanner 2>/dev/null
+if [ $1 -eq 1 ]; then
 %loadpolicy targeted
-
-if [ $1 = 1 ]; then
-semanage user -a -P unconfined -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 
+semanage user -a -P unconfined -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 2> /dev/null
 semanage login -m -s "unconfined_u" -r s0-s0:c0.c1023 __default__ 2> /dev/null
 semanage login -m -s "unconfined_u" -r s0-s0:c0.c1023 root 2> /dev/null
 semanage user -a -P guest -R guest_r guest_u
 semanage user -a -P xguest -R xguest_r xguest_u 
 restorecon -R /root /var/log /var/run 2> /dev/null
 else
+semodule -s targeted -r moilscanner 2>/dev/null
+%loadpolicy targeted
 %relabel targeted
 fi
 exit 0
@@ -310,7 +309,7 @@ exit 0
 %triggerpostun targeted -- selinux-policy-targeted < 3.2.5-9.fc9
 setsebool -P use_nfs_home_dirs=1
 semanage user -l | grep -s unconfined_u 
-if [ $? == 0 ]; then
+if [ $? -eq 0 ]; then
    semanage user -m -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
 else
    semanage user -a -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
@@ -347,7 +346,7 @@ SELinux Reference policy olpc base module.
 %post olpc 
 %loadpolicy olpc
 
-if [ $1 != 1 ]; then
+if [ $1 -ne 1 ]; then
 %relabel olpc
 fi
 exit 0
@@ -388,6 +387,15 @@ exit 0
 %endif
 
 %changelog
+* Fri Mar 14 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-20
+- Fix bug in mozilla policy to allow xguest transition
+- This will fix the 
+
+libsemanage.dbase_llist_query: could not find record value
+libsemanage.dbase_llist_query: could not query record value (No such file or
+directory)
+ bug in xguest
+
 * Fri Mar 14 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-19
 - Allow nsplugin to run acroread
 
