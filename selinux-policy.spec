@@ -121,7 +121,7 @@ echo -n > %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
 %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
-#%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/ seusers \
+#%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
 %ghost %{_sysconfdir}/selinux/%1/policy/policy.* \
 %dir %{_sysconfdir}/selinux/%1/contexts \
@@ -252,7 +252,7 @@ SETLOCALDEFS=0
 	ln -sf ../selinux/config /etc/sysconfig/selinux 
 	restorecon /etc/selinux/config 2> /dev/null || :
 else
-			. /etc/selinux/config
+	. /etc/selinux/config
 	# if first time update booleans.local needs to be copied to sandbox
 	[ -f /etc/selinux/${SELINUXTYPE}/booleans.local ] && mv /etc/selinux/${SELINUXTYPE}/booleans.local /etc/selinux/targeted/modules/active/
 	[ -f /etc/selinux/${SELINUXTYPE}/seusers ] && cp -f /etc/selinux/${SELINUXTYPE}/seusers /etc/selinux/${SELINUXTYPE}/modules/active/seusers
