@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 18%{?dist}
+Release: 19%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -388,6 +388,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Mar 14 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-19
+- Allow nsplugin to run acroread
+
 * Thu Mar 13 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-18
 - Add cups_pdf policy
 - Add openoffice policy to run in xguest
