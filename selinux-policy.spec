@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 20%{?dist}
+Release: 21%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Mar 17 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-21
+- Fixes for qemu/virtd
+
 * Fri Mar 14 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-20
 - Fix bug in mozilla policy to allow xguest transition
 - This will fix the 
