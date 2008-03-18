@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 21%{?dist}
+Release: 22%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,8 @@ exit 0
 %endif
 
 %changelog
+* Tue Mar 18 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-22
+
 * Mon Mar 17 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-21
 - Fixes for qemu/virtd
 
