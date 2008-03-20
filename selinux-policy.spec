@@ -388,6 +388,8 @@ exit 0
 
 %changelog
 * Tue Mar 18 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-22
+- Allow stunnel to transition to inetd children domains
+- Make unconfined_dbusd_t an unconfined domain 
 
 * Mon Mar 17 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-21
 - Fixes for qemu/virtd
