@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 22%{?dist}
+Release: 23%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Mar 18 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-23
+- Fix file context for MATLAB
+- Fixes for xace
+
 * Tue Mar 18 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-22
 - Allow stunnel to transition to inetd children domains
 - Make unconfined_dbusd_t an unconfined domain 
