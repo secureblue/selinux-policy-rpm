@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 24%{?dist}
+Release: 25%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 27 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-25
+- Additional access for nsplugin
+- Allow xdm setcap/getcap until pulseaudio is fixed
+
 * Tue Mar 25 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-24
 - Allow mount to mkdir on tmpfs
 - Allow ifconfig to search debugfs
