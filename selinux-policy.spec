@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 25%{?dist}
+Release: 26%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Mar 28 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-26
+- Allow initrc_t to dbus chat with consolekit.
+
 * Thu Mar 27 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-25
 - Additional access for nsplugin
 - Allow xdm setcap/getcap until pulseaudio is fixed
