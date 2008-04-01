@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 26%{?dist}
+Release: 27%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 1 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-27
+- Allow nsplugin to read /etc/mozpluggerrc, user_fonts
+- Allow syslog to manage innd logs.
+- Allow procmail to ioctl spamd_exec_t
+
 * Sat Mar 28 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-26
 - Allow initrc_t to dbus chat with consolekit.
 
