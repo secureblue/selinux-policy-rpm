@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 27%{?dist}
+Release: 28%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,15 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 4 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-28
+- Allow radvd to use fifo_file
+- dontaudit setfiles reading links
+- allow semanage sys_resource
+- add allow_httpd_mod_auth_ntlm_winbind boolean
+- Allow privhome apps including dovecot read on nfs and cifs home 
+dirs if the boolean is set
+
+
 * Tue Apr 1 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-27
 - Allow nsplugin to read /etc/mozpluggerrc, user_fonts
 - Allow syslog to manage innd logs.
