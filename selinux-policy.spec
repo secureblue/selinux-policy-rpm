@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 28%{?dist}
+Release: 29%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Apr 5 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-29
+- 
+
 * Fri Apr 4 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-28
 - Allow radvd to use fifo_file
 - dontaudit setfiles reading links
