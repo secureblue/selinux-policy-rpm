@@ -292,11 +292,11 @@ SELinux Reference policy targeted base module.
 %post targeted
 if [ $1 -eq 1 ]; then
 %loadpolicy targeted
-semanage user -a -P unconfined -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 2> /dev/null
-semanage login -m -s "unconfined_u" -r s0-s0:c0.c1023 __default__ 2> /dev/null
-semanage login -m -s "unconfined_u" -r s0-s0:c0.c1023 root 2> /dev/null
-semanage user -a -P guest -R guest_r guest_u
-semanage user -a -P xguest -R xguest_r xguest_u 
+semanage user -a -S targeted -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 2> /dev/null
+semanage login -m -S targeted -s "unconfined_u" -r s0-s0:c0.c1023 __default__ 2> /dev/null
+semanage login -m -S targeted -s "unconfined_u" -r s0-s0:c0.c1023 root 2> /dev/null
+semanage user -a -S targeted -R guest_r guest_u
+semanage user -a -S targeted -R xguest_r xguest_u 
 restorecon -R /root /var/log /var/run 2> /dev/null
 else
 semodule -s targeted -r moilscanner 2>/dev/null
@@ -388,7 +388,7 @@ exit 0
 
 %changelog
 * Sat Apr 5 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-29
-- 
+- Fix initial install
 
 * Fri Apr 4 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-28
 - Allow radvd to use fifo_file
