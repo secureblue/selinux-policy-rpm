@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 29%{?dist}
+Release: 30%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -387,6 +387,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 8 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-30
+- Allow passwd to communicate with user sockets to change gnome-keyring
+
 * Sat Apr 5 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-29
 - Fix initial install
 
