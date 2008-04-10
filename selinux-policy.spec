@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 32%{?dist}
+Release: 33%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -383,6 +383,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 10 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-33
+- Allow dhcpd to read kernel network state
+
 * Thu Apr 10 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-32
 - Label /var/run/gdm correctly
 - Fix unconfined_u user creation
