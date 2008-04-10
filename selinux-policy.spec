@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 31%{?dist}
+Release: 32%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -244,8 +244,6 @@ SELINUX=enforcing
 #	targeted - Targeted processes are protected,
 #	mls - Multi Level Security protection.
 SELINUXTYPE=targeted 
-# SETLOCALDEFS= Check local definition changes
-SETLOCALDEFS=0 
 
 " > /etc/selinux/config
 
@@ -257,8 +255,6 @@ else
 	[ -f /etc/selinux/${SELINUXTYPE}/booleans.local ] && mv /etc/selinux/${SELINUXTYPE}/booleans.local /etc/selinux/targeted/modules/active/
 	[ -f /etc/selinux/${SELINUXTYPE}/seusers ] && cp -f /etc/selinux/${SELINUXTYPE}/seusers /etc/selinux/${SELINUXTYPE}/modules/active/seusers
 	grep -q "^SETLOCALDEFS" /etc/selinux/config || echo -n "
-# SETLOCALDEFS= Check local definition changes
-SETLOCALDEFS=0 
 ">> /etc/selinux/config
 fi
 
@@ -292,11 +288,11 @@ SELinux Reference policy targeted base module.
 %post targeted
 if [ $1 -eq 1 ]; then
 %loadpolicy targeted
-semanage user -a -S targeted -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 2> /dev/null
-semanage login -m -S targeted -s "unconfined_u" -r s0-s0:c0.c1023 __default__ 2> /dev/null
-semanage login -m -S targeted -s "unconfined_u" -r s0-s0:c0.c1023 root 2> /dev/null
-semanage user -a -S targeted -R guest_r guest_u
-semanage user -a -S targeted -R xguest_r xguest_u 
+semanage user -a -S targeted -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 2> /dev/null
+semanage login -m -S targeted  -P user -s "unconfined_u" -r s0-s0:c0.c1023 __default__ 2> /dev/null
+semanage login -m -S targeted  -P user -s "unconfined_u" -r s0-s0:c0.c1023 root 2> /dev/null
+semanage user -a -S targeted  -P user -R guest_r guest_u
+semanage user -a -S targeted  -P user -R xguest_r xguest_u 
 restorecon -R /root /var/log /var/run 2> /dev/null
 else
 semodule -s targeted -r moilscanner 2>/dev/null
@@ -312,7 +308,7 @@ semanage user -l | grep -s unconfined_u
 if [ $? -eq 0 ]; then
    semanage user -m -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
 else
-   semanage user -a -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
+   semanage user -a -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
 fi
 seuser=`semanage login -l | grep __default__ | awk '{ print $2 }'`
 [ $seuser == "system_u" ]   && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 __default__
@@ -387,6 +383,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 10 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-32
+- Label /var/run/gdm correctly
+- Fix unconfined_u user creation
+
 * Tue Apr 8 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-31
 - Allow transition from initrc_t to getty_t
 
