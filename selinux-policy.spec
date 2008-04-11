@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 33%{?dist}
+Release: 34%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -157,7 +157,7 @@ fi
 %define loadpolicy() \
 ( cd /usr/share/selinux/%1; \
 semodule -b base.pp %{expand:%%moduleList %1} -s %1; \
-) > /dev/null 2>&1; \
+); \
 
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
@@ -383,6 +383,8 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 10 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-34
+
 * Thu Apr 10 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-33
 - Allow dhcpd to read kernel network state
 
