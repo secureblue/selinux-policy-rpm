@@ -1974,6 +1974,17 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/admin/logwatc
  	samba_read_log(logwatch_t)
 +	samba_read_share_files(logwatch_t)
  ')
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/admin/mrtg.te serefpolicy-3.3.1/policy/modules/admin/mrtg.te
+--- nsaserefpolicy/policy/modules/admin/mrtg.te	2007-12-19 05:32:18.000000000 -0500
++++ serefpolicy-3.3.1/policy/modules/admin/mrtg.te	2008-04-15 09:56:19.000000000 -0400
+@@ -78,6 +78,7 @@
+ dev_read_urand(mrtg_t)
+ 
+ domain_use_interactive_fds(mrtg_t)
++domain_dontaudit_search_all_domains_state(mrtg_t)
+ 
+ files_read_usr_files(mrtg_t)
+ files_search_var(mrtg_t)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/admin/netutils.te serefpolicy-3.3.1/policy/modules/admin/netutils.te
 --- nsaserefpolicy/policy/modules/admin/netutils.te	2007-12-19 05:32:18.000000000 -0500
 +++ serefpolicy-3.3.1/policy/modules/admin/netutils.te	2008-04-07 21:56:32.000000000 -0400
@@ -8102,7 +8113,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/mls.if
  ## <param name="domain">
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/selinux.if serefpolicy-3.3.1/policy/modules/kernel/selinux.if
 --- nsaserefpolicy/policy/modules/kernel/selinux.if	2007-11-16 13:45:14.000000000 -0500
-+++ serefpolicy-3.3.1/policy/modules/kernel/selinux.if	2008-04-04 12:06:55.000000000 -0400
++++ serefpolicy-3.3.1/policy/modules/kernel/selinux.if	2008-04-15 13:50:33.000000000 -0400
 @@ -164,6 +164,7 @@
  		type security_t;
  	')
@@ -8169,7 +8180,35 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/selinu
  
  	if(!secure_mode_policyload) {
  		allow $1 security_t:security setbool;
-@@ -489,3 +521,23 @@
+@@ -362,6 +394,27 @@
+ 
+ ########################################
+ ## <summary>
++##	dontaudit caller to validate security contexts.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	The process type permitted to validate contexts.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`selinux_dontaudit_validate_context',`
++	gen_require(`
++		type security_t;
++	')
++
++	dontaudit $1 security_t:dir list_dir_perms;
++	dontaudit $1 security_t:file { getattr read write };
++	dontaudit $1 security_t:security check_context;
++')
++
++########################################
++## <summary>
+ ##	Allows caller to compute an access vector.
+ ## </summary>
+ ## <param name="domain">
+@@ -489,3 +542,23 @@
  
  	typeattribute $1 selinux_unconfined_type;
  ')
@@ -8402,7 +8441,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/amav
  # amavis local policy
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/apache.fc serefpolicy-3.3.1/policy/modules/services/apache.fc
 --- nsaserefpolicy/policy/modules/services/apache.fc	2007-10-12 08:56:07.000000000 -0400
-+++ serefpolicy-3.3.1/policy/modules/services/apache.fc	2008-04-14 16:01:13.000000000 -0400
++++ serefpolicy-3.3.1/policy/modules/services/apache.fc	2008-04-14 16:03:35.000000000 -0400
 @@ -1,4 +1,4 @@
 -HOME_DIR/((www)|(web)|(public_html))(/.+)? gen_context(system_u:object_r:httpd_ROLE_content_t,s0)
 +HOME_DIR/((www)|(web)|(public_html))(/.+)? gen_context(system_u:object_r:httpd_user_content_t,s0)
@@ -15597,13 +15636,14 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/kerb
 +/etc/rc.d/init.d/krb5kdc	--	gen_context(system_u:object_r:kerberos_script_exec_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/kerberos.if serefpolicy-3.3.1/policy/modules/services/kerberos.if
 --- nsaserefpolicy/policy/modules/services/kerberos.if	2007-07-16 14:09:46.000000000 -0400
-+++ serefpolicy-3.3.1/policy/modules/services/kerberos.if	2008-04-07 20:46:54.000000000 -0400
-@@ -43,7 +43,13 @@
++++ serefpolicy-3.3.1/policy/modules/services/kerberos.if	2008-04-15 13:52:02.000000000 -0400
+@@ -43,7 +43,14 @@
  	dontaudit $1 krb5kdc_conf_t:dir list_dir_perms;
  	dontaudit $1 krb5kdc_conf_t:file rw_file_perms;
  
 +	#kerberos libraries are attempting to set the correct file context
 +	dontaudit $1 self:process setfscreate;
++	selinux_dontaudit_validate_context($1)
 +	seutil_dontaudit_read_file_contexts($1)
 +
  	tunable_policy(`allow_kerberos',`
@@ -15612,7 +15652,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/kerb
  		allow $1 self:tcp_socket create_socket_perms;
  		allow $1 self:udp_socket create_socket_perms;
  
-@@ -61,11 +67,7 @@
+@@ -61,11 +68,7 @@
  		corenet_tcp_connect_ocsp_port($1)
  		corenet_sendrecv_kerberos_client_packets($1)
  		corenet_sendrecv_ocsp_client_packets($1)
@@ -15624,7 +15664,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/kerb
  	optional_policy(`
  		tunable_policy(`allow_kerberos',`
  			pcscd_stream_connect($1)
-@@ -169,6 +171,158 @@
+@@ -169,6 +172,158 @@
  	')
  
  	files_search_etc($1)
@@ -18761,7 +18801,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/post
  ## </summary>
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/postfix.te serefpolicy-3.3.1/policy/modules/services/postfix.te
 --- nsaserefpolicy/policy/modules/services/postfix.te	2007-12-19 05:32:17.000000000 -0500
-+++ serefpolicy-3.3.1/policy/modules/services/postfix.te	2008-04-14 14:30:28.000000000 -0400
++++ serefpolicy-3.3.1/policy/modules/services/postfix.te	2008-04-15 13:43:08.000000000 -0400
 @@ -6,6 +6,14 @@
  # Declarations
  #
@@ -18933,11 +18973,15 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/post
  ########################################
  #
  # Postfix virtual local policy
-@@ -584,3 +624,4 @@
- # For reading spamassasin
- mta_read_config(postfix_virtual_t)
- mta_manage_spool(postfix_virtual_t)
-+
+@@ -572,7 +612,7 @@
+ files_tmp_filetrans(postfix_virtual_t, postfix_virtual_tmp_t, { file dir })
+ 
+ # connect to master process
+-stream_connect_pattern(postfix_virtual_t,postfix_public_t,postfix_public_t,postfix_master_t)
++stream_connect_pattern(postfix_virtual_t,{ postfix_private_t postfix_public_t },{ postfix_private_t postfix_public_t },postfix_master_t)
+ 
+ corecmd_exec_shell(postfix_virtual_t)
+ corecmd_exec_bin(postfix_virtual_t)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/postfixpolicyd.fc serefpolicy-3.3.1/policy/modules/services/postfixpolicyd.fc
 --- nsaserefpolicy/policy/modules/services/postfixpolicyd.fc	2007-11-08 09:29:27.000000000 -0500
 +++ serefpolicy-3.3.1/policy/modules/services/postfixpolicyd.fc	2008-04-04 12:06:55.000000000 -0400
@@ -27749,7 +27793,16 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/iptabl
  
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/iscsi.te serefpolicy-3.3.1/policy/modules/system/iscsi.te
 --- nsaserefpolicy/policy/modules/system/iscsi.te	2008-02-18 14:30:18.000000000 -0500
-+++ serefpolicy-3.3.1/policy/modules/system/iscsi.te	2008-04-04 12:06:56.000000000 -0400
++++ serefpolicy-3.3.1/policy/modules/system/iscsi.te	2008-04-15 09:40:48.000000000 -0400
+@@ -29,7 +29,7 @@
+ #
+ 
+ allow iscsid_t self:capability { dac_override ipc_lock net_admin sys_nice sys_resource };
+-allow iscsid_t self:process { setrlimit setsched };
++allow iscsid_t self:process { setrlimit setsched signal };
+ allow iscsid_t self:fifo_file { read write };
+ allow iscsid_t self:unix_stream_socket { create_stream_socket_perms connectto };
+ allow iscsid_t self:unix_dgram_socket create_socket_perms;
 @@ -63,6 +63,7 @@
  corenet_tcp_sendrecv_all_ports(iscsid_t)
  corenet_tcp_connect_http_port(iscsid_t)
