@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 36%{?dist}
+Release: 39%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -303,6 +303,8 @@ exit 0
 
 
 %triggerpostun targeted -- selinux-policy-targeted < 3.2.5-9.fc9
+. /etc/selinux/config
+[ "${SELINUXTYPE}" != "targeted" ] && exit 0
 setsebool -P use_nfs_home_dirs=1
 semanage user -l | grep -s unconfined_u 
 if [ $? -eq 0 ]; then
@@ -311,9 +313,9 @@ else
    semanage user -a -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
 fi
 seuser=`semanage login -l | grep __default__ | awk '{ print $2 }'`
-[ $seuser == "system_u" ]   && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 __default__
+[ "$seuser" != "unconfined_u" ]  && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 __default__
 seuser=`semanage login -l | grep root | awk '{ print $2 }'`
-[ $seuser == "system_u" ]   && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 root
+[ "$seuser" == "system_u" ] && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 root
 restorecon -R /root /etc/selinux/targeted 2> /dev/null
 semodule -r qmail 2> /dev/null
 exit 0
@@ -383,6 +385,12 @@ exit 0
 %endif
 
 %changelog
+* Wed Apr 23 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-39
+- Change etc files to config files to allow users to read them
+
+* Fri Apr 14 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-37
+- Lots of fixes for confined domains on NFS_t homedir
+
 * Mon Apr 14 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-36
 - dontaudit mrtg reading /proc
 - Allow iscsi to signal itself
