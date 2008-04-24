@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 39%{?dist}
+Release: 40%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -385,6 +385,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 24 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-40 
+- Don't run crontab from unconfined_t
+
 * Wed Apr 23 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-39
 - Change etc files to config files to allow users to read them
 
