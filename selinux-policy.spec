@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 41%{?dist}
+Release: 43%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -385,6 +385,14 @@ exit 0
 %endif
 
 %changelog
+* Mon Apr 28 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-43
+- Remove old booleans from targeted-booleans.conf file
+
+* Fri Apr 25 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-42
+- Add boolean to mmap_zero
+- allow tor setgid
+- Allow gnomeclock to set clock
+
 * Thu Apr 24 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-41
 - Don't run crontab from unconfined_t
 
