@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 44%{?dist}
+Release: 45%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -385,6 +385,10 @@ exit 0
 %endif
 
 %changelog
+* Wed Apr 30 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-45
+- Remove dmesg boolean
+- Allow user domains to read/write game data
+
 * Mon Apr 28 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-44
 - Change unconfined_t to transition to unconfined_mono_t when running mono
 - Change XXX_mono_t to transition to XXX_t when executing bin_t files, so gnome-do will work
