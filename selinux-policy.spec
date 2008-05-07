@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.3.1
-Release: 45%{?dist}
+Release: 48%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -288,9 +288,9 @@ SELinux Reference policy targeted base module.
 %post targeted
 if [ $1 -eq 1 ]; then
 %loadpolicy targeted
-semanage user -a -S targeted -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 2> /dev/null
-semanage login -m -S targeted  -P user -s "unconfined_u" -r s0-s0:c0.c1023 __default__ 2> /dev/null
-semanage login -m -S targeted  -P user -s "unconfined_u" -r s0-s0:c0.c1023 root 2> /dev/null
+semanage user -a -S targeted -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 
+semanage login -m -S targeted  -s "unconfined_u" -r s0-s0:c0.c1023 __default__
+semanage login -m -S targeted  -s "unconfined_u" -r s0-s0:c0.c1023 root
 semanage user -a -S targeted  -P user -R guest_r guest_u
 semanage user -a -S targeted  -P user -R xguest_r xguest_u 
 restorecon -R /root /var/log /var/run 2> /dev/null
@@ -385,6 +385,15 @@ exit 0
 %endif
 
 %changelog
+* Wed May 7 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-48
+- Allow amanada to create data files
+
+* Wed May 7 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-47
+- Fix initial install, semanage setup
+
+* Tue May 6 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-46
+- Allow system_r for httpd_unconfined_script_t
+
 * Wed Apr 30 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-45
 - Remove dmesg boolean
 - Allow user domains to read/write game data
