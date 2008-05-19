@@ -16,12 +16,12 @@
 %define CHECKPOLICYVER 2.0.3-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.3.1
-Release: 48%{?dist}
+Version: 3.4.1
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20071130.patch
+patch: policy-20080509.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -171,7 +171,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision 2624.
+Based off of reference policy: Checked out revision 2682.
 
 %build
 
@@ -385,6 +385,9 @@ exit 0
 %endif
 
 %changelog
+* Fri May 9 2008 Dan Walsh <dwalsh@redhat.com> 3.4.1-1
+- Merge Upstream
+
 * Wed May 7 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-48
 - Allow amanada to create data files
 
