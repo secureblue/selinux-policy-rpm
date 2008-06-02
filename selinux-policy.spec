@@ -42,6 +42,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.14-3
+Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
+Obsoletes: selinux-policy-devel
+Provides: selinux-policy-devel
 
 %description 
 SELinux Base package
@@ -50,22 +53,11 @@ SELinux Base package
 %{_mandir}/*
 %doc %{_usr}/share/doc/%{name}-%{version}
 %dir %{_usr}/share/selinux
+%dir %{_usr}/share/selinux/devel
+%dir %{_usr}/share/selinux/devel/include
 %dir %{_sysconfdir}/selinux
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config
 %ghost %{_sysconfdir}/sysconfig/selinux
-
-%package devel
-Summary: SELinux policy development
-Group: System Environment/Base
-Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
-Requires: selinux-policy = %{version}-%{release} policycoreutils >= %{POLICYCOREUTILSVER}
-
-%description devel
-SELinux Policy development package
-
-%files devel
-%dir %{_usr}/share/selinux/devel
-%dir %{_usr}/share/selinux/devel/include
 %{_usr}/share/selinux/devel/include/*
 %{_usr}/share/selinux/devel/Makefile
 %{_usr}/share/selinux/devel/policygentool
@@ -73,12 +65,8 @@ SELinux Policy development package
 %{_usr}/share/selinux/devel/policy.*
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
 
-%check devel
+%check
 /usr/bin/sepolgen-ifgen -i %{buildroot}%{_usr}/share/selinux/devel/include -o /dev/null
-
-%post devel
-[ -x /usr/bin/sepolgen-ifgen ] && /usr/bin/sepolgen-ifgen 
-exit 0
 
 %define setupCmds() \
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 bare \
@@ -257,6 +245,8 @@ else
 	grep -q "^SETLOCALDEFS" /etc/selinux/config || echo -n "
 ">> /etc/selinux/config
 fi
+[ -x /usr/bin/sepolgen-ifgen ] && /usr/bin/sepolgen-ifgen 
+exit 0
 
 %postun
 if [ $1 = 0 ]; then
