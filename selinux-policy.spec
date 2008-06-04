@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.4.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -375,7 +375,10 @@ exit 0
 %endif
 
 %changelog
-* Fri May 9 2008 Dan Walsh <dwalsh@redhat.com> 3.4.1-3
+* Wed Jun 4 2008 Dan Walsh <dwalsh@redhat.com> 3.4.1-4
+- Add livecd policy
+
+* Wed Jun 4 2008 Dan Walsh <dwalsh@redhat.com> 3.4.1-3
 - Dontaudit search of admin_home for init_system_domain
 - Rewrite of xace interfaces
 - Lots of new fs_list_inotify
