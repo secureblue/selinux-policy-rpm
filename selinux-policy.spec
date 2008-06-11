@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.16-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.4.1
-Release: 5%{?dist}
+Version: 3.4.2
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -375,6 +375,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 11 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-1
+- Update to upstream 
+
 * Wed Jun 4 2008 Dan Walsh <dwalsh@redhat.com> 3.4.1-5
 - Add livecd policy
 
