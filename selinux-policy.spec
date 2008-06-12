@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.4.2
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -375,6 +375,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 12 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-3
+- Prevent applications from reading x_device
+
 * Thu Jun 12 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-2
 - Add /var/lib/selinux context
 
