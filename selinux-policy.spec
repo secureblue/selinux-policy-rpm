@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.4.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -375,6 +375,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 12 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-2
+- Add /var/lib/selinux context
+
 * Wed Jun 11 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-1
 - Update to upstream 
 
