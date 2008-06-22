@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.4.2
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -375,6 +375,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Jun 12 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-4
+- allow hplip to talk dbus
+- Fix context on ~/.local dir
+
 * Thu Jun 12 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-3
 - Prevent applications from reading x_device
 
