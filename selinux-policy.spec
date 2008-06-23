@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.4.2
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -375,6 +375,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jun 23 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-6
+- Apply unconfined_execmem_exec_t to haskell programs
+
 * Sun Jun 22 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-5
 - Fix prelude file context
 

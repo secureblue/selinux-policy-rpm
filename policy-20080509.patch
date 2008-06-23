@@ -2904,7 +2904,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/java.fc 
 +/usr/bin/octave-[^/]*  	--	gen_context(system_u:object_r:java_exec_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/java.if serefpolicy-3.4.2/policy/modules/apps/java.if
 --- nsaserefpolicy/policy/modules/apps/java.if	2008-06-12 23:25:03.000000000 -0400
-+++ serefpolicy-3.4.2/policy/modules/apps/java.if	2008-06-12 23:37:51.000000000 -0400
++++ serefpolicy-3.4.2/policy/modules/apps/java.if	2008-06-23 06:21:38.000000000 -0400
 @@ -32,7 +32,7 @@
  ##	</summary>
  ## </param>
@@ -21027,7 +21027,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/prel
 +/etc/rc\.d/init\.d/prelude-lml --      gen_context(system_u:object_r:prelude_lml_script_exec_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/prelude.if serefpolicy-3.4.2/policy/modules/services/prelude.if
 --- nsaserefpolicy/policy/modules/services/prelude.if	2008-06-12 23:25:06.000000000 -0400
-+++ serefpolicy-3.4.2/policy/modules/services/prelude.if	2008-06-12 23:37:52.000000000 -0400
++++ serefpolicy-3.4.2/policy/modules/services/prelude.if	2008-06-23 08:18:26.000000000 -0400
 @@ -42,7 +42,7 @@
  ## </summary>
  ## <param name="domain">
@@ -21037,10 +21037,48 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/prel
  ## </summary>
  ## </param>
  #
-@@ -56,6 +56,24 @@
+@@ -56,6 +56,80 @@
  
  ########################################
  ## <summary>
++##	Read the prelude spool files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`prelude_read_spool',`
++	gen_require(`
++		type prelude_spool_t;
++	')
++
++	files_search_spool($1)
++	read_files_pattern($1, prelude_spool_t, prelude_spool_t)
++')
++
++########################################
++## <summary>
++##	Read/Write to prelude-manager spool files.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`prelude_rw_spool',`
++	gen_require(`
++		type prelude_spool_t;
++	')
++
++	files_search_spool($1)
++	rw_files_pattern($1, prelude_spool_t, prelude_spool_t)
++')
++
++########################################
++## <summary>
 +##	Execute prelude server in the prelude domain.
 +## </summary>
 +## <param name="domain">
@@ -21059,10 +21097,28 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/prel
 +
 +########################################
 +## <summary>
++##	Execute prelude lml server in the prelude lml domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	The type of the process performing this action.
++##	</summary>
++## </param>
++#
++interface(`prelude_lml_script_domtrans',`
++	gen_require(`
++		type prelude_lml_script_exec_t;
++	')
++
++	init_script_domtrans_spec($1,prelude_lml_script_exec_t)
++')
++
++########################################
++## <summary>
  ##	All of the rules required to administrate 
  ##	an prelude environment
  ## </summary>
-@@ -64,6 +82,16 @@
+@@ -64,6 +138,16 @@
  ##	Domain allowed access.
  ##	</summary>
  ## </param>
@@ -21079,15 +21135,19 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/prel
  ## <rolecap/>
  #
  interface(`prelude_admin',`
-@@ -71,6 +99,7 @@
+@@ -71,6 +155,11 @@
  		type prelude_t, prelude_spool_t;
  		type prelude_var_run_t, prelude_var_lib_t;
  		type prelude_audisp_t, prelude_audisp_var_run_t;
 +		type prelude_script_exec_t;
++
++		type prelude_lml_t, prelude_lml_tmp_t;
++		type prelude_lml_var_run_t;
++		type prelude_lml_script_exec_t;
  	')
  
  	allow $1 prelude_t:process { ptrace signal_perms };
-@@ -79,11 +108,14 @@
+@@ -79,11 +168,23 @@
  	allow $1 prelude_audisp_t:process { ptrace signal_perms };
  	ps_process_pattern($1, prelude_audisp_t)
  
@@ -21096,7 +21156,9 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/prel
 -	manage_files_pattern($1, prelude_var_lib_t, prelude_var_lib_t)
 -
 -	manage_files_pattern($1, prelude_var_run_t, prelude_var_run_t)
--
++	allow $1 prelude_lml_t:process { ptrace signal_perms };
++	ps_process_pattern($1, prelude_lml_t)
+ 
 -	manage_files_pattern($1, prelude_audisp_var_run_t, prelude_audisp_var_run_t)
 +	# Allow prelude_t to restart the apache service
 +	prelude_script_domtrans($1)
@@ -21104,14 +21166,20 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/prel
 +	role_transition $2 prelude_script_exec_t system_r;
 +	allow $2 system_r;
 +
++	# Allow prelude_t to restart the apache service
++	prelude_lml_script_domtrans($1)
++	role_transition $2 prelude_lml_script_exec_t system_r;
++
 +        manage_all_pattern($1, prelude_spool_t)
 +        manage_all_pattern($1, prelude_var_lib_t)
 +        manage_all_pattern($1, prelude_var_run_t)
 +	manage_all_pattern($1, prelude_audisp_var_run_t)
++        manage_all_pattern($1, prelude_lml_tmp_t)
++        manage_all_pattern($1, prelude_lml_var_run_t)
  ')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/prelude.te serefpolicy-3.4.2/policy/modules/services/prelude.te
 --- nsaserefpolicy/policy/modules/services/prelude.te	2008-06-12 23:25:06.000000000 -0400
-+++ serefpolicy-3.4.2/policy/modules/services/prelude.te	2008-06-22 07:53:36.000000000 -0400
++++ serefpolicy-3.4.2/policy/modules/services/prelude.te	2008-06-23 08:09:53.000000000 -0400
 @@ -19,12 +19,31 @@
  type prelude_var_lib_t;
  files_type(prelude_var_lib_t)
@@ -24165,11 +24233,135 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/snmp
  
  fs_getattr_all_dirs(snmpd_t)
  fs_getattr_all_fs(snmpd_t)
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/snort.fc serefpolicy-3.4.2/policy/modules/services/snort.fc
+--- nsaserefpolicy/policy/modules/services/snort.fc	2008-06-12 23:25:05.000000000 -0400
++++ serefpolicy-3.4.2/policy/modules/services/snort.fc	2008-06-23 07:53:28.000000000 -0400
+@@ -1,6 +1,10 @@
++/usr/s?bin/snort	--	gen_context(system_u:object_r:snort_exec_t,s0)
++/usr/sbin/snort-plain	--	gen_context(system_u:object_r:snort_exec_t,s0)
+ 
+-/etc/snort(/.*)?	gen_context(system_u:object_r:snort_etc_t,s0)
++/etc/snort(/.*)?		gen_context(system_u:object_r:snort_etc_t,s0)
+ 
+-/usr/s?bin/snort --	gen_context(system_u:object_r:snort_exec_t,s0)
++/var/run/snort.*	--	gen_context(system_u:object_r:snort_var_run_t,s0)		
+ 
+-/var/log/snort(/.*)?	gen_context(system_u:object_r:snort_log_t,s0)
++/var/log/snort(/.*)?		gen_context(system_u:object_r:snort_log_t,s0)
++
++/etc/rc\.d/init\.d/snortd	--	gen_context(system_u:object_r:snort_script_exec_t,s0)
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/snort.if serefpolicy-3.4.2/policy/modules/services/snort.if
+--- nsaserefpolicy/policy/modules/services/snort.if	2008-06-12 23:25:05.000000000 -0400
++++ serefpolicy-3.4.2/policy/modules/services/snort.if	2008-06-23 07:54:05.000000000 -0400
+@@ -1 +1,95 @@
+-## <summary>Snort network intrusion detection system</summary>
++## <summary>SELinux policy for Snort IDS</summary>
++## <desc>
++##	<p>
++##		Applies SELinux security to Snort IDS
++##	</p>
++## </desc>
++
++########################################
++## <summary>
++##	Execute a domain transition to run snort.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`snort_domtrans',`
++	gen_require(`
++		type snort_t, snort_exec_t;
++	')
++
++	domtrans_pattern($1, snort_exec_t, snort_t)
++')
++
++########################################
++## <summary>
++##	Execute snort IDS in the snort domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	The type of the process performing this action.
++##	</summary>
++## </param>
++#
++interface(`snort_script_domtrans',`
++	gen_require(`
++		type snort_script_exec_t;
++	')
++
++	init_script_domtrans_spec($1, snort_script_exec_t)
++')
++
++########################################
++## <summary>
++##	All of the rules required to administrate 
++##	an snort environment
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	The role to be allowed to manage the syslog domain.
++##	</summary>
++## </param>
++## <param name="terminal">
++##	<summary>
++##	The type of the user terminal.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`snort_admin',`
++	gen_require(`
++		type snort_t, snort_var_run_t, snort_script_exec_t, snort_etc_t, snort_log_t;
++	')
++
++	allow $1 snort_t:process { ptrace signal_perms getattr };
++	read_files_pattern($1, snort_t, snort_t)
++	        
++    manage_all_pattern($1, snort_etc_t)
++	manage_all_pattern($1, snort_var_run_t)
++	manage_all_pattern($1, snort_log_t)
++')
++
++########################################
++## <summary>
++##	Signal the snort domain.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`snort_signal',`
++	gen_require(`
++		type snort_t;
++	')
++
++	allow $1 snort_t:process signal;
++')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/snort.te serefpolicy-3.4.2/policy/modules/services/snort.te
 --- nsaserefpolicy/policy/modules/services/snort.te	2008-06-12 23:25:05.000000000 -0400
-+++ serefpolicy-3.4.2/policy/modules/services/snort.te	2008-06-12 23:37:51.000000000 -0400
-@@ -11,7 +11,7 @@
- init_daemon_domain(snort_t,snort_exec_t)
++++ serefpolicy-3.4.2/policy/modules/services/snort.te	2008-06-23 08:17:03.000000000 -0400
+@@ -8,10 +8,13 @@
+ 
+ type snort_t;
+ type snort_exec_t;
+-init_daemon_domain(snort_t,snort_exec_t)
++init_daemon_domain(snort_t, snort_exec_t)
++
++type snort_script_exec_t;
++init_script_type(snort_script_exec_t)
  
  type snort_etc_t;
 -files_type(snort_etc_t)
@@ -24177,6 +24369,38 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/snor
  
  type snort_log_t;
  logging_log_file(snort_log_t)
+@@ -65,8 +68,11 @@
+ corenet_raw_sendrecv_all_nodes(snort_t)
+ corenet_tcp_sendrecv_all_ports(snort_t)
+ corenet_udp_sendrecv_all_ports(snort_t)
++corenet_tcp_connect_prelude_port(snort_t)
+ 
+ dev_read_sysfs(snort_t)
++dev_read_rand(snort_t)
++dev_read_urand(snort_t)
+ 
+ domain_use_interactive_fds(snort_t)
+ 
+@@ -79,6 +85,8 @@
+ libs_use_ld_so(snort_t)
+ libs_use_shared_libs(snort_t)
+ 
++init_read_utmp(snort_t)
++
+ logging_send_syslog_msg(snort_t)
+ 
+ miscfiles_read_localization(snort_t)
+@@ -90,6 +98,10 @@
+ sysadm_dontaudit_search_home_dirs(snort_t)
+ 
+ optional_policy(`
++	prelude_rw_spool(snort_t)
++')
++
++optional_policy(`
+ 	seutil_sigchld_newrole(snort_t)
+ ')
+ 
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/soundserver.fc serefpolicy-3.4.2/policy/modules/services/soundserver.fc
 --- nsaserefpolicy/policy/modules/services/soundserver.fc	2008-06-12 23:25:05.000000000 -0400
 +++ serefpolicy-3.4.2/policy/modules/services/soundserver.fc	2008-06-12 23:37:51.000000000 -0400
@@ -26115,7 +26339,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  /var/lib/pam_devperm/:0	--	gen_context(system_u:object_r:xdm_var_lib_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xserver.if serefpolicy-3.4.2/policy/modules/services/xserver.if
 --- nsaserefpolicy/policy/modules/services/xserver.if	2008-06-12 23:25:06.000000000 -0400
-+++ serefpolicy-3.4.2/policy/modules/services/xserver.if	2008-06-12 23:37:52.000000000 -0400
++++ serefpolicy-3.4.2/policy/modules/services/xserver.if	2008-06-23 07:38:27.000000000 -0400
 @@ -16,7 +16,8 @@
  	gen_require(`
  		type xkb_var_lib_t, xserver_exec_t, xserver_log_t;
@@ -26282,7 +26506,13 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  	userdom_search_user_home_dirs($1,$1_xserver_t)
  	userdom_use_user_ttys($1,$1_xserver_t)
  	userdom_setattr_user_ttys($1,$1_xserver_t)
-@@ -360,13 +369,6 @@
+@@ -355,18 +364,12 @@
+ 
+ 	xserver_use_user_fonts($1,$1_xserver_t)
+ 	xserver_rw_xdm_tmp_files($1_xauth_t)
++	xserver_read_xdm_xserver_tmp_files($2)
+ 
+ 	optional_policy(`
  		userhelper_search_config($1_xserver_t)
  	')
  
@@ -26296,7 +26526,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  	##############################
  	#
  	# $1_xauth_t Local policy
-@@ -375,12 +377,12 @@
+@@ -375,12 +378,12 @@
  	allow $1_xauth_t self:process signal;
  	allow $1_xauth_t self:unix_stream_socket create_stream_socket_perms;
  
@@ -26314,7 +26544,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  
  	domtrans_pattern($2, xauth_exec_t, $1_xauth_t)
  
-@@ -389,11 +391,11 @@
+@@ -389,11 +392,11 @@
  	# allow ps to show xauth
  	ps_process_pattern($2,$1_xauth_t)
  
@@ -26330,7 +26560,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  
  	domain_use_interactive_fds($1_xauth_t)
  
-@@ -435,16 +437,16 @@
+@@ -435,16 +438,16 @@
  
  	domtrans_pattern($2, iceauth_exec_t, $1_iceauth_t)
  
@@ -26352,7 +26582,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  
  	fs_search_auto_mountpoints($1_iceauth_t)
  
-@@ -467,34 +469,12 @@
+@@ -467,34 +470,12 @@
  	#
  
  	# Device rules
@@ -26389,7 +26619,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  	# xrdb X11:ChangeProperty prop=RESOURCE_MANAGER
  	allow $2 info_xproperty_t:x_property { create write append };
  
-@@ -610,7 +590,7 @@
+@@ -610,7 +591,7 @@
  #	refpolicywarn(`$0() has been deprecated, please use xserver_user_x_domain_template instead.')
  	gen_require(`
  		type xdm_t, xdm_tmp_t;
@@ -26398,7 +26628,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  	')
  
  	allow $2 self:shm create_shm_perms;
-@@ -618,8 +598,8 @@
+@@ -618,8 +599,8 @@
  	allow $2 self:unix_stream_socket { connectto create_stream_socket_perms };
  
  	# Read .Xauthority file
@@ -26409,7 +26639,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  
  	# for when /tmp/.X11-unix is created by the system
  	allow $2 xdm_t:fd use;
-@@ -643,13 +623,175 @@
+@@ -643,13 +624,175 @@
  
  	xserver_read_xdm_tmp_files($2)
  
@@ -26589,7 +26819,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  #######################################
  ## <summary>
  ##	Interface to provide X object permissions on a given X server to
-@@ -676,7 +818,7 @@
+@@ -676,7 +819,7 @@
  #
  template(`xserver_common_x_domain_template',`
  	gen_require(`
@@ -26598,7 +26828,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  		type xproperty_t, info_xproperty_t, clipboard_xproperty_t;
  		type input_xevent_t, focus_xevent_t, property_xevent_t, manage_xevent_t;
  		type xevent_t, client_xevent_t;
-@@ -685,7 +827,6 @@
+@@ -685,7 +828,6 @@
  		attribute x_server_domain, x_domain;
  		attribute xproperty_type;
  		attribute xevent_type, xextension_type;
@@ -26606,7 +26836,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  
  		class x_drawable all_x_drawable_perms;
  		class x_screen all_x_screen_perms;
-@@ -709,20 +850,22 @@
+@@ -709,20 +851,22 @@
  	# Declarations
  	#
  
@@ -26632,7 +26862,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  	##############################
  	#
  	# Local Policy
-@@ -740,7 +883,7 @@
+@@ -740,7 +884,7 @@
  	allow $3 x_server_domain:x_server getattr;
  	# everyone can do override-redirect windows.
  	# this could be used to spoof labels
@@ -26641,7 +26871,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  	# everyone can receive management events on the root window
  	# allows to know when new windows appear, among other things
  	allow $3 manage_xevent_t:x_event receive;
-@@ -749,7 +892,7 @@
+@@ -749,7 +893,7 @@
  	# can read server-owned resources
  	allow $3 x_server_domain:x_resource read;
  	# can mess with own clients
@@ -26650,7 +26880,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  
  	# X Protocol Extensions
  	allow $3 std_xext_t:x_extension { query use };
-@@ -758,27 +901,17 @@
+@@ -758,27 +902,17 @@
  
  	# X Properties
  	# can read and write client properties
@@ -26683,7 +26913,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  
  	# X Input
  	# can receive own events
-@@ -805,6 +938,12 @@
+@@ -805,6 +939,12 @@
  	allow $3 manage_xevent_t:x_synthetic_event send;
  	allow $3 client_xevent_t:x_synthetic_event send;
  
@@ -26696,7 +26926,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  	# X Selections
  	# can use the clipboard
  	allow $3 clipboard_xselection_t:x_selection { getattr setattr read };
-@@ -813,13 +952,15 @@
+@@ -813,13 +953,15 @@
  
  	# Other X Objects
  	# can create and use cursors
@@ -26716,7 +26946,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  
  	tunable_policy(`! xserver_object_manager',`
  		# should be xserver_unconfined($3),
-@@ -879,17 +1020,17 @@
+@@ -879,17 +1021,17 @@
  #
  template(`xserver_user_x_domain_template',`
  	gen_require(`
@@ -26741,7 +26971,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  
  	# for when /tmp/.X11-unix is created by the system
  	allow $3 xdm_t:fd use;
-@@ -916,11 +1057,9 @@
+@@ -916,11 +1058,9 @@
  	# X object manager
  	xserver_common_x_domain_template($1,$2,$3)
  
@@ -26756,7 +26986,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ')
  
  ########################################
-@@ -952,26 +1091,43 @@
+@@ -952,26 +1092,43 @@
  #
  template(`xserver_use_user_fonts',`
  	gen_require(`
@@ -26807,7 +27037,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ##	Transition to a user Xauthority domain.
  ## </summary>
  ## <desc>
-@@ -1005,6 +1161,73 @@
+@@ -1005,6 +1162,73 @@
  
  ########################################
  ## <summary>
@@ -26881,7 +27111,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ##	Transition to a user Xauthority domain.
  ## </summary>
  ## <desc>
-@@ -1030,10 +1253,10 @@
+@@ -1030,10 +1254,10 @@
  #
  template(`xserver_user_home_dir_filetrans_user_xauth',`
  	gen_require(`
@@ -26894,7 +27124,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ')
  
  ########################################
-@@ -1219,6 +1442,25 @@
+@@ -1219,6 +1443,25 @@
  
  ########################################
  ## <summary>
@@ -26920,7 +27150,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ##	Read xdm-writable configuration files.
  ## </summary>
  ## <param name="domain">
-@@ -1273,6 +1515,7 @@
+@@ -1273,6 +1516,7 @@
  	files_search_tmp($1)
  	allow $1 xdm_tmp_t:dir list_dir_perms;
  	create_sock_files_pattern($1,xdm_tmp_t,xdm_tmp_t)
@@ -26928,7 +27158,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ')
  
  ########################################
-@@ -1291,7 +1534,7 @@
+@@ -1291,7 +1535,7 @@
  	')
  
  	files_search_pids($1)
@@ -26937,7 +27167,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ')
  
  ########################################
-@@ -1314,6 +1557,24 @@
+@@ -1314,6 +1558,24 @@
  
  ########################################
  ## <summary>
@@ -26962,7 +27192,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ##	Execute the X server in the XDM X server domain.
  ## </summary>
  ## <param name="domain">
-@@ -1324,15 +1585,47 @@
+@@ -1324,15 +1586,47 @@
  #
  interface(`xserver_domtrans_xdm_xserver',`
  	gen_require(`
@@ -27011,7 +27241,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ##	Make an X session script an entrypoint for the specified domain.
  ## </summary>
  ## <param name="domain">
-@@ -1482,7 +1775,7 @@
+@@ -1482,7 +1776,7 @@
  		type xdm_xserver_tmp_t;
  	')
  
@@ -27020,7 +27250,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ')
  
  ########################################
-@@ -1674,6 +1967,65 @@
+@@ -1674,6 +1968,65 @@
  
  ########################################
  ## <summary>
@@ -27086,7 +27316,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xser
  ##	Interface to provide X object permissions on a given X server to
  ##	an X client domain.  Gives the domain complete control over the
  ##	display.
-@@ -1686,8 +2038,87 @@
+@@ -1686,8 +2039,87 @@
  #
  interface(`xserver_unconfined',`
  	gen_require(`
@@ -32116,8 +32346,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/udev.t
  ')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/unconfined.fc serefpolicy-3.4.2/policy/modules/system/unconfined.fc
 --- nsaserefpolicy/policy/modules/system/unconfined.fc	2008-06-12 23:25:07.000000000 -0400
-+++ serefpolicy-3.4.2/policy/modules/system/unconfined.fc	2008-06-12 23:37:52.000000000 -0400
-@@ -2,15 +2,19 @@
++++ serefpolicy-3.4.2/policy/modules/system/unconfined.fc	2008-06-23 06:28:00.000000000 -0400
+@@ -2,15 +2,26 @@
  # e.g.:
  # /usr/local/bin/appsrv		--	gen_context(system_u:object_r:unconfined_exec_t,s0)
  # For the time being until someone writes a sane policy, we need initrc to transition to unconfined_t
@@ -32141,6 +32371,13 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/unconf
 +
 +/usr/lib64/erlang/erts-[^/]+/bin/beam.smp --	gen_context(system_u:object_r:unconfined_execmem_exec_t,s0)
 +/usr/lib/erlang/erts-[^/]+/bin/beam.smp --	gen_context(system_u:object_r:unconfined_execmem_exec_t,s0)
++
++/usr/bin/haddock.*  --	gen_context(system_u:object_r:unconfined_execmem_exec_t,s0)
++/usr/bin/hasktags  --	gen_context(system_u:object_r:unconfined_execmem_exec_t,s0)
++/usr/bin/runghc  --	gen_context(system_u:object_r:unconfined_execmem_exec_t,s0)
++/usr/bin/runhaskell  --	gen_context(system_u:object_r:unconfined_execmem_exec_t,s0)
++/usr/libexec/ghc-[^/]+/.*bin  --	gen_context(system_u:object_r:unconfined_execmem_exec_t,s0)
++/usr/libexec/ghc-[^/]+/ghc-.*  --	gen_context(system_u:object_r:unconfined_execmem_exec_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/unconfined.if serefpolicy-3.4.2/policy/modules/system/unconfined.if
 --- nsaserefpolicy/policy/modules/system/unconfined.if	2008-06-12 23:25:07.000000000 -0400
 +++ serefpolicy-3.4.2/policy/modules/system/unconfined.if	2008-06-22 20:50:34.000000000 -0400
