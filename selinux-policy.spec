@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.4.2
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -375,6 +375,9 @@ exit 0
 %endif
 
 %changelog
+* Sun Jun 22 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-5
+- Fix prelude file context
+
 * Fri Jun 12 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-4
 - allow hplip to talk dbus
 - Fix context on ~/.local dir
