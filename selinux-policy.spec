@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.4.2
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -375,6 +375,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun 24 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-7
+- Allow confined users to use postgres
+- Allow system_mail_t to exec other mail clients
+- Label mogrel_rails as an apache server
+
 * Mon Jun 23 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-6
 - Apply unconfined_execmem_exec_t to haskell programs
 
