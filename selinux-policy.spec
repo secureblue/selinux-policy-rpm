@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.4.2
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -375,6 +375,10 @@ exit 0
 %endif
 
 %changelog
+* Sun Jun 29 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-9
+- Allow gdm to read rpm database
+- Allow nsplugin to read mplayer config files
+
 * Thu Jun 26 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-8
 - Allow vpnc to run ifconfig
 
