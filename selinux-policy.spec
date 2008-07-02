@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.4.2
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -375,6 +375,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jul 2 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-10
+- Allow all system domains and application domains to append to any log file
+
 * Sun Jun 29 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-9
 - Allow gdm to read rpm database
 - Allow nsplugin to read mplayer config files
