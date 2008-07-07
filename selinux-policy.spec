@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.4.2
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -375,6 +375,11 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 7 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-12
+- Allow amanda to read tape
+- Allow prewikka cgi to use syslog, allow audisp_t to signal cgi
+- Add support for netware file systems
+
 * Thu Jul 3 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-11
 - Allow ypbind apps to net_bind_service
 
