@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.4.2
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -278,7 +278,7 @@ SELinux Reference policy targeted base module.
 %post targeted
 if [ $1 -eq 1 ]; then
 %loadpolicy targeted
-semanage user -a -S targeted -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 
+bnsemanage user -a -S targeted -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 
 semanage login -m -S targeted  -s "unconfined_u" -r s0-s0:c0.c1023 __default__
 semanage login -m -S targeted  -s "unconfined_u" -r s0-s0:c0.c1023 root
 semanage user -a -S targeted  -P user -R guest_r guest_u
@@ -375,6 +375,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jul 9 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-14
+- Add inotify support to nscd
+
 * Tue Jul 8 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-13
 - Allow unconfined_t to setfcap
 
