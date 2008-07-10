@@ -278,7 +278,7 @@ SELinux Reference policy targeted base module.
 %post targeted
 if [ $1 -eq 1 ]; then
 %loadpolicy targeted
-bnsemanage user -a -S targeted -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 
+semanage user -a -S targeted -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 
 semanage login -m -S targeted  -s "unconfined_u" -r s0-s0:c0.c1023 __default__
 semanage login -m -S targeted  -s "unconfined_u" -r s0-s0:c0.c1023 root
 semanage user -a -S targeted  -P user -R guest_r guest_u
@@ -296,11 +296,11 @@ exit 0
 . /etc/selinux/config
 [ "${SELINUXTYPE}" != "targeted" ] && exit 0
 setsebool -P use_nfs_home_dirs=1
-semanage user -l | grep -s unconfined_u 
+semanage user -l | grep -s unconfined_u > /dev/null
 if [ $? -eq 0 ]; then
-   semanage user -m -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
+   semanage user -m -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u
 else
-   semanage user -a -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u  2> /dev/null
+   semanage user -a -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u
 fi
 seuser=`semanage login -l | grep __default__ | awk '{ print $2 }'`
 [ "$seuser" != "unconfined_u" ]  && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 __default__
