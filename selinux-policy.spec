@@ -16,12 +16,12 @@
 %define CHECKPOLICYVER 2.0.16-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.4.2
-Release: 14%{?dist}
+Version: 3.5.0
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20080509.patch
+patch: policy-20080710.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -375,6 +375,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jul 10 2008 Dan Walsh <dwalsh@redhat.com> 3.5.0-1
+- Update to latest refpolicy
+
 * Wed Jul 9 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-14
 - Add inotify support to nscd
 
