@@ -375,8 +375,9 @@ exit 0
 %endif
 
 %changelog
-* Thu Jul 10 2008 Dan Walsh <dwalsh@redhat.com> 3.5.0-1
+* Tue Jul 15 2008 Dan Walsh <dwalsh@redhat.com> 3.5.0-1
 - Update to latest refpolicy
+- Fix libsemanage initial install bug
 
 * Wed Jul 9 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-14
 - Add inotify support to nscd
