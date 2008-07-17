@@ -16,7 +16,7 @@
 %define CHECKPOLICYVER 2.0.16-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.5.0
+Version: 3.5.1
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -375,6 +375,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jul 16 2008 Dan Walsh <dwalsh@redhat.com> 3.5.1-1
+- Fix xguest -> xguest_mozilla_t -> xguest_openiffice_t
+
 * Tue Jul 15 2008 Dan Walsh <dwalsh@redhat.com> 3.5.0-1
 - Update to latest refpolicy
 - Fix libsemanage initial install bug
