@@ -377,6 +377,7 @@ exit 0
 %changelog
 * Wed Jul 16 2008 Dan Walsh <dwalsh@redhat.com> 3.5.1-1
 - Fix xguest -> xguest_mozilla_t -> xguest_openiffice_t
+- Change dhclient to be able to red networkmanager_var_run
 
 * Tue Jul 15 2008 Dan Walsh <dwalsh@redhat.com> 3.5.0-1
 - Update to latest refpolicy
