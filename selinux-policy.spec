@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -375,6 +375,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jul 25 2008 Dan Walsh <dwalsh@redhat.com> 3.5.1-2
+- Eliminate vbetool duplicate entry
+
 * Wed Jul 16 2008 Dan Walsh <dwalsh@redhat.com> 3.5.1-1
 - Fix xguest -> xguest_mozilla_t -> xguest_openiffice_t
 - Change dhclient to be able to red networkmanager_var_run
