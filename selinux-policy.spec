@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.1
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -375,6 +375,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Jul 25 2008 Dan Walsh <dwalsh@redhat.com> 3.5.1-5
+- Fix novel labeling
+
 * Fri Jul 25 2008 Dan Walsh <dwalsh@redhat.com> 3.5.1-4
 - Consolodate pyzor,spamassassin, razor into one security domain
 - Fix xdm requiring additional perms.
