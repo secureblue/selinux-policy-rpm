@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.16-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.5.2
-Release: 2%{?dist}
+Version: 3.5.3
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -379,6 +379,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 7 2008 Dan Walsh <dwalsh@redhat.com> 3.5.3-1
+- Update to upstream 
+
 * Wed Aug 2 2008 Dan Walsh <dwalsh@redhat.com> 3.5.2-2
 - Allow system-config-selinux to work with policykit
 
