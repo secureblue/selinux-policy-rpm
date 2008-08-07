@@ -12,12 +12,12 @@
 %endif
 %define POLICYVER 21
 %define libsepolver 2.0.20-1
-%define POLICYCOREUTILSVER 2.0.42-1
+%define POLICYCOREUTILSVER 2.0.54-2
 %define CHECKPOLICYVER 2.0.16-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -278,11 +278,15 @@ SELinux Reference policy targeted base module.
 %post targeted
 if [ $1 -eq 1 ]; then
 %loadpolicy targeted
-semanage user -a -S targeted -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 
-semanage login -m -S targeted  -s "unconfined_u" -r s0-s0:c0.c1023 __default__
-semanage login -m -S targeted  -s "unconfined_u" -r s0-s0:c0.c1023 root
-semanage user -a -S targeted  -P user -R guest_r guest_u
-semanage user -a -S targeted  -P user -R xguest_r xguest_u 
+semanage -S targeted -i - << __eof
+user -a -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 
+user -a -P user -R guest_r guest_u
+user -a -P user -R xguest_r xguest_u 
+__eof
+semanage -S targeted -i - << __eof
+login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
+login -m  -s unconfined_u -r s0-s0:c0.c1023 root
+__eof
 restorecon -R /root /var/log /var/run 2> /dev/null
 else
 semodule -s targeted -r moilscanner 2>/dev/null
@@ -375,6 +379,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Aug 2 2008 Dan Walsh <dwalsh@redhat.com> 3.5.2-2
+- Allow system-config-selinux to work with policykit
+
 * Fri Jul 25 2008 Dan Walsh <dwalsh@redhat.com> 3.5.1-5
 - Fix novel labeling
 
