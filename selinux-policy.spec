@@ -16,7 +16,7 @@
 %define CHECKPOLICYVER 2.0.16-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.5.3
+Version: 3.5.4
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -379,6 +379,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 11 2008 Dan Walsh <dwalsh@redhat.com> 3.5.4-1
+- Update to upstream
+
 * Thu Aug 7 2008 Dan Walsh <dwalsh@redhat.com> 3.5.3-1
 - Update to upstream 
 
