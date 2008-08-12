@@ -374,6 +374,7 @@ fi
 exit 0
 
 %files mls
+%config(noreplace) %{_sysconfdir}/selinux/mls/contexts/users/unconfined_u
 %fileList mls
 
 %endif

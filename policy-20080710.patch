@@ -7834,75 +7834,6 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  neverallow ~{ selinux_unconfined_type can_load_policy } security_t:security load_policy;
  neverallow ~{ selinux_unconfined_type can_setenforce } security_t:security setenforce;
  neverallow ~{ selinux_unconfined_type can_setsecparam } security_t:security setsecparam;
-diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/storage.if serefpolicy-3.5.4/policy/modules/kernel/storage.if
---- nsaserefpolicy/policy/modules/kernel/storage.if	2008-08-07 11:15:01.000000000 -0400
-+++ serefpolicy-3.5.4/policy/modules/kernel/storage.if	2008-08-11 16:39:48.000000000 -0400
-@@ -81,6 +81,26 @@
- 
- ########################################
- ## <summary>
-+##	dontaudit the caller attempts to read from a fixed disk.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	The type of the process performing this action.
-+##	</summary>
-+## </param>
-+#
-+interface(`storage_dontaudit_raw_read_fixed_disk',`
-+	gen_require(`
-+		attribute fixed_disk_raw_read;
-+		type fixed_disk_device_t;
-+	')
-+
-+	dontaudit $1 fixed_disk_device_t:blk_file read_blk_file_perms;
-+	dontaudit $1 fixed_disk_device_t:chr_file read_chr_file_perms;
-+')
-+
-+########################################
-+## <summary>
- ##	Allow the caller to directly read from a fixed disk.
- ##	This is extremly dangerous as it can bypass the
- ##	SELinux protections for filesystem objects, and
-@@ -121,8 +141,7 @@
- 		
- 	')
- 
--	dontaudit $1 fixed_disk_device_t:blk_file read_blk_file_perms;
--	dontaudit $1 fixed_disk_device_t:chr_file read_chr_file_perms;
-+	dontaudit $1 fixed_disk_device_t:blk_file { getattr ioctl read };
- ')
- 
- ########################################
-diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/terminal.if serefpolicy-3.5.4/policy/modules/kernel/terminal.if
---- nsaserefpolicy/policy/modules/kernel/terminal.if	2008-08-07 11:15:01.000000000 -0400
-+++ serefpolicy-3.5.4/policy/modules/kernel/terminal.if	2008-08-11 16:39:48.000000000 -0400
-@@ -525,11 +525,13 @@
- interface(`term_use_generic_ptys',`
- 	gen_require(`
- 		type devpts_t;
-+		attribute server_ptynode;
- 	')
- 
- 	dev_list_all_dev_nodes($1)
- 	allow $1 devpts_t:dir list_dir_perms;
- 	allow $1 devpts_t:chr_file { rw_term_perms lock append };
-+	allow $1 server_ptynode:chr_file { getattr read write ioctl };
- ')
- 
- ########################################
-@@ -547,9 +549,11 @@
- interface(`term_dontaudit_use_generic_ptys',`
- 	gen_require(`
- 		type devpts_t;
-+		attribute server_ptynode;
- 	')
- 
- 	dontaudit $1 devpts_t:chr_file { getattr read write ioctl };
-+	dontaudit $1 server_ptynode:chr_file { getattr read write ioctl };
- ')
- 
- ########################################
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/guest.fc serefpolicy-3.5.4/policy/modules/roles/guest.fc
 --- nsaserefpolicy/policy/modules/roles/guest.fc	1969-12-31 19:00:00.000000000 -0500
 +++ serefpolicy-3.5.4/policy/modules/roles/guest.fc	2008-08-11 16:39:48.000000000 -0400
@@ -16703,7 +16634,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/hal.te serefpolicy-3.5.4/policy/modules/services/hal.te
 --- nsaserefpolicy/policy/modules/services/hal.te	2008-08-07 11:15:11.000000000 -0400
-+++ serefpolicy-3.5.4/policy/modules/services/hal.te	2008-08-11 16:56:59.000000000 -0400
++++ serefpolicy-3.5.4/policy/modules/services/hal.te	2008-08-12 09:03:02.000000000 -0400
 @@ -49,6 +49,9 @@
  type hald_var_lib_t;
  files_type(hald_var_lib_t)
@@ -16714,15 +16645,6 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ########################################
  #
  # Local policy
-@@ -159,7 +162,7 @@
- selinux_compute_relabel_context(hald_t)
- selinux_compute_user_contexts(hald_t)
- 
--storage_raw_read_removable_device(hald_t)
-+storage_raw_read_removable_device(hald_t
- storage_raw_write_removable_device(hald_t)
- storage_raw_read_fixed_disk(hald_t)
- storage_raw_write_fixed_disk(hald_t)
 @@ -280,6 +283,12 @@
  ')
  
@@ -20059,8 +19981,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/var/lib/PolicyKit-public(/.*)?			gen_context(system_u:object_r:polkit_var_lib_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/polkit.if serefpolicy-3.5.4/policy/modules/services/polkit.if
 --- nsaserefpolicy/policy/modules/services/polkit.if	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.5.4/policy/modules/services/polkit.if	2008-08-11 16:39:48.000000000 -0400
-@@ -0,0 +1,208 @@
++++ serefpolicy-3.5.4/policy/modules/services/polkit.if	2008-08-12 08:59:25.000000000 -0400
+@@ -0,0 +1,212 @@
 +
 +## <summary>policy for polkit_auth</summary>
 +
@@ -20160,6 +20082,10 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +	')
 +
 +	domtrans_pattern($1, polkit_resolve_exec_t, polkit_resolve_t)
++
++	allow polkit_resolve_t $1:dir list_dir_perms;
++	read_files_pattern(polkit_resolve_t, $1, $1)
++	read_lnk_files_pattern(polkit_resolve_t, $1, $1)
 +')
 +
 +########################################
@@ -22756,7 +22682,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ## <param name="domain">
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/rpc.te serefpolicy-3.5.4/policy/modules/services/rpc.te
 --- nsaserefpolicy/policy/modules/services/rpc.te	2008-08-07 11:15:11.000000000 -0400
-+++ serefpolicy-3.5.4/policy/modules/services/rpc.te	2008-08-11 16:39:48.000000000 -0400
++++ serefpolicy-3.5.4/policy/modules/services/rpc.te	2008-08-11 17:47:17.000000000 -0400
 @@ -23,7 +23,7 @@
  gen_tunable(allow_nfsd_anon_write, false)
  
@@ -22810,7 +22736,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +dev_dontaudit_getattr_all_chr_files(nfsd_t) 
 +
 +dev_rw_lvm_control(nfsd_t)
-+storage_dontaudit_raw_read_fixed_disk(nfsd_t)
++storage_dontaudit_read_fixed_disk(nfsd_t)
 +
  # for /proc/fs/nfs/exports - should we have a new type?
  kernel_read_system_state(nfsd_t) 
@@ -24834,8 +24760,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/etc/rc.d/init.d/nasd	--	gen_context(system_u:object_r:soundd_script_exec_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/soundserver.if serefpolicy-3.5.4/policy/modules/services/soundserver.if
 --- nsaserefpolicy/policy/modules/services/soundserver.if	2008-08-07 11:15:11.000000000 -0400
-+++ serefpolicy-3.5.4/policy/modules/services/soundserver.if	2008-08-11 16:39:48.000000000 -0400
-@@ -13,3 +13,74 @@
++++ serefpolicy-3.5.4/policy/modules/services/soundserver.if	2008-08-11 17:35:26.000000000 -0400
+@@ -13,3 +13,70 @@
  interface(`soundserver_tcp_connect',`
  	refpolicywarn(`$0($*) has been deprecated.')
  ')
@@ -24883,15 +24809,13 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +#
 +interface(`soundserver_admin',`
 +	gen_require(`
-+		type soundd_t;
++		type soundd_t, soundd_etc_t;
++		type soundd_tmp_t, soundd_var_run_t;
 +		type soundd_script_exec_t;
-+		type soundd_etc_t;
-+		type soundd_tmp_t;
-+		type soundd_var_run_t;
 +	')
 +
-+	allow $1 soundd_t:process { ptrace signal_perms getattr };
-+	read_files_pattern($1, soundd_t, soundd_t)
++	allow $1 soundd_t:process { ptrace signal_perms };
++	ps_process_pattern($1, soundd_t)
 +	        
 +	# Allow soundd_t to restart the apache service
 +	soundserver_script_domtrans($1)
@@ -24908,8 +24832,6 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +	files_list_pids($1)
 +        admin_pattern($1, soundd_var_run_t)
 +')
-+
-+
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/soundserver.te serefpolicy-3.5.4/policy/modules/services/soundserver.te
 --- nsaserefpolicy/policy/modules/services/soundserver.te	2008-08-07 11:15:11.000000000 -0400
 +++ serefpolicy-3.5.4/policy/modules/services/soundserver.te	2008-08-11 16:39:48.000000000 -0400
@@ -28986,14 +28908,11 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /sbin/partx		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/fstools.if serefpolicy-3.5.4/policy/modules/system/fstools.if
 --- nsaserefpolicy/policy/modules/system/fstools.if	2008-08-07 11:15:12.000000000 -0400
-+++ serefpolicy-3.5.4/policy/modules/system/fstools.if	2008-08-11 16:39:48.000000000 -0400
-@@ -142,3 +142,21 @@
++++ serefpolicy-3.5.4/policy/modules/system/fstools.if	2008-08-11 17:51:55.000000000 -0400
+@@ -71,6 +71,24 @@
  
- 	allow $1 swapfile_t:file getattr;
- ')
-+
-+########################################
-+## <summary>
+ ########################################
+ ## <summary>
 +##	Send signal to fsadm process
 +## </summary>
 +## <param name="domain">
@@ -29009,6 +28928,12 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 +	allow $1 fsadm_t:process signal;
 +')
++
++########################################
++## <summary>
+ ##	Read fstools unnamed pipes.
+ ## </summary>
+ ## <param name="domain">
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/fstools.te serefpolicy-3.5.4/policy/modules/system/fstools.te
 --- nsaserefpolicy/policy/modules/system/fstools.te	2008-08-07 11:15:12.000000000 -0400
 +++ serefpolicy-3.5.4/policy/modules/system/fstools.te	2008-08-11 16:39:48.000000000 -0400
