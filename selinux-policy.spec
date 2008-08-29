@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -380,6 +380,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 26 2008 Dan Walsh <dwalsh@redhat.com> 3.5.5-2
+- Update to upstream
+- Fix crontab use by unconfined user
+
 * Tue Aug 12 2008 Dan Walsh <dwalsh@redhat.com> 3.5.4-2
 - Allow ifconfig_t to read dhcpc_state_t
 
