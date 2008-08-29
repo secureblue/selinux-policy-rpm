@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.5
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -380,6 +380,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 29 2008 Dan Walsh <dwalsh@redhat.com> 3.5.5-3
+- Allow audit dispatcher to kill his children
+
 * Tue Aug 26 2008 Dan Walsh <dwalsh@redhat.com> 3.5.5-2
 - Update to upstream
 - Fix crontab use by unconfined user
