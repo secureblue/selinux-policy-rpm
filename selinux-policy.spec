@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.16-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.5.5
-Release: 3%{?dist}
+Version: 3.5.6
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -159,7 +159,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2778.
+Based off of reference policy: Checked out revision  2797.
 
 %build
 
@@ -380,6 +380,14 @@ exit 0
 %endif
 
 %changelog
+* Wed Sep 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.6-1
+- Update to upstream
+- 	 New handling of init scripts
+
+* Fri Aug 29 2008 Dan Walsh <dwalsh@redhat.com> 3.5.5-4
+- Allow pcsd to dbus
+- Add memcache policy
+
 * Fri Aug 29 2008 Dan Walsh <dwalsh@redhat.com> 3.5.5-3
 - Allow audit dispatcher to kill his children
 
