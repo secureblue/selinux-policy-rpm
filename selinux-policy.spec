@@ -16,7 +16,7 @@
 %define CHECKPOLICYVER 2.0.16-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.5.7
+Version: 3.5.8
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -381,6 +381,13 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 11 2008 Dan Walsh <dwalsh@redhat.com> 3.5.8-1
+- Merge upstream changes
+- Add Xavier Toth patches
+
+* Wed Sep 10 2008 Dan Walsh <dwalsh@redhat.com> 3.5.7-2
+- Add qemu_cache_t for /var/cache/libvirt
+
 * Fri Sep 5 2008 Dan Walsh <dwalsh@redhat.com> 3.5.7-1
 - Remove gamin policy
 
