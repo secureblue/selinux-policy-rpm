@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.8
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -381,6 +381,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 18 2008 Dan Walsh <dwalsh@redhat.com> 3.5.8-2
+- Fix labeling on new pm*log
+- Allow ssh to bind to all nodes
+
 * Thu Sep 11 2008 Dan Walsh <dwalsh@redhat.com> 3.5.8-1
 - Merge upstream changes
 - Add Xavier Toth patches
