@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.8
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -381,6 +381,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 23 2008 Dan Walsh <dwalsh@redhat.com> 3.5.8-7
+- Allow confined users to login with dbus
+
 * Mon Sep 22 2008 Dan Walsh <dwalsh@redhat.com> 3.5.8-6
 - Fix transition to nsplugin
 
