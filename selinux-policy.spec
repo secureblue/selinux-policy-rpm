@@ -130,6 +130,7 @@ echo -n > %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
 %dir %{_sysconfdir}/selinux/%1/contexts/users \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/root \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/guest_u \
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/xguest_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/user_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u 
 
@@ -317,7 +318,6 @@ exit 0
 
 %files targeted
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/unconfined_u
-%config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/xguest_u
 %fileList targeted
 %endif
 
