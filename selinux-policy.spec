@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.16-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.5.8
-Release: 7%{?dist}
+Version: 3.5.9
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -160,7 +160,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2797.
+Based off of reference policy: Checked out revision  2820.
 
 %build
 
@@ -381,6 +381,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Sep 24 2008 Dan Walsh <dwalsh@redhat.com> 3.5.9-1
+- Upgrade to upstream
+
 * Tue Sep 23 2008 Dan Walsh <dwalsh@redhat.com> 3.5.8-7
 - Allow confined users to login with dbus
 
