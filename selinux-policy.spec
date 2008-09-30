@@ -10,14 +10,14 @@
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
-%define POLICYVER 21
+%define POLICYVER 23
 %define libsepolver 2.0.20-1
 %define POLICYCOREUTILSVER 2.0.54-2
 %define CHECKPOLICYVER 2.0.16-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.9
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -40,8 +40,9 @@ Source15: securetty_types-mls
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
-BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER}
+BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER} bzip2
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.14-3
+Requires(post): /usr/bin/bunzip2
 Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
 Obsoletes: selinux-policy-devel
 Provides: selinux-policy-devel
@@ -77,6 +78,9 @@ cp -f $RPM_SOURCE_DIR/booleans-%1.conf ./policy/booleans.conf \
 %define moduleList() %([ -f %{_sourcedir}/modules-%{1}.conf ] && \
 awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "-i %%s.pp ", $1 }' %{_sourcedir}/modules-%{1}.conf )
 
+%define bzmoduleList() %([ -f %{_sourcedir}/modules-%{1}.conf ] && \
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf " ../%%s.pp.bz2 ", $1 }' %{_sourcedir}/modules-%{1}.conf )
+
 %define installCmds() \
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 base.pp \
 make validate UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 modules \
@@ -96,12 +100,13 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedir
 install -m0644 $RPM_SOURCE_DIR/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
 install -m0644 $RPM_SOURCE_DIR/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
 echo -n > %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
+bzip2 %{buildroot}/%{_usr}/share/selinux/%1/*.pp
 %nil
 
 %define fileList() \
 %defattr(-,root,root) \
 %dir %{_usr}/share/selinux/%1 \
-%{_usr}/share/selinux/%1/*.pp \
+%{_usr}/share/selinux/%1/*.pp.bz2 \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %ghost %{_sysconfdir}/selinux/%1/seusers \
@@ -144,9 +149,13 @@ if [ -s /etc/selinux/config ]; then \
 fi
 
 %define loadpolicy() \
-( cd /usr/share/selinux/%1; \
+tempdir=`mktemp -d /usr/share/selinux/%1/tmpXXXX`; \
+( cd $tempdir; \
+cp ../base.pp.bz2 %{expand:%%bzmoduleList %1} .; \
+bunzip2 *; \
 semodule -b base.pp %{expand:%%moduleList %1} -s %1; \
 ); \
+rm -rf $tempdir; \
 
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
@@ -381,6 +390,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Sep 29 2008 Dan Walsh <dwalsh@redhat.com> 3.5.9-2
+- Change all user tmpfs_t files to be labeled user_tmpfs_t
+- Allow radiusd to create sock_files
+
 * Wed Sep 24 2008 Dan Walsh <dwalsh@redhat.com> 3.5.9-1
 - Upgrade to upstream
 
