@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.9
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -390,6 +390,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Oct 1 2008 Dan Walsh <dwalsh@redhat.com> 3.5.9-4
+- Fix labeling for oracle 
+
 * Wed Oct 1 2008 Dan Walsh <dwalsh@redhat.com> 3.5.9-3
 - Allow nsplugin to comminicate with xdm_tmp_t sock_file
 
