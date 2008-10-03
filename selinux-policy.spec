@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.10
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -390,6 +390,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.10-2
+- Allow confined users and xdm to exec wm
+- Allow nsplugin to talk to fifo files on nfs
+
 * Fri Oct 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.10-1
 - Allow NetworkManager to transition to avahi and iptables
 - Allow domains to search other domains keys, coverup kernel bug

@@ -1924,21 +1924,32 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ########################################
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/admin/vpn.te serefpolicy-3.5.10/policy/modules/admin/vpn.te
 --- nsaserefpolicy/policy/modules/admin/vpn.te	2008-08-07 11:15:13.000000000 -0400
-+++ serefpolicy-3.5.10/policy/modules/admin/vpn.te	2008-10-03 11:36:44.000000000 -0400
++++ serefpolicy-3.5.10/policy/modules/admin/vpn.te	2008-10-03 15:15:56.000000000 -0400
 @@ -22,9 +22,10 @@
  # Local policy
  #
  
 -allow vpnc_t self:capability { dac_override net_admin ipc_lock net_raw };
-+allow vpnc_t self:capability { dac_read_search dac_override net_admin ipc_lock net_raw };
- allow vpnc_t self:process getsched;
+-allow vpnc_t self:process getsched;
 -allow vpnc_t self:fifo_file { getattr ioctl read write };
++allow vpnc_t self:capability { dac_read_search dac_override net_admin ipc_lock net_raw };
++allow vpnc_t self:process { getsched signal };
 +allow vpnc_t self:fifo_file rw_fifo_file_perms;
 +allow vpnc_t self:netlink_route_socket rw_netlink_socket_perms;
  allow vpnc_t self:tcp_socket create_stream_socket_perms;
  allow vpnc_t self:udp_socket create_socket_perms;
  allow vpnc_t self:rawip_socket create_socket_perms;
-@@ -102,7 +103,6 @@
+@@ -43,8 +44,7 @@
+ 
+ kernel_read_system_state(vpnc_t)
+ kernel_read_network_state(vpnc_t)
+-kernel_read_kernel_sysctls(vpnc_t)
+-kernel_rw_net_sysctls(vpnc_t)
++kernel_read_all_sysctls(vpnc_t)
+ 
+ corenet_all_recvfrom_unlabeled(vpnc_t)
+ corenet_all_recvfrom_netlabel(vpnc_t)
+@@ -102,7 +102,6 @@
  seutil_dontaudit_search_config(vpnc_t)
  seutil_use_newrole_fds(vpnc_t)
  
@@ -4689,8 +4700,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/nsplugin.te serefpolicy-3.5.10/policy/modules/apps/nsplugin.te
 --- nsaserefpolicy/policy/modules/apps/nsplugin.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.5.10/policy/modules/apps/nsplugin.te	2008-10-03 11:36:44.000000000 -0400
-@@ -0,0 +1,240 @@
++++ serefpolicy-3.5.10/policy/modules/apps/nsplugin.te	2008-10-03 11:46:02.000000000 -0400
+@@ -0,0 +1,244 @@
 +
 +policy_module(nsplugin, 1.0.0)
 +
@@ -4911,15 +4922,19 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +tunable_policy(`use_nfs_home_dirs',`
 +	fs_manage_nfs_dirs(nsplugin_t)
 +	fs_manage_nfs_files(nsplugin_t)
++	fs_manage_nfs_named_pipes(nsplugin_t)
 +	fs_manage_nfs_dirs(nsplugin_config_t)
 +	fs_manage_nfs_files(nsplugin_config_t)
++	fs_manage_nfs_named_pipes(nsplugin_config_t)
 +')
 +
 +tunable_policy(`use_samba_home_dirs',`
 +	fs_manage_cifs_dirs(nsplugin_t)
 +	fs_manage_cifs_files(nsplugin_t)
++	fs_manage_cifs_named_pipes(nsplugin_t)
 +	fs_manage_cifs_dirs(nsplugin_config_t)
 +	fs_manage_cifs_files(nsplugin_config_t)
++	fs_manage_cifs_named_pipes(nsplugin_config_t)
 +')
 +
 +domtrans_pattern(nsplugin_config_t, nsplugin_exec_t, nsplugin_t)
@@ -6244,8 +6259,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/usr/bin/metacity	--	gen_context(system_u:object_r:wm_exec_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/wm.if serefpolicy-3.5.10/policy/modules/apps/wm.if
 --- nsaserefpolicy/policy/modules/apps/wm.if	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.5.10/policy/modules/apps/wm.if	2008-10-03 11:36:44.000000000 -0400
-@@ -0,0 +1,160 @@
++++ serefpolicy-3.5.10/policy/modules/apps/wm.if	2008-10-03 12:27:09.000000000 -0400
+@@ -0,0 +1,178 @@
 +## <summary>Window Manager.</summary>
 +
 +#######################################
@@ -6405,6 +6420,24 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +	allow $1_wm_t $2_xserver_tmp_t:sock_file write;
 +	manage_lnk_files_pattern($1_wm_t, $2_xserver_tmp_t, $2_xserver_tmp_t)
 +	allow $1_wm_t security_xext_t:x_extension { query use };
++')
++
++########################################
++## <summary>
++##	Execute the wm program in the wm domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`wm_exec',`
++	gen_require(`
++		type wm_exec_t;
++	')
++
++	can_exec($1, wm_exec_t)
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/wm.te serefpolicy-3.5.10/policy/modules/apps/wm.te
 --- nsaserefpolicy/policy/modules/apps/wm.te	1969-12-31 19:00:00.000000000 -0500
@@ -7253,7 +7286,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	all protocols (TCP, UDP, etc)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/domain.te serefpolicy-3.5.10/policy/modules/kernel/domain.te
 --- nsaserefpolicy/policy/modules/kernel/domain.te	2008-08-07 11:15:01.000000000 -0400
-+++ serefpolicy-3.5.10/policy/modules/kernel/domain.te	2008-10-03 11:36:44.000000000 -0400
++++ serefpolicy-3.5.10/policy/modules/kernel/domain.te	2008-10-03 13:11:35.000000000 -0400
 @@ -5,6 +5,13 @@
  #
  # Declarations
@@ -7295,7 +7328,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  allow unconfined_domain_type domain:lnk_file { read_lnk_file_perms ioctl lock };
  
  # act on all domains keys
-@@ -148,3 +159,38 @@
+@@ -148,3 +159,39 @@
  
  # receive from all domains over labeled networking
  domain_all_recvfrom_all_domains(unconfined_domain_type)
@@ -7310,6 +7343,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +	cron_rw_pipes(domain)
 +ifdef(`hide_broken_symptoms',`
 +	cron_dontaudit_rw_tcp_sockets(domain)
++	allow domain domain:key search;
 +')
 +')
 +
@@ -7336,7 +7370,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +dontaudit can_change_object_identity can_change_object_identity:key link;
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/files.fc serefpolicy-3.5.10/policy/modules/kernel/files.fc
 --- nsaserefpolicy/policy/modules/kernel/files.fc	2008-08-07 11:15:01.000000000 -0400
-+++ serefpolicy-3.5.10/policy/modules/kernel/files.fc	2008-10-03 11:36:44.000000000 -0400
++++ serefpolicy-3.5.10/policy/modules/kernel/files.fc	2008-10-03 13:32:02.000000000 -0400
 @@ -32,6 +32,7 @@
  /boot/lost\+found	-d	gen_context(system_u:object_r:lost_found_t,mls_systemhigh)
  /boot/lost\+found/.*		<<none>>
@@ -7345,6 +7379,14 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  #
  # /emul
+@@ -49,6 +50,7 @@
+ /etc/fstab\.REVOKE	--	gen_context(system_u:object_r:etc_runtime_t,s0)
+ /etc/HOSTNAME		--	gen_context(system_u:object_r:etc_runtime_t,s0)
+ /etc/ioctl\.save	--	gen_context(system_u:object_r:etc_runtime_t,s0)
++/etc/hosts.deny		--	gen_context(system_u:object_r:etc_runtime_t,s0)
+ /etc/issue		--	gen_context(system_u:object_r:etc_runtime_t,s0)
+ /etc/issue\.net		--	gen_context(system_u:object_r:etc_runtime_t,s0)
+ /etc/localtime		-l	gen_context(system_u:object_r:etc_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/files.if serefpolicy-3.5.10/policy/modules/kernel/files.if
 --- nsaserefpolicy/policy/modules/kernel/files.if	2008-08-07 11:15:01.000000000 -0400
 +++ serefpolicy-3.5.10/policy/modules/kernel/files.if	2008-10-03 11:36:44.000000000 -0400
@@ -8190,7 +8232,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  #
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/kernel.if serefpolicy-3.5.10/policy/modules/kernel/kernel.if
 --- nsaserefpolicy/policy/modules/kernel/kernel.if	2008-08-07 11:15:01.000000000 -0400
-+++ serefpolicy-3.5.10/policy/modules/kernel/kernel.if	2008-10-03 11:36:44.000000000 -0400
++++ serefpolicy-3.5.10/policy/modules/kernel/kernel.if	2008-10-03 15:15:37.000000000 -0400
 @@ -1198,6 +1198,7 @@
  	')
  
@@ -10112,7 +10154,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/amavis.te serefpolicy-3.5.10/policy/modules/services/amavis.te
 --- nsaserefpolicy/policy/modules/services/amavis.te	2008-08-07 11:15:11.000000000 -0400
-+++ serefpolicy-3.5.10/policy/modules/services/amavis.te	2008-10-03 11:36:44.000000000 -0400
++++ serefpolicy-3.5.10/policy/modules/services/amavis.te	2008-10-03 12:29:42.000000000 -0400
 @@ -13,7 +13,10 @@
  
  # configuration files
@@ -13037,7 +13079,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  # Calendar (PCP) local policy
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cron.fc serefpolicy-3.5.10/policy/modules/services/cron.fc
 --- nsaserefpolicy/policy/modules/services/cron.fc	2008-08-07 11:15:11.000000000 -0400
-+++ serefpolicy-3.5.10/policy/modules/services/cron.fc	2008-10-03 11:36:44.000000000 -0400
++++ serefpolicy-3.5.10/policy/modules/services/cron.fc	2008-10-03 13:34:43.000000000 -0400
 @@ -17,6 +17,8 @@
  /var/run/fcron\.fifo		-s	gen_context(system_u:object_r:crond_var_run_t,s0)
  /var/run/fcron\.pid		--	gen_context(system_u:object_r:crond_var_run_t,s0)
@@ -13047,11 +13089,13 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /var/spool/at			-d	gen_context(system_u:object_r:cron_spool_t,s0)
  /var/spool/at/spool		-d	gen_context(system_u:object_r:cron_spool_t,s0)
  /var/spool/at/[^/]*		--	<<none>>
-@@ -45,3 +47,4 @@
+@@ -45,3 +47,6 @@
  /var/spool/fcron/systab\.orig	--	gen_context(system_u:object_r:system_cron_spool_t,s0)
  /var/spool/fcron/systab		--	gen_context(system_u:object_r:system_cron_spool_t,s0)
  /var/spool/fcron/new\.systab	--	gen_context(system_u:object_r:system_cron_spool_t,s0)
 +/var/lib/misc(/.*)?			gen_context(system_u:object_r:system_crond_var_lib_t,s0)
++
++/var/lib/glpi/files(/.*)?		gen_context(system_u:object_r:cron_var_lib_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cron.if serefpolicy-3.5.10/policy/modules/services/cron.if
 --- nsaserefpolicy/policy/modules/services/cron.if	2008-08-07 11:15:11.000000000 -0400
 +++ serefpolicy-3.5.10/policy/modules/services/cron.if	2008-10-03 11:36:44.000000000 -0400
@@ -13877,7 +13921,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cups.te serefpolicy-3.5.10/policy/modules/services/cups.te
 --- nsaserefpolicy/policy/modules/services/cups.te	2008-09-03 07:59:15.000000000 -0400
-+++ serefpolicy-3.5.10/policy/modules/services/cups.te	2008-10-03 11:36:44.000000000 -0400
++++ serefpolicy-3.5.10/policy/modules/services/cups.te	2008-10-03 12:32:08.000000000 -0400
 @@ -20,6 +20,12 @@
  type cupsd_etc_t;
  files_config_file(cupsd_etc_t)
@@ -14117,6 +14161,15 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  dontaudit cupsd_config_t self:capability sys_tty_config;
  allow cupsd_config_t self:process signal_perms;
  allow cupsd_config_t self:fifo_file rw_fifo_file_perms;
+@@ -313,7 +367,7 @@
+ files_pid_filetrans(cupsd_config_t, cupsd_config_var_run_t, file)
+ 
+ kernel_read_system_state(cupsd_config_t)
+-kernel_read_kernel_sysctls(cupsd_config_t)
++kernel_read_all_sysctls(cupsd_config_t)
+ 
+ corenet_all_recvfrom_unlabeled(cupsd_config_t)
+ corenet_all_recvfrom_netlabel(cupsd_config_t)
 @@ -326,6 +380,7 @@
  dev_read_sysfs(cupsd_config_t)
  dev_read_urand(cupsd_config_t)
@@ -25572,7 +25625,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /etc/ssh/ssh_host_key 		--	gen_context(system_u:object_r:sshd_key_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.if serefpolicy-3.5.10/policy/modules/services/ssh.if
 --- nsaserefpolicy/policy/modules/services/ssh.if	2008-08-07 11:15:11.000000000 -0400
-+++ serefpolicy-3.5.10/policy/modules/services/ssh.if	2008-10-03 11:36:44.000000000 -0400
++++ serefpolicy-3.5.10/policy/modules/services/ssh.if	2008-10-03 15:17:02.000000000 -0400
 @@ -36,6 +36,7 @@
  	gen_require(`
  		attribute ssh_server;
@@ -25699,8 +25752,11 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	##############################
  	#
  	# $1_ssh_agent_t local policy
-@@ -383,10 +380,6 @@
+@@ -381,12 +378,9 @@
+ 	optional_policy(`
+ 		xserver_use_xdm_fds($1_ssh_agent_t)
  		xserver_rw_xdm_pipes($1_ssh_agent_t)
++		xserver_dontaudit_rw_xdm_home_files($1_ssh_agent_t)
  	')
  
 -	ifdef(`TODO',`
@@ -25710,7 +25766,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	##############################
  	#
  	# $1_ssh_keysign_t local policy
-@@ -413,6 +406,25 @@
+@@ -413,6 +407,25 @@
  	')
  ')
  
@@ -25736,7 +25792,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  #######################################
  ## <summary>
  ##	The template to define a ssh server.
-@@ -443,13 +455,14 @@
+@@ -443,13 +456,14 @@
  	type $1_var_run_t;
  	files_pid_file($1_var_run_t)
  
@@ -25752,7 +25808,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	allow $1_t $1_devpts_t:chr_file { rw_chr_file_perms setattr getattr relabelfrom };
  	term_create_pty($1_t,$1_devpts_t)
-@@ -478,7 +491,12 @@
+@@ -478,7 +492,12 @@
  	corenet_udp_bind_all_nodes($1_t)
  	corenet_tcp_bind_ssh_port($1_t)
  	corenet_tcp_connect_all_ports($1_t)
@@ -25765,7 +25821,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	fs_dontaudit_getattr_all_fs($1_t)
  
-@@ -506,9 +524,14 @@
+@@ -506,9 +525,14 @@
  
  	userdom_dontaudit_relabelfrom_unpriv_users_ptys($1_t)
  	userdom_search_all_users_home_dirs($1_t)
@@ -25780,7 +25836,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	')
  
  	tunable_policy(`use_samba_home_dirs',`
-@@ -517,11 +540,7 @@
+@@ -517,11 +541,7 @@
  
  	optional_policy(`
  		kerberos_use($1_t)
@@ -25793,7 +25849,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	')
  
  	optional_policy(`
-@@ -710,3 +729,22 @@
+@@ -710,3 +730,22 @@
  
  	dontaudit $1 sshd_key_t:file { getattr read };
  ')
@@ -26403,7 +26459,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  corenet_tcp_connect_http_port(httpd_w3c_validator_script_t)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xserver.fc serefpolicy-3.5.10/policy/modules/services/xserver.fc
 --- nsaserefpolicy/policy/modules/services/xserver.fc	2008-08-07 11:15:11.000000000 -0400
-+++ serefpolicy-3.5.10/policy/modules/services/xserver.fc	2008-10-03 11:36:44.000000000 -0400
++++ serefpolicy-3.5.10/policy/modules/services/xserver.fc	2008-10-03 13:10:47.000000000 -0400
 @@ -1,13 +1,15 @@
  #
  # HOME_DIR
@@ -26449,7 +26505,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /usr/bin/gpe-dm		--	gen_context(system_u:object_r:xdm_exec_t,s0)
  /usr/bin/iceauth	--	gen_context(system_u:object_r:iceauth_exec_t,s0)
  /usr/bin/Xair		--	gen_context(system_u:object_r:xserver_exec_t,s0)
-@@ -89,16 +87,23 @@
+@@ -89,16 +87,25 @@
  
  /var/[xgk]dm(/.*)?		gen_context(system_u:object_r:xserver_log_t,s0)
  
@@ -26464,6 +26520,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /var/log/XFree86.*	--	gen_context(system_u:object_r:xserver_log_t,s0)
  /var/log/Xorg.*		--	gen_context(system_u:object_r:xserver_log_t,s0)
 +/var/log/nvidia-installer\.log.* --	gen_context(system_u:object_r:xserver_log_t,s0)
++
++/var/spool/gdm(/.*)?	 	gen_context(system_u:object_r:xdm_spool_t,s0)
  
 +/var/run/gdm(/.*)?	 	gen_context(system_u:object_r:xdm_var_run_t,s0)
 +/var/run/gdm_socket	-s	gen_context(system_u:object_r:xdm_var_run_t,s0)
@@ -26477,7 +26535,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /var/lib/pam_devperm/:0	--	gen_context(system_u:object_r:xdm_var_lib_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xserver.if serefpolicy-3.5.10/policy/modules/services/xserver.if
 --- nsaserefpolicy/policy/modules/services/xserver.if	2008-09-24 09:07:28.000000000 -0400
-+++ serefpolicy-3.5.10/policy/modules/services/xserver.if	2008-10-03 11:36:44.000000000 -0400
++++ serefpolicy-3.5.10/policy/modules/services/xserver.if	2008-10-03 16:06:18.000000000 -0400
 @@ -16,6 +16,7 @@
  	gen_require(`
  		type xkb_var_lib_t, xserver_exec_t, xserver_log_t;
@@ -26553,7 +26611,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	term_setattr_unallocated_ttys($1_xserver_t)
  	term_use_unallocated_ttys($1_xserver_t)
  
-@@ -270,6 +287,8 @@
+@@ -270,6 +288,8 @@
  	gen_require(`
  		type iceauth_exec_t, xauth_exec_t;
  		attribute fonts_type, fonts_cache_type, fonts_config_type;
@@ -26562,7 +26620,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	')
  
  	##############################
-@@ -280,61 +299,41 @@
+@@ -280,61 +300,41 @@
  	xserver_common_domain_template($1)
  	role $3 types $1_xserver_t;
  
@@ -26595,19 +26653,19 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -	type $1_xauth_home_t alias $1_xauth_rw_t, xauth_home_type;
 -	files_poly_member($1_xauth_home_t)
 -	userdom_user_home_content($1, $1_xauth_home_t)
--
--	type $1_xauth_tmp_t;
--	files_tmp_file($1_xauth_tmp_t)
 +	typealias iceauth_home_t alias $1_iceauth_rw_t;
 +	typealias iceauth_home_t alias $1_iceauth_home_t;
+ 
+-	type $1_xauth_tmp_t;
+-	files_tmp_file($1_xauth_tmp_t)
++	typealias xauth_home_t alias $1_xauth_rw_t;
++	typealias xauth_home_t alias $1_xauth_home_t;
  
 -	##############################
 -	#
 -	# $1_xserver_t Local policy
 -	#
-+	typealias xauth_home_t alias $1_xauth_rw_t;
-+	typealias xauth_home_t alias $1_xauth_home_t;
- 
+-
 -	domtrans_pattern($1_xserver_t, xauth_exec_t, $1_xauth_t)
 +	allow $1_xserver_t xauth_home_t:file { getattr read };
  
@@ -26643,7 +26701,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	stream_connect_pattern($2, $1_xserver_tmp_t, $1_xserver_tmp_t, $1_xserver_t)
  
-@@ -348,85 +347,32 @@
+@@ -348,85 +348,36 @@
  
  	locallogin_use_fds($1_xserver_t)
  
@@ -26667,10 +26725,10 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -	ifdef(`xdm.te', `
 -		allow $1_t xdm_tmp_t:sock_file unlink;
 -		allow $1_xserver_t xdm_var_run_t:dir search;
--	')
++	optional_policy(`
++		wm_exec($2)
+ 	')
 -	') dnl end TODO
-+	domtrans_pattern($2, xauth_exec_t, xauth_t)
-+	allow $2 xauth_t:process signal;
  
 -	##############################
 -	#
@@ -26688,7 +26746,9 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -	files_tmp_filetrans($1_xauth_t, $1_xauth_tmp_t, { file dir })
 -
 -	domtrans_pattern($2, xauth_exec_t, $1_xauth_t)
--
++	domtrans_pattern($2, xauth_exec_t, xauth_t)
++	allow $2 xauth_t:process signal;
+ 
 -	allow $2 $1_xauth_t:process signal;
 +    	allow $2 xauth_home_t:file manage_file_perms;
 +	allow $2 xauth_home_t:file { relabelfrom relabelto };
@@ -26740,7 +26800,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	##############################
  	#
-@@ -435,16 +381,16 @@
+@@ -435,16 +386,16 @@
  
  	domtrans_pattern($2, iceauth_exec_t, $1_iceauth_t)
  
@@ -26762,7 +26822,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	fs_search_auto_mountpoints($1_iceauth_t)
  
-@@ -467,34 +413,12 @@
+@@ -467,34 +418,12 @@
  	#
  
  	# Device rules
@@ -26799,7 +26859,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	# xrdb X11:ChangeProperty prop=RESOURCE_MANAGER
  	allow $2 info_xproperty_t:x_property { create write append };
  
-@@ -610,7 +534,7 @@
+@@ -610,7 +539,7 @@
  #	refpolicywarn(`$0() has been deprecated, please use xserver_user_x_domain_template instead.')
  	gen_require(`
  		type xdm_t, xdm_tmp_t;
@@ -26808,7 +26868,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	')
  
  	allow $2 self:shm create_shm_perms;
-@@ -618,8 +542,8 @@
+@@ -618,8 +547,8 @@
  	allow $2 self:unix_stream_socket { connectto create_stream_socket_perms };
  
  	# Read .Xauthority file
@@ -26819,7 +26879,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	# for when /tmp/.X11-unix is created by the system
  	allow $2 xdm_t:fd use;
-@@ -643,13 +567,208 @@
+@@ -643,11 +572,109 @@
  
  	xserver_read_xdm_tmp_files($2)
  
@@ -26930,20 +26990,13 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 +	allow $1_xserver_t input_xevent_t:x_event send;
 +	allow $1_xserver_t $1_rootwindow_t:x_drawable send;
-+')
-+
-+#######################################
-+## <summary>
-+##	Interface to provide X object permissions on a given X server to
-+##	an X client domain.  Provides the minimal set required by a basic
-+##	X client application.
-+## </summary>
-+## <param name="user">
-+##	<summary>
-+##	The prefix of the X server domain (e.g., user
-+##	is the prefix for user_t).
-+##	</summary>
-+## </param>
+ ')
+ 
+ #######################################
+@@ -662,6 +689,103 @@
+ ##	is the prefix for user_t).
+ ##	</summary>
+ ## </param>
 +## <param name="domain">
 +##	<summary>
 +##	Client domain allowed access.
@@ -27026,13 +27079,25 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 +#	xserver_use($1, $1, $2)
 +	xserver_use(xdm, $1, $2)
- ')
- 
++')
 +
- #######################################
- ## <summary>
- ##	Interface to provide X object permissions on a given X server to
-@@ -676,7 +795,7 @@
++
++#######################################
++## <summary>
++##	Interface to provide X object permissions on a given X server to
++##	an X client domain.  Provides the minimal set required by a basic
++##	X client application.
++## </summary>
++## <param name="user">
++##	<summary>
++##	The prefix of the X server domain (e.g., user
++##	is the prefix for user_t).
++##	</summary>
++## </param>
+ ## <param name="prefix">
+ ##	<summary>
+ ##	The prefix of the X client domain (e.g., user
+@@ -676,7 +800,7 @@
  #
  template(`xserver_common_x_domain_template',`
  	gen_require(`
@@ -27041,7 +27106,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  		type xproperty_t, info_xproperty_t, clipboard_xproperty_t;
  		type input_xevent_t, focus_xevent_t, property_xevent_t, manage_xevent_t;
  		type xevent_t, client_xevent_t;
-@@ -685,7 +804,6 @@
+@@ -685,7 +809,6 @@
  		attribute x_server_domain, x_domain;
  		attribute xproperty_type;
  		attribute xevent_type, xextension_type;
@@ -27049,7 +27114,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  		class x_drawable all_x_drawable_perms;
  		class x_screen all_x_screen_perms;
-@@ -702,6 +820,7 @@
+@@ -702,6 +825,7 @@
  		class x_resource all_x_resource_perms;
  		class x_event all_x_event_perms;
  		class x_synthetic_event all_x_synthetic_event_perms;
@@ -27057,7 +27122,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	')
  
  	##############################
-@@ -709,20 +828,22 @@
+@@ -709,20 +833,22 @@
  	# Declarations
  	#
  
@@ -27083,7 +27148,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	##############################
  	#
  	# Local Policy
-@@ -740,7 +861,7 @@
+@@ -740,7 +866,7 @@
  	allow $3 x_server_domain:x_server getattr;
  	# everyone can do override-redirect windows.
  	# this could be used to spoof labels
@@ -27092,7 +27157,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	# everyone can receive management events on the root window
  	# allows to know when new windows appear, among other things
  	allow $3 manage_xevent_t:x_event receive;
-@@ -749,7 +870,7 @@
+@@ -749,36 +875,30 @@
  	# can read server-owned resources
  	allow $3 x_server_domain:x_resource read;
  	# can mess with own clients
@@ -27101,8 +27166,13 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	# X Protocol Extensions
  	allow $3 std_xext_t:x_extension { query use };
-@@ -758,27 +879,17 @@
+ 	allow $3 shmem_xext_t:x_extension { query use };
+ 	dontaudit $3 xextension_type:x_extension { query use };
  
++	tunable_policy(`xserver_rw_x_device',`
++		allow $3 x_server_domain:x_device { read write };
++	')
++
  	# X Properties
  	# can read and write client properties
 -	allow $3 $2_xproperty_t:x_property { create destroy read write append };
@@ -27134,7 +27204,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	# X Input
  	# can receive own events
-@@ -805,6 +916,12 @@
+@@ -805,6 +925,12 @@
  	allow $3 manage_xevent_t:x_synthetic_event send;
  	allow $3 client_xevent_t:x_synthetic_event send;
  
@@ -27147,7 +27217,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	# X Selections
  	# can use the clipboard
  	allow $3 clipboard_xselection_t:x_selection { getattr setattr read };
-@@ -813,13 +930,15 @@
+@@ -813,13 +939,15 @@
  
  	# Other X Objects
  	# can create and use cursors
@@ -27167,7 +27237,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	tunable_policy(`! xserver_object_manager',`
  		# should be xserver_unconfined($3),
-@@ -879,17 +998,17 @@
+@@ -879,17 +1007,17 @@
  #
  template(`xserver_user_x_domain_template',`
  	gen_require(`
@@ -27192,7 +27262,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	# for when /tmp/.X11-unix is created by the system
  	allow $3 xdm_t:fd use;
-@@ -916,11 +1035,9 @@
+@@ -916,11 +1044,9 @@
  	# X object manager
  	xserver_common_x_domain_template($1, $2, $3)
  
@@ -27207,7 +27277,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -952,26 +1069,43 @@
+@@ -952,26 +1078,43 @@
  #
  template(`xserver_use_user_fonts',`
  	gen_require(`
@@ -27258,14 +27328,15 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Transition to a user Xauthority domain.
  ## </summary>
  ## <desc>
-@@ -997,10 +1131,77 @@
+@@ -997,10 +1140,77 @@
  #
  template(`xserver_domtrans_user_xauth',`
  	gen_require(`
 -		type $1_xauth_t, xauth_exec_t;
 +		type xauth_t, xauth_exec_t;
-+	')
-+
+ 	')
+ 
+-	domtrans_pattern($2, xauth_exec_t, $1_xauth_t)
 +	domtrans_pattern($2, xauth_exec_t, xauth_t)
 +')
 +
@@ -27297,9 +27368,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +template(`xserver_read_user_xauth',`
 +	gen_require(`
 +		type xauth_home_t;
- 	')
- 
--	domtrans_pattern($2, xauth_exec_t, $1_xauth_t)
++	')
++
 +	allow $2 xauth_home_t:file { getattr read };
 +')
 +
@@ -27338,7 +27408,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -1030,10 +1231,10 @@
+@@ -1030,10 +1240,10 @@
  #
  template(`xserver_user_home_dir_filetrans_user_xauth',`
  	gen_require(`
@@ -27351,7 +27421,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -1219,6 +1420,25 @@
+@@ -1219,6 +1429,25 @@
  
  ########################################
  ## <summary>
@@ -27377,7 +27447,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Read xdm-writable configuration files.
  ## </summary>
  ## <param name="domain">
-@@ -1273,6 +1493,7 @@
+@@ -1273,6 +1502,7 @@
  	files_search_tmp($1)
  	allow $1 xdm_tmp_t:dir list_dir_perms;
  	create_sock_files_pattern($1, xdm_tmp_t, xdm_tmp_t)
@@ -27385,7 +27455,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -1291,7 +1512,7 @@
+@@ -1291,7 +1521,7 @@
  	')
  
  	files_search_pids($1)
@@ -27394,7 +27464,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -1314,6 +1535,24 @@
+@@ -1314,6 +1544,24 @@
  
  ########################################
  ## <summary>
@@ -27419,7 +27489,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Execute the X server in the XDM X server domain.
  ## </summary>
  ## <param name="domain">
-@@ -1324,15 +1563,47 @@
+@@ -1324,15 +1572,47 @@
  #
  interface(`xserver_domtrans_xdm_xserver',`
  	gen_require(`
@@ -27468,7 +27538,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Make an X session script an entrypoint for the specified domain.
  ## </summary>
  ## <param name="domain">
-@@ -1482,7 +1753,7 @@
+@@ -1482,7 +1762,7 @@
  		type xdm_xserver_tmp_t;
  	')
  
@@ -27477,7 +27547,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -1674,6 +1945,26 @@
+@@ -1674,6 +1954,26 @@
  
  ########################################
  ## <summary>
@@ -27504,7 +27574,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	xdm xserver RW shared memory socket.
  ## </summary>
  ## <param name="domain">
-@@ -1692,6 +1983,24 @@
+@@ -1692,6 +1992,24 @@
  
  ########################################
  ## <summary>
@@ -27529,7 +27599,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Interface to provide X object permissions on a given X server to
  ##	an X client domain.  Gives the domain complete control over the
  ##	display.
-@@ -1704,8 +2013,126 @@
+@@ -1704,8 +2022,127 @@
  #
  interface(`xserver_unconfined',`
  	gen_require(`
@@ -27593,14 +27663,15 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +	gen_require(`
 +		type fonts_home_t;
 +		type fonts_config_home_t;
-+	')
-+
+ 	')
+ 
+-	typeattribute $1 xserver_unconfined_type;
 +	manage_dirs_pattern($1, fonts_home_t, fonts_home_t)
 +	manage_files_pattern($1, fonts_home_t, fonts_home_t)
 +	manage_lnk_files_pattern($1, fonts_home_t, fonts_home_t)
 +
 +	manage_files_pattern($1, fonts_config_home_t, fonts_config_home_t)
-+')
+ ')
 +
 +########################################
 +## <summary>
@@ -27653,22 +27724,22 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +interface(`xserver_dontaudit_rw_xdm_home_files',`
 +	gen_require(`
 +		type xdm_home_t;
- 	')
- 
--	typeattribute $1 xserver_unconfined_type;
++	')
++
 +	dontaudit $1 xdm_home_t:file rw_file_perms;
- ')
++')
++
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xserver.te serefpolicy-3.5.10/policy/modules/services/xserver.te
 --- nsaserefpolicy/policy/modules/services/xserver.te	2008-09-24 09:07:28.000000000 -0400
-+++ serefpolicy-3.5.10/policy/modules/services/xserver.te	2008-10-03 11:36:44.000000000 -0400
++++ serefpolicy-3.5.10/policy/modules/services/xserver.te	2008-10-03 16:06:35.000000000 -0400
 @@ -8,6 +8,14 @@
  
  ## <desc>
  ## <p>
-+## Allows X clients to read the x devices (keyboard/mouse)
++## Allows X clients to read/write the x devices (keyboard/mouse)
 +## </p>
 +## </desc>
-+gen_tunable(allow_read_x_device, true)
++gen_tunable(xserver_rw_x_device, true)
 +
 +
 +## <desc>
@@ -27698,16 +27769,19 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  # Per-object attributes
  attribute rootwindow_type;
-@@ -92,7 +108,7 @@
+@@ -92,7 +108,10 @@
  files_lock_file(xdm_lock_t)
  
  type xdm_rw_etc_t;
 -files_type(xdm_rw_etc_t)
 +files_config_file(xdm_rw_etc_t)
++
++type xdm_spool_t;
++files_type(xdm_spool_t)
  
  type xdm_var_lib_t;
  files_type(xdm_var_lib_t)
-@@ -100,6 +116,12 @@
+@@ -100,6 +119,12 @@
  type xdm_var_run_t;
  files_pid_file(xdm_var_run_t)
  
@@ -27720,7 +27794,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  type xdm_tmp_t;
  files_tmp_file(xdm_tmp_t)
  typealias xdm_tmp_t alias ice_tmp_t;
-@@ -107,6 +129,9 @@
+@@ -107,6 +132,9 @@
  type xdm_tmpfs_t;
  files_tmpfs_file(xdm_tmpfs_t)
  
@@ -27730,7 +27804,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  # type for /var/lib/xkb
  type xkb_var_lib_t;
  files_type(xkb_var_lib_t)
-@@ -122,6 +147,31 @@
+@@ -122,6 +150,31 @@
  type xserver_log_t;
  logging_log_file(xserver_log_t)
  
@@ -27762,7 +27836,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  xserver_common_domain_template(xdm)
  xserver_common_x_domain_template(xdm, xdm, xdm_t)
  init_system_domain(xdm_xserver_t, xserver_exec_t)
-@@ -140,8 +190,9 @@
+@@ -140,8 +193,9 @@
  # XDM Local policy
  #
  
@@ -27774,7 +27848,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  allow xdm_t self:fifo_file rw_fifo_file_perms;
  allow xdm_t self:shm create_shm_perms;
  allow xdm_t self:sem create_sem_perms;
-@@ -154,6 +205,12 @@
+@@ -154,6 +208,12 @@
  allow xdm_t self:key { search link write };
  
  allow xdm_t xconsole_device_t:fifo_file { getattr setattr };
@@ -27787,7 +27861,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  # Allow gdm to run gdm-binary
  can_exec(xdm_t, xdm_exec_t)
-@@ -169,6 +226,8 @@
+@@ -169,6 +229,8 @@
  manage_files_pattern(xdm_t, xdm_tmp_t, xdm_tmp_t)
  manage_sock_files_pattern(xdm_t, xdm_tmp_t, xdm_tmp_t)
  files_tmp_filetrans(xdm_t, xdm_tmp_t, { file dir sock_file })
@@ -27796,7 +27870,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  manage_dirs_pattern(xdm_t, xdm_tmpfs_t, xdm_tmpfs_t)
  manage_files_pattern(xdm_t, xdm_tmpfs_t, xdm_tmpfs_t)
-@@ -176,15 +235,26 @@
+@@ -176,15 +238,30 @@
  manage_fifo_files_pattern(xdm_t, xdm_tmpfs_t, xdm_tmpfs_t)
  manage_sock_files_pattern(xdm_t, xdm_tmpfs_t, xdm_tmpfs_t)
  fs_tmpfs_filetrans(xdm_t, xdm_tmpfs_t,{ dir file lnk_file sock_file fifo_file })
@@ -27807,6 +27881,10 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +fs_read_noxattr_fs_files(xdm_t)
 +
 +manage_files_pattern(xdm_t, fonts_home_t, fonts_home_t)
++
++files_search_spool(xdm_t)
++manage_dirs_pattern(xdm_t, xdm_spool_t, xdm_spool_t)
++manage_files_pattern(xdm_t, xdm_spool_t, xdm_spool_t)
  
  manage_dirs_pattern(xdm_t, xdm_var_lib_t, xdm_var_lib_t)	
  manage_files_pattern(xdm_t, xdm_var_lib_t, xdm_var_lib_t)
@@ -27825,7 +27903,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  allow xdm_t xdm_xserver_t:process signal;
  allow xdm_t xdm_xserver_t:unix_stream_socket connectto;
-@@ -198,6 +268,7 @@
+@@ -198,6 +275,7 @@
  allow xdm_t xdm_xserver_t:process { noatsecure siginh rlimitinh signal sigkill };
  
  allow xdm_t xdm_xserver_t:shm rw_shm_perms;
@@ -27833,7 +27911,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  # connect to xdm xserver over stream socket
  stream_connect_pattern(xdm_t, xdm_xserver_tmp_t, xdm_xserver_tmp_t, xdm_xserver_t)
-@@ -229,6 +300,7 @@
+@@ -229,6 +307,7 @@
  corenet_udp_sendrecv_all_ports(xdm_t)
  corenet_tcp_bind_all_nodes(xdm_t)
  corenet_udp_bind_all_nodes(xdm_t)
@@ -27841,7 +27919,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  corenet_tcp_connect_all_ports(xdm_t)
  corenet_sendrecv_all_client_packets(xdm_t)
  # xdm tries to bind to biff_port_t
-@@ -241,6 +313,7 @@
+@@ -241,6 +320,7 @@
  dev_getattr_mouse_dev(xdm_t)
  dev_setattr_mouse_dev(xdm_t)
  dev_rw_apm_bios(xdm_t)
@@ -27849,7 +27927,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  dev_setattr_apm_bios_dev(xdm_t)
  dev_rw_dri(xdm_t)
  dev_rw_agp(xdm_t)
-@@ -253,14 +326,17 @@
+@@ -253,14 +333,17 @@
  dev_setattr_video_dev(xdm_t)
  dev_getattr_scanner_dev(xdm_t)
  dev_setattr_scanner_dev(xdm_t)
@@ -27869,7 +27947,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  files_read_etc_files(xdm_t)
  files_read_var_files(xdm_t)
-@@ -271,9 +347,13 @@
+@@ -271,9 +354,13 @@
  files_read_usr_files(xdm_t)
  # Poweroff wants to create the /poweroff file when run from xdm
  files_create_boot_flag(xdm_t)
@@ -27883,7 +27961,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  storage_dontaudit_read_fixed_disk(xdm_t)
  storage_dontaudit_write_fixed_disk(xdm_t)
-@@ -282,6 +362,7 @@
+@@ -282,6 +369,7 @@
  storage_dontaudit_raw_write_removable_device(xdm_t)
  storage_dontaudit_setattr_removable_dev(xdm_t)
  storage_dontaudit_rw_scsi_generic(xdm_t)
@@ -27891,7 +27969,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  term_setattr_console(xdm_t)
  term_use_unallocated_ttys(xdm_t)
-@@ -290,6 +371,7 @@
+@@ -290,6 +378,7 @@
  auth_domtrans_pam_console(xdm_t)
  auth_manage_pam_pid(xdm_t)
  auth_manage_pam_console_data(xdm_t)
@@ -27899,7 +27977,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  auth_rw_faillog(xdm_t)
  auth_write_login_records(xdm_t)
  
-@@ -301,21 +383,26 @@
+@@ -301,21 +390,26 @@
  libs_exec_lib_files(xdm_t)
  
  logging_read_generic_logs(xdm_t)
@@ -27931,7 +28009,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  xserver_rw_session_template(xdm, xdm_t, xdm_tmpfs_t)
  xserver_unconfined(xdm_t)
-@@ -348,10 +435,12 @@
+@@ -348,10 +442,12 @@
  
  optional_policy(`
  	alsa_domtrans(xdm_t)
@@ -27944,7 +28022,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  optional_policy(`
-@@ -359,6 +448,22 @@
+@@ -359,6 +455,22 @@
  ')
  
  optional_policy(`
@@ -27967,7 +28045,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	# Talk to the console mouse server.
  	gpm_stream_connect(xdm_t)
  	gpm_setattr_gpmctl(xdm_t)
-@@ -382,16 +487,34 @@
+@@ -382,16 +494,34 @@
  ')
  
  optional_policy(`
@@ -28003,7 +28081,18 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	ifndef(`distro_redhat',`
  		allow xdm_t self:process { execheap execmem };
-@@ -427,7 +550,7 @@
+@@ -411,6 +541,10 @@
+ ')
+ 
+ optional_policy(`
++	wm_exec(xdm_t)
++')
++
++optional_policy(`
+ 	xfs_stream_connect(xdm_t)
+ ')
+ 
+@@ -427,7 +561,7 @@
  allow xdm_xserver_t xdm_var_lib_t:file { getattr read };
  dontaudit xdm_xserver_t xdm_var_lib_t:dir search;
  
@@ -28012,7 +28101,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  # Label pid and temporary files with derived types.
  manage_files_pattern(xdm_xserver_t, xdm_tmp_t, xdm_tmp_t)
-@@ -439,6 +562,15 @@
+@@ -439,6 +573,15 @@
  can_exec(xdm_xserver_t, xkb_var_lib_t)
  files_search_var_lib(xdm_xserver_t)
  
@@ -28028,7 +28117,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  # VNC v4 module in X server
  corenet_tcp_bind_vnc_port(xdm_xserver_t)
  
-@@ -450,10 +582,19 @@
+@@ -450,10 +593,19 @@
  # xdm_xserver_t may no longer have any reason
  # to read ROLE_home_t - examine this in more detail
  # (xauth?)
@@ -28049,7 +28138,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  tunable_policy(`use_nfs_home_dirs',`
  	fs_manage_nfs_dirs(xdm_xserver_t)
  	fs_manage_nfs_files(xdm_xserver_t)
-@@ -468,8 +609,19 @@
+@@ -468,8 +620,19 @@
  
  optional_policy(`
  	dbus_system_bus_client_template(xdm_xserver, xdm_xserver_t)
@@ -28069,7 +28158,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  optional_policy(`
  	resmgr_stream_connect(xdm_t)
-@@ -481,8 +633,25 @@
+@@ -481,8 +644,25 @@
  ')
  
  optional_policy(`
@@ -28097,7 +28186,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	ifndef(`distro_redhat',`
  		allow xdm_xserver_t self:process { execheap execmem };
-@@ -491,7 +660,6 @@
+@@ -491,7 +671,6 @@
  	ifdef(`distro_rhel4',`
  		allow xdm_xserver_t self:process { execheap execmem };
  	')
@@ -28105,7 +28194,35 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  ########################################
  #
-@@ -544,3 +712,56 @@
+@@ -512,6 +691,27 @@
+ allow xserver_unconfined_type { x_domain x_server_domain }:x_resource *;
+ allow xserver_unconfined_type xevent_type:{ x_event x_synthetic_event } *;
+ 
++
++tunable_policy(`!xserver_object_manager',`
++	gen_require(`
++		attribute domain;
++	')
++	# we want no X confinement
++	allow domain domain:x_server *;
++	allow domain domain:x_drawable *;
++	allow domain domain:x_screen *;
++	allow domain domain:x_gc *;
++	allow domain domain:x_colormap *;
++	allow domain domain:x_property *;
++	allow domain domain:x_selection *;
++	allow domain domain:x_cursor *;
++	allow domain domain:x_client *;
++	allow domain domain:x_device *;
++	allow domain domain:x_extension *;
++	allow domain domain:x_resource *;
++	allow domain domain:{ x_event x_synthetic_event } *;
++')
++
+ ifdef(`TODO',`
+ # Need to further investigate these permissions and
+ # perhaps define derived types.
+@@ -544,3 +744,56 @@
  #
  allow pam_t xdm_t:fifo_file { getattr ioctl write };
  ') dnl end TODO
@@ -29645,6 +29762,15 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -optional_policy(`
 -	nscd_socket_use(sulogin_t)
 -')
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/logging.fc serefpolicy-3.5.10/policy/modules/system/logging.fc
+--- nsaserefpolicy/policy/modules/system/logging.fc	2008-09-24 09:07:28.000000000 -0400
++++ serefpolicy-3.5.10/policy/modules/system/logging.fc	2008-10-03 13:28:44.000000000 -0400
+@@ -65,3 +65,5 @@
+ /var/spool/postfix/pid	-d	gen_context(system_u:object_r:var_run_t,s0)
+ 
+ /var/tinydns/log/main(/.*)?	gen_context(system_u:object_r:var_log_t,s0)
++
++/var/spool/plymouth/boot.log	gen_context(system_u:object_r:var_log_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/logging.if serefpolicy-3.5.10/policy/modules/system/logging.if
 --- nsaserefpolicy/policy/modules/system/logging.if	2008-09-24 09:07:28.000000000 -0400
 +++ serefpolicy-3.5.10/policy/modules/system/logging.if	2008-10-03 11:36:44.000000000 -0400
@@ -31147,7 +31273,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/sysnetwork.fc serefpolicy-3.5.10/policy/modules/system/sysnetwork.fc
 --- nsaserefpolicy/policy/modules/system/sysnetwork.fc	2008-08-07 11:15:12.000000000 -0400
-+++ serefpolicy-3.5.10/policy/modules/system/sysnetwork.fc	2008-10-03 11:36:44.000000000 -0400
++++ serefpolicy-3.5.10/policy/modules/system/sysnetwork.fc	2008-10-03 13:30:28.000000000 -0400
 @@ -11,6 +11,7 @@
  /etc/dhclient-script	--	gen_context(system_u:object_r:dhcp_etc_t,s0)
  /etc/dhcpc.*			gen_context(system_u:object_r:dhcp_etc_t,s0)
@@ -31156,7 +31282,15 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /etc/resolv\.conf.*	--	gen_context(system_u:object_r:net_conf_t,s0)
  /etc/yp\.conf.*		--	gen_context(system_u:object_r:net_conf_t,s0)
  
-@@ -57,3 +58,5 @@
+@@ -20,6 +21,7 @@
+ ifdef(`distro_redhat',`
+ /etc/sysconfig/network-scripts/.*resolv\.conf -- gen_context(system_u:object_r:net_conf_t,s0)
+ /etc/sysconfig/networking/profiles/.*/resolv\.conf -- gen_context(system_u:object_r:net_conf_t,s0)
++/etc/sysconfig/networking/profiles/.*/hosts -- gen_context(system_u:object_r:net_conf_t,s0)
+ ')
+ 
+ #
+@@ -57,3 +59,5 @@
  ifdef(`distro_gentoo',`
  /var/lib/dhcpc(/.*)?		gen_context(system_u:object_r:dhcpc_state_t,s0)
  ')
