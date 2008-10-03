@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.16-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.5.9
-Release: 5%{?dist}
+Version: 3.5.10
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -169,7 +169,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2820.
+Based off of reference policy: Checked out revision  2824.
 
 %build
 
@@ -219,7 +219,7 @@ install -m 755 $RPM_SOURCE_DIR/policygentool %{buildroot}%{_usr}/share/selinux/d
 install -m 644 $RPM_SOURCE_DIR/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
 install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
 install -m 644 doc/policy.* %{buildroot}%{_usr}/share/selinux/devel/
-echo  "htmlview file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
+echo  "xdg-open file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 
 
@@ -390,7 +390,8 @@ exit 0
 %endif
 
 %changelog
-* Wed Oct 1 2008 Dan Walsh <dwalsh@redhat.com> 3.5.9-5
+* Fri Oct 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.10-1
+- Allow NetworkManager to transition to avahi and iptables
 - Allow domains to search other domains keys, coverup kernel bug
 
 * Wed Oct 1 2008 Dan Walsh <dwalsh@redhat.com> 3.5.9-4
