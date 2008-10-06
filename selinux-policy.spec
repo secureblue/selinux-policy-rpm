@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.10
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -390,6 +390,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Oct 6 2008 Dan Walsh <dwalsh@redhat.com> 3.5.10-3
+- Fixes for confined xwindows and xdm_t 
+
 * Fri Oct 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.10-2
 - Allow confined users and xdm to exec wm
 - Allow nsplugin to talk to fifo files on nfs
