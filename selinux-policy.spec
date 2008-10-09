@@ -4,6 +4,9 @@
 %if %{?BUILD_TARGETED:0}%{!?BUILD_TARGETED:1}
 %define BUILD_TARGETED 1
 %endif
+%if %{?BUILD_MINIMUM:0}%{!?BUILD_MINIMUM:1}
+%define BUILD_MINIMUM 1
+%endif
 %if %{?BUILD_OLPC:0}%{!?BUILD_OLPC:1}
 %define BUILD_OLPC 0
 %endif
@@ -16,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.5.10
-Release: 3%{?dist}
+Version: 3.5.11
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -36,13 +39,17 @@ Source12: securetty_types-olpc
 Source13: policygentool
 Source14: securetty_types-targeted
 Source15: securetty_types-mls
+Source16: modules-minimum.conf
+Source17: booleans-minimum.conf
+Source18: setrans-minimum.conf
+Source19: securetty_types-minimum
 
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER} bzip2
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.14-3
-Requires(post): /usr/bin/bunzip2
+Requires(post): /usr/bin/bunzip2 /bin/mktemp
 Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
 Obsoletes: selinux-policy-devel
 Provides: selinux-policy-devel
@@ -148,6 +155,15 @@ if [ -s /etc/selinux/config ]; then \
 	fi \
 fi
 
+%define loadminpolicy() \
+tempdir=`mktemp -d /usr/share/selinux/%1/tmpXXXX`; \
+( cd $tempdir; \
+cp ../base.pp.bz2 ../unconfined.pp.bz2 .; \
+bunzip2 *; \
+semodule -b base.pp -i unconfined.pp -s %1; \
+); \
+rm -rf $tempdir; \
+
 %define loadpolicy() \
 tempdir=`mktemp -d /usr/share/selinux/%1/tmpXXXX`; \
 ( cd $tempdir; \
@@ -199,6 +215,13 @@ make clean
 %installCmds targeted mcs n y allow
 %endif
 
+%if %{BUILD_MINIMUM}
+# Build minimum policy
+# Commented out because only minimum ref policy currently builds
+%setupCmds minimum mcs n y allow
+%installCmds minimum mcs n y allow
+%endif
+
 %if %{BUILD_MLS}
 # Build mls policy
 %setupCmds mls mls n y deny
@@ -206,8 +229,8 @@ make clean
 %endif
 
 %if %{BUILD_OLPC}
-# Build targeted policy
-# Commented out because only targeted ref policy currently builds
+# Build olpc policy
+# Commented out because only olpc ref policy currently builds
 %setupCmds olpc mcs n y allow
 %installCmds olpc mcs n y allow
 %endif
@@ -330,6 +353,43 @@ exit 0
 %fileList targeted
 %endif
 
+%if %{BUILD_MINIMUM}
+%package minimum
+Summary: SELinux minimum base policy
+Provides: selinux-policy-base
+Group: System Environment/Base
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
+Requires(pre): coreutils
+Requires(pre): selinux-policy = %{version}-%{release}
+
+%description minimum
+SELinux Reference policy minimum base module.
+
+%pre minimum
+%saveFileContext minimum
+
+%post minimum
+if [ $1 -eq 1 ]; then
+%loadminpolicy minimum
+semanage -S minimum -i - << __eof
+user -a -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 
+__eof
+semanage -S minimum -i - << __eof
+login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
+login -m  -s unconfined_u -r s0-s0:c0.c1023 root
+__eof
+restorecon -R /root /var/log /var/run 2> /dev/null
+else
+%loadminpolicy minimum
+%relabel minimum
+fi
+exit 0
+
+%files minimum
+%config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
+%fileList minimum
+%endif
+
 %if %{BUILD_OLPC}
 %package olpc 
 Summary: SELinux olpc base policy
@@ -390,6 +450,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Oct 8 2008 Dan Walsh <dwalsh@redhat.com> 3.5.11-1
+- Update to upstream policy
+
 * Mon Oct 6 2008 Dan Walsh <dwalsh@redhat.com> 3.5.10-3
 - Fixes for confined xwindows and xdm_t 
 
