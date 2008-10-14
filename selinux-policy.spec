@@ -59,7 +59,6 @@ SELinux Base package
 
 %files 
 %{_mandir}/*
-%doc %{_usr}/share/doc/%{name}-%{version}
 %dir %{_usr}/share/selinux
 %dir %{_usr}/share/selinux/devel
 %dir %{_usr}/share/selinux/devel/include
@@ -71,6 +70,17 @@ SELinux Base package
 %{_usr}/share/selinux/devel/policygentool
 %{_usr}/share/selinux/devel/example.*
 %{_usr}/share/selinux/devel/policy.*
+
+%package doc
+Summary: SELinux policy documentation
+Group: System Environment/Base
+Requires(pre): selinux-policy = %{version}-%{release}
+
+%description doc
+SELinux policy documentation package
+
+%files doc
+%doc %{_usr}/share/doc/%{name}-%{version}
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
 
 %check
@@ -185,7 +195,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2824.
+Based off of reference policy: Checked out revision  2837.
 
 %build
 
