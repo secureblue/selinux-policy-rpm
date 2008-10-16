@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.12
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -91,6 +91,9 @@ make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024  conf \
 cp -f $RPM_SOURCE_DIR/modules-%1.conf  ./policy/modules.conf \
 cp -f $RPM_SOURCE_DIR/booleans-%1.conf ./policy/booleans.conf \
+# Always create policy module package directories
+mkdir -p %{buildroot}%{_usr}/share/selinux/%1
+ln -s %{_usr}/share/selinux/devel/include %{buildroot}%{_usr}/share/selinux/%1/include
 
 %define moduleList() %([ -f %{_sourcedir}/modules-%{1}.conf ] && \
 awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "-i %%s.pp ", $1 }' %{_sourcedir}/modules-%{1}.conf )
@@ -124,6 +127,7 @@ bzip2 %{buildroot}/%{_usr}/share/selinux/%1/*.pp
 %defattr(-,root,root) \
 %dir %{_usr}/share/selinux/%1 \
 %{_usr}/share/selinux/%1/*.pp.bz2 \
+%{_usr}/share/selinux/%1/include \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %ghost %{_sysconfdir}/selinux/%1/seusers \
@@ -212,9 +216,6 @@ mkdir -p %{buildroot}%{_sysconfdir}/selinux
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
 touch %{buildroot}%{_sysconfdir}/selinux/config
 touch %{buildroot}%{_sysconfdir}/sysconfig/selinux
-
-# Always create policy module package directories
-mkdir -p %{buildroot}%{_usr}/share/selinux/{targeted,mls}/
 
 # Install devel
 make clean
@@ -460,6 +461,11 @@ exit 0
 %endif
 
 %changelog
+* Thu Oct 16 2008 Dan Walsh <dwalsh@redhat.com> 3.5.12-3
+- Remove Multiple spec
+- Add include
+- Fix makefile to not call per_role_expansion
+
 * Wed Oct 15 2008 Dan Walsh <dwalsh@redhat.com> 3.5.12-2
 - Fix labeling of libGL
 
