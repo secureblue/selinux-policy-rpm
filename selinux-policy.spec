@@ -91,9 +91,6 @@ make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024  conf \
 cp -f $RPM_SOURCE_DIR/modules-%1.conf  ./policy/modules.conf \
 cp -f $RPM_SOURCE_DIR/booleans-%1.conf ./policy/booleans.conf \
-# Always create policy module package directories
-mkdir -p %{buildroot}%{_usr}/share/selinux/%1
-ln -s %{_usr}/share/selinux/devel/include %{buildroot}%{_usr}/share/selinux/%1/include
 
 %define moduleList() %([ -f %{_sourcedir}/modules-%{1}.conf ] && \
 awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "-i %%s.pp ", $1 }' %{_sourcedir}/modules-%{1}.conf )
@@ -127,7 +124,6 @@ bzip2 %{buildroot}/%{_usr}/share/selinux/%1/*.pp
 %defattr(-,root,root) \
 %dir %{_usr}/share/selinux/%1 \
 %{_usr}/share/selinux/%1/*.pp.bz2 \
-%{_usr}/share/selinux/%1/include \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %ghost %{_sysconfdir}/selinux/%1/seusers \
@@ -216,6 +212,9 @@ mkdir -p %{buildroot}%{_sysconfdir}/selinux
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
 touch %{buildroot}%{_sysconfdir}/selinux/config
 touch %{buildroot}%{_sysconfdir}/sysconfig/selinux
+
+# Always create policy module package directories
+mkdir -p %{buildroot}%{_usr}/share/selinux/{targeted,mls}/
 
 # Install devel
 make clean
@@ -312,6 +311,7 @@ Obsoletes: selinux-policy-targeted-sources < 2
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
+Conflicts:  audispd-plugins <= 1.7.7-1
 
 %description targeted
 SELinux Reference policy targeted base module.
