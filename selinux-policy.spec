@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.5.12
-Release: 3%{?dist}
+Version: 3.5.13
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -461,6 +461,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 17 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-1
+- Policy cleanup 
+
 * Thu Oct 16 2008 Dan Walsh <dwalsh@redhat.com> 3.5.12-3
 - Remove Multiple spec
 - Add include
