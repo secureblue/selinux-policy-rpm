@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.13
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -461,6 +461,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Oct 20 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-2
+- Fix dovecot access
+
 * Fri Oct 17 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-1
 - Policy cleanup 
 
