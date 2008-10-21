@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.13
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -312,6 +312,7 @@ Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 Conflicts:  audispd-plugins <= 1.7.7-1
+Obsoletes: mod_fcgid-selinux
 
 %description targeted
 SELinux Reference policy targeted base module.
@@ -461,6 +462,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 21 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-3
+- Remove mod_fcgid-selinux package
+
 * Mon Oct 20 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-2
 - Fix dovecot access
 
