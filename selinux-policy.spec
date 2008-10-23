@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.13
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -462,6 +462,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Oct 22 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-5
+- Allow kerneloops to create tmp files
+
 * Wed Oct 22 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-4
 - More alias for fastcgi
 
