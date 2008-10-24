@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.13
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -462,6 +462,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Oct 23 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-6
+- Allow nsplugin to look at autofs_t directory
+
 * Wed Oct 22 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-5
 - Allow kerneloops to create tmp files
 
