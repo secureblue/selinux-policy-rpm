@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.13
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -462,6 +462,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 24 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-8
+- Allow mozilla to run with unconfined_execmem_t
+
 * Thu Oct 23 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-7
 - Dontaudit domains trying to write to .xsession-errors
 
