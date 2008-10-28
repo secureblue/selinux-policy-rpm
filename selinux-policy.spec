@@ -16,7 +16,7 @@
 %define POLICYVER 23
 %define libsepolver 2.0.20-1
 %define POLICYCOREUTILSVER 2.0.54-2
-%define CHECKPOLICYVER 2.0.16-1
+%define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.13
