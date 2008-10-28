@@ -323,15 +323,10 @@ SELinux Reference policy targeted base module.
 %post targeted
 if [ $1 -eq 1 ]; then
 %loadpolicy targeted
-semanage -S targeted -i - << __eof
-user -a -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 
-user -a -P user -R guest_r guest_u
-user -a -P user -R xguest_r xguest_u 
-__eof
-semanage -S targeted -i - << __eof
-login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
-login -m  -s unconfined_u -r s0-s0:c0.c1023 root
-__eof
+#semanage -S targeted -i - << __eof
+#login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
+#login -m  -s unconfined_u -r s0-s0:c0.c1023 root
+#__eof
 restorecon -R /root /var/log /var/run 2> /dev/null
 else
 semodule -s targeted -r moilscanner 2>/dev/null
