@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.13
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -457,6 +457,10 @@ exit 0
 %endif
 
 %changelog
+* Wed Oct 29 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-10
+- Fix confined users 
+- Allow xguest to read/write xguest_dbusd_t
+
 * Mon Oct 27 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-9
 - Allow openoffice execstack/execmem privs
 
