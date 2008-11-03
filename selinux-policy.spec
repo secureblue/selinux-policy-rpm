@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.13
-Release: 11%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -457,6 +457,13 @@ exit 0
 %endif
 
 %changelog
+* Mon Nov 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-13
+- Allow dhcpc to restart ypbind
+- Fixup labeling in /var/run
+
+* Thu Oct 30 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-12
+- Add certmaster policy
+
 * Wed Oct 29 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-11
 - Fix confined users 
 - Allow xguest to read/write xguest_dbusd_t
