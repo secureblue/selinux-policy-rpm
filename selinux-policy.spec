@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.13
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -457,6 +457,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-14
+- Additional fixes for cyphesis
+- Fix certmaster file context
+- Add policy for system-config-samba
+
 * Mon Nov 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-13
 - Allow dhcpc to restart ypbind
 - Fixup labeling in /var/run
