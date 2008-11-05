@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.13
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -457,6 +457,10 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov 5 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-17
+- Allow lvm to dbus chat with hal
+- Allow rlogind to read nfs_t 
+
 * Wed Nov 5 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-16
 - Fix cyphesis file context
 
