@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.13
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -457,10 +457,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-15
+- Allow hal/pm-utils to look at /var/run/video.rom
+- Add ulogd policy
+
 * Tue Nov 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-14
 - Additional fixes for cyphesis
 - Fix certmaster file context
 - Add policy for system-config-samba
+- Allow hal to read /var/run/video.rom
 
 * Mon Nov 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-13
 - Allow dhcpc to restart ypbind
