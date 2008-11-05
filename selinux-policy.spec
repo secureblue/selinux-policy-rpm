@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.5.13
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -457,6 +457,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov 5 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-16
+- Fix cyphesis file context
+
 * Tue Nov 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-15
 - Allow hal/pm-utils to look at /var/run/video.rom
 - Add ulogd policy
