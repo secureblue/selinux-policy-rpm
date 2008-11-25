@@ -15,16 +15,16 @@
 %endif
 %define POLICYVER 23
 %define libsepolver 2.0.20-1
-%define POLICYCOREUTILSVER 2.0.54-2
+%define POLICYCOREUTILSVER 2.0.57-12
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.5.13
-Release: 18%{?dist}
+Version: 3.6.1
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20080710.patch
+patch: policy-20081111.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -93,10 +93,7 @@ cp -f $RPM_SOURCE_DIR/modules-%1.conf  ./policy/modules.conf \
 cp -f $RPM_SOURCE_DIR/booleans-%1.conf ./policy/booleans.conf \
 
 %define moduleList() %([ -f %{_sourcedir}/modules-%{1}.conf ] && \
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "-i %%s.pp ", $1 }' %{_sourcedir}/modules-%{1}.conf )
-
-%define bzmoduleList() %([ -f %{_sourcedir}/modules-%{1}.conf ] && \
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf " ../%%s.pp.bz2 ", $1 }' %{_sourcedir}/modules-%{1}.conf )
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' %{_sourcedir}/modules-%{1}.conf )
 
 %define installCmds() \
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 base.pp \
@@ -166,22 +163,14 @@ if [ -s /etc/selinux/config ]; then \
 fi
 
 %define loadminpolicy() \
-tempdir=`mktemp -d /usr/share/selinux/%1/tmpXXXX`; \
-( cd $tempdir; \
-cp ../base.pp.bz2 ../unconfined.pp.bz2 .; \
-bunzip2 *; \
-semodule -b base.pp -i unconfined.pp -s %1; \
+( cd /usr/share/selinux/%1; \
+semodule -b base.pp.bz2 -i unconfined.pp.bz2 -s %1; \
 ); \
-rm -rf $tempdir; \
 
 %define loadpolicy() \
-tempdir=`mktemp -d /usr/share/selinux/%1/tmpXXXX`; \
-( cd $tempdir; \
-cp ../base.pp.bz2 %{expand:%%bzmoduleList %1} .; \
-bunzip2 *; \
-semodule -b base.pp %{expand:%%moduleList %1} -s %1; \
+( cd /usr/share/selinux/%1; \
+semodule -b base.pp.bz2 -i %{expand:%%moduleList %1} -s %1; \
 ); \
-rm -rf $tempdir; \
 
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
@@ -195,7 +184,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2837.
+Based off of reference policy: Checked out revision  2882.
 
 %build
 
@@ -457,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Nov 5 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-19
+- Fix labeling on /var/spool/rsyslog
+
 * Thu Nov 5 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-18
 - Allow postgresl to bind to udp nodes
 
