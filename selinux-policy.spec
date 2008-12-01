@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Dec 01 2008 Ignacio Vazquez-Abrams <ivazqueznet+rpm@gmail.com> - 3.6.1-2
+- Rebuild for Python 2.6
+
 * Fri Nov 5 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-19
 - Fix labeling on /var/spool/rsyslog
 
