@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,7 +446,7 @@ exit 0
 %endif
 
 %changelog
-* Wed Dec 3 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-3
+* Wed Dec 3 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-4
 - Cleanup policy
 
 * Mon Dec 01 2008 Ignacio Vazquez-Abrams <ivazqueznet+rpm@gmail.com> - 3.6.1-2
