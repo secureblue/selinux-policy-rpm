@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.1
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Dec 4 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-6
+- Allow iptables to talk to terminals
+
 * Thu Dec 4 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-5
 - Allow iptables to talk to terminals
 
