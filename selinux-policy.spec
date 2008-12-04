@@ -446,11 +446,10 @@ exit 0
 %endif
 
 %changelog
-* Thu Dec 4 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-6
+* Thu Dec 4 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-7
 - Allow iptables to talk to terminals
-
-* Thu Dec 4 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-5
-- Allow iptables to talk to terminals
+- Fixes for policy kit
+- lots of fixes for booting. 
 
 * Wed Dec 3 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-4
 - Cleanup policy
