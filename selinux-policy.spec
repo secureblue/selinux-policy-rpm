@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.1
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Dec 8 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-8
+- Fix sudo setting of user keys
+
 * Thu Dec 4 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-7
 - Allow iptables to talk to terminals
 - Fixes for policy kit
