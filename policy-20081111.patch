@@ -2962,8 +2962,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/podsleuth.te serefpolicy-3.6.1/policy/modules/apps/podsleuth.te
 --- nsaserefpolicy/policy/modules/apps/podsleuth.te	2008-11-11 16:13:42.000000000 -0500
-+++ serefpolicy-3.6.1/policy/modules/apps/podsleuth.te	2008-11-25 09:45:43.000000000 -0500
-@@ -11,21 +11,52 @@
++++ serefpolicy-3.6.1/policy/modules/apps/podsleuth.te	2008-12-09 14:43:32.000000000 -0500
+@@ -11,21 +11,58 @@
  application_domain(podsleuth_t, podsleuth_exec_t)
  role system_r types podsleuth_t;
  
@@ -3001,6 +3001,12 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +fs_getattr_dos_fs(podsleuth_t)
 +fs_read_dos_files(podsleuth_t)
 +fs_search_dos(podsleuth_t)
++
++fs_mount_nfs_fs(podsleuth_t)
++fs_unmount_nfs_fs(podsleuth_t)
++fs_getattr_nfs_fs(podsleuth_t)
++fs_read_nfs_files(podsleuth_t)
++fs_search_nfs(podsleuth_t)
 +
 +allow podsleuth_t podsleuth_tmp_t:dir mounton;
 +manage_files_pattern(podsleuth_t, podsleuth_tmp_t, podsleuth_tmp_t)
@@ -9633,17 +9639,21 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cron.fc serefpolicy-3.6.1/policy/modules/services/cron.fc
 --- nsaserefpolicy/policy/modules/services/cron.fc	2008-11-11 16:13:46.000000000 -0500
-+++ serefpolicy-3.6.1/policy/modules/services/cron.fc	2008-11-25 09:45:43.000000000 -0500
-@@ -17,6 +17,8 @@
++++ serefpolicy-3.6.1/policy/modules/services/cron.fc	2008-12-09 14:38:32.000000000 -0500
+@@ -17,9 +17,9 @@
  /var/run/fcron\.fifo		-s	gen_context(system_u:object_r:crond_var_run_t,s0)
  /var/run/fcron\.pid		--	gen_context(system_u:object_r:crond_var_run_t,s0)
  
+-/var/spool/at			-d	gen_context(system_u:object_r:cron_spool_t,s0)
+-/var/spool/at/spool		-d	gen_context(system_u:object_r:cron_spool_t,s0)
+-/var/spool/at/[^/]*		--	<<none>>
 +/var/spool/anacron(/.*)?		gen_context(system_u:object_r:system_cron_spool_t,s0)
 +
- /var/spool/at			-d	gen_context(system_u:object_r:cron_spool_t,s0)
- /var/spool/at/spool		-d	gen_context(system_u:object_r:cron_spool_t,s0)
- /var/spool/at/[^/]*		--	<<none>>
-@@ -41,7 +43,12 @@
++/var/spool/at(/.*)?			gen_context(system_u:object_r:user_cron_spool_t,s0)
+ 
+ /var/spool/cron			-d	gen_context(system_u:object_r:cron_spool_t,s0)
+ #/var/spool/cron/root		--	gen_context(system_u:object_r:sysadm_cron_spool_t,s0)
+@@ -41,7 +41,12 @@
  #/var/spool/cron/crontabs/root	--	gen_context(system_u:object_r:sysadm_cron_spool_t,s0)
  
  /var/spool/fcron		-d	gen_context(system_u:object_r:cron_spool_t,s0)
@@ -9659,8 +9669,46 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/var/log/rpmpkgs.*		--	gen_context(system_u:object_r:cron_log_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cron.if serefpolicy-3.6.1/policy/modules/services/cron.if
 --- nsaserefpolicy/policy/modules/services/cron.if	2008-11-11 16:13:47.000000000 -0500
-+++ serefpolicy-3.6.1/policy/modules/services/cron.if	2008-11-25 09:45:43.000000000 -0500
-@@ -343,6 +343,24 @@
++++ serefpolicy-3.6.1/policy/modules/services/cron.if	2008-12-09 14:23:55.000000000 -0500
+@@ -12,6 +12,10 @@
+ ## </param>
+ #
+ template(`cron_common_crontab_template',`
++	gen_require(`
++		type crond_t, crond_var_run_t;
++	')
++
+ 	##############################
+ 	#
+ 	# Declarations
+@@ -31,7 +35,11 @@
+ 
+ 	# dac_override is to create the file in the directory under /tmp
+ 	allow $1_t self:capability { fowner setuid setgid chown dac_override };
+-	allow $1_t self:process signal_perms;
++	allow $1_t self:process { setsched signal_perms };
++	allow $1_t self:fifo_file rw_fifo_file_perms;
++
++	allow $1_t crond_t:process signal;
++	allow $1_t crond_var_run_t:file read_file_perms;
+ 
+ 	allow $1_t $1_tmp_t:file manage_file_perms;
+ 	files_tmp_filetrans($1_t,$1_tmp_t,file)
+@@ -58,6 +66,13 @@
+ 	files_dontaudit_search_pids($1_t)
+ 
+ 	logging_send_syslog_msg($1_t)
++	logging_send_audit_msgs($1_t)
++	logging_set_loginuid($1_t)
++
++	auth_domtrans_chk_passwd($1_t)
++	init_dontaudit_write_utmp($1_t)
++
++	init_read_utmp($1_t)
+ 
+ 	miscfiles_read_localization($1_t)
+ 
+@@ -343,6 +358,24 @@
  
  ########################################
  ## <summary>
@@ -9685,7 +9733,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Read and write a cron daemon unnamed pipe.
  ## </summary>
  ## <param name="domain">
-@@ -361,7 +379,7 @@
+@@ -361,7 +394,7 @@
  
  ########################################
  ## <summary>
@@ -9694,7 +9742,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -369,7 +387,7 @@
+@@ -369,7 +402,7 @@
  ##	</summary>
  ## </param>
  #
@@ -9703,7 +9751,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	gen_require(`
  		type crond_t;
  	')
-@@ -481,11 +499,14 @@
+@@ -481,11 +514,14 @@
  #
  interface(`cron_read_system_job_tmp_files',`
  	gen_require(`
@@ -9719,7 +9767,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -506,3 +527,83 @@
+@@ -506,3 +542,83 @@
  
  	dontaudit $1 system_cronjob_tmp_t:file append;
  ')
@@ -9805,7 +9853,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cron.te serefpolicy-3.6.1/policy/modules/services/cron.te
 --- nsaserefpolicy/policy/modules/services/cron.te	2008-11-11 16:13:46.000000000 -0500
-+++ serefpolicy-3.6.1/policy/modules/services/cron.te	2008-12-03 18:26:44.000000000 -0500
++++ serefpolicy-3.6.1/policy/modules/services/cron.te	2008-12-09 14:21:58.000000000 -0500
 @@ -38,6 +38,10 @@
  type cron_var_lib_t;
  files_type(cron_var_lib_t)
@@ -9826,7 +9874,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  type crond_var_run_t;
  files_pid_file(crond_var_run_t)
-@@ -70,7 +76,7 @@
+@@ -70,10 +76,11 @@
  typealias admin_crontab_tmp_t alias sysadm_crontab_tmp_t;
  
  cron_common_crontab_template(crontab)
@@ -9835,7 +9883,11 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  typealias crontab_t alias { auditadm_crontab_t secadm_crontab_t };
  typealias crontab_tmp_t alias { user_crontab_tmp_t staff_crontab_tmp_t };
  typealias crontab_tmp_t alias { auditadm_crontab_tmp_t secadm_crontab_tmp_t };
-@@ -103,6 +109,13 @@
++allow admin_crontab_t crond_t:process signal;
+ 
+ type system_cron_spool_t, cron_spool_type;
+ files_type(system_cron_spool_t)
+@@ -103,6 +110,13 @@
  files_type(user_cron_spool_t)
  ubac_constrained(user_cron_spool_t)
  
@@ -9849,7 +9901,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ########################################
  #
  # Admin crontab local policy
-@@ -130,7 +143,7 @@
+@@ -130,7 +144,7 @@
  # Cron daemon local policy
  #
  
@@ -9858,7 +9910,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  dontaudit crond_t self:capability { sys_resource sys_tty_config };
  allow crond_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
  allow crond_t self:process { setexec setfscreate };
-@@ -149,15 +162,14 @@
+@@ -149,15 +163,14 @@
  allow crond_t crond_var_run_t:file manage_file_perms;
  files_pid_filetrans(crond_t,crond_var_run_t,file)
  
@@ -9877,7 +9929,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  kernel_read_kernel_sysctls(crond_t)
  kernel_search_key(crond_t)
-@@ -183,6 +195,8 @@
+@@ -183,6 +196,8 @@
  corecmd_read_bin_symlinks(crond_t)
  
  domain_use_interactive_fds(crond_t)
@@ -9886,7 +9938,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  files_read_etc_files(crond_t)
  files_read_generic_spool(crond_t)
-@@ -192,10 +206,13 @@
+@@ -192,10 +207,13 @@
  files_search_default(crond_t)
  
  init_rw_utmp(crond_t)
@@ -9900,7 +9952,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  seutil_read_config(crond_t)
  seutil_read_default_contexts(crond_t)
-@@ -208,6 +225,7 @@
+@@ -208,6 +226,7 @@
  userdom_list_user_home_dirs(crond_t)
  
  mta_send_mail(crond_t)
@@ -9908,7 +9960,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  ifdef(`distro_debian',`
  	# pam_limits is used
-@@ -227,21 +245,45 @@
+@@ -227,21 +246,45 @@
  	')
  ')
  
@@ -9955,7 +10007,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  optional_policy(`
-@@ -283,6 +325,9 @@
+@@ -283,6 +326,9 @@
  allow system_cronjob_t cron_var_lib_t:file manage_file_perms;
  files_var_lib_filetrans(system_cronjob_t, cron_var_lib_t, file)
  
@@ -9965,7 +10017,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  allow system_cronjob_t system_cron_spool_t:file read_file_perms;
  # The entrypoint interface is not used as this is not
  # a regular entrypoint.  Since crontab files are
-@@ -314,9 +359,13 @@
+@@ -314,9 +360,13 @@
  filetrans_pattern(system_cronjob_t, crond_tmp_t, system_cronjob_tmp_t, { file lnk_file })
  files_tmp_filetrans(system_cronjob_t, system_cronjob_tmp_t, file)
  
@@ -9980,7 +10032,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  kernel_read_kernel_sysctls(system_cronjob_t)
  kernel_read_system_state(system_cronjob_t)
-@@ -370,7 +419,8 @@
+@@ -370,7 +420,8 @@
  init_read_utmp(system_cronjob_t)
  init_dontaudit_rw_utmp(system_cronjob_t)
  # prelink tells init to restart it self, we either need to allow or dontaudit
@@ -9990,7 +10042,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  auth_use_nsswitch(system_cronjob_t)
  
-@@ -378,6 +428,7 @@
+@@ -378,6 +429,7 @@
  libs_exec_ld_so(system_cronjob_t)
  
  logging_read_generic_logs(system_cronjob_t)
@@ -9998,7 +10050,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  logging_send_syslog_msg(system_cronjob_t)
  
  miscfiles_read_localization(system_cronjob_t)
-@@ -428,11 +479,20 @@
+@@ -428,11 +480,20 @@
  ')
  
  optional_policy(`
@@ -10019,7 +10071,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  optional_policy(`
-@@ -460,8 +520,7 @@
+@@ -460,8 +521,7 @@
  ')
  
  optional_policy(`
@@ -10029,7 +10081,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  optional_policy(`
-@@ -469,17 +528,11 @@
+@@ -469,17 +529,11 @@
  ')
  
  optional_policy(`
@@ -11113,8 +11165,13 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ## </summary>
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/dnsmasq.te serefpolicy-3.6.1/policy/modules/services/dnsmasq.te
 --- nsaserefpolicy/policy/modules/services/dnsmasq.te	2008-11-18 18:57:20.000000000 -0500
-+++ serefpolicy-3.6.1/policy/modules/services/dnsmasq.te	2008-11-25 09:45:43.000000000 -0500
-@@ -73,17 +73,17 @@
++++ serefpolicy-3.6.1/policy/modules/services/dnsmasq.te	2008-12-09 13:17:12.000000000 -0500
+@@ -69,21 +69,22 @@
+ 
+ # allow access to dnsmasq.conf
+ files_read_etc_files(dnsmasq_t)
++files_read_etc_runtime_files(dnsmasq_t)
+ 
  fs_getattr_all_fs(dnsmasq_t)
  fs_search_auto_mountpoints(dnsmasq_t)
  
@@ -16050,7 +16107,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/portreserve.te serefpolicy-3.6.1/policy/modules/services/portreserve.te
 --- nsaserefpolicy/policy/modules/services/portreserve.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.6.1/policy/modules/services/portreserve.te	2008-11-25 09:45:43.000000000 -0500
++++ serefpolicy-3.6.1/policy/modules/services/portreserve.te	2008-12-09 13:51:20.000000000 -0500
 @@ -0,0 +1,52 @@
 +policy_module(portreserve,1.0.0)
 +
@@ -16089,7 +16146,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +manage_sock_files_pattern(portreserve_t, portreserve_var_run_t, portreserve_var_run_t)
 +files_pid_filetrans(portreserve_t,portreserve_var_run_t, { file sock_file })
 +
-+corenet_sendrecv_unlabeled_packets(portreserve_t)
++corenet_all_recvfrom_unlabeled(portreserve_t)
 +corenet_all_recvfrom_netlabel(portreserve_t)
 +corenet_tcp_bind_all_ports(portreserve_t)
 +corenet_tcp_bind_all_ports(portreserve_t)
@@ -19465,7 +19522,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/spamassassin.te serefpolicy-3.6.1/policy/modules/services/spamassassin.te
 --- nsaserefpolicy/policy/modules/services/spamassassin.te	2008-11-25 09:01:08.000000000 -0500
-+++ serefpolicy-3.6.1/policy/modules/services/spamassassin.te	2008-12-03 09:05:00.000000000 -0500
++++ serefpolicy-3.6.1/policy/modules/services/spamassassin.te	2008-12-09 14:57:03.000000000 -0500
 @@ -1,5 +1,5 @@
  
 -policy_module(spamassassin, 2.0.1)
@@ -19536,7 +19593,18 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	sysnet_read_config(spamassassin_t)
  ')
-@@ -221,11 +258,20 @@
+@@ -216,16 +253,31 @@
+ allow spamc_t self:unix_stream_socket connectto;
+ allow spamc_t self:tcp_socket create_stream_socket_perms;
+ allow spamc_t self:udp_socket create_socket_perms;
++corenet_all_recvfrom_unlabeled(spamc_t)
++corenet_all_recvfrom_netlabel(spamc_t)
++corenet_tcp_sendrecv_generic_if(spamc_t)
++corenet_tcp_sendrecv_all_nodes(spamc_t)
++corenet_tcp_connect_spamd_port(spamc_t)
++
+ 
+ manage_dirs_pattern(spamc_t, spamc_tmp_t, spamc_tmp_t)
  manage_files_pattern(spamc_t, spamc_tmp_t, spamc_tmp_t)
  files_tmp_filetrans(spamc_t, spamc_tmp_t, { file dir })
  
@@ -19557,7 +19625,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  corenet_all_recvfrom_unlabeled(spamc_t)
  corenet_all_recvfrom_netlabel(spamc_t)
-@@ -255,9 +301,15 @@
+@@ -255,9 +307,15 @@
  files_dontaudit_search_var(spamc_t)
  # cjp: this may be removable:
  files_list_home(spamc_t)
@@ -19573,7 +19641,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  miscfiles_read_localization(spamc_t)
  
  # cjp: this should probably be removed:
-@@ -265,31 +317,34 @@
+@@ -265,31 +323,34 @@
  
  sysnet_read_config(spamc_t)
  
@@ -19620,7 +19688,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -301,7 +356,7 @@
+@@ -301,7 +362,7 @@
  # setuids to the user running spamc.  Comment this if you are not
  # using this ability.
  
@@ -19629,7 +19697,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  dontaudit spamd_t self:capability sys_tty_config;
  allow spamd_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
  allow spamd_t self:fd use;
-@@ -317,10 +372,13 @@
+@@ -317,10 +378,13 @@
  allow spamd_t self:unix_stream_socket connectto;
  allow spamd_t self:tcp_socket create_stream_socket_perms;
  allow spamd_t self:udp_socket create_socket_perms;
@@ -19644,7 +19712,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  files_spool_filetrans(spamd_t, spamd_spool_t, { file dir })
  
  manage_dirs_pattern(spamd_t, spamd_tmp_t, spamd_tmp_t)
-@@ -329,10 +387,11 @@
+@@ -329,10 +393,11 @@
  
  # var/lib files for spamd
  allow spamd_t spamd_var_lib_t:dir list_dir_perms;
@@ -19657,7 +19725,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  files_pid_filetrans(spamd_t, spamd_var_run_t, { dir file })
  
  kernel_read_all_sysctls(spamd_t)
-@@ -382,22 +441,27 @@
+@@ -382,22 +447,27 @@
  
  init_dontaudit_rw_utmp(spamd_t)
  
@@ -19689,7 +19757,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	fs_manage_cifs_files(spamd_t)
  ')
  
-@@ -415,6 +479,7 @@
+@@ -415,6 +485,7 @@
  
  optional_policy(`
  	dcc_domtrans_client(spamd_t)
@@ -19697,7 +19765,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	dcc_stream_connect_dccifd(spamd_t)
  ')
  
-@@ -424,10 +489,6 @@
+@@ -424,10 +495,6 @@
  ')
  
  optional_policy(`
@@ -19708,7 +19776,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	postfix_read_config(spamd_t)
  ')
  
-@@ -442,6 +503,10 @@
+@@ -442,6 +509,10 @@
  
  optional_policy(`
  	razor_domtrans(spamd_t)
@@ -19769,6 +19837,15 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -#squid requires the following when run in diskd mode, the recommended setting
 -allow squid_t tmpfs_t:file { read write };
 -') dnl end TODO
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.fc serefpolicy-3.6.1/policy/modules/services/ssh.fc
+--- nsaserefpolicy/policy/modules/services/ssh.fc	2008-11-11 16:13:46.000000000 -0500
++++ serefpolicy-3.6.1/policy/modules/services/ssh.fc	2008-12-09 14:27:37.000000000 -0500
+@@ -14,3 +14,5 @@
+ /usr/sbin/sshd			--	gen_context(system_u:object_r:sshd_exec_t,s0)
+ 
+ /var/run/sshd\.init\.pid	--	gen_context(system_u:object_r:sshd_var_run_t,s0)
++
++/root/\.ssh(/.*)?			gen_context(system_u:object_r:home_ssh_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.if serefpolicy-3.6.1/policy/modules/services/ssh.if
 --- nsaserefpolicy/policy/modules/services/ssh.if	2008-11-11 16:13:46.000000000 -0500
 +++ serefpolicy-3.6.1/policy/modules/services/ssh.if	2008-11-25 09:45:43.000000000 -0500
@@ -19975,7 +20052,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.te serefpolicy-3.6.1/policy/modules/services/ssh.te
 --- nsaserefpolicy/policy/modules/services/ssh.te	2008-11-11 16:13:46.000000000 -0500
-+++ serefpolicy-3.6.1/policy/modules/services/ssh.te	2008-12-05 10:40:21.000000000 -0500
++++ serefpolicy-3.6.1/policy/modules/services/ssh.te	2008-12-09 14:28:14.000000000 -0500
 @@ -75,7 +75,7 @@
  ubac_constrained(ssh_tmpfs_t)
  
@@ -20019,17 +20096,18 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  optional_policy(`
-@@ -318,6 +322,9 @@
+@@ -318,6 +322,10 @@
  corenet_tcp_bind_xserver_port(sshd_t)
  corenet_sendrecv_xserver_server_packets(sshd_t)
  
 +userdom_read_user_home_content_files(sshd_t)
 +userdom_read_user_home_content_symlinks(sshd_t)
++userdom_search_admin_dir(sshd_t)
 +
  tunable_policy(`ssh_sysadm_login',`
  	# Relabel and access ptys created by sshd
  	# ioctl is necessary for logout() processing for utmp entry and for w to
-@@ -331,6 +338,14 @@
+@@ -331,6 +339,14 @@
  ')
  
  optional_policy(`
@@ -20044,7 +20122,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	daemontools_service_domain(sshd_t, sshd_exec_t)
  ')
  
-@@ -349,7 +364,11 @@
+@@ -349,7 +365,11 @@
  ')
  
  optional_policy(`
@@ -20057,7 +20135,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	unconfined_shell_domtrans(sshd_t)
  ')
  
-@@ -408,6 +427,8 @@
+@@ -408,6 +428,8 @@
  init_use_fds(ssh_keygen_t)
  init_use_script_ptys(ssh_keygen_t)
  
@@ -22190,7 +22268,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  #
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/init.if serefpolicy-3.6.1/policy/modules/system/init.if
 --- nsaserefpolicy/policy/modules/system/init.if	2008-11-11 16:13:48.000000000 -0500
-+++ serefpolicy-3.6.1/policy/modules/system/init.if	2008-11-25 09:45:43.000000000 -0500
++++ serefpolicy-3.6.1/policy/modules/system/init.if	2008-12-09 10:59:37.000000000 -0500
 @@ -280,6 +280,27 @@
  			kernel_dontaudit_use_fds($1)
  		')
@@ -22867,7 +22945,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  allow iscsid_t iscsi_tmp_t:dir manage_dir_perms;
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/libraries.fc serefpolicy-3.6.1/policy/modules/system/libraries.fc
 --- nsaserefpolicy/policy/modules/system/libraries.fc	2008-08-13 15:24:56.000000000 -0400
-+++ serefpolicy-3.6.1/policy/modules/system/libraries.fc	2008-12-04 08:08:10.000000000 -0500
++++ serefpolicy-3.6.1/policy/modules/system/libraries.fc	2008-12-09 10:20:24.000000000 -0500
 @@ -60,12 +60,15 @@
  #
  # /opt
@@ -22884,7 +22962,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ifdef(`distro_gentoo',`
  # despite the extensions, they are actually libs
  /opt/Acrobat[5-9]/Reader/intellinux/plug_ins/.*\.api -- gen_context(system_u:object_r:lib_t,s0)
-@@ -84,7 +87,8 @@
+@@ -84,9 +87,10 @@
  
  ifdef(`distro_redhat',`
  /opt/Adobe(/.*?)/nppdf\.so 		-- 	gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -22892,8 +22970,11 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/opt/Adobe/Reader.?/Reader/intellinux/plug_ins/.*\.api -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 +/opt/Adobe/Reader.?/Reader/intellinux/SPPlugins/.*\.ap[il] -- gen_context(system_u:object_r:lib_t,s0)
  /opt/cisco-vpnclient/lib/libvpnapi\.so	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
- /opt/cxoffice/lib/wine/.+\.so		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
+-/opt/cxoffice/lib/wine/.+\.so		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
++/opt/cx.*/lib/wine/.+\.so		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /opt/f-secure/fspms/libexec/librapi\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
+ /opt/ibm/java.*/jre/.+\.jar		--	gen_context(system_u:object_r:lib_t,s0)
+ /opt/ibm/java.*/jre/.+\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 @@ -115,9 +119,17 @@
  
  /usr/(.*/)?nvidia/.+\.so(\..*)?		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -23158,7 +23239,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/logging.if serefpolicy-3.6.1/policy/modules/system/logging.if
 --- nsaserefpolicy/policy/modules/system/logging.if	2008-11-18 18:57:21.000000000 -0500
-+++ serefpolicy-3.6.1/policy/modules/system/logging.if	2008-12-02 15:03:25.000000000 -0500
++++ serefpolicy-3.6.1/policy/modules/system/logging.if	2008-12-09 14:23:42.000000000 -0500
 @@ -707,6 +707,8 @@
  	files_search_var($1)
  	manage_files_pattern($1,logfile,logfile)
@@ -23870,7 +23951,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/etc/share/selinux/mls(/.*)?		gen_context(system_u:object_r:semanage_store_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinuxutil.if serefpolicy-3.6.1/policy/modules/system/selinuxutil.if
 --- nsaserefpolicy/policy/modules/system/selinuxutil.if	2008-11-11 16:13:48.000000000 -0500
-+++ serefpolicy-3.6.1/policy/modules/system/selinuxutil.if	2008-12-04 16:28:46.000000000 -0500
++++ serefpolicy-3.6.1/policy/modules/system/selinuxutil.if	2008-12-09 09:04:09.000000000 -0500
 @@ -535,6 +535,53 @@
  
  ########################################
@@ -24003,7 +24084,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Full management of the semanage
  ##	module store.
  ## </summary>
-@@ -1139,3 +1234,254 @@
+@@ -1139,3 +1234,255 @@
  	selinux_dontaudit_get_fs_mount($1)
  	seutil_dontaudit_read_config($1)
  ')
@@ -24080,8 +24161,9 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +		type semanage_tmp_t;
 +		type policy_config_t;
 +	')
-+	allow $1 self:capability { dac_override audit_write sys_resource };
++	allow $1 self:capability { dac_override sys_resource };
 +	dontaudit $1 self:capability sys_tty_config;
++	allow $1 self:process signal;
 +	allow $1 self:unix_stream_socket create_stream_socket_perms;
 +	allow $1 self:unix_dgram_socket create_socket_perms;
 +	logging_send_audit_msgs($1)
@@ -25706,7 +25788,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/dev/shm/mono.*		gen_context(system_u:object_r:user_tmpfs_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdomain.if serefpolicy-3.6.1/policy/modules/system/userdomain.if
 --- nsaserefpolicy/policy/modules/system/userdomain.if	2008-11-13 18:40:02.000000000 -0500
-+++ serefpolicy-3.6.1/policy/modules/system/userdomain.if	2008-12-08 11:32:11.000000000 -0500
++++ serefpolicy-3.6.1/policy/modules/system/userdomain.if	2008-12-09 14:27:56.000000000 -0500
 @@ -30,8 +30,9 @@
  	')
  
@@ -26389,19 +26471,19 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
 -	userdom_manage_home_role($1_r, $1_t)
 +	userdom_change_password_template($1)
-+
-+	userdom_manage_home_role($1_r, $1_usertype)
  
 -	userdom_manage_tmp_role($1_r, $1_t)
 -	userdom_manage_tmpfs_role($1_r, $1_t)
-+	userdom_manage_tmp_role($1_r, $1_usertype)
-+	userdom_manage_tmpfs_role($1_r, $1_usertype)
++	userdom_manage_home_role($1_r, $1_usertype)
  
 -	userdom_exec_user_tmp_files($1_t)
 -	userdom_exec_user_home_content_files($1_t)
-+	gen_tunable(allow_$1_exec_content, true)
++	userdom_manage_tmp_role($1_r, $1_usertype)
++	userdom_manage_tmpfs_role($1_r, $1_usertype)
  
 -	userdom_change_password_template($1)
++	gen_tunable(allow_$1_exec_content, true)
++
 +	tunable_policy(`allow_$1_exec_content',`
 +		userdom_exec_user_tmp_files($1_usertype)
 +		userdom_exec_user_home_content_files($1_usertype)
@@ -26567,11 +26649,11 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	auth_role($1_r, $1_t)
 -	auth_search_pam_console_data($1_t)
 +	auth_search_pam_console_data($1_usertype)
++
++	xserver_role($1_r, $1_t)
  
 -	dev_read_sound($1_t)
 -	dev_write_sound($1_t)
-+	xserver_role($1_r, $1_t)
-+
 +	dev_read_sound($1_usertype)
 +	dev_write_sound($1_usertype)
  	# gnome keyring wants to read this.
@@ -26653,7 +26735,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	# cjp: why?
  	files_read_kernel_symbol_table($1_t)
  
-@@ -986,36 +1038,37 @@
+@@ -986,37 +1038,43 @@
  		')
  	')
  
@@ -26672,11 +26754,10 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +		corenet_tcp_bind_all_unreserved_ports($1_t)
  	')
  
-+	# Run pppd in pppd_t by default for user
  	optional_policy(`
 -		netutils_run_ping_cond($1_t,$1_r)
 -		netutils_run_traceroute_cond($1_t,$1_r)
-+		ppp_run_cond($1_t, $1_r)
++		cron_role($1_r, $1_t)
  	')
  
  	optional_policy(`
@@ -26687,7 +26768,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -	# Run pppd in pppd_t by default for user
  	optional_policy(`
 -		ppp_run_cond($1_t,$1_r)
-+		mount_run($1_t, $1_r)
++		gpg_role($1_r, $1_usertype)
  	')
  
  	optional_policy(`
@@ -26697,14 +26778,21 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 +	optional_policy(`
 +		mono_role_template($1, $1_r, $1_t)
-+	')
+ 	')
 +
 +	optional_policy(`
-+		gpg_role($1_r, $1_usertype)
- 	')
++		mount_run($1_t, $1_r)
++	')
++
++	# Run pppd in pppd_t by default for user
++	optional_policy(`
++		ppp_run_cond($1_t, $1_r)
++	')
++
  ')
  
-@@ -1050,7 +1103,7 @@
+ #######################################
+@@ -1050,7 +1108,7 @@
  #
  template(`userdom_admin_user_template',`
  	gen_require(`
@@ -26713,7 +26801,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	')
  
  	##############################
-@@ -1059,8 +1112,7 @@
+@@ -1059,8 +1117,7 @@
  	#
  
  	# Inherit rules for ordinary users.
@@ -26723,7 +26811,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	domain_obj_id_change_exemption($1_t)
  	role system_r types $1_t;
-@@ -1083,7 +1135,8 @@
+@@ -1083,7 +1140,8 @@
  	# Skip authentication when pam_rootok is specified.
  	allow $1_t self:passwd rootok;
  
@@ -26733,7 +26821,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	kernel_read_software_raid_state($1_t)
  	kernel_getattr_core_if($1_t)
-@@ -1106,8 +1159,6 @@
+@@ -1106,8 +1164,6 @@
  
  	dev_getattr_generic_blk_files($1_t)
  	dev_getattr_generic_chr_files($1_t)
@@ -26742,7 +26830,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	# Allow MAKEDEV to work
  	dev_create_all_blk_files($1_t)
  	dev_create_all_chr_files($1_t)
-@@ -1162,20 +1213,6 @@
+@@ -1162,20 +1218,6 @@
  	# But presently necessary for installing the file_contexts file.
  	seutil_manage_bin_policy($1_t)
  
@@ -26763,7 +26851,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	optional_policy(`
  		postgresql_unconfined($1_t)
  	')
-@@ -1221,6 +1258,7 @@
+@@ -1221,6 +1263,7 @@
  	dev_relabel_all_dev_nodes($1)
  
  	files_create_boot_flag($1)
@@ -26771,7 +26859,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	# Necessary for managing /boot/efi
  	fs_manage_dos_files($1)
-@@ -1286,11 +1324,15 @@
+@@ -1286,11 +1329,15 @@
  interface(`userdom_user_home_content',`
  	gen_require(`
  		type user_home_t;
@@ -26787,7 +26875,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -1387,7 +1429,7 @@
+@@ -1387,7 +1434,7 @@
  
  ########################################
  ## <summary>
@@ -26796,7 +26884,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1420,6 +1462,14 @@
+@@ -1420,6 +1467,14 @@
  
  	allow $1 user_home_dir_t:dir list_dir_perms;
  	files_search_home($1)
@@ -26811,7 +26899,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -1435,9 +1485,11 @@
+@@ -1435,9 +1490,11 @@
  interface(`userdom_dontaudit_list_user_home_dirs',`
  	gen_require(`
  		type user_home_dir_t;
@@ -26823,7 +26911,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -1494,6 +1546,25 @@
+@@ -1494,6 +1551,25 @@
  	allow $1 user_home_dir_t:dir relabelto;
  ')
  
@@ -26849,7 +26937,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ########################################
  ## <summary>
  ##	Create directories in the home dir root with
-@@ -1547,9 +1618,9 @@
+@@ -1547,9 +1623,9 @@
  		type user_home_dir_t, user_home_t;
  	')
  
@@ -26861,7 +26949,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -1568,6 +1639,8 @@
+@@ -1568,6 +1644,8 @@
  	')
  
  	dontaudit $1 user_home_t:dir search_dir_perms;
@@ -26870,7 +26958,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -1643,6 +1716,7 @@
+@@ -1643,6 +1721,7 @@
  		type user_home_dir_t, user_home_t;
  	')
  
@@ -26878,7 +26966,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	read_files_pattern($1, { user_home_dir_t user_home_t }, user_home_t)
  	files_search_home($1)
  ')
-@@ -1741,6 +1815,62 @@
+@@ -1741,6 +1820,62 @@
  
  ########################################
  ## <summary>
@@ -26941,7 +27029,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Execute user home files.
  ## </summary>
  ## <param name="domain">
-@@ -1757,14 +1887,6 @@
+@@ -1757,14 +1892,6 @@
  
  	files_search_home($1)
  	exec_files_pattern($1, { user_home_dir_t user_home_t }, user_home_t)
@@ -26956,7 +27044,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -1787,6 +1909,46 @@
+@@ -1787,6 +1914,46 @@
  
  ########################################
  ## <summary>
@@ -27003,7 +27091,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Create, read, write, and delete files
  ##	in a user home subdirectory.
  ## </summary>
-@@ -2819,6 +2981,24 @@
+@@ -2819,6 +2986,24 @@
  
  ########################################
  ## <summary>
@@ -27028,7 +27116,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Do not audit attempts to use user ttys.
  ## </summary>
  ## <param name="domain">
-@@ -2965,6 +3145,24 @@
+@@ -2965,6 +3150,24 @@
  
  ########################################
  ## <summary>
@@ -27053,7 +27141,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Send a dbus message to all user domains.
  ## </summary>
  ## <param name="domain">
-@@ -2981,3 +3179,263 @@
+@@ -2981,3 +3184,263 @@
  
  	allow $1 userdomain:dbus send_msg;
  ')

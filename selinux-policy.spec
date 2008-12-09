@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.1
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 9 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-9
+- Add cron_role back to user domains
+
 * Mon Dec 8 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-8
 - Fix sudo setting of user keys
 
