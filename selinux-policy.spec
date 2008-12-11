@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.1
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Dec 11 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-10
+- Allow unconfined_r unconfined_java_t
+
 * Tue Dec 9 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-9
 - Add cron_role back to user domains
 
