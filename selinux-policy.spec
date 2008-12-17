@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.1
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec 17 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-11
+- Fixes for IBM java location
+
 * Thu Dec 11 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-10
 - Allow unconfined_r unconfined_java_t
 
