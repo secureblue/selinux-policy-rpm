@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.1
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Dec 22 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-13
+- Fix dbus reading /proc information
+
 * Thu Dec 18 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-12
 - Add missing alias for home directory content
 
