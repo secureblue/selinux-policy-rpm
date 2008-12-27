@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.1
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Dec 27 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-14
+- Change userdom_read_all_users_state to include reading symbolic links in /proc
+
 * Mon Dec 22 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-13
 - Fix dbus reading /proc information
 
