@@ -1,4 +1,4 @@
-%define distro redhat
+ %define distro redhat
 %define polyinstatiate n
 %define monolithic n
 %if %{?BUILD_TARGETED:0}%{!?BUILD_TARGETED:1}
@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.1
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Sun Jan 4 2009 Dan Walsh <dwalsh@redhat.com> 3.6.1-15
+- Allow hal_acl_t to getattr/setattr fixed_disk
+
 * Sat Dec 27 2008 Dan Walsh <dwalsh@redhat.com> 3.6.1-14
 - Change userdom_read_all_users_state to include reading symbolic links in /proc
 
