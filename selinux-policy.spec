@@ -19,12 +19,12 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.1
-Release: 15%{?dist}
+Version: 3.6.2
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20081111.patch
+patch: policy-20090105.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 5 2009 Dan Walsh <dwalsh@redhat.com> 3.6.2-1
+- Update to upstream
+
 * Sun Jan 4 2009 Dan Walsh <dwalsh@redhat.com> 3.6.1-15
 - Allow hal_acl_t to getattr/setattr fixed_disk
 
