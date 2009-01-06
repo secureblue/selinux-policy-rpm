@@ -15,12 +15,12 @@
 %endif
 %define POLICYVER 23
 %define libsepolver 2.0.20-1
-%define POLICYCOREUTILSVER 2.0.57-12
+%define POLICYCOREUTILSVER 2.0.60-7
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -318,8 +318,7 @@ if [ $1 -eq 1 ]; then
 #__eof
 restorecon -R /root /var/log /var/run 2> /dev/null
 else
-semodule -s targeted -r moilscanner 2>/dev/null
-semodule -s targeted -r gamin 2>/dev/null
+semodule -n -s targeted -r moilscanner  -r gamin -r audio_entropy -r iscsid 2>/dev/null
 %loadpolicy targeted
 %relabel targeted
 fi
@@ -446,6 +445,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan 6 2009 Dan Walsh <dwalsh@redhat.com> 3.6.2-2
+- Remove audio_entropy policy
+
 * Mon Jan 5 2009 Dan Walsh <dwalsh@redhat.com> 3.6.2-1
 - Update to upstream
 
