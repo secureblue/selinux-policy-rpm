@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.2
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -445,6 +445,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jan 8 2009 Dan Walsh <dwalsh@redhat.com> 3.6.2-3
+- Allow cups_pdf_t write to nfs_t
+
 * Tue Jan 6 2009 Dan Walsh <dwalsh@redhat.com> 3.6.2-2
 - Remove audio_entropy policy
 
