@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.2
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -445,6 +445,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jan 15 2009 Dan Walsh <dwalsh@redhat.com> 3.6.2-5
+- Define openoffice as an x_domain
+
 * Mon Jan 12 2009 Dan Walsh <dwalsh@redhat.com> 3.6.2-4
 - Fixes for reading xserver_tmp_t
 
