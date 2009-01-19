@@ -47,7 +47,7 @@ Source19: securetty_types-minimum
 Url: http://serefpolicy.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
-BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils >= %{POLICYCOREUTILSVER} bzip2
+BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-python >= %{POLICYCOREUTILSVER} bzip2 
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.14-3
 Requires(post): /usr/bin/bunzip2 /bin/mktemp
 Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
