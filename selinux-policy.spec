@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.2
-Release: 5%{?dist}
+Version: 3.6.3
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -184,7 +184,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2882.
+Based off of reference policy: Checked out revision  2904.
 
 %build
 
@@ -445,6 +445,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 19 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-1
+- Update to upstream
+
 * Thu Jan 15 2009 Dan Walsh <dwalsh@redhat.com> 3.6.2-5
 - Define openoffice as an x_domain
 
