@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.3
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -445,8 +445,9 @@ exit 0
 %endif
 
 %changelog
-* Wed Jan 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-4
+* Wed Jan 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-5
 - Add wm policy
+- Make mls work in graphics mode
 
 * Tue Jan 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-3
 - Fixed for DeviceKit
