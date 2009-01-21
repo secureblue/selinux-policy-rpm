@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.3
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -445,6 +445,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-4
+- Add wm policy
+
 * Tue Jan 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-3
 - Fixed for DeviceKit
 
