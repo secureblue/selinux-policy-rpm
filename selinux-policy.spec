@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.3
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -277,7 +277,6 @@ else
 	grep -q "^SETLOCALDEFS" /etc/selinux/config || echo -n "
 ">> /etc/selinux/config
 fi
-[ -x /usr/bin/sepolgen-ifgen ] && /usr/bin/sepolgen-ifgen 
 exit 0
 
 %postun
@@ -445,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jan 22 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-7
+- Remove polgen-ifgen from post and add trigger to policycoreutils-python
+
 * Wed Jan 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-6
 - Add wm policy
 - Make mls work in graphics mode
