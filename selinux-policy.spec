@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.3
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 23 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-8
+- Add policy to make dbus/nm-applet work
+
 * Thu Jan 22 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-7
 - Remove polgen-ifgen from post and add trigger to policycoreutils-python
 
