@@ -561,10 +561,54 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	pcmcia_use_cardmgr_fds(ping_t)
  ')
  
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/admin/prelink.fc serefpolicy-3.6.3/policy/modules/admin/prelink.fc
+--- nsaserefpolicy/policy/modules/admin/prelink.fc	2008-08-07 11:15:13.000000000 -0400
++++ serefpolicy-3.6.3/policy/modules/admin/prelink.fc	2009-01-26 09:28:03.000000000 -0500
+@@ -5,3 +5,5 @@
+ 
+ /var/log/prelink\.log		--	gen_context(system_u:object_r:prelink_log_t,s0)
+ /var/log/prelink(/.*)?			gen_context(system_u:object_r:prelink_log_t,s0)
++
++/var/lib/misc/prelink\*		--	gen_context(system_u:object_r:prelink_var_lib_t,s0)
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/admin/prelink.if serefpolicy-3.6.3/policy/modules/admin/prelink.if
+--- nsaserefpolicy/policy/modules/admin/prelink.if	2008-11-11 16:13:49.000000000 -0500
++++ serefpolicy-3.6.3/policy/modules/admin/prelink.if	2009-01-26 09:29:12.000000000 -0500
+@@ -120,3 +120,23 @@
+ 	logging_search_logs($1)
+ 	manage_files_pattern($1, prelink_log_t, prelink_log_t)
+ ')
++
++########################################
++## <summary>
++##	Create, read, write, and delete
++##	prelink var_lib files.
++## </summary>
++## <param name="file_type">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`prelink_manage_var_lib',`
++	gen_require(`
++		type prelink_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++	manage_files_pattern($1, prelink_var_lib_t, prelink_var_lib_t)
++')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/admin/prelink.te serefpolicy-3.6.3/policy/modules/admin/prelink.te
 --- nsaserefpolicy/policy/modules/admin/prelink.te	2009-01-05 15:39:44.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/admin/prelink.te	2009-01-19 13:10:02.000000000 -0500
-@@ -26,7 +26,7 @@
++++ serefpolicy-3.6.3/policy/modules/admin/prelink.te	2009-01-26 09:33:41.000000000 -0500
+@@ -21,12 +21,15 @@
+ type prelink_tmp_t;
+ files_tmp_file(prelink_tmp_t)
+ 
++type prelink_var_lib_t;
++files_tmp_file(prelink_var_lib_t)
++
+ ########################################
+ #
  # Local policy
  #
  
@@ -573,7 +617,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  allow prelink_t self:process { execheap execmem execstack signal };
  allow prelink_t self:fifo_file rw_fifo_file_perms;
  
-@@ -40,7 +40,7 @@
+@@ -40,17 +43,20 @@
  read_lnk_files_pattern(prelink_t, prelink_log_t, prelink_log_t)
  logging_log_filetrans(prelink_t, prelink_log_t, file)
  
@@ -582,7 +626,12 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  files_tmp_filetrans(prelink_t, prelink_tmp_t, file)
  fs_tmpfs_filetrans(prelink_t, prelink_tmp_t, file)
  
-@@ -49,8 +49,7 @@
++manage_dirs_pattern(prelink_t, prelink_var_lib_t, prelink_var_lib_t)
++manage_files_pattern(prelink_t, prelink_var_lib_t, prelink_var_lib_t)
++files_search_var_lib(prelink_t)
++
+ # prelink misc objects that are not system
+ # libraries or entrypoints
  allow prelink_t prelink_object:file { manage_file_perms execute relabelto relabelfrom };
  
  kernel_read_system_state(prelink_t)
@@ -592,7 +641,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  corecmd_manage_all_executables(prelink_t)
  corecmd_relabel_all_executables(prelink_t)
-@@ -65,6 +64,8 @@
+@@ -65,6 +71,8 @@
  files_read_etc_files(prelink_t)
  files_read_etc_runtime_files(prelink_t)
  files_dontaudit_read_all_symlinks(prelink_t)
@@ -601,19 +650,17 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  fs_getattr_xattr_fs(prelink_t)
  
-@@ -81,6 +82,11 @@
+@@ -81,6 +89,9 @@
  
  userdom_use_user_terminals(prelink_t)
  
 +# prelink executables in the user homedir
-+userdom_manage_user_home_content_files(prelink_t)
-+userdom_mmap_user_home_content_files(prelink_t)
-+userdom_manage_user_home_content_symlinks(prelink_t)
++userdom_manage_home_role(system_r, prelink_t)
 +
  optional_policy(`
  	amanda_manage_lib(prelink_t)
  ')
-@@ -88,3 +94,7 @@
+@@ -88,3 +99,7 @@
  optional_policy(`
  	cron_system_entry(prelink_t, prelink_exec_t)
  ')
@@ -656,7 +703,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ifdef(`distro_suse', `
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/admin/rpm.if serefpolicy-3.6.3/policy/modules/admin/rpm.if
 --- nsaserefpolicy/policy/modules/admin/rpm.if	2008-11-11 16:13:49.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/admin/rpm.if	2009-01-19 13:10:02.000000000 -0500
++++ serefpolicy-3.6.3/policy/modules/admin/rpm.if	2009-01-26 08:58:21.000000000 -0500
 @@ -146,6 +146,24 @@
  
  ########################################
@@ -989,7 +1036,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/admin/rpm.te serefpolicy-3.6.3/policy/modules/admin/rpm.te
 --- nsaserefpolicy/policy/modules/admin/rpm.te	2009-01-19 11:07:34.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/admin/rpm.te	2009-01-19 13:10:02.000000000 -0500
++++ serefpolicy-3.6.3/policy/modules/admin/rpm.te	2009-01-26 09:14:27.000000000 -0500
 @@ -31,6 +31,9 @@
  files_type(rpm_var_lib_t)
  typealias rpm_var_lib_t alias var_lib_rpm_t;
@@ -1000,16 +1047,18 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  type rpm_script_t;
  type rpm_script_exec_t;
  domain_obj_id_change_exemption(rpm_script_t)
-@@ -52,7 +55,8 @@
+@@ -52,8 +55,9 @@
  # rpm Local policy
  #
  
 -allow rpm_t self:capability { chown dac_override fowner fsetid setgid setuid sys_chroot sys_tty_config mknod };
+-allow rpm_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
 +allow rpm_t self:capability { chown dac_override fowner fsetid ipc_lock setgid setuid sys_chroot sys_nice sys_tty_config mknod };
 +
- allow rpm_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
++allow rpm_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execstack execheap };
  allow rpm_t self:process { getattr setexec setfscreate setrlimit };
  allow rpm_t self:fd use;
+ allow rpm_t self:fifo_file rw_fifo_file_perms;
 @@ -68,6 +72,8 @@
  allow rpm_t self:sem create_sem_perms;
  allow rpm_t self:msgq create_msgq_perms;
@@ -1032,15 +1081,16 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  corecmd_exec_all_executables(rpm_t)
  
-@@ -115,6 +125,7 @@
+@@ -115,6 +125,8 @@
  fs_manage_nfs_symlinks(rpm_t)
  fs_getattr_all_fs(rpm_t)
  fs_search_auto_mountpoints(rpm_t)
 +fs_list_inotifyfs(rpm_t)
++fs_getattr_all_fs(rpm_t)
  
  mls_file_read_all_levels(rpm_t)
  mls_file_write_all_levels(rpm_t)
-@@ -132,6 +143,8 @@
+@@ -132,6 +144,8 @@
  # for installing kernel packages
  storage_raw_read_fixed_disk(rpm_t)
  
@@ -1049,7 +1099,15 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  auth_relabel_all_files_except_shadow(rpm_t)
  auth_manage_all_files_except_shadow(rpm_t)
  auth_dontaudit_read_shadow(rpm_t)
-@@ -174,10 +187,20 @@
+@@ -155,6 +169,7 @@
+ files_exec_etc_files(rpm_t)
+ 
+ init_domtrans_script(rpm_t)
++init_use_script_ptys(rpm_t)
+ 
+ libs_exec_ld_so(rpm_t)
+ libs_exec_lib_files(rpm_t)
+@@ -174,10 +189,20 @@
  ')
  
  optional_policy(`
@@ -1070,7 +1128,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	prelink_domtrans(rpm_t)
  ')
  
-@@ -185,6 +208,7 @@
+@@ -185,6 +210,7 @@
  	unconfined_domain(rpm_t)
  	# yum-updatesd requires this
  	unconfined_dbus_chat(rpm_t)
@@ -1078,18 +1136,18 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ifdef(`TODO',`
-@@ -210,8 +234,8 @@
+@@ -210,8 +236,8 @@
  # rpm-script Local policy
  #
  
 -allow rpm_script_t self:capability { chown dac_override dac_read_search fowner fsetid setgid setuid ipc_lock sys_chroot sys_nice mknod kill };
 -allow rpm_script_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
-+allow rpm_script_t self:capability { chown dac_override dac_read_search fowner fsetid setgid setuid ipc_lock sys_admin sys_chroot sys_ptrace sys_nice mknod kill };
++allow rpm_script_t self:capability { chown dac_override dac_read_search fowner fsetid setgid setuid ipc_lock sys_admin sys_chroot sys_ptrace sys_nice mknod kill net_admin };
 +allow rpm_script_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execheap };
  allow rpm_script_t self:fd use;
  allow rpm_script_t self:fifo_file rw_fifo_file_perms;
  allow rpm_script_t self:unix_dgram_socket create_socket_perms;
-@@ -222,12 +246,15 @@
+@@ -222,12 +248,15 @@
  allow rpm_script_t self:sem create_sem_perms;
  allow rpm_script_t self:msgq create_msgq_perms;
  allow rpm_script_t self:msg { send receive };
@@ -1105,7 +1163,24 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  files_tmp_filetrans(rpm_script_t, rpm_script_tmp_t, { file dir })
  
  manage_dirs_pattern(rpm_script_t, rpm_script_tmpfs_t, rpm_script_tmpfs_t)
-@@ -272,12 +299,15 @@
+@@ -239,6 +268,8 @@
+ 
+ kernel_read_kernel_sysctls(rpm_script_t)
+ kernel_read_system_state(rpm_script_t)
++kernel_read_network_state(rpm_script_t)
++kernel_list_all_proc(rpm_script_t)
+ 
+ dev_list_sysfs(rpm_script_t)
+ 
+@@ -255,6 +286,7 @@
+ fs_mount_xattr_fs(rpm_script_t)
+ fs_unmount_xattr_fs(rpm_script_t)
+ fs_search_auto_mountpoints(rpm_script_t)
++fs_getattr_all_fs(rpm_script_t)
+ 
+ mcs_killall(rpm_script_t)
+ mcs_ptrace_all(rpm_script_t)
+@@ -272,14 +304,19 @@
  storage_raw_read_fixed_disk(rpm_script_t)
  storage_raw_write_fixed_disk(rpm_script_t)
  
@@ -1120,8 +1195,12 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +auth_relabel_shadow(rpm_script_t)
  
  corecmd_exec_all_executables(rpm_script_t)
++can_exec(rpm_script_t, rpm_script_tmp_t)
++can_exec(rpm_script_t, rpm_script_tmpfs_t)
  
-@@ -291,6 +321,7 @@
+ domain_read_all_domains_state(rpm_script_t)
+ domain_getattr_all_domains(rpm_script_t)
+@@ -291,6 +328,7 @@
  files_exec_etc_files(rpm_script_t)
  files_read_etc_runtime_files(rpm_script_t)
  files_exec_usr_files(rpm_script_t)
@@ -1129,15 +1208,18 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  init_domtrans_script(rpm_script_t)
  
-@@ -308,6 +339,7 @@
+@@ -308,8 +346,10 @@
  seutil_domtrans_loadpolicy(rpm_script_t)
  seutil_domtrans_setfiles(rpm_script_t)
  seutil_domtrans_semanage(rpm_script_t)
 +seutil_domtrans_setsebool(rpm_script_t)
  
  userdom_use_all_users_fds(rpm_script_t)
++userdom_exec_admin_home_files(rpm_script_t)
  
-@@ -326,6 +358,10 @@
+ ifdef(`distro_redhat',`
+ 	optional_policy(`
+@@ -326,6 +366,10 @@
  ')
  
  optional_policy(`
@@ -1148,7 +1230,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	tzdata_domtrans(rpm_t)
  	tzdata_domtrans(rpm_script_t)
  ')
-@@ -333,6 +369,7 @@
+@@ -333,6 +377,7 @@
  optional_policy(`
  	unconfined_domain(rpm_script_t)
  	unconfined_domtrans(rpm_script_t)
@@ -5472,7 +5554,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/dev/shm		-d	gen_context(system_u:object_r:tmpfs_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/filesystem.if serefpolicy-3.6.3/policy/modules/kernel/filesystem.if
 --- nsaserefpolicy/policy/modules/kernel/filesystem.if	2009-01-05 15:39:38.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/kernel/filesystem.if	2009-01-21 13:00:37.000000000 -0500
++++ serefpolicy-3.6.3/policy/modules/kernel/filesystem.if	2009-01-26 08:55:48.000000000 -0500
 @@ -534,6 +534,24 @@
  
  ########################################
@@ -5916,16 +5998,35 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  #
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/kernel.if serefpolicy-3.6.3/policy/modules/kernel/kernel.if
 --- nsaserefpolicy/policy/modules/kernel/kernel.if	2009-01-05 15:39:38.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/kernel/kernel.if	2009-01-21 17:29:54.000000000 -0500
-@@ -1197,6 +1197,7 @@
++++ serefpolicy-3.6.3/policy/modules/kernel/kernel.if	2009-01-26 08:54:44.000000000 -0500
+@@ -1197,6 +1197,26 @@
  	')
  
  	dontaudit $1 proc_type:dir list_dir_perms;
 +	dontaudit $1 proc_type:file getattr;
++')
++
++########################################
++## <summary>
++##	Allow attempts to list all proc directories.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`kernel_list_all_proc',`
++	gen_require(`
++		attribute proc_type;
++	')
++
++	allow $1 proc_type:dir list_dir_perms;
++	allow $1 proc_type:file getattr;
  ')
  
  ########################################
-@@ -1233,9 +1234,11 @@
+@@ -1233,9 +1253,11 @@
  interface(`kernel_read_sysctl',`
  	gen_require(`
  		type sysctl_t;
@@ -5937,7 +6038,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -1568,6 +1571,26 @@
+@@ -1568,6 +1590,26 @@
  
  ########################################
  ## <summary>
@@ -5964,7 +6065,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Read generic kernel sysctls.
  ## </summary>
  ## <param name="domain">
-@@ -1767,6 +1790,7 @@
+@@ -1767,6 +1809,7 @@
  	')
  
  	dontaudit $1 sysctl_type:dir list_dir_perms;
@@ -5972,7 +6073,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -2580,6 +2604,24 @@
+@@ -2580,6 +2623,24 @@
  
  ########################################
  ## <summary>
@@ -5997,7 +6098,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Unconfined access to kernel module resources.
  ## </summary>
  ## <param name="domain">
-@@ -2595,3 +2637,23 @@
+@@ -2595,3 +2656,23 @@
  
  	typeattribute $1 kern_unconfined;
  ')
@@ -6975,7 +7076,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	requiring the caller to use setexeccon().
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.te serefpolicy-3.6.3/policy/modules/roles/sysadm.te
 --- nsaserefpolicy/policy/modules/roles/sysadm.te	2009-01-19 11:07:34.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/roles/sysadm.te	2009-01-19 13:10:02.000000000 -0500
++++ serefpolicy-3.6.3/policy/modules/roles/sysadm.te	2009-01-26 09:04:25.000000000 -0500
 @@ -15,7 +15,7 @@
  
  role sysadm_r;
@@ -7138,7 +7239,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	quota_run(sysadm_t, sysadm_r)
  ')
  
-@@ -320,10 +254,6 @@
+@@ -320,22 +254,10 @@
  ')
  
  optional_policy(`
@@ -7149,10 +7250,11 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	rpc_domtrans_nfsd(sysadm_t)
  ')
  
-@@ -332,10 +262,6 @@
- ')
- 
  optional_policy(`
+-	rpm_run(sysadm_t, sysadm_r)
+-')
+-
+-optional_policy(`
 -	rssh_role(sysadm_r, sysadm_t)
 -')
 -
@@ -7160,7 +7262,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	rsync_exec(sysadm_t)
  ')
  
-@@ -345,10 +271,6 @@
+@@ -345,10 +267,6 @@
  ')
  
  optional_policy(`
@@ -7171,7 +7273,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	secadm_role_change(sysadm_r)
  ')
  
-@@ -358,35 +280,15 @@
+@@ -358,35 +276,15 @@
  ')
  
  optional_policy(`
@@ -7207,7 +7309,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	tripwire_run_siggen(sysadm_t, sysadm_r)
  	tripwire_run_tripwire(sysadm_t, sysadm_r)
  	tripwire_run_twadmin(sysadm_t, sysadm_r)
-@@ -394,18 +296,10 @@
+@@ -394,18 +292,10 @@
  ')
  
  optional_policy(`
@@ -7226,7 +7328,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	unconfined_domtrans(sysadm_t)
  ')
  
-@@ -418,20 +312,12 @@
+@@ -418,20 +308,12 @@
  ')
  
  optional_policy(`
@@ -7247,7 +7349,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	vpn_run(sysadm_t, sysadm_r)
  ')
  
-@@ -440,13 +326,5 @@
+@@ -440,13 +322,5 @@
  ')
  
  optional_policy(`
@@ -10438,7 +10540,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cron.te serefpolicy-3.6.3/policy/modules/services/cron.te
 --- nsaserefpolicy/policy/modules/services/cron.te	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/services/cron.te	2009-01-23 15:14:37.000000000 -0500
++++ serefpolicy-3.6.3/policy/modules/services/cron.te	2009-01-26 09:29:38.000000000 -0500
 @@ -38,6 +38,10 @@
  type cron_var_lib_t;
  files_type(cron_var_lib_t)
@@ -10671,7 +10773,15 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  optional_policy(`
-@@ -460,8 +529,7 @@
+@@ -447,6 +516,7 @@
+ 	prelink_read_cache(system_cronjob_t)
+ 	prelink_manage_log(system_cronjob_t)
+ 	prelink_delete_cache(system_cronjob_t)
++	prelink_manage_var_lib(system_cronjob_t)
+ ')
+ 
+ optional_policy(`
+@@ -460,8 +530,7 @@
  ')
  
  optional_policy(`
@@ -10681,7 +10791,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  optional_policy(`
-@@ -469,24 +537,17 @@
+@@ -469,24 +538,17 @@
  ')
  
  optional_policy(`
@@ -10709,7 +10819,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  allow cronjob_t self:process { signal_perms setsched };
  allow cronjob_t self:fifo_file rw_fifo_file_perms;
  allow cronjob_t self:unix_stream_socket create_stream_socket_perms;
-@@ -570,6 +631,9 @@
+@@ -570,6 +632,9 @@
  userdom_manage_user_home_content_sockets(cronjob_t)
  #userdom_user_home_dir_filetrans_user_home_content(cronjob_t, notdevfile_class_set)
  
@@ -13777,7 +13887,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -#')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/mta.if serefpolicy-3.6.3/policy/modules/services/mta.if
 --- nsaserefpolicy/policy/modules/services/mta.if	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/services/mta.if	2009-01-19 13:10:02.000000000 -0500
++++ serefpolicy-3.6.3/policy/modules/services/mta.if	2009-01-26 09:31:15.000000000 -0500
 @@ -130,6 +130,15 @@
  		sendmail_create_log($1_mail_t)
  	')
@@ -18605,8 +18715,16 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  		mysql_search_db(httpd_prewikka_script_t)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/procmail.te serefpolicy-3.6.3/policy/modules/services/procmail.te
 --- nsaserefpolicy/policy/modules/services/procmail.te	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/services/procmail.te	2009-01-19 13:10:02.000000000 -0500
-@@ -128,6 +128,10 @@
++++ serefpolicy-3.6.3/policy/modules/services/procmail.te	2009-01-26 09:31:20.000000000 -0500
+@@ -92,6 +92,7 @@
+ userdom_dontaudit_search_user_home_dirs(procmail_t)
+ 
+ mta_manage_spool(procmail_t)
++mta_read_queue(procmail_t)
+ 
+ ifdef(`hide_broken_symptoms',`
+ 	mta_dontaudit_rw_queue(procmail_t)
+@@ -128,6 +129,10 @@
  ')
  
  optional_policy(`
@@ -18617,7 +18735,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	pyzor_domtrans(procmail_t)
  	pyzor_signal(procmail_t)
  ')
-@@ -148,3 +152,7 @@
+@@ -148,3 +153,7 @@
  	spamassassin_domtrans_client(procmail_t)
  	spamassassin_read_lib_files(procmail_t)
  ')
@@ -22818,7 +22936,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xserver.te serefpolicy-3.6.3/policy/modules/services/xserver.te
 --- nsaserefpolicy/policy/modules/services/xserver.te	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/services/xserver.te	2009-01-23 16:45:11.000000000 -0500
++++ serefpolicy-3.6.3/policy/modules/services/xserver.te	2009-01-26 09:17:40.000000000 -0500
 @@ -34,6 +34,13 @@
  
  ## <desc>
@@ -23347,7 +23465,11 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  # Label pid and temporary files with derived types.
  manage_files_pattern(xserver_t, xdm_tmp_t, xdm_tmp_t)
-@@ -830,6 +960,10 @@
+@@ -827,9 +957,14 @@
+ # to read ROLE_home_t - examine this in more detail
+ # (xauth?)
+ userdom_read_user_home_content_files(xserver_t)
++userdom_read_all_users_state(xserver_t)
  
  xserver_use_user_fonts(xserver_t)
  
@@ -23358,7 +23480,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  tunable_policy(`use_nfs_home_dirs',`
  	fs_manage_nfs_dirs(xserver_t)
  	fs_manage_nfs_files(xserver_t)
-@@ -844,11 +978,14 @@
+@@ -844,11 +979,14 @@
  
  optional_policy(`
  	dbus_system_bus_client(xserver_t)
@@ -23374,7 +23496,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  optional_policy(`
-@@ -856,6 +993,11 @@
+@@ -856,6 +994,11 @@
  	rhgb_rw_tmpfs_files(xserver_t)
  ')
  
@@ -23386,7 +23508,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ########################################
  #
  # Rules common to all X window domains
-@@ -972,6 +1114,37 @@
+@@ -972,6 +1115,37 @@
  allow xserver_unconfined_type { x_domain xserver_t }:x_resource *;
  allow xserver_unconfined_type xevent_type:{ x_event x_synthetic_event } *;
  
@@ -23424,7 +23546,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ifdef(`TODO',`
  tunable_policy(`allow_polyinstantiation',`
  # xdm needs access for linking .X11-unix to poly /tmp
-@@ -986,3 +1159,13 @@
+@@ -986,3 +1160,13 @@
  #
  allow xdm_t user_home_type:file unlink;
  ') dnl end TODO
@@ -23995,7 +24117,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /sbin/partx		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/fstools.te serefpolicy-3.6.3/policy/modules/system/fstools.te
 --- nsaserefpolicy/policy/modules/system/fstools.te	2009-01-05 15:39:43.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/system/fstools.te	2009-01-19 13:10:02.000000000 -0500
++++ serefpolicy-3.6.3/policy/modules/system/fstools.te	2009-01-26 11:19:02.000000000 -0500
 @@ -97,6 +97,10 @@
  fs_getattr_tmpfs_dirs(fsadm_t)
  fs_read_tmpfs_symlinks(fsadm_t)
@@ -24007,7 +24129,17 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  mls_file_read_all_levels(fsadm_t)
  mls_file_write_all_levels(fsadm_t)
  
-@@ -182,4 +186,9 @@
+@@ -150,8 +154,7 @@
+ 
+ seutil_read_config(fsadm_t)
+ 
+-userdom_use_user_terminals(fsadm_t)
+-userdom_use_unpriv_users_fds(fsadm_t)
++term_use_all_terms(fsadm_t)
+ 
+ tunable_policy(`read_default_t',`
+ 	files_list_default(fsadm_t)
+@@ -182,4 +185,9 @@
  
  optional_policy(`
  	xen_append_log(fsadm_t)
@@ -24055,7 +24187,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  #
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/init.if serefpolicy-3.6.3/policy/modules/system/init.if
 --- nsaserefpolicy/policy/modules/system/init.if	2009-01-05 15:39:43.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/system/init.if	2009-01-21 16:19:55.000000000 -0500
++++ serefpolicy-3.6.3/policy/modules/system/init.if	2009-01-26 11:20:14.000000000 -0500
 @@ -280,6 +280,27 @@
  			kernel_dontaudit_use_fds($1)
  		')
@@ -25141,7 +25273,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/var/run/dmevent.*		gen_context(system_u:object_r:lvm_var_run_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/lvm.te serefpolicy-3.6.3/policy/modules/system/lvm.te
 --- nsaserefpolicy/policy/modules/system/lvm.te	2009-01-19 11:07:34.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/system/lvm.te	2009-01-20 15:26:33.000000000 -0500
++++ serefpolicy-3.6.3/policy/modules/system/lvm.te	2009-01-26 11:20:23.000000000 -0500
 @@ -10,6 +10,9 @@
  type clvmd_exec_t;
  init_daemon_domain(clvmd_t,clvmd_exec_t)
@@ -25298,11 +25430,12 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  fs_getattr_xattr_fs(lvm_t)
  fs_search_auto_mountpoints(lvm_t)
-@@ -239,12 +276,16 @@
+@@ -239,12 +276,17 @@
  storage_dev_filetrans_fixed_disk(lvm_t)
  # Access raw devices and old /dev/lvm (c 109,0).  Is this needed?
  storage_manage_fixed_disk(lvm_t)
 +mls_file_read_all_levels(lvm_t)
++mls_file_write_to_clearance(lvm_t)
 +
 +term_use_all_terms(lvm_t)
  
@@ -25315,11 +25448,23 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  files_read_etc_files(lvm_t)
  files_read_etc_runtime_files(lvm_t)
  # for when /usr is not mounted:
-@@ -283,5 +324,18 @@
+@@ -253,6 +295,7 @@
+ init_use_fds(lvm_t)
+ init_dontaudit_getattr_initctl(lvm_t)
+ init_use_script_ptys(lvm_t)
++init_read_script_state(lvm_t)
+ 
+ logging_send_syslog_msg(lvm_t)
+ 
+@@ -283,5 +326,22 @@
  ')
  
  optional_policy(`
 +	modutils_domtrans_insmod(lvm_t)
++')
++
++optional_policy(`
++	rpm_manage_script_tmp_files(lvm_t)
 +')
 +
 +optional_policy(`
@@ -25334,6 +25479,17 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +	xen_append_log(lvm_t)
 +	xen_dontaudit_rw_unix_stream_sockets(lvm_t)
 +')
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/miscfiles.fc serefpolicy-3.6.3/policy/modules/system/miscfiles.fc
+--- nsaserefpolicy/policy/modules/system/miscfiles.fc	2008-08-07 11:15:12.000000000 -0400
++++ serefpolicy-3.6.3/policy/modules/system/miscfiles.fc	2009-01-26 09:39:13.000000000 -0500
+@@ -35,6 +35,7 @@
+ /usr/lib(64)?/perl5/man(/.*)?	gen_context(system_u:object_r:man_t,s0)
+ 
+ /usr/local/man(/.*)?		gen_context(system_u:object_r:man_t,s0)
++/usr/local/share/man(/.*)?	gen_context(system_u:object_r:man_t,s0)
+ 
+ /usr/local/share/fonts(/.*)?	gen_context(system_u:object_r:fonts_t,s0)
+ 
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/miscfiles.if serefpolicy-3.6.3/policy/modules/system/miscfiles.if
 --- nsaserefpolicy/policy/modules/system/miscfiles.if	2008-08-07 11:15:12.000000000 -0400
 +++ serefpolicy-3.6.3/policy/modules/system/miscfiles.if	2009-01-21 13:05:22.000000000 -0500
@@ -26180,7 +26336,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/selinuxutil.te serefpolicy-3.6.3/policy/modules/system/selinuxutil.te
 --- nsaserefpolicy/policy/modules/system/selinuxutil.te	2009-01-19 11:07:34.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/system/selinuxutil.te	2009-01-19 13:10:02.000000000 -0500
++++ serefpolicy-3.6.3/policy/modules/system/selinuxutil.te	2009-01-26 09:04:44.000000000 -0500
 @@ -23,6 +23,9 @@
  type selinux_config_t;
  files_type(selinux_config_t)
@@ -26300,7 +26456,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  # often the administrator runs such programs from a directory that is owned
  # by a different user or has restrictive SE permissions, do not want to audit
-@@ -383,7 +391,6 @@
+@@ -383,10 +391,10 @@
  
  auth_use_nsswitch(run_init_t)
  auth_domtrans_chk_passwd(run_init_t)
@@ -26308,7 +26464,22 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  auth_dontaudit_read_shadow(run_init_t)
  
  init_spec_domtrans_script(run_init_t)
-@@ -421,61 +428,22 @@
++	
+ # for utmp
+ init_rw_utmp(run_init_t)
+ 
+@@ -406,6 +414,10 @@
+ 	')
+ ')
+ 
++optional_policy(`
++	rpm_domtrans(run_init_t)
++')
++
+ ifdef(`distro_ubuntu',`
+ 	optional_policy(`
+ 		unconfined_domain(run_init_t)
+@@ -421,61 +433,22 @@
  # semodule local policy
  #
  
@@ -26316,22 +26487,22 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -allow semanage_t self:unix_stream_socket create_stream_socket_perms;
 -allow semanage_t self:unix_dgram_socket create_socket_perms;
 -allow semanage_t self:netlink_audit_socket { create_netlink_socket_perms nlmsg_relay };
--
++seutil_semanage_policy(semanage_t)
++allow semanage_t self:fifo_file rw_fifo_file_perms;
+ 
 -allow semanage_t policy_config_t:file rw_file_perms;
--
++manage_dirs_pattern(semanage_t, selinux_var_lib_t,  selinux_var_lib_t)
++manage_files_pattern(semanage_t, selinux_var_lib_t,  selinux_var_lib_t)
+ 
 -allow semanage_t semanage_tmp_t:dir manage_dir_perms;
 -allow semanage_t semanage_tmp_t:file manage_file_perms;
 -files_tmp_filetrans(semanage_t, semanage_tmp_t, { file dir })
 -
 -kernel_read_system_state(semanage_t)
 -kernel_read_kernel_sysctls(semanage_t)
-+seutil_semanage_policy(semanage_t)
-+allow semanage_t self:fifo_file rw_fifo_file_perms;
- 
+-
 -corecmd_exec_bin(semanage_t)
-+manage_dirs_pattern(semanage_t, selinux_var_lib_t,  selinux_var_lib_t)
-+manage_files_pattern(semanage_t, selinux_var_lib_t,  selinux_var_lib_t)
- 
+-
 -dev_read_urand(semanage_t)
 -
 -domain_use_interactive_fds(semanage_t)
@@ -26352,14 +26523,14 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +can_exec(semanage_t, semanage_exec_t)
  
 -term_use_all_terms(semanage_t)
--
++# Admins are creating pp files in random locations
++auth_read_all_files_except_shadow(semanage_t)
+ 
 -# Running genhomedircon requires this for finding all users
 -auth_use_nsswitch(semanage_t)
 -
 -locallogin_use_fds(semanage_t)
-+# Admins are creating pp files in random locations
-+auth_read_all_files_except_shadow(semanage_t)
- 
+-
 -logging_send_syslog_msg(semanage_t)
 -
 -miscfiles_read_localization(semanage_t)
@@ -26378,7 +26549,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  # netfilter_contexts:
  seutil_manage_default_contexts(semanage_t)
  
-@@ -484,12 +452,23 @@
+@@ -484,12 +457,23 @@
  	files_read_var_lib_symlinks(semanage_t)
  ')
  
@@ -26402,7 +26573,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  # cjp: need a more general way to handle this:
  ifdef(`enable_mls',`
  	# read secadm tmp files
-@@ -499,111 +478,36 @@
+@@ -499,111 +483,36 @@
  	userdom_read_user_tmp_files(semanage_t)
  ')
  
@@ -26484,15 +26655,15 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -userdom_use_all_users_fds(setfiles_t)
 -# for config files in a home directory
 -userdom_read_user_home_content_files(setfiles_t)
-+init_dontaudit_use_fds(setsebool_t)
- 
+-
 -ifdef(`distro_debian',`
 -	# udev tmpfs is populated with static device nodes
 -	# and then relabeled afterwards; thus
 -	# /dev/console has the tmpfs type
 -	fs_rw_tmpfs_chr_files(setfiles_t)
 -')
--
++init_dontaudit_use_fds(setsebool_t)
+ 
 -ifdef(`distro_redhat', `
 -	fs_rw_tmpfs_chr_files(setfiles_t)
 -	fs_rw_tmpfs_blk_files(setfiles_t)
@@ -27642,7 +27813,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/dev/shm/mono.*		gen_context(system_u:object_r:user_tmpfs_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdomain.if serefpolicy-3.6.3/policy/modules/system/userdomain.if
 --- nsaserefpolicy/policy/modules/system/userdomain.if	2009-01-19 11:07:34.000000000 -0500
-+++ serefpolicy-3.6.3/policy/modules/system/userdomain.if	2009-01-23 15:07:13.000000000 -0500
++++ serefpolicy-3.6.3/policy/modules/system/userdomain.if	2009-01-26 09:38:49.000000000 -0500
 @@ -30,8 +30,9 @@
  	')
  
@@ -28969,22 +29140,75 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Create, read, write, and delete files
  ##	in a user home subdirectory.
  ## </summary>
-@@ -1921,6 +2108,36 @@
+@@ -1921,7 +2108,7 @@
  
  ########################################
  ## <summary>
+-##	Create objects in a user home directory
 +##	Create objects in the /root directory
-+##	with an automatic type transition to
+ ##	with an automatic type transition to
+ ##	a specified private type.
+ ## </summary>
+@@ -1941,34 +2128,64 @@
+ ##	</summary>
+ ## </param>
+ #
+-interface(`userdom_user_home_content_filetrans',`
++interface(`userdom_admin_home_dir_filetrans',`
+ 	gen_require(`
+-		type user_home_dir_t, user_home_t;
++		type admin_home_t;
+ 	')
+ 
+-	filetrans_pattern($1, user_home_t, $2, $3)
+-	allow $1 user_home_dir_t:dir search_dir_perms;
+-	files_search_home($1)
++	filetrans_pattern($1, admin_home_t, $2, $3)
+ ')
+ 
+ ########################################
+ ## <summary>
+ ##	Create objects in a user home directory
+ ##	with an automatic type transition to
+-##	the user home file type.
 +##	a specified private type.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
++## <param name="private_type">
++##	<summary>
++##	The type of the object to create.
++##	</summary>
++## </param>
+ ## <param name="object_class">
+ ##	<summary>
+ ##	The class of the object to be created.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`userdom_user_home_dir_filetrans_user_home_content',`
++interface(`userdom_user_home_content_filetrans',`
++	gen_require(`
++		type user_home_dir_t, user_home_t;
++	')
++
++	filetrans_pattern($1, user_home_t, $2, $3)
++	allow $1 user_home_dir_t:dir search_dir_perms;
++	files_search_home($1)
++')
++
++########################################
++## <summary>
++##	Create objects in a user home directory
++##	with an automatic type transition to
++##	the user home file type.
 +## </summary>
 +## <param name="domain">
 +##	<summary>
 +##	Domain allowed access.
-+##	</summary>
-+## </param>
-+## <param name="private_type">
-+##	<summary>
-+##	The type of the object to create.
 +##	</summary>
 +## </param>
 +## <param name="object_class">
@@ -28993,19 +29217,10 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +##	</summary>
 +## </param>
 +#
-+interface(`userdom_admin_home_dir_filetrans',`
-+	gen_require(`
-+		type admin_home_t;
-+	')
-+
-+	filetrans_pattern($1, admin_home_t, $2, $3)
-+')
-+
-+########################################
-+## <summary>
- ##	Create objects in a user home directory
- ##	with an automatic type transition to
- ##	a specified private type.
++interface(`userdom_user_home_dir_filetrans_user_home_content',`
+ 	gen_require(`
+ 		type user_home_dir_t, user_home_t;
+ 	')
 @@ -2819,6 +3036,24 @@
  
  ########################################
@@ -29064,7 +29279,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Send a dbus message to all user domains.
  ## </summary>
  ## <param name="domain">
-@@ -2981,3 +3235,264 @@
+@@ -2981,3 +3235,284 @@
  
  	allow $1 userdomain:dbus send_msg;
  ')
@@ -29329,6 +29544,26 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 +	allow $1 user_home_t:file execmod;
 +')
++
++########################################
++## <summary>
++##	Execute user home files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`userdom_exec_admin_home_files',`
++	gen_require(`
++		type admin_home_t;
++	')
++
++	exec_files_pattern($1, admin_home_t, admin_home_t)
++')
++
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdomain.te serefpolicy-3.6.3/policy/modules/system/userdomain.te
 --- nsaserefpolicy/policy/modules/system/userdomain.te	2009-01-19 11:07:34.000000000 -0500
 +++ serefpolicy-3.6.3/policy/modules/system/userdomain.te	2009-01-19 13:10:02.000000000 -0500
