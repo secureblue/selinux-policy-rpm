@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.3
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan 27 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-10
+- Fixes for wicd daemon
+
 * Mon Jan 26 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-9
 - More mls/rpm fixes 
 
