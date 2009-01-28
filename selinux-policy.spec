@@ -203,7 +203,7 @@ touch %{buildroot}%{_sysconfdir}/selinux/config
 touch %{buildroot}%{_sysconfdir}/sysconfig/selinux
 
 # Always create policy module package directories
-mkdir -p %{buildroot}%{_usr}/share/selinux/{targeted,mls}/
+mkdir -p %{buildroot}%{_usr}/share/selinux/{targeted,mls,minimum,modules}/
 
 # Install devel
 make clean
