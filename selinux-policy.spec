@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.3
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-12
+- Add back transition from xguest to mozilla
+
 * Fri Jan 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-11
 - Add virt_content_ro_t and labeling for isos directory
 
