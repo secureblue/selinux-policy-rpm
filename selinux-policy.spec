@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.3
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -234,7 +234,7 @@ make clean
 %installCmds olpc mcs n y allow
 %endif
 
-make UNK_PERMS=allow NAME=targeted TYPE=targeted-mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
+make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
 mkdir %{buildroot}%{_usr}/share/selinux/devel/
 mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
 install -m 755 $RPM_SOURCE_DIR/policygentool %{buildroot}%{_usr}/share/selinux/devel/
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Feb 2 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-13
+- Add boolean to disallow unconfined_t login
+
 * Fri Jan 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-12
 - Add back transition from xguest to mozilla
 
