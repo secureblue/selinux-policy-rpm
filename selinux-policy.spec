@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.3
-Release: 13%{?dist}
+Version: 3.6.4
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -184,7 +184,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2904.
+Based off of reference policy: Checked out revision  2907.
 
 %build
 
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 3 2009 Dan Walsh <dwalsh@redhat.com> 3.6.4-1
+- Upgrade to latest upstream 
+
 * Mon Feb 2 2009 Dan Walsh <dwalsh@redhat.com> 3.6.3-13
 - Add boolean to disallow unconfined_t login
 
