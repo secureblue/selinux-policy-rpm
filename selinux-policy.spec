@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.4
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 5 2009 Dan Walsh <dwalsh@redhat.com> 3.6.4-3
+- Grab remainder of network_peer_controls patch
+
 * Wed Feb 4 2009 Dan Walsh <dwalsh@redhat.com> 3.6.4-2
 - More fixes for devicekit
 
