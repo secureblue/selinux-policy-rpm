@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.4
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Sun Feb 8 2009 Dan Walsh <dwalsh@redhat.com> 3.6.4-5
+- Allow xdm to create user_tmp_t sockets for switch user to work
+
 * Thu Feb 5 2009 Dan Walsh <dwalsh@redhat.com> 3.6.4-4
 - Fix staff_t domain
 
