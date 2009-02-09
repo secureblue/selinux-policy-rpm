@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.4
-Release: 5%{?dist}
+Version: 3.6.5
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -184,7 +184,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2907.
+Based off of reference policy: Checked out revision  2908.
 
 %build
 
@@ -444,6 +444,12 @@ exit 0
 %endif
 
 %changelog
+* Mon Feb 9 2009 Dan Walsh <dwalsh@redhat.com> 3.6.5-1
+- Add setrans contains from upstream 
+
+* Mon Feb 9 2009 Dan Walsh <dwalsh@redhat.com> 3.6.4-6
+- Do transitions outside of the booleans
+
 * Sun Feb 8 2009 Dan Walsh <dwalsh@redhat.com> 3.6.4-5
 - Allow xdm to create user_tmp_t sockets for switch user to work
 
