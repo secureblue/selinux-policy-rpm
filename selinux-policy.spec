@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 10 2009 Dan Walsh <dwalsh@redhat.com> 3.6.5-2
+- Add git web policy
+
 * Mon Feb 9 2009 Dan Walsh <dwalsh@redhat.com> 3.6.5-1
 - Add setrans contains from upstream 
 
