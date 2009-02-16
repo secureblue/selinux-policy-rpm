@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.5
-Release: 3%{?dist}
+Version: 3.6.6
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -184,7 +184,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2908.
+Based off of reference policy: Checked out revision  2909.
 
 %build
 
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 11 2009 Dan Walsh <dwalsh@redhat.com> 3.6.6-1
+- Re-add corenet_in_generic_if(unlabeled_t)
+
 * Wed Feb 11 2009 Dan Walsh <dwalsh@redhat.com> 3.6.5-3
 
 * Tue Feb 10 2009 Dan Walsh <dwalsh@redhat.com> 3.6.5-2
