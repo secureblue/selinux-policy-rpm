@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.6
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 17 2009 Dan Walsh <dwalsh@redhat.com> 3.6.6-2
+- Fix squidGuard labeling
+
 * Wed Feb 11 2009 Dan Walsh <dwalsh@redhat.com> 3.6.6-1
 - Re-add corenet_in_generic_if(unlabeled_t)
 
