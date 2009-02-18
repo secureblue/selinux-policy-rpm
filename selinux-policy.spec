@@ -1,4 +1,4 @@
- %define distro redhat
+%define distro redhat
 %define polyinstatiate n
 %define monolithic n
 %if %{?BUILD_TARGETED:0}%{!?BUILD_TARGETED:1}
@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.6
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -137,6 +137,8 @@ bzip2 %{buildroot}/%{_usr}/share/selinux/%1/*.pp
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/dbus_contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/x_contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/default_contexts \
+%config	%{_sysconfdir}/selinux/%1/contexts/virtual_domain_context \
+%config	%{_sysconfdir}/selinux/%1/contexts/virtual_image_context \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/default_type \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/failsafe_context \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/initrc_context \
@@ -444,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 18 2009 Dan Walsh <dwalsh@redhat.com> 3.6.6-5
+- add virtual_image_context and virtual_domain_context files
+
 * Tue Feb 17 2009 Dan Walsh <dwalsh@redhat.com> 3.6.6-4
 - Allow rpcd_t to send signal to mount_t
 - Allow libvirtd to run ranged
