@@ -3551,17 +3551,17 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  dbus_system_bus_client(podsleuth_t)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/qemu.fc serefpolicy-3.6.6/policy/modules/apps/qemu.fc
 --- nsaserefpolicy/policy/modules/apps/qemu.fc	2008-08-07 11:15:02.000000000 -0400
-+++ serefpolicy-3.6.6/policy/modules/apps/qemu.fc	2009-02-16 13:18:06.000000000 -0500
++++ serefpolicy-3.6.6/policy/modules/apps/qemu.fc	2009-02-17 15:43:19.000000000 -0500
 @@ -1,2 +1,6 @@
  /usr/bin/qemu	--	gen_context(system_u:object_r:qemu_exec_t,s0)
  /usr/bin/qemu-kvm --	gen_context(system_u:object_r:qemu_exec_t,s0)
 +
-+/var/cache/libvirt(/.*)? -- gen_context(system_u:object_r:qemu_cache_t,s0)
++/var/cache/libvirt(/.*)?	gen_context(system_u:object_r:qemu_cache_t,s0)
 +
-+/var/run/libvirt/qemu(/.*)? -- gen_context(system_u:object_r:qemu_var_run_t,s0)
++/var/run/libvirt/qemu(/.*)? 	gen_context(system_u:object_r:qemu_var_run_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/qemu.if serefpolicy-3.6.6/policy/modules/apps/qemu.if
 --- nsaserefpolicy/policy/modules/apps/qemu.if	2009-01-19 11:03:28.000000000 -0500
-+++ serefpolicy-3.6.6/policy/modules/apps/qemu.if	2009-02-16 13:18:06.000000000 -0500
++++ serefpolicy-3.6.6/policy/modules/apps/qemu.if	2009-02-17 17:18:08.000000000 -0500
 @@ -40,6 +40,93 @@
  
  	qemu_domtrans($1)
@@ -3748,7 +3748,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ## </summary>
  ## <param name="domain">
  ## <summary>
-@@ -127,84 +290,73 @@
+@@ -127,84 +290,85 @@
  #
  template(`qemu_domain_template',`
  
@@ -3773,6 +3773,9 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -	#
 +	type $1_tmpfs_t;
 +	files_tmpfs_file($1_tmpfs_t)
++
++	type $1_image_t;
++	virt_image($1_image_t)
  
 -	allow $1_t self:capability { dac_read_search dac_override };
 -	allow $1_t self:process { execstack execmem signal getsched };
@@ -3780,8 +3783,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -	allow $1_t self:shm create_shm_perms;
 -	allow $1_t self:unix_stream_socket create_stream_socket_perms;
 -	allow $1_t self:tcp_socket create_stream_socket_perms;
-+	type $1_image_t;
-+	virt_image($1_image_t)
++	allow $1_t self:capability kill;
++	allow $1_t self:unix_dgram_socket { create_socket_perms sendto };
 +
 +	manage_dirs_pattern($1_t, $1_image_t, $1_image_t)
 +	manage_files_pattern($1_t, $1_image_t, $1_image_t)
@@ -3790,6 +3793,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	manage_dirs_pattern($1_t, $1_tmp_t, $1_tmp_t)
  	manage_files_pattern($1_t, $1_tmp_t, $1_tmp_t)
++	manage_lnk_files_pattern($1_t, $1_tmp_t, $1_tmp_t)
  	files_tmp_filetrans($1_t, $1_tmp_t, { file dir })
  
 -	kernel_read_system_state($1_t)
@@ -3820,6 +3824,10 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +	manage_lnk_files_pattern($1_t, $1_tmpfs_t, $1_tmpfs_t)
 +	fs_tmpfs_filetrans($1_t, $1_tmpfs_t, { dir file lnk_file })
 +	fs_getattr_tmpfs($1_t)
++
++	userdom_read_user_tmpfs_files($1_t)
++	userdom_signull_unpriv_users($1_t)
++	userdom_admin_home_dir_filetrans($1_t, $1_tmp_t, {file dir })
  
 -	storage_raw_write_removable_device($1_t)
 -	storage_raw_read_removable_device($1_t)
@@ -3831,10 +3839,13 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -	miscfiles_read_localization($1_t)
 -
 -	sysnet_read_config($1_t)
--
--	userdom_use_user_terminals($1_t)
 +	optional_policy(`
 +		xserver_common_x_domain_template(user, $1_t)
++	')
+ 
+-	userdom_use_user_terminals($1_t)
++	optional_policy(`
++		dbus_system_bus_client($1_t)
 +	')
 +')
  
@@ -3887,7 +3898,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/qemu.te serefpolicy-3.6.6/policy/modules/apps/qemu.te
 --- nsaserefpolicy/policy/modules/apps/qemu.te	2009-01-19 11:03:28.000000000 -0500
-+++ serefpolicy-3.6.6/policy/modules/apps/qemu.te	2009-02-16 13:18:06.000000000 -0500
++++ serefpolicy-3.6.6/policy/modules/apps/qemu.te	2009-02-17 16:14:43.000000000 -0500
 @@ -6,6 +6,8 @@
  # Declarations
  #
@@ -7271,8 +7282,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/staff.te serefpolicy-3.6.6/policy/modules/roles/staff.te
 --- nsaserefpolicy/policy/modules/roles/staff.te	2008-11-11 16:13:47.000000000 -0500
-+++ serefpolicy-3.6.6/policy/modules/roles/staff.te	2009-02-16 13:18:06.000000000 -0500
-@@ -15,156 +15,87 @@
++++ serefpolicy-3.6.6/policy/modules/roles/staff.te	2009-02-17 13:42:06.000000000 -0500
+@@ -15,156 +15,88 @@
  # Local policy
  #
  
@@ -7354,6 +7365,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -	mozilla_role(staff_r, staff_t)
 -')
 +seutil_run_newrole(staff_t, staff_r)
++netutils_run_ping(staff_t, staff_r)
  
  optional_policy(`
 -	mplayer_role(staff_r, staff_t)
@@ -9049,7 +9061,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/apache.te serefpolicy-3.6.6/policy/modules/services/apache.te
 --- nsaserefpolicy/policy/modules/services/apache.te	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.6/policy/modules/services/apache.te	2009-02-16 13:18:06.000000000 -0500
++++ serefpolicy-3.6.6/policy/modules/services/apache.te	2009-02-17 16:09:12.000000000 -0500
 @@ -19,6 +19,8 @@
  # Declarations
  #
@@ -11575,7 +11587,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cups.te serefpolicy-3.6.6/policy/modules/services/cups.te
 --- nsaserefpolicy/policy/modules/services/cups.te	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.6/policy/modules/services/cups.te	2009-02-16 13:18:06.000000000 -0500
++++ serefpolicy-3.6.6/policy/modules/services/cups.te	2009-02-17 15:28:51.000000000 -0500
 @@ -20,9 +20,18 @@
  type cupsd_etc_t;
  files_config_file(cupsd_etc_t)
@@ -12028,7 +12040,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /var/run/dbus(/.*)?		gen_context(system_u:object_r:system_dbusd_var_run_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/dbus.if serefpolicy-3.6.6/policy/modules/services/dbus.if
 --- nsaserefpolicy/policy/modules/services/dbus.if	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.6/policy/modules/services/dbus.if	2009-02-16 13:18:06.000000000 -0500
++++ serefpolicy-3.6.6/policy/modules/services/dbus.if	2009-02-17 16:08:31.000000000 -0500
 @@ -44,6 +44,7 @@
  
  		attribute session_bus_type;
@@ -18513,7 +18525,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/postfix.te serefpolicy-3.6.6/policy/modules/services/postfix.te
 --- nsaserefpolicy/policy/modules/services/postfix.te	2009-01-19 11:07:34.000000000 -0500
-+++ serefpolicy-3.6.6/policy/modules/services/postfix.te	2009-02-17 08:27:34.000000000 -0500
++++ serefpolicy-3.6.6/policy/modules/services/postfix.te	2009-02-17 12:58:06.000000000 -0500
 @@ -6,6 +6,15 @@
  # Declarations
  #
@@ -18829,7 +18841,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	mailman_read_data_files(postfix_smtpd_t)
  ')
  
-@@ -572,12 +666,13 @@
+@@ -572,15 +666,21 @@
  files_tmp_filetrans(postfix_virtual_t, postfix_virtual_tmp_t, { file dir })
  
  # connect to master process
@@ -18844,6 +18856,14 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  mta_read_aliases(postfix_virtual_t)
  mta_delete_spool(postfix_virtual_t)
+ # For reading spamassasin
+ mta_read_config(postfix_virtual_t)
+ mta_manage_spool(postfix_virtual_t)
++
++userdom_manage_user_home_dirs(postfix_virtual_t)
++userdom_manage_user_home_content(postfix_virtual_t)
++userdom_home_filetrans_user_home_dir(postfix_virtual_t)
++userdom_user_home_dir_filetrans_user_home_content(postfix_virtual_t, {file dir })
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/postgresql.fc serefpolicy-3.6.6/policy/modules/services/postgresql.fc
 --- nsaserefpolicy/policy/modules/services/postgresql.fc	2008-08-14 13:08:27.000000000 -0400
 +++ serefpolicy-3.6.6/policy/modules/services/postgresql.fc	2009-02-16 13:18:06.000000000 -0500
@@ -20479,7 +20499,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /usr/sbin/rpc\.nfsd	--	gen_context(system_u:object_r:nfsd_exec_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/rpc.if serefpolicy-3.6.6/policy/modules/services/rpc.if
 --- nsaserefpolicy/policy/modules/services/rpc.if	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.6/policy/modules/services/rpc.if	2009-02-16 13:18:06.000000000 -0500
++++ serefpolicy-3.6.6/policy/modules/services/rpc.if	2009-02-17 11:57:20.000000000 -0500
 @@ -88,8 +88,11 @@
  	# bind to arbitary unused ports
  	corenet_tcp_bind_generic_port($1_t)
@@ -20493,7 +20513,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	fs_rw_rpc_named_pipes($1_t) 
  	fs_search_auto_mountpoints($1_t)
-@@ -205,6 +208,24 @@
+@@ -205,6 +208,25 @@
  
  ########################################
  ## <summary>
@@ -20511,6 +20531,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +	')
 +
 +	domtrans_pattern($1, rpcd_exec_t, rpcd_t)
++	allow rpcd_t $1:process signal;
 +')
 +
 +########################################
@@ -20518,7 +20539,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Read NFS exported content.
  ## </summary>
  ## <param name="domain">
-@@ -335,3 +356,22 @@
+@@ -335,3 +357,22 @@
  	files_search_var_lib($1)
  	read_files_pattern($1, var_lib_nfs_t, var_lib_nfs_t)
  ')
@@ -23273,7 +23294,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ## </summary>
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/virt.te serefpolicy-3.6.6/policy/modules/services/virt.te
 --- nsaserefpolicy/policy/modules/services/virt.te	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.6/policy/modules/services/virt.te	2009-02-16 13:18:06.000000000 -0500
++++ serefpolicy-3.6.6/policy/modules/services/virt.te	2009-02-17 15:29:03.000000000 -0500
 @@ -32,6 +32,10 @@
  type virt_image_t, virt_image_type; # customizable
  virt_image(virt_image_t)
@@ -23285,7 +23306,20 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  type virt_log_t;
  logging_log_file(virt_log_t)
  
-@@ -53,7 +57,7 @@
+@@ -48,12 +52,20 @@
+ type virtd_initrc_exec_t;
+ init_script_file(virtd_initrc_exec_t)
+ 
++ifdef(`enable_mcs',`
++	init_ranged_daemon_domain(virtd_t, virtd_exec_t,s0 - mcs_systemhigh)
++')
++
++ifdef(`enable_mls',`
++	init_ranged_daemon_domain(virtd_t, virtd_exec_t,s0 - mls_systemhigh)
++')
++
+ ########################################
+ #
  # virtd local policy
  #
  
@@ -23294,7 +23328,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  allow virtd_t self:process { getsched sigkill signal execmem };
  allow virtd_t self:fifo_file rw_file_perms;
  allow virtd_t self:unix_stream_socket create_stream_socket_perms;
-@@ -69,6 +73,9 @@
+@@ -69,6 +81,9 @@
  
  manage_files_pattern(virtd_t, virt_image_type, virt_image_type)
  
@@ -23304,7 +23338,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  manage_dirs_pattern(virtd_t, virt_log_t, virt_log_t)
  manage_files_pattern(virtd_t, virt_log_t, virt_log_t)
  logging_log_filetrans(virtd_t, virt_log_t, { file dir })
-@@ -96,7 +103,7 @@
+@@ -96,7 +111,7 @@
  corenet_tcp_sendrecv_generic_node(virtd_t)
  corenet_tcp_sendrecv_all_ports(virtd_t)
  corenet_tcp_bind_generic_node(virtd_t)
@@ -23313,7 +23347,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  corenet_tcp_bind_vnc_port(virtd_t)
  corenet_tcp_connect_vnc_port(virtd_t)
  corenet_tcp_connect_soundd_port(virtd_t)
-@@ -110,11 +117,13 @@
+@@ -110,11 +125,13 @@
  
  files_read_usr_files(virtd_t)
  files_read_etc_files(virtd_t)
@@ -23327,7 +23361,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  storage_raw_write_removable_device(virtd_t)
  storage_raw_read_removable_device(virtd_t)
-@@ -129,7 +138,11 @@
+@@ -129,7 +146,11 @@
  
  logging_send_syslog_msg(virtd_t)
  
@@ -23339,7 +23373,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  tunable_policy(`virt_use_nfs',`
  	fs_manage_nfs_dirs(virtd_t)
-@@ -173,16 +186,17 @@
+@@ -173,16 +194,17 @@
  	iptables_domtrans(virtd_t)
  ')
  
@@ -29287,7 +29321,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/dev/shm/mono.*		gen_context(system_u:object_r:user_tmpfs_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdomain.if serefpolicy-3.6.6/policy/modules/system/userdomain.if
 --- nsaserefpolicy/policy/modules/system/userdomain.if	2009-01-19 11:07:34.000000000 -0500
-+++ serefpolicy-3.6.6/policy/modules/system/userdomain.if	2009-02-16 17:24:41.000000000 -0500
++++ serefpolicy-3.6.6/policy/modules/system/userdomain.if	2009-02-17 17:06:13.000000000 -0500
 @@ -30,8 +30,9 @@
  	')
  
@@ -30753,7 +30787,32 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  interface(`userdom_rw_user_tmpfs_files',`
  	gen_require(`
  		type user_tmpfs_t;
-@@ -2814,7 +3043,43 @@
+@@ -2709,6 +2938,24 @@
+ 
+ ########################################
+ ## <summary>
++##	Send signull to unprivileged user domains.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`userdom_signull_unpriv_users',`
++	gen_require(`
++		attribute unpriv_userdomain;
++	')
++
++	allow $1 unpriv_userdomain:process signull;
++')
++
++########################################
++## <summary>
+ ##	Inherit the file descriptors from unprivileged user domains.
+ ## </summary>
+ ## <param name="domain">
+@@ -2814,7 +3061,43 @@
  		type user_tmp_t;
  	')
  
@@ -30798,7 +30857,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  ########################################
-@@ -2851,6 +3116,7 @@
+@@ -2851,6 +3134,7 @@
  	')
  
  	read_files_pattern($1,userdomain,userdomain)
@@ -30806,7 +30865,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	kernel_search_proc($1)
  ')
  
-@@ -2965,6 +3231,24 @@
+@@ -2965,6 +3249,24 @@
  
  ########################################
  ## <summary>
@@ -30831,7 +30890,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Send a dbus message to all user domains.
  ## </summary>
  ## <param name="domain">
-@@ -2981,3 +3265,313 @@
+@@ -2981,3 +3283,313 @@
  
  	allow $1 userdomain:dbus send_msg;
  ')

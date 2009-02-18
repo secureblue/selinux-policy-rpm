@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.6
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -444,6 +444,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 17 2009 Dan Walsh <dwalsh@redhat.com> 3.6.6-4
+- Allow rpcd_t to send signal to mount_t
+- Allow libvirtd to run ranged
+
 * Tue Feb 17 2009 Dan Walsh <dwalsh@redhat.com> 3.6.6-3
 - Fix sysnet/net_conf_t
 
