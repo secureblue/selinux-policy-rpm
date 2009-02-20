@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.6
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 19 2009 Dan Walsh <dwalsh@redhat.com> 3.6.6-6
+- Allow NetworkManager to manage /etc/NetworkManager/system-connections
+
 * Wed Feb 18 2009 Dan Walsh <dwalsh@redhat.com> 3.6.6-5
 - add virtual_image_context and virtual_domain_context files
 
