@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.6
-Release: 8%{?dist}
+Version: 3.6.7
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -186,7 +186,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2909.
+Based off of reference policy: Checked out revision  2913.
 
 %build
 
@@ -446,6 +446,12 @@ exit 0
 %endif
 
 %changelog
+* Mon Mar 2 2009 Dan Walsh <dwalsh@redhat.com> 3.6.7-1
+- Update to Latest upstream
+
+* Sat Feb 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.6-9
+- Fix setrans.conf to show SystemLow for s0
+
 * Fri Feb 27 2009 Dan Walsh <dwalsh@redhat.com> 3.6.6-8
 - Further confinement of qemu images via svirt
 
