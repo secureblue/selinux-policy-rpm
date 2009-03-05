@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.7
-Release: 2%{?dist}
+Version: 3.6.8
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -186,7 +186,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2913.
+Based off of reference policy: Checked out revision  2920.
 
 %build
 
@@ -319,7 +319,7 @@ if [ $1 -eq 1 ]; then
 #__eof
 restorecon -R /root /var/log /var/run 2> /dev/null
 else
-semodule -n -s targeted -r moilscanner  -r gamin -r audio_entropy -r iscsid 2>/dev/null
+semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid 2>/dev/null
 %loadpolicy targeted
 %relabel targeted
 fi
@@ -432,6 +432,7 @@ SELinux Reference policy mls base module.
 %saveFileContext mls
 
 %post mls 
+semodule -n -s mls -r mailscanner 2>/dev/null
 %loadpolicy mls
 
 if [ $1 != 1 ]; then
@@ -446,6 +447,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 4 2009 Dan Walsh <dwalsh@redhat.com> 3.6.8-1
+- Upgrade to latest patches
+
 * Wed Mar 4 2009 Dan Walsh <dwalsh@redhat.com> 3.6.7-2
 - Fixes for libvirt
 
