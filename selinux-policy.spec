@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.8
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -447,6 +447,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Mar 9 2009 Dan Walsh <dwalsh@redhat.com> 3.6.8-3
+- Add pulseaudio, sssd policy
+- Allow networkmanager to exec udevadm
+
 * Sat Mar 7 2009 Dan Walsh <dwalsh@redhat.com> 3.6.8-2
 - Add pulseaudio context
 
