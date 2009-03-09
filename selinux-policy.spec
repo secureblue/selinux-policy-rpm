@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.8
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -44,7 +44,7 @@ Source17: booleans-minimum.conf
 Source18: setrans-minimum.conf
 Source19: securetty_types-minimum
 
-Url: http://serefpolicy.sourceforge.net
+Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-python >= %{POLICYCOREUTILSVER} bzip2 
@@ -447,6 +447,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Mar 7 2009 Dan Walsh <dwalsh@redhat.com> 3.6.8-2
+- Add pulseaudio context
+
 * Thu Mar 4 2009 Dan Walsh <dwalsh@redhat.com> 3.6.8-1
 - Upgrade to latest patches
 
