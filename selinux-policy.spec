@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.8
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -368,9 +368,6 @@ SELinux Reference policy minimum base module.
 if [ $1 -eq 1 ]; then
 %loadminpolicy minimum
 semanage -S minimum -i - << __eof
-user -a -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u 
-__eof
-semanage -S minimum -i - << __eof
 login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
 login -m  -s unconfined_u -r s0-s0:c0.c1023 root
 __eof
@@ -447,6 +444,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Mar 10 2009 Dan Walsh <dwalsh@redhat.com> 3.6.8-4
+- Fixes for iscsid and sssd
+- More cleanups for upgrade from F10 to Rawhide.
+
 * Mon Mar 9 2009 Dan Walsh <dwalsh@redhat.com> 3.6.8-3
 - Add pulseaudio, sssd policy
 - Allow networkmanager to exec udevadm
