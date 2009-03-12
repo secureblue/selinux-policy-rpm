@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.8
-Release: 4%{?dist}
+Version: 3.6.9
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -186,7 +186,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2920.
+Based off of reference policy: Checked out revision  2925.
 
 %build
 
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 12 2009 Dan Walsh <dwalsh@redhat.com> 3.6.9-1
+- Upgrade to latest upstream
+
 * Tue Mar 10 2009 Dan Walsh <dwalsh@redhat.com> 3.6.8-4
 - Fixes for iscsid and sssd
 - More cleanups for upgrade from F10 to Rawhide.
