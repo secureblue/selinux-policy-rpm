@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.10
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 2 2009 Dan Walsh <dwalsh@redhat.com> 3.6.10-6
+- Dontaudit listing of /root directory for cron system jobs
+
 * Mon Mar 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.10-5
 - Fix missing ld.so.cache label
 
