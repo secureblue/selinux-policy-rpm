@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.10
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -43,6 +43,7 @@ Source16: modules-minimum.conf
 Source17: booleans-minimum.conf
 Source18: setrans-minimum.conf
 Source19: securetty_types-minimum
+Source20: customizable_types
 
 Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -113,7 +114,7 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 install -m0644 $RPM_SOURCE_DIR/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
 install -m0644 $RPM_SOURCE_DIR/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
-echo -n > %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
+install -m0644 $RPM_SOURCE_DIR/customizable_types %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
 bzip2 %{buildroot}/%{_usr}/share/selinux/%1/*.pp
 %nil
 
@@ -245,7 +246,6 @@ install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
 install -m 644 doc/policy.* %{buildroot}%{_usr}/share/selinux/devel/
 echo  "xdg-open file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
-
 
 %clean
 %{__rm} -fR %{buildroot}
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 3 2009 Dan Walsh <dwalsh@redhat.com> 3.6.10-8
+- Add customizable_types for svirt
+
 * Fri Apr 3 2009 Dan Walsh <dwalsh@redhat.com> 3.6.10-7
 - Allow setroubelshoot exec* privs to prevent crash from bad libraries
 - add cpufreqselector
