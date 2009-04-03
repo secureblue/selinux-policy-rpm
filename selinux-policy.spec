@@ -15,12 +15,12 @@
 %endif
 %define POLICYVER 23
 %define libsepolver 2.0.20-1
-%define POLICYCOREUTILSVER 2.0.61-7
+%define POLICYCOREUTILSVER 2.0.62-7
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.10
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -444,6 +444,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 3 2009 Dan Walsh <dwalsh@redhat.com> 3.6.10-7
+- Allow setroubelshoot exec* privs to prevent crash from bad libraries
+- add cpufreqselector
+
 * Thu Apr 2 2009 Dan Walsh <dwalsh@redhat.com> 3.6.10-6
 - Dontaudit listing of /root directory for cron system jobs
 
