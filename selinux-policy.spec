@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.10
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -444,6 +444,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 3 2009 Dan Walsh <dwalsh@redhat.com> 3.6.10-9
+- Allow podsleuth to use tmpfs files
+
 * Fri Apr 3 2009 Dan Walsh <dwalsh@redhat.com> 3.6.10-8
 - Add customizable_types for svirt
 
