@@ -19,7 +19,7 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.11
+Version: 3.6.12
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -187,7 +187,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2943.
+Based off of reference policy: Checked out revision  2945.
 
 %build
 
@@ -444,6 +444,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 7 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-1
+- Upgrade to latest upstream
+- Allow devicekit_disk sys_rawio
+
 * Mon Apr 6 2009 Dan Walsh <dwalsh@redhat.com> 3.6.11-1
 - Dontaudit binds to ports < 1024 for named
 - Upgrade to latest upstream
