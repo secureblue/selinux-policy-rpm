@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -167,7 +167,7 @@ fi
 
 %define loadminpolicy() \
 ( cd /usr/share/selinux/%1; \
-semodule -b base.pp.bz2 -i unconfined.pp.bz2 -s %1; \
+semodule -b base.pp.bz2 -i unconfined.pp.bz2 unconfineduser.pp.bz2 -s %1; \
 ); \
 
 %define loadpolicy() \
@@ -313,14 +313,10 @@ SELinux Reference policy targeted base module.
 %post targeted
 if [ $1 -eq 1 ]; then
 %loadpolicy targeted
-#semanage -S targeted -i - << __eof
-#login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
-#login -m  -s unconfined_u -r s0-s0:c0.c1023 root
-#__eof
 restorecon -R /root /var/log /var/run 2> /dev/null
 else
 semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid 2>/dev/null
-%loadpolicy targeted
+%loadpolicy targeted unconfined.pp unconfineduser.pp
 %relabel targeted
 fi
 exit 0
@@ -444,6 +440,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 9 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-3
+- Separate out the ucnonfined user from the unconfined.pp package
+
 * Wed Apr 7 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-2
 - Make sure unconfined_java_t and unconfined_mono_t create user_tmpfs_t.
 
