@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -440,6 +440,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Apr 13 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-4
+- Add fail2ban_var_lib_t
+- Fixes for devicekit_power_t
+
 * Thu Apr 9 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-3
 - Separate out the ucnonfined user from the unconfined.pp package
 
