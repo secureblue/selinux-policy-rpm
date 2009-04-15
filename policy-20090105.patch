@@ -1689,8 +1689,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +permissive cpufreqselector_t;
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/gnome.fc serefpolicy-3.6.12/policy/modules/apps/gnome.fc
 --- nsaserefpolicy/policy/modules/apps/gnome.fc	2008-11-11 16:13:42.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/apps/gnome.fc	2009-04-07 16:01:44.000000000 -0400
-@@ -1,8 +1,12 @@
++++ serefpolicy-3.6.12/policy/modules/apps/gnome.fc	2009-04-15 08:01:57.000000000 -0400
+@@ -1,8 +1,16 @@
  HOME_DIR/\.config/gtk-.*	gen_context(system_u:object_r:gnome_home_t,s0)
  HOME_DIR/\.gconf(d)?(/.*)?	gen_context(system_u:object_r:gconf_home_t,s0)
 +HOME_DIR/\.gnome2(/.*)?		gen_context(system_u:object_r:gnome_home_t,s0)
@@ -1704,10 +1704,14 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -/usr/libexec/gconfd-2 	--	gen_context(system_u:object_r:gconfd_exec_t,s0)
 +# Don't use because toolchain is broken
 +#/usr/libexec/gconfd-2 	--	gen_context(system_u:object_r:gconfd_exec_t,s0)
++
++/usr/libexec/gconf-defaults-mechanism	    	--      gen_context(system_u:object_r:gconfdefaultsm_exec_t,s0)
++
++/usr/libexec/gnome-system-monitor-mechanism 	--      gen_context(system_u:object_r:gnomesystemmm_exec_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/gnome.if serefpolicy-3.6.12/policy/modules/apps/gnome.if
 --- nsaserefpolicy/policy/modules/apps/gnome.if	2008-11-11 16:13:41.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/apps/gnome.if	2009-04-07 16:01:44.000000000 -0400
-@@ -89,5 +89,154 @@
++++ serefpolicy-3.6.12/policy/modules/apps/gnome.if	2009-04-15 08:01:57.000000000 -0400
+@@ -89,5 +89,173 @@
  
  	allow $1 gnome_home_t:dir manage_dir_perms;
  	allow $1 gnome_home_t:file manage_file_perms;
@@ -1780,6 +1784,25 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 +	allow $1 gconf_etc_t:dir list_dir_perms;
 +	read_files_pattern($1, gconf_etc_t, gconf_etc_t)
++')
++
++#######################################
++## <summary>
++##      Manage gconf config files
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`gnome_manage_gconf_config',`
++        gen_require(`
++                type gconf_etc_t;
++        ')
++
++        allow $1 gconf_etc_t:dir list_dir_perms;
++        manage_files_pattern($1, gconf_etc_t, gconf_etc_t)
 +')
 +
 +########################################
@@ -1864,7 +1887,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/gnome.te serefpolicy-3.6.12/policy/modules/apps/gnome.te
 --- nsaserefpolicy/policy/modules/apps/gnome.te	2008-11-11 16:13:42.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/apps/gnome.te	2009-04-07 16:01:44.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/apps/gnome.te	2009-04-15 08:01:57.000000000 -0400
 @@ -9,16 +9,18 @@
  attribute gnomedomain;
  
@@ -1885,14 +1908,116 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  files_tmp_file(gconf_tmp_t)
  ubac_constrained(gconf_tmp_t)
  
-@@ -32,6 +34,7 @@
+@@ -32,8 +34,17 @@
  type gnome_home_t;
  typealias gnome_home_t alias { user_gnome_home_t staff_gnome_home_t sysadm_gnome_home_t };
  typealias gnome_home_t alias { auditadm_gnome_home_t secadm_gnome_home_t };
 +typealias gnome_home_t alias unconfined_gnome_home_t;
  userdom_user_home_content(gnome_home_t)
  
++type gconfdefaultsm_t;
++type gconfdefaultsm_exec_t;
++dbus_system_domain(gconfdefaultsm_t, gconfdefaultsm_exec_t)
++
++type gnomesystemmm_t;
++type gnomesystemmm_exec_t;
++dbus_system_domain(gnomesystemmm_t, gnomesystemmm_exec_t)
++
  ##############################
+ #
+ # Local Policy
+@@ -73,3 +84,91 @@
+ 	xserver_use_xdm_fds(gconfd_t)
+ 	xserver_rw_xdm_pipes(gconfd_t)
+ ')
++
++#######################################
++#
++# gconf-defaults-mechanisms local policy
++#
++
++allow gconfdefaultsm_t self:capability { dac_override sys_nice sys_ptrace };
++allow gconfdefaultsm_t self:process getsched;
++allow gconfdefaultsm_t self:fifo_file rw_fifo_file_perms;
++
++fs_list_inotifyfs(gconfdefaultsm_t)
++
++corecmd_search_bin(gconfdefaultsm_t)
++
++files_read_etc_files(gconfdefaultsm_t)
++files_read_usr_files(gconfdefaultsm_t)
++
++libs_use_ld_so(gconfdefaultsm_t)
++libs_use_shared_libs(gconfdefaultsm_t)
++
++miscfiles_read_localization(gconfdefaultsm_t)
++
++gnome_manage_gconf_home_files(gconfdefaultsm_t)
++gnome_manage_gconf_config(gconfdefaultsm_t)
++
++userdom_read_all_users_state(gconfdefaultsm_t)
++userdom_search_user_home_dirs(gconfdefaultsm_t)
++
++userdom_dontaudit_search_admin_dir(gconfdefaultsm_t)
++
++optional_policy(`
++        consolekit_dbus_chat(gconfdefaultsm_t)
++')
++
++optional_policy(`
++        nscd_dontaudit_search_pid(gconfdefaultsm_t)
++')
++
++optional_policy(`
++        polkit_domtrans_auth(gconfdefaultsm_t)
++        polkit_read_lib(gconfdefaultsm_t)
++        polkit_read_reload(gconfdefaultsm_t)
++')
++
++permissive gconfdefaultsm_t;
++
++#######################################
++#
++# gnome-system-monitor-mechanisms local policy
++#
++
++allow gnomesystemmm_t self:capability { sys_nice sys_ptrace };
++allow gnomesystemmm_t self:fifo_file rw_fifo_file_perms;
++
++fs_list_inotifyfs(gnomesystemmm_t)
++
++corecmd_search_bin(gnomesystemmm_t)
++
++domain_search_all_domains_state(gnomesystemmm_t)
++domain_setpriority_all_domains(gnomesystemmm_t)
++domain_signal_all_domains(gnomesystemmm_t)
++domain_sigstop_all_domains(gnomesystemmm_t)
++domain_kill_all_domains(gnomesystemmm_t)
++
++files_read_etc_files(gnomesystemmm_t)
++files_read_usr_files(gnomesystemmm_t)
++
++libs_use_ld_so(gnomesystemmm_t)
++libs_use_shared_libs(gnomesystemmm_t)
++
++userdom_read_all_users_state(gnomesystemmm_t)
++
++optional_policy(`
++        consolekit_dbus_chat(gnomesystemmm_t)
++')
++
++optional_policy(`
++        nscd_dontaudit_search_pid(gnomesystemmm_t)
++')
++
++optional_policy(`
++        polkit_domtrans_auth(gnomesystemmm_t)
++        polkit_read_lib(gnomesystemmm_t)
++        polkit_read_reload(gnomesystemmm_t)
++')
++
++permissive gnomesystemmm_t;
++
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/gpg.fc serefpolicy-3.6.12/policy/modules/apps/gpg.fc
 --- nsaserefpolicy/policy/modules/apps/gpg.fc	2008-11-11 16:13:42.000000000 -0500
 +++ serefpolicy-3.6.12/policy/modules/apps/gpg.fc	2009-04-07 16:01:44.000000000 -0400
@@ -3569,8 +3694,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/pulseaudio.te serefpolicy-3.6.12/policy/modules/apps/pulseaudio.te
 --- nsaserefpolicy/policy/modules/apps/pulseaudio.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/apps/pulseaudio.te	2009-04-07 16:01:44.000000000 -0400
-@@ -0,0 +1,109 @@
++++ serefpolicy-3.6.12/policy/modules/apps/pulseaudio.te	2009-04-14 13:40:38.000000000 -0400
+@@ -0,0 +1,110 @@
 +policy_module(pulseaudio,1.0.0)
 +
 +########################################
@@ -3671,6 +3796,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +	xserver_read_xdm_pid(pulseaudio_t)
 +	xserver_stream_connect(pulseaudio_t)
 +	xserver_manage_xdm_tmp_files(pulseaudio_t)
++	xserver_read_xdm_lib_files(pulseaudio_t)
 +')
 +
 +tunable_policy(`pulseaudio_network',`
@@ -4772,7 +4898,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /dev/usb.+		-c	gen_context(system_u:object_r:usb_device_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/devices.te serefpolicy-3.6.12/policy/modules/kernel/devices.te
 --- nsaserefpolicy/policy/modules/kernel/devices.te	2009-03-05 12:28:57.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/kernel/devices.te	2009-04-07 16:01:44.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/kernel/devices.te	2009-04-14 12:49:22.000000000 -0400
 @@ -188,6 +188,12 @@
  genfscon sysfs / gen_context(system_u:object_r:sysfs_t,s0)
  
@@ -4788,7 +4914,16 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  type urandom_device_t;
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/domain.if serefpolicy-3.6.12/policy/modules/kernel/domain.if
 --- nsaserefpolicy/policy/modules/kernel/domain.if	2009-01-05 15:39:38.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/kernel/domain.if	2009-04-09 10:10:17.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/kernel/domain.if	2009-04-15 08:01:57.000000000 -0400
+@@ -525,7 +525,7 @@
+ 	')
+ 
+ 	kernel_search_proc($1)
+-	allow $1 domain:dir search;
++	allow $1 domain:dir search_dir_perms;
+ ')
+ 
+ ########################################
 @@ -629,6 +629,7 @@
  
  	dontaudit $1 unconfined_domain_type:dir search_dir_perms;
@@ -5412,7 +5547,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/dev/shm		-d	gen_context(system_u:object_r:tmpfs_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/filesystem.if serefpolicy-3.6.12/policy/modules/kernel/filesystem.if
 --- nsaserefpolicy/policy/modules/kernel/filesystem.if	2009-03-04 16:49:00.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/kernel/filesystem.if	2009-04-07 16:01:44.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/kernel/filesystem.if	2009-04-14 14:14:57.000000000 -0400
 @@ -723,6 +723,24 @@
  
  ########################################
@@ -6400,7 +6535,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/unconfineduser.if serefpolicy-3.6.12/policy/modules/roles/unconfineduser.if
 --- nsaserefpolicy/policy/modules/roles/unconfineduser.if	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/roles/unconfineduser.if	2009-04-09 05:37:59.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/roles/unconfineduser.if	2009-04-14 14:12:12.000000000 -0400
 @@ -0,0 +1,638 @@
 +## <summary>Unconfiend user role</summary>
 +
@@ -9180,6 +9315,31 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +typealias httpd_sys_script_rw_t   alias httpd_fastcgi_script_rw_t;
 +typealias httpd_sys_script_t      alias httpd_fastcgi_script_t;
 +typealias httpd_var_run_t         alias httpd_fastcgi_var_run_t;
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/audioentropy.te serefpolicy-3.6.12/policy/modules/services/audioentropy.te
+--- nsaserefpolicy/policy/modules/services/audioentropy.te	2009-01-05 15:39:43.000000000 -0500
++++ serefpolicy-3.6.12/policy/modules/services/audioentropy.te	2009-04-14 08:16:44.000000000 -0400
+@@ -40,6 +40,9 @@
+ # and sample rate.
+ dev_write_sound(entropyd_t)
+ 
++files_read_etc_files(entropyd_t)
++files_read_usr_files(entropyd_t)
++
+ fs_getattr_all_fs(entropyd_t)
+ fs_search_auto_mountpoints(entropyd_t)
+ 
+@@ -53,6 +56,11 @@
+ userdom_dontaudit_search_user_home_dirs(entropyd_t)
+ 
+ optional_policy(`
++	alsa_read_lib(entropyd_t)
++	alsa_read_rw_config(entropyd_t)
++')
++
++optional_policy(`
+ 	seutil_sigchld_newrole(entropyd_t)
+ ')
+ 
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/automount.te serefpolicy-3.6.12/policy/modules/services/automount.te
 --- nsaserefpolicy/policy/modules/services/automount.te	2009-01-19 11:06:49.000000000 -0500
 +++ serefpolicy-3.6.12/policy/modules/services/automount.te	2009-04-07 16:01:44.000000000 -0400
@@ -9924,7 +10084,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/consolekit.te serefpolicy-3.6.12/policy/modules/services/consolekit.te
 --- nsaserefpolicy/policy/modules/services/consolekit.te	2009-01-05 15:39:43.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/services/consolekit.te	2009-04-07 16:01:44.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/services/consolekit.te	2009-04-15 07:59:08.000000000 -0400
 @@ -13,6 +13,9 @@
  type consolekit_var_run_t;
  files_pid_file(consolekit_var_run_t)
@@ -10002,7 +10162,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	optional_policy(`
  		unconfined_dbus_chat(consolekit_t)
-@@ -61,6 +93,31 @@
+@@ -61,6 +93,32 @@
  ')
  
  optional_policy(`
@@ -10012,6 +10172,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 +
 +optional_policy(`
++	xserver_read_xdm_pid(consolekit_t)
  	xserver_read_user_xauth(consolekit_t)
  	xserver_stream_connect(consolekit_t)
 +	xserver_ptrace_xdm(consolekit_t)
@@ -19578,7 +19739,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	ccs_read_config(ricci_modstorage_t)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/rpc.te serefpolicy-3.6.12/policy/modules/services/rpc.te
 --- nsaserefpolicy/policy/modules/services/rpc.te	2009-03-20 12:39:39.000000000 -0400
-+++ serefpolicy-3.6.12/policy/modules/services/rpc.te	2009-04-07 16:01:44.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/services/rpc.te	2009-04-14 10:34:47.000000000 -0400
 @@ -23,7 +23,7 @@
  gen_tunable(allow_nfsd_anon_write, false)
  
@@ -19614,6 +19775,15 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ########################################
  #
  # NFSD local policy
+@@ -116,7 +125,7 @@
+ # for exportfs and rpc.mountd
+ files_getattr_tmp_dirs(nfsd_t) 
+ # cjp: this should really have its own type
+-files_manage_mounttab(rpcd_t)
++files_manage_mounttab(nfsd_t)
+ 
+ fs_mount_nfsd_fs(nfsd_t) 
+ fs_search_nfsd_fs(nfsd_t) 
 @@ -141,6 +150,7 @@
  	fs_read_noxattr_fs_files(nfsd_t) 
  	auth_manage_all_files_except_shadow(nfsd_t)
@@ -22250,7 +22420,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/sssd.te serefpolicy-3.6.12/policy/modules/services/sssd.te
 --- nsaserefpolicy/policy/modules/services/sssd.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/services/sssd.te	2009-04-14 06:59:02.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/services/sssd.te	2009-04-14 08:14:52.000000000 -0400
 @@ -0,0 +1,70 @@
 +policy_module(sssd,1.0.0)
 +
@@ -23131,7 +23301,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /var/lib/pam_devperm/:0	--	gen_context(system_u:object_r:xdm_var_lib_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xserver.if serefpolicy-3.6.12/policy/modules/services/xserver.if
 --- nsaserefpolicy/policy/modules/services/xserver.if	2009-01-05 15:39:43.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/services/xserver.if	2009-04-07 16:01:44.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/services/xserver.if	2009-04-15 07:58:56.000000000 -0400
 @@ -90,7 +90,7 @@
  	allow $2 xauth_home_t:file manage_file_perms;
  	allow $2 xauth_home_t:file { relabelfrom relabelto };
@@ -23780,7 +23950,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/xserver.te serefpolicy-3.6.12/policy/modules/services/xserver.te
 --- nsaserefpolicy/policy/modules/services/xserver.te	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/services/xserver.te	2009-04-09 05:40:02.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/services/xserver.te	2009-04-14 12:39:57.000000000 -0400
 @@ -34,6 +34,13 @@
  
  ## <desc>
@@ -24154,7 +24324,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  optional_policy(`
-@@ -515,12 +583,41 @@
+@@ -515,12 +583,45 @@
  ')
  
  optional_policy(`
@@ -24166,6 +24336,10 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +	corecmd_bin_entry_type(xdm_t)
 +
 +	dbus_system_bus_client(xdm_t)
++
++	optional_policy(`
++		bluetooth_dbus_chat(xdm_t)
++	')
 +
 +	optional_policy(`
 +		devicekit_power_dbus_chat(xdm_t)
@@ -24196,7 +24370,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	hostname_exec(xdm_t)
  ')
  
-@@ -542,6 +639,23 @@
+@@ -542,6 +643,23 @@
  ')
  
  optional_policy(`
@@ -24220,7 +24394,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	seutil_sigchld_newrole(xdm_t)
  ')
  
-@@ -550,8 +664,9 @@
+@@ -550,8 +668,9 @@
  ')
  
  optional_policy(`
@@ -24232,7 +24406,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	ifndef(`distro_redhat',`
  		allow xdm_t self:process { execheap execmem };
-@@ -560,7 +675,6 @@
+@@ -560,7 +679,6 @@
  	ifdef(`distro_rhel4',`
  		allow xdm_t self:process { execheap execmem };
  	')
@@ -24240,7 +24414,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  optional_policy(`
  	userhelper_dontaudit_search_config(xdm_t)
-@@ -571,6 +685,10 @@
+@@ -571,6 +689,10 @@
  ')
  
  optional_policy(`
@@ -24251,7 +24425,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	xfs_stream_connect(xdm_t)
  ')
  
-@@ -587,7 +705,7 @@
+@@ -587,7 +709,7 @@
  # execheap needed until the X module loader is fixed.
  # NVIDIA Needs execstack
  
@@ -24260,7 +24434,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  dontaudit xserver_t self:capability chown;
  allow xserver_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
  allow xserver_t self:memprotect mmap_zero;
-@@ -602,9 +720,11 @@
+@@ -602,9 +724,11 @@
  allow xserver_t self:unix_stream_socket { create_stream_socket_perms connectto };
  allow xserver_t self:tcp_socket create_stream_socket_perms;
  allow xserver_t self:udp_socket create_socket_perms;
@@ -24272,7 +24446,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  allow xserver_t { input_xevent_t input_xevent_type }:x_event send;
  
-@@ -622,7 +742,7 @@
+@@ -622,7 +746,7 @@
  manage_sock_files_pattern(xserver_t, xserver_tmp_t, xserver_tmp_t)
  files_tmp_filetrans(xserver_t, xserver_tmp_t, { file dir sock_file })
  
@@ -24281,7 +24455,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  manage_dirs_pattern(xserver_t, xserver_tmpfs_t, xserver_tmpfs_t)
  manage_files_pattern(xserver_t, xserver_tmpfs_t, xserver_tmpfs_t)
-@@ -635,9 +755,19 @@
+@@ -635,9 +759,19 @@
  manage_lnk_files_pattern(xserver_t, xkb_var_lib_t, xkb_var_lib_t)
  files_search_var_lib(xserver_t)
  
@@ -24301,7 +24475,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  kernel_read_system_state(xserver_t)
  kernel_read_device_sysctls(xserver_t)
-@@ -680,9 +810,14 @@
+@@ -680,9 +814,14 @@
  dev_rw_xserver_misc(xserver_t)
  # read events - the synaptics touchpad driver reads raw events
  dev_rw_input_dev(xserver_t)
@@ -24316,7 +24490,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  files_read_etc_files(xserver_t)
  files_read_etc_runtime_files(xserver_t)
-@@ -697,8 +832,13 @@
+@@ -697,8 +836,13 @@
  fs_search_nfs(xserver_t)
  fs_search_auto_mountpoints(xserver_t)
  fs_search_ramfs(xserver_t)
@@ -24330,7 +24504,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  selinux_validate_context(xserver_t)
  selinux_compute_access_vector(xserver_t)
-@@ -720,6 +860,7 @@
+@@ -720,6 +864,7 @@
  
  miscfiles_read_localization(xserver_t)
  miscfiles_read_fonts(xserver_t)
@@ -24338,7 +24512,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  modutils_domtrans_insmod(xserver_t)
  
-@@ -742,7 +883,7 @@
+@@ -742,7 +887,7 @@
  ')
  
  ifdef(`enable_mls',`
@@ -24347,7 +24521,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	range_transition xserver_t xserver_t:x_drawable s0 - mls_systemhigh;
  ')
  
-@@ -774,12 +915,16 @@
+@@ -774,12 +919,16 @@
  ')
  
  optional_policy(`
@@ -24365,7 +24539,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	unconfined_domtrans(xserver_t)
  ')
  
-@@ -806,7 +951,7 @@
+@@ -806,7 +955,7 @@
  allow xserver_t xdm_var_lib_t:file { getattr read };
  dontaudit xserver_t xdm_var_lib_t:dir search;
  
@@ -24374,7 +24548,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  # Label pid and temporary files with derived types.
  manage_files_pattern(xserver_t, xdm_tmp_t, xdm_tmp_t)
-@@ -827,9 +972,14 @@
+@@ -827,9 +976,14 @@
  # to read ROLE_home_t - examine this in more detail
  # (xauth?)
  userdom_read_user_home_content_files(xserver_t)
@@ -24389,7 +24563,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  tunable_policy(`use_nfs_home_dirs',`
  	fs_manage_nfs_dirs(xserver_t)
  	fs_manage_nfs_files(xserver_t)
-@@ -844,11 +994,14 @@
+@@ -844,11 +998,14 @@
  
  optional_policy(`
  	dbus_system_bus_client(xserver_t)
@@ -24405,7 +24579,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  optional_policy(`
-@@ -856,6 +1009,11 @@
+@@ -856,6 +1013,11 @@
  	rhgb_rw_tmpfs_files(xserver_t)
  ')
  
@@ -24417,7 +24591,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ########################################
  #
  # Rules common to all X window domains
-@@ -881,6 +1039,8 @@
+@@ -881,6 +1043,8 @@
  # X Server
  # can read server-owned resources
  allow x_domain xserver_t:x_resource read;
@@ -24426,7 +24600,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  # can mess with own clients
  allow x_domain self:x_client { manage destroy };
  
-@@ -905,6 +1065,8 @@
+@@ -905,6 +1069,8 @@
  # operations allowed on my windows
  allow x_domain self:x_drawable { create destroy getattr setattr read write show hide list_child add_child remove_child manage send receive };
  
@@ -24435,7 +24609,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  # X Colormaps
  # can use the default colormap
  allow x_domain rootwindow_t:x_colormap { read use add_color };
-@@ -972,17 +1134,49 @@
+@@ -972,17 +1138,49 @@
  allow xserver_unconfined_type { x_domain xserver_t }:x_resource *;
  allow xserver_unconfined_type xevent_type:{ x_event x_synthetic_event } *;
  
@@ -24562,7 +24736,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/var/cache/coolkey(/.*)?	gen_context(system_u:object_r:auth_cache_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/authlogin.if serefpolicy-3.6.12/policy/modules/system/authlogin.if
 --- nsaserefpolicy/policy/modules/system/authlogin.if	2008-11-11 16:13:48.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/system/authlogin.if	2009-04-07 16:01:44.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/system/authlogin.if	2009-04-14 08:11:17.000000000 -0400
 @@ -43,20 +43,38 @@
  interface(`auth_login_pgm_domain',`
  	gen_require(`
@@ -25679,6 +25853,25 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  corenet_udp_bind_ipsecnat_port(racoon_t)
  
  dev_read_urand(racoon_t)
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/iptables.fc serefpolicy-3.6.12/policy/modules/system/iptables.fc
+--- nsaserefpolicy/policy/modules/system/iptables.fc	2009-04-06 12:42:08.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/system/iptables.fc	2009-04-14 10:54:45.000000000 -0400
+@@ -1,9 +1,12 @@
+ /sbin/ip6tables.*	--	gen_context(system_u:object_r:iptables_exec_t,s0)
+ /sbin/ipchains.*	--	gen_context(system_u:object_r:iptables_exec_t,s0)
+-/sbin/iptables.* 	--	gen_context(system_u:object_r:iptables_exec_t,s0)
++/sbin/ip6?tables		--	gen_context(system_u:object_r:iptables_exec_t,s0)
++/sbin/ip6?tables-restore 	--	gen_context(system_u:object_r:iptables_exec_t,s0)
++/sbin/ip6?tables-multi 	--	gen_context(system_u:object_r:iptables_exec_t,s0)
+ 
+-/usr/sbin/ip6tables.*	--	gen_context(system_u:object_r:iptables_exec_t,s0)
+ /usr/sbin/ipchains.*	--	gen_context(system_u:object_r:iptables_exec_t,s0)
+-/usr/sbin/iptables.* 	--	gen_context(system_u:object_r:iptables_exec_t,s0)
++/usr/sbin/iptables		--	gen_context(system_u:object_r:iptables_exec_t,s0)
++/usr/sbin/iptables-restore 	--	gen_context(system_u:object_r:iptables_exec_t,s0)
++/usr/sbin/iptables-multi 	--	gen_context(system_u:object_r:iptables_exec_t,s0)
+ 
+ /var/lib/shorewall(/.*)? --	gen_context(system_u:object_r:iptables_var_run_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/iptables.te serefpolicy-3.6.12/policy/modules/system/iptables.te
 --- nsaserefpolicy/policy/modules/system/iptables.te	2009-04-06 12:42:08.000000000 -0400
 +++ serefpolicy-3.6.12/policy/modules/system/iptables.te	2009-04-07 16:01:44.000000000 -0400
@@ -28122,7 +28315,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 -')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/unconfined.if serefpolicy-3.6.12/policy/modules/system/unconfined.if
 --- nsaserefpolicy/policy/modules/system/unconfined.if	2008-11-11 16:13:48.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/system/unconfined.if	2009-04-09 04:57:07.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/system/unconfined.if	2009-04-14 14:03:29.000000000 -0400
 @@ -12,14 +12,13 @@
  #
  interface(`unconfined_domain_noaudit',`
@@ -28174,6 +28367,17 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	tunable_policy(`allow_execheap',`
  		# Allow making the stack executable via mprotect.
  		allow $1 self:process execheap;
+@@ -57,8 +67,8 @@
+ 
+ 	tunable_policy(`allow_execstack',`
+ 		# Allow making the stack executable via mprotect;
+-		# execstack implies execmem;
+-		allow $1 self:process { execstack execmem };
++		# execstack implies execmem; Turned off for F11
++		allow $1 self:process { execstack };
+ #		auditallow $1 self:process execstack;
+ 	')
+ 
 @@ -69,6 +79,7 @@
  	optional_policy(`
  		# Communicate via dbusd.
@@ -28851,7 +29055,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/dev/shm/mono.*		gen_context(system_u:object_r:user_tmpfs_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdomain.if serefpolicy-3.6.12/policy/modules/system/userdomain.if
 --- nsaserefpolicy/policy/modules/system/userdomain.if	2009-01-19 11:07:34.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/system/userdomain.if	2009-04-13 10:33:55.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/system/userdomain.if	2009-04-14 14:04:17.000000000 -0400
 @@ -30,8 +30,9 @@
  	')
  

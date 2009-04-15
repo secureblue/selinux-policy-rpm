@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -440,6 +440,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 14 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-5
+- Allow audioentroy to read etc files
+
 * Mon Apr 13 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-4
 - Add fail2ban_var_lib_t
 - Fixes for devicekit_power_t
