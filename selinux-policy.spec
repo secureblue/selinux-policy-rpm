@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -440,6 +440,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 14 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-6
+- Allow cupsd_t to create link files in print_spool_t
+
 * Tue Apr 14 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-5
 - Allow audioentroy to read etc files
 
