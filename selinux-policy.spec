@@ -15,7 +15,7 @@
 %endif
 %define POLICYVER 23
 %define libsepolver 2.0.20-1
-%define POLICYCOREUTILSVER 2.0.62-7
+%define POLICYCOREUTILSVER 2.0.62-10
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
@@ -50,7 +50,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-python >= %{POLICYCOREUTILSVER} bzip2 
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.14-3
-Requires(post): /usr/bin/bunzip2 /bin/mktemp
+Requires(post): /usr/bin/bunzip2 /bin/mktemp /bin/awk
 Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
 Obsoletes: selinux-policy-devel
 Provides: selinux-policy-devel
@@ -94,7 +94,7 @@ cp -f $RPM_SOURCE_DIR/modules-%1.conf  ./policy/modules.conf \
 cp -f $RPM_SOURCE_DIR/booleans-%1.conf ./policy/booleans.conf \
 
 %define moduleList() %([ -f %{_sourcedir}/modules-%{1}.conf ] && \
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' %{_sourcedir}/modules-%{1}.conf )
+awk '$1 !~ "/^#/" && $1 != "unconfined" && $1 != "unconfineduser" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' %{_sourcedir}/modules-%{1}.conf )
 
 %define installCmds() \
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 base.pp \
@@ -172,7 +172,7 @@ semodule -b base.pp.bz2 -i unconfined.pp.bz2 unconfineduser.pp.bz2 -s %1; \
 
 %define loadpolicy() \
 ( cd /usr/share/selinux/%1; \
-semodule -b base.pp.bz2 -i %{expand:%%moduleList %1} -s %1; \
+semodule -b base.pp.bz2 -i %{expand:%%moduleList %1} %2 -s %1; \
 ); \
 
 %define relabel() \
@@ -311,12 +311,18 @@ SELinux Reference policy targeted base module.
 %saveFileContext targeted
 
 %post targeted
+set -x
 if [ $1 -eq 1 ]; then
-%loadpolicy targeted
+%loadpolicy targeted "unconfined.pp.bz2 unconfineduser.pp.bz2"
 restorecon -R /root /var/log /var/run 2> /dev/null
 else
 semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid 2>/dev/null
-%loadpolicy targeted unconfined.pp unconfineduser.pp
+
+packages=""
+for i in `semodule -l | awk '{print $1 }' | grep -E "(^unconfined$|^unconfineduser$)"`; do
+packages="$packages $i.pp.bz2"
+done
+%loadpolicy targeted $packages
 %relabel targeted
 fi
 exit 0
@@ -440,8 +446,12 @@ exit 0
 %endif
 
 %changelog
-* Tue Apr 14 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-6
+
+* Fri Apr 17 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-6
 - Allow cupsd_t to create link files in print_spool_t
+- Fix iscsi_stream_connect typo
+- Fix labeling on /etc/acpi/actions
+- Don't reinstall unconfine and unconfineuser on upgrade if they are not installed
 
 * Tue Apr 14 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-5
 - Allow audioentroy to read etc files
