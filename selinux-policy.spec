@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 6%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -311,9 +311,9 @@ SELinux Reference policy targeted base module.
 %saveFileContext targeted
 
 %post targeted
-set -x
 if [ $1 -eq 1 ]; then
-%loadpolicy targeted "unconfined.pp.bz2 unconfineduser.pp.bz2"
+packages="unconfined.pp.bz2 unconfineduser.pp.bz2"
+%loadpolicy targeted $packages
 restorecon -R /root /var/log /var/run 2> /dev/null
 else
 semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid 2>/dev/null
@@ -401,7 +401,7 @@ SELinux Reference policy olpc base module.
 %saveFileContext olpc
 
 %post olpc 
-%loadpolicy olpc
+%loadpolicy olpc ""
 
 if [ $1 -ne 1 ]; then
 %relabel olpc
@@ -432,7 +432,7 @@ SELinux Reference policy mls base module.
 
 %post mls 
 semodule -n -s mls -r mailscanner 2>/dev/null
-%loadpolicy mls
+%loadpolicy mls ""
 
 if [ $1 != 1 ]; then
 %relabel mls
@@ -446,6 +446,12 @@ exit 0
 %endif
 
 %changelog
+* Sat Apr 18 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-8
+- Fixes for podsleuth
+
+* Fri Apr 17 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-7
+- Turn off nsplugin transition
+- Remove Konsole leaked file descriptors for release
 
 * Fri Apr 17 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-6
 - Allow cupsd_t to create link files in print_spool_t
