@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 8%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,17 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-11
+- Allow nsplugin unix_read and write on users shm and sem
+- Allow sysadm_t to execute su
+
+* Tue Apr 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-10
+- Dontaudit attempts to getattr user_tmpfs_t by lvm
+- Allow nfs to share removable media
+
+* Mon Apr 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-9
+- Add ability to run postdrop from confined users
+
 * Sat Apr 18 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-8
 - Fixes for podsleuth
 
