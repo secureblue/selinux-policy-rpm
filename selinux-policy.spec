@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Apr 22 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-12
+- Allow sshd to read var_lib symlinks for freenx
+
 * Tue Apr 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-11
 - Allow nsplugin unix_read and write on users shm and sem
 - Allow sysadm_t to execute su
