@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 12%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,14 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 23 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-14
+- Allow pulseaudio to acquire_svc on session bus
+- Fix readahead labeling
+
+* Thu Apr 23 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-13
+- Allow sysadm_t to run rpm directly
+- libvirt needs fowner
+
 * Wed Apr 22 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-12
 - Allow sshd to read var_lib symlinks for freenx
 
