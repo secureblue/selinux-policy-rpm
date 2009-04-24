@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -213,8 +213,8 @@ make clean
 %if %{BUILD_TARGETED}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-%setupCmds targeted mcs n y allow
-%installCmds targeted mcs n y allow
+%setupCmds targeted mcs y y allow
+%installCmds targeted mcs y y allow
 %endif
 
 %if %{BUILD_MINIMUM}
@@ -237,7 +237,7 @@ make clean
 %installCmds olpc mcs n y allow
 %endif
 
-make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
+make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=y MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
 mkdir %{buildroot}%{_usr}/share/selinux/devel/
 mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
 install -m 755 $RPM_SOURCE_DIR/policygentool %{buildroot}%{_usr}/share/selinux/devel/
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 23 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-15
+- Additional perms for readahead
+
 * Thu Apr 23 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-14
 - Allow pulseaudio to acquire_svc on session bus
 - Fix readahead labeling
