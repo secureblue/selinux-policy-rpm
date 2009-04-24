@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,9 +446,11 @@ exit 0
 %endif
 
 %changelog
-* Fri Apr 24 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-17
+* Fri Apr 24 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-18
 - Allow initrc_t to delete dev_null
 - Allow readahead to configure auditing
+- Fix milter policy
+- Add /var/lib/readahead
 
 * Fri Apr 24 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-16
 - Update to latest milter code from Paul Howarth
