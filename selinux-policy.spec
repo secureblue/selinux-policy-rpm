@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 18%{?dist}
+Release: 19%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,7 +446,7 @@ exit 0
 %endif
 
 %changelog
-* Fri Apr 24 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-18
+* Fri Apr 24 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-19
 - Allow initrc_t to delete dev_null
 - Allow readahead to configure auditing
 - Fix milter policy
