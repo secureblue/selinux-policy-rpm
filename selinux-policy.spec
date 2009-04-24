@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 24 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-16
+- Update to latest milter code from Paul Howarth
+
 * Thu Apr 23 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-15
 - Additional perms for readahead
 
