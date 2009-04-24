@@ -14791,6 +14791,86 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  optional_policy(`
  	cron_system_entry(mailman_queue_t, mailman_queue_exec_t)
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/milter.fc serefpolicy-3.6.12/policy/modules/services/milter.fc
+--- nsaserefpolicy/policy/modules/services/milter.fc	2008-11-25 09:01:08.000000000 -0500
++++ serefpolicy-3.6.12/policy/modules/services/milter.fc	2009-04-24 07:20:31.000000000 -0400
+@@ -1,6 +1,8 @@
+-/usr/sbin/milter-regex				--	gen_context(system_u:object_r:regex_milter_exec_t,s0)
+-/var/spool/milter-regex(/.*)?				gen_context(system_u:object_r:regex_milter_data_t,s0)
+ 
++/usr/sbin/milter-regex				--	gen_context(system_u:object_r:regex_milter_exec_t,s0)
+ /usr/sbin/spamass-milter			--	gen_context(system_u:object_r:spamass_milter_exec_t,s0)
++/var/lib/spamass-milter(/.*)?				gen_context(system_u:object_r:spamass_milter_state_t,s0)
+ /var/run/spamass-milter(/.*)?				gen_context(system_u:object_r:spamass_milter_data_t,s0)
+ /var/run/spamass-milter\.pid			--	gen_context(system_u:object_r:spamass_milter_data_t,s0)
++
++/var/spool/milter-regex(/.*)?				gen_context(system_u:object_r:regex_milter_data_t,s0)
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/milter.if serefpolicy-3.6.12/policy/modules/services/milter.if
+--- nsaserefpolicy/policy/modules/services/milter.if	2008-11-25 09:01:08.000000000 -0500
++++ serefpolicy-3.6.12/policy/modules/services/milter.if	2009-04-24 07:22:51.000000000 -0400
+@@ -77,3 +77,24 @@
+ 	getattr_dirs_pattern($1, milter_data_type, milter_data_type)
+ 	getattr_sock_files_pattern($1, milter_data_type, milter_data_type)
+ ')
++
++########################################
++## <summary>
++##	Manage spamassassin milter state
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`milter_manage_spamass_state',`
++	gen_require(`
++		type spamass_milter_state_t;
++	')
++
++	files_search_var_lib($1)
++	manage_files_pattern($1, spamass_milter_state_t, spamass_milter_state_t)
++	manage_dirs_pattern($1, spamass_milter_state_t, spamass_milter_state_t)
++	manage_lnk_files_pattern($1, spamass_milter_state_t, spamass_milter_state_t)
++')
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/milter.te serefpolicy-3.6.12/policy/modules/services/milter.te
+--- nsaserefpolicy/policy/modules/services/milter.te	2008-11-25 09:01:08.000000000 -0500
++++ serefpolicy-3.6.12/policy/modules/services/milter.te	2009-04-24 07:22:01.000000000 -0400
+@@ -14,6 +14,12 @@
+ milter_template(regex)
+ milter_template(spamass)
+ 
++# Type for the spamass-milter home directory, under which spamassassin will
++# store system-wide preferences, bayes databases etc. if not configured to
++# use per-user configuration
++type spamass_milter_state_t;
++files_type(spamass_milter_state_t);
++
+ ########################################
+ #
+ # milter-regex local policy
+@@ -21,6 +27,10 @@
+ #   http://www.benzedrine.cx/milter-regex.html
+ #
+ 
++# The milter runs from /var/lib/spamass-milter
++files_search_var_lib(spamass_milter_t);
++allow spamass_milter_t spamass_milter_state_t:dir search_dir_perms;
++
+ # It removes any existing socket (not owned by root) whilst running as root
+ # and then calls setgid() and setuid() to drop privileges
+ allow regex_milter_t self:capability { setuid setgid dac_override };
+@@ -41,6 +51,10 @@
+ #   http://savannah.nongnu.org/projects/spamass-milt/
+ #
+ 
++# The milter runs from /var/lib/spamass-milter
++files_search_var_lib(spamass_milter_t);
++allow spamass_milter_t spamass_milter_state_t:dir search_dir_perms;
++
+ kernel_read_system_state(spamass_milter_t)
+ 
+ # When used with -b or -B options, the milter invokes sendmail to send mail
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/mta.fc serefpolicy-3.6.12/policy/modules/services/mta.fc
 --- nsaserefpolicy/policy/modules/services/mta.fc	2008-09-12 10:48:05.000000000 -0400
 +++ serefpolicy-3.6.12/policy/modules/services/mta.fc	2009-04-23 09:44:57.000000000 -0400
@@ -14904,7 +14984,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/mta.te serefpolicy-3.6.12/policy/modules/services/mta.te
 --- nsaserefpolicy/policy/modules/services/mta.te	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/services/mta.te	2009-04-23 09:44:57.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/services/mta.te	2009-04-24 07:24:07.000000000 -0400
 @@ -27,6 +27,9 @@
  type mail_spool_t;
  files_mountpoint(mail_spool_t)
@@ -14981,28 +15061,19 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  optional_policy(`
-@@ -95,16 +120,16 @@
+@@ -95,6 +120,11 @@
  ')
  
  optional_policy(`
--	logrotate_read_tmp_files(system_mail_t)
 +	exim_domtrans(system_mail_t)
 +	exim_manage_log(system_mail_t)
++')
++
++optional_policy(`
+ 	logrotate_read_tmp_files(system_mail_t)
  ')
  
- optional_policy(`
--	logwatch_read_tmp_files(system_mail_t)
-+	logrotate_read_tmp_files(system_mail_t)
- ')
- 
- optional_policy(`
--	# newaliases runs as system_mail_t when the sendmail initscript does a restart
--	milter_getattr_all_sockets(system_mail_t)
-+	logwatch_read_tmp_files(system_mail_t)
- ')
- 
- optional_policy(`
-@@ -132,10 +157,6 @@
+@@ -132,10 +162,6 @@
  		# compatability for old default main.cf
  		postfix_config_filetrans(system_mail_t, etc_aliases_t, { dir file lnk_file sock_file fifo_file })
  	')
@@ -15013,7 +15084,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  optional_policy(`
-@@ -155,6 +176,19 @@
+@@ -155,6 +181,19 @@
  ')
  
  optional_policy(`
@@ -15033,7 +15104,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	smartmon_read_tmp_files(system_mail_t)
  ')
  
-@@ -174,6 +208,25 @@
+@@ -174,6 +213,25 @@
  	')
  ')
  
@@ -21751,7 +21822,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/spamassassin.te serefpolicy-3.6.12/policy/modules/services/spamassassin.te
 --- nsaserefpolicy/policy/modules/services/spamassassin.te	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.12/policy/modules/services/spamassassin.te	2009-04-23 09:44:57.000000000 -0400
++++ serefpolicy-3.6.12/policy/modules/services/spamassassin.te	2009-04-24 07:23:40.000000000 -0400
 @@ -20,6 +20,35 @@
  ## </desc>
  gen_tunable(spamd_enable_home_dirs, true)
@@ -22011,6 +22082,16 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  optional_policy(`
+@@ -454,5 +527,9 @@
+ ')
+ 
+ optional_policy(`
++	milter_manage_spamass_state(spamd_t)
++')
++
++optional_policy(`
+ 	udev_read_db(spamd_t)
+ ')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/squid.fc serefpolicy-3.6.12/policy/modules/services/squid.fc
 --- nsaserefpolicy/policy/modules/services/squid.fc	2008-10-08 19:00:27.000000000 -0400
 +++ serefpolicy-3.6.12/policy/modules/services/squid.fc	2009-04-23 09:44:57.000000000 -0400
