@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 20%{?dist}
+Release: 21%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -446,6 +446,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Apr 27 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-21
+- Allow confined users to manace virt_content_t, since this is home dir content
+- Allow all domains to read rpm_script_tmp_t which is what shell creates on redirection
+
 * Mon Apr 27 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-20
 - Fix labeling on /var/lib/misc/prelink*
 - Allow xserver to rw_shm_perms with all x_clients
