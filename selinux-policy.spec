@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 23%{?dist}
+Release: 24%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -480,6 +480,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-24
+- Allow nsplugin to unix_read unix_write sem for unconfined_java
+
 * Tue Apr 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-23
 - Fix uml files to be owned by users
 
