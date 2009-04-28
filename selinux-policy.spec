@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 21%{?dist}
+Release: 22%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -160,7 +160,7 @@ bzip2 %{buildroot}/%{_usr}/share/selinux/%1/*.pp
 if [ -s /etc/selinux/config ]; then \
 	. %{_sysconfdir}/selinux/config; \
 	FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
-	if [ "${SELINUXTYPE}" == %1 -a -f ${FILE_CONTEXT} ]; then \
+	if [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT} ]; then \
 		cp -f ${FILE_CONTEXT} ${FILE_CONTEXT}.pre; \
 	fi \
 fi
@@ -179,7 +179,7 @@ semodule -b base.pp.bz2 -i %{expand:%%moduleList %1} %2 -s %1; \
 . %{_sysconfdir}/selinux/config; \
 FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 selinuxenabled; \
-if [ $? == 0  -a "${SELINUXTYPE}" == %1 -a -f ${FILE_CONTEXT}.pre ]; then \
+if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
 	fixfiles -C ${FILE_CONTEXT}.pre restore; \
 	restorecon -R /var/log /var/run 2> /dev/null; \
 	rm -f ${FILE_CONTEXT}.pre; \
@@ -311,22 +311,56 @@ SELinux Reference policy targeted base module.
 %saveFileContext targeted
 
 %post targeted
-if [ $1 -eq 1 ]; then
-packages="unconfined.pp.bz2 unconfineduser.pp.bz2"
-%loadpolicy targeted $packages
-restorecon -R /root /var/log /var/run 2> /dev/null
-else
-semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid 2>/dev/null
-
+function get_unconfined() {
+# We only want to upgrade unconfined.pp and unconfineduser if they are 
+# currently installed.  If you have a version 3.0.0 or less of unconfined 
+# installed, you will need to install both, since unconfineduser did not exist 
+# prior to this.
+both="unconfined.pp.bz2 unconfineduser.pp.bz2"
 packages=""
-for i in `semodule -l | awk '{print $1 }' | grep -E "(^unconfined$|^unconfineduser$)"`; do
-packages="$packages $i.pp.bz2"
+ctr=0
+while [ "$1" != "" ]; do
+    if [ "$1" = "unconfineduser" ]; then
+	packages="unconfineduser.pp.bz2 $packages"
+	let "ctr+=1"
+    fi
+    if [ "$1" = "unconfined" ]; then
+	packages="unconfined.pp.bz2 $packages"
+	version=$2
+	let "ctr+=1"
+    fi
+    shift; 
+    shift; 
 done
-%loadpolicy targeted $packages
-%relabel targeted
+
+if [ $ctr -lt 2 -a "$version" != "" ]; then
+    f1=`echo $version | cut -d. -f 1`
+    if [ $f1 -lt 3 ]; then
+	packages=$both
+    else
+        if [ $f1 -eq  3 ]; then
+	    f2=`echo $version | cut -s -d. -f2`
+	    f3=`echo $version | cut -s -d. -f3`
+	    if [ \( -z "$f2" \) -o \( \( "$f2" -eq 0 \)  -a \( -z "f3" -o "$f3" -eq 0 \) \) ]; then 
+	        packages=$both
+	    fi
+	fi
+    fi
+fi
+echo $packages
+}
+
+if [ $1 -eq 1 ]; then
+   packages="unconfined.pp.bz2 unconfineduser.pp.bz2"
+   %loadpolicy targeted $packages
+   restorecon -R /root /var/log /var/run 2> /dev/null
+else
+   semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid 2>/dev/null
+   packages=`get_unconfined $(semodule -l)`
+   %loadpolicy targeted $packages
+   %relabel targeted
 fi
 exit 0
-
 
 %triggerpostun targeted -- selinux-policy-targeted < 3.2.5-9.fc9
 . /etc/selinux/config
@@ -341,7 +375,7 @@ fi
 seuser=`semanage login -l | grep __default__ | awk '{ print $2 }'`
 [ "$seuser" != "unconfined_u" ]  && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 __default__
 seuser=`semanage login -l | grep root | awk '{ print $2 }'`
-[ "$seuser" == "system_u" ] && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 root
+[ "$seuser" = "system_u" ] && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 root
 restorecon -R /root /etc/selinux/targeted 2> /dev/null
 semodule -r qmail 2> /dev/null
 exit 0
@@ -446,8 +480,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-22
+- Fix Upgrade path to install unconfineduser.pp when unocnfined package is 3.0.0 or less
+
 * Mon Apr 27 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-21
-- Allow confined users to manace virt_content_t, since this is home dir content
+- Allow confined users to manage virt_content_t, since this is home dir content
 - Allow all domains to read rpm_script_tmp_t which is what shell creates on redirection
 
 * Mon Apr 27 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-20
