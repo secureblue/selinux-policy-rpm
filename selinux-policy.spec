@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 22%{?dist}
+Release: 23%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -480,6 +480,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-23
+- Fix uml files to be owned by users
+
 * Tue Apr 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-22
 - Fix Upgrade path to install unconfineduser.pp when unocnfined package is 3.0.0 or less
 
