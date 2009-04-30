@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 25%{?dist}
+Release: 26%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -480,7 +480,10 @@ exit 0
 %endif
 
 %changelog
-* Wed Apr 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-25
+* Thu Apr 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-26
+- Add shorewall policy
+
+* Wed Apr 29 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-25
 - Additional rules for fprintd and sssd
 
 * Tue Apr 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-24
