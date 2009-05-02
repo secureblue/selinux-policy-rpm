@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 26%{?dist}
+Release: 27%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -480,6 +480,9 @@ exit 0
 %endif
 
 %changelog
+* Fri May 1 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-27
+- Fix /sbin/ip6tables-save context
+
 * Thu Apr 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-26
 - Add shorewall policy
 
