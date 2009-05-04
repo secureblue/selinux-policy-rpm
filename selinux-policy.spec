@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 27%{?dist}
+Release: 28%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -167,7 +167,7 @@ fi
 
 %define loadpolicy() \
 ( cd /usr/share/selinux/%1; \
-semodule -b base.pp.bz2 -i %{expand:%%moduleList %1} %2 -s %1; \
+semodule -b base.pp.bz2 -i %2 -s %1; \
 ); \
 
 %define relabel() \
@@ -311,16 +311,16 @@ function get_unconfined() {
 # currently installed.  If you have a version 3.0.0 or less of unconfined 
 # installed, you will need to install both, since unconfineduser did not exist 
 # prior to this.
-both="unconfined.pp.bz2 unconfineduser.pp.bz2"
-packages=""
+packages="%{expand:%%moduleList targeted}"
+both="$packages unconfined.pp.bz2 unconfineduser.pp.bz2"
 ctr=0
 while [ "$1" != "" ]; do
     if [ "$1" = "unconfineduser" ]; then
-	packages="unconfineduser.pp.bz2 $packages"
+	packages="$packages unconfineduser.pp.bz2"
 	let "ctr+=1"
     fi
     if [ "$1" = "unconfined" ]; then
-	packages="unconfined.pp.bz2 $packages"
+	packages="$packages unconfined.pp.bz2"
 	version=$2
 	let "ctr+=1"
     fi
@@ -351,7 +351,7 @@ if [ $1 -eq 1 ]; then
    restorecon -R /root /var/log /var/run 2> /dev/null
 else
    semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid 2>/dev/null
-   packages="%{expand:%%moduleList targeted} `get_unconfined $(semodule -l)`"
+   packages=`get_unconfined`
    %loadpolicy targeted $packages
    %relabel targeted
 fi
@@ -396,16 +396,15 @@ SELinux Reference policy minimum base module.
 %saveFileContext minimum
 
 %post minimum
-if [ $1 -eq 1 ]; then
 packages="unconfined.pp.bz2 unconfineduser.pp.bz2"
 %loadpolicy minimum $packages
+if [ $1 -eq 1 ]; then
 semanage -S minimum -i - << __eof
 login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
 login -m  -s unconfined_u -r s0-s0:c0.c1023 root
 __eof
 restorecon -R /root /var/log /var/run 2> /dev/null
 else
-%loadminpolicy minimum
 %relabel minimum
 fi
 exit 0
@@ -478,6 +477,9 @@ exit 0
 %endif
 
 %changelog
+* Mon May 4 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-28
+- Fix package selection handling
+
 * Fri May 1 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-27
 - Fix /sbin/ip6tables-save context
 - Allod udev to transition to mount
