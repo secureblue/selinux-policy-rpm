@@ -165,11 +165,6 @@ if [ -s /etc/selinux/config ]; then \
 	fi \
 fi
 
-%define loadminpolicy() \
-( cd /usr/share/selinux/%1; \
-semodule -b base.pp.bz2 -i unconfined.pp.bz2 unconfineduser.pp.bz2 -s %1; \
-); \
-
 %define loadpolicy() \
 ( cd /usr/share/selinux/%1; \
 semodule -b base.pp.bz2 -i %{expand:%%moduleList %1} %2 -s %1; \
@@ -351,12 +346,12 @@ echo $packages
 }
 
 if [ $1 -eq 1 ]; then
-   packages="unconfined.pp.bz2 unconfineduser.pp.bz2"
+   packages="%{expand:%%moduleList targeted} unconfined.pp.bz2 unconfineduser.pp.bz2"
    %loadpolicy targeted $packages
    restorecon -R /root /var/log /var/run 2> /dev/null
 else
    semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid 2>/dev/null
-   packages=`get_unconfined $(semodule -l)`
+   packages="%{expand:%%moduleList targeted} `get_unconfined $(semodule -l)`"
    %loadpolicy targeted $packages
    %relabel targeted
 fi
@@ -402,7 +397,8 @@ SELinux Reference policy minimum base module.
 
 %post minimum
 if [ $1 -eq 1 ]; then
-%loadminpolicy minimum
+packages="unconfined.pp.bz2 unconfineduser.pp.bz2"
+%loadpolicy minimum $packages
 semanage -S minimum -i - << __eof
 login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
 login -m  -s unconfined_u -r s0-s0:c0.c1023 root
@@ -435,7 +431,8 @@ SELinux Reference policy olpc base module.
 %saveFileContext olpc
 
 %post olpc 
-%loadpolicy olpc ""
+packages="%{expand:%%moduleList olpc} unconfined.pp.bz2 unconfineduser.pp.bz2"
+%loadpolicy olpc $packages
 
 if [ $1 -ne 1 ]; then
 %relabel olpc
@@ -466,7 +463,8 @@ SELinux Reference policy mls base module.
 
 %post mls 
 semodule -n -s mls -r mailscanner 2>/dev/null
-%loadpolicy mls ""
+packages="%{expand:%%moduleList mls}"
+%loadpolicy mls $packages
 
 if [ $1 != 1 ]; then
 %relabel mls
@@ -482,6 +480,8 @@ exit 0
 %changelog
 * Fri May 1 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-27
 - Fix /sbin/ip6tables-save context
+- Allod udev to transition to mount
+- Fix loading of mls policy file
 
 * Thu Apr 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-26
 - Add shorewall policy
