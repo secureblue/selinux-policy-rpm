@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 29%{?dist}
+Release: 30%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -477,6 +477,9 @@ exit 0
 %endif
 
 %changelog
+* Tue May 5 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-30
+-Remove duplicate line
+
 * Tue May 5 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-29
 - Allow svirt to manage pci and other sysfs device data
 
