@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 30%{?dist}
+Release: 31%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -477,6 +477,9 @@ exit 0
 %endif
 
 %changelog
+* Thu May 7 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-31
+- Add policy for /var/lib/fprint
+
 * Tue May 5 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-30
 -Remove duplicate line
 
