@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 31%{?dist}
+Release: 33%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -311,38 +311,32 @@ function get_unconfined() {
 # currently installed.  If you have a version 3.0.0 or less of unconfined 
 # installed, you will need to install both, since unconfineduser did not exist 
 # prior to this.
-packages="%{expand:%%moduleList targeted}"
-both="$packages unconfined.pp.bz2 unconfineduser.pp.bz2"
-ctr=0
-while [ "$1" != "" ]; do
-    if [ "$1" = "unconfineduser" ]; then
-	packages="$packages unconfineduser.pp.bz2"
-	let "ctr+=1"
-    fi
-    if [ "$1" = "unconfined" ]; then
-	packages="$packages unconfined.pp.bz2"
-	version=$2
-	let "ctr+=1"
-    fi
-    shift; 
-    shift; 
-done
+eval `semodule -l | while read package version; do
+	case $package in
+	"unconfineduser")
+	        echo "unconfineduser=$version"
+		;;
+	"unconfined")
+	 	echo "unconfined=$version"
+		;;
+	esac
+done`
 
-if [ $ctr -lt 2 -a "$version" != "" ]; then
-    f1=`echo $version | cut -d. -f 1`
+if [ -z "$unconfineduser" -a -n "$unconfined" ]; then
+    f1=`echo $unconfined | cut -d. -f 1`
     if [ $f1 -lt 3 ]; then
-	packages=$both
+	unconfineduser="1"
     else
         if [ $f1 -eq  3 ]; then
-	    f2=`echo $version | cut -s -d. -f2`
-	    f3=`echo $version | cut -s -d. -f3`
+	    f2=`echo $unconfined | cut -s -d. -f2`
+	    f3=`echo $unconfined | cut -s -d. -f3`
 	    if [ \( -z "$f2" \) -o \( \( "$f2" -eq 0 \)  -a \( -z "f3" -o "$f3" -eq 0 \) \) ]; then 
-	        packages=$both
+	        unconfineduser="1"
 	    fi
 	fi
     fi
 fi
-echo $packages
+echo ${unconfined:+unconfined.pp.bz2} ${unconfineduser:+unconfineduser.pp.bz2}
 }
 
 if [ $1 -eq 1 ]; then
@@ -351,7 +345,7 @@ if [ $1 -eq 1 ]; then
    restorecon -R /root /var/log /var/run 2> /dev/null
 else
    semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid 2>/dev/null
-   packages=`get_unconfined`
+   packages="%{expand:%%moduleList targeted} `get_unconfined`"
    %loadpolicy targeted $packages
    %relabel targeted
 fi
@@ -477,6 +471,9 @@ exit 0
 %endif
 
 %changelog
+* Fri May 7 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-33
+- Fix upgrade for F10 to F11
+
 * Thu May 7 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-31
 - Add policy for /var/lib/fprint
 
