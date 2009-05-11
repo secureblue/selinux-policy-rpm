@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 33%{?dist}
+Release: 34%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,9 @@ exit 0
 %endif
 
 %changelog
+* Mon May 11 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-34
+- Allow rpcd_t to send signals to kernel threads
+
 * Fri May 7 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-33
 - Fix upgrade for F10 to F11
 
