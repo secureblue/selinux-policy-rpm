@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 34%{?dist}
+Release: 35%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -63,6 +63,7 @@ SELinux Base package
 %dir %{_usr}/share/selinux
 %dir %{_usr}/share/selinux/devel
 %dir %{_usr}/share/selinux/devel/include
+%dir %{_usr}/share/selinux/packages
 %dir %{_sysconfdir}/selinux
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config
 %ghost %{_sysconfdir}/sysconfig/selinux
@@ -234,6 +235,7 @@ make clean
 
 make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
 mkdir %{buildroot}%{_usr}/share/selinux/devel/
+mkdir %{buildroot}%{_usr}/share/selinux/packages/
 mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
 install -m 755 $RPM_SOURCE_DIR/policygentool %{buildroot}%{_usr}/share/selinux/devel/
 install -m 644 $RPM_SOURCE_DIR/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
@@ -471,6 +473,10 @@ exit 0
 %endif
 
 %changelog
+* Mon May 11 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-35
+- Add /usr/share/selinux/packages
+- Turn on nsplugin boolean
+
 * Mon May 11 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-34
 - Allow rpcd_t to send signals to kernel threads
 
