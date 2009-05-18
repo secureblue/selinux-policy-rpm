@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 37%{?dist}
+Release: 38%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -473,6 +473,9 @@ exit 0
 %endif
 
 %changelog
+* Mon May 18 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-38
+- Add varnishd policy
+
 * Thu May 14 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-37
 - Fixes for kpropd
 
