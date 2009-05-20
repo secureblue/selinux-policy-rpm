@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.12
-Release: 38%{?dist}
+Release: 39%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -473,6 +473,10 @@ exit 0
 %endif
 
 %changelog
+* Wed May 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-39
+- Allow fprintd to access sys_ptrace
+- Add sandbox policy
+
 * Mon May 18 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-38
 - Add varnishd policy
 
@@ -484,7 +488,6 @@ exit 0
 
 * Mon May 11 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-35
 - Add /usr/share/selinux/packages
-- Turn on nsplugin boolean
 
 * Mon May 11 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-34
 - Allow rpcd_t to send signals to kernel threads
