@@ -19,12 +19,12 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.12
-Release: 39%{?dist}
+Version: 3.6.13
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-20090105.patch
+patch: policy-F12.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -183,7 +183,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2945.
+Based off of reference policy: Checked out revision  2987.
 
 %build
 
@@ -473,6 +473,9 @@ exit 0
 %endif
 
 %changelog
+* Thu May 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.13-1
+- Upgrade to upstream
+
 * Wed May 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-39
 - Allow fprintd to access sys_ptrace
 - Add sandbox policy
