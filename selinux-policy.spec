@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.13
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -473,6 +473,10 @@ exit 0
 %endif
 
 %changelog
+* Tue May 26 2009 Dan Walsh <dwalsh@redhat.com> 3.6.13-2
+- New log file for vmware
+- Allow xdm to setattr on user_tmp_t
+
 * Thu May 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.13-1
 - Upgrade to upstream
 
