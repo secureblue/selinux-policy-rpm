@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.13
-Release: 2%{?dist}
+Version: 3.6.14
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -183,7 +183,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2987.
+Based off of reference policy: Checked out revision  2993.
 
 %build
 
@@ -473,6 +473,15 @@ exit 0
 %endif
 
 %changelog
+* Mon Jun 8 2009 Dan Walsh <dwalsh@redhat.com> 3.6.14-1
+- Update to upstream 
+
+* Tue Jun 2 2009 Dan Walsh <dwalsh@redhat.com> 3.6.13-3
+- Add fish as a shell
+- Allow fprintd to list usbfs_t
+- Allow consolekit to search mountpoints
+- Add proper labeling for shorewall
+
 * Tue May 26 2009 Dan Walsh <dwalsh@redhat.com> 3.6.13-2
 - New log file for vmware
 - Allow xdm to setattr on user_tmp_t
