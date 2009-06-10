@@ -4281,8 +4281,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/qemu.te serefpolicy-3.6.14/policy/modules/apps/qemu.te
 --- nsaserefpolicy/policy/modules/apps/qemu.te	2009-01-19 11:03:28.000000000 -0500
-+++ serefpolicy-3.6.14/policy/modules/apps/qemu.te	2009-06-08 21:43:15.000000000 -0400
-@@ -13,28 +13,96 @@
++++ serefpolicy-3.6.14/policy/modules/apps/qemu.te	2009-06-09 06:55:51.000000000 -0400
+@@ -13,28 +13,97 @@
  ## </desc>
  gen_tunable(qemu_full_network, false)
  
@@ -4374,6 +4374,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 +optional_policy(`
 +	virt_manage_images(qemu_t)
++	virt_append_log(qemu_t)
 +')
 +
 +optional_policy(`
@@ -4387,7 +4388,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ########################################
  #
  # qemu_unconfined local policy
-@@ -44,6 +112,9 @@
+@@ -44,6 +113,9 @@
  	type qemu_unconfined_t;
  	domain_type(qemu_unconfined_t)
  	unconfined_domain_noaudit(qemu_unconfined_t)
@@ -4479,8 +4480,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +# No types are sandbox_exec_t
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.if serefpolicy-3.6.14/policy/modules/apps/sandbox.if
 --- nsaserefpolicy/policy/modules/apps/sandbox.if	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.6.14/policy/modules/apps/sandbox.if	2009-06-08 21:43:15.000000000 -0400
-@@ -0,0 +1,75 @@
++++ serefpolicy-3.6.14/policy/modules/apps/sandbox.if	2009-06-09 15:35:31.000000000 -0400
+@@ -0,0 +1,105 @@
 +
 +## <summary>policy for sandbox</summary>
 +
@@ -4556,25 +4557,53 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +	ps_process_pattern($2, sandbox_t)
 +	allow $2 sandbox_t:process signal;
 +')
++
++########################################
++## <summary>
++##	Creates types and rules for a basic
++##	qemu process domain.
++## </summary>
++## <param name="prefix">
++##	<summary>
++##	Prefix for the domain.
++##	</summary>
++## </param>
++#
++template(`sandbox_domain_template',`
++
++	gen_require(`
++		attribute sandbox_domain;
++	')
++
++	type $1_t, sandbox_domain;
++	domain_type($1_t)
++
++	type $1_file_t;
++	files_type($1_file_t)
++
++	manage_dirs_pattern($1_t, $1_file_t, $1_file_t)
++	manage_files_pattern($1_t, $1_file_t, $1_file_t)
++	manage_lnk_files_pattern($1_t, $1_file_t, $1_file_t)
++	manage_fifo_files_pattern($1_t, $1_file_t, $1_file_t)
++	manage_sock_files_pattern($1_t, $1_file_t, $1_file_t)
++')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.te serefpolicy-3.6.14/policy/modules/apps/sandbox.te
 --- nsaserefpolicy/policy/modules/apps/sandbox.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.6.14/policy/modules/apps/sandbox.te	2009-06-08 21:43:15.000000000 -0400
-@@ -0,0 +1,43 @@
++++ serefpolicy-3.6.14/policy/modules/apps/sandbox.te	2009-06-09 15:31:22.000000000 -0400
+@@ -0,0 +1,32 @@
 +policy_module(sandbox,1.0.0)
++
++attribute sandbox_domain;
 +
 +########################################
 +#
 +# Declarations
 +#
 +
-+type sandbox_t;
-+type sandbox_exec_t;
-+application_domain(sandbox_t, sandbox_exec_t)
-+init_daemon_domain(sandbox_t, sandbox_exec_t)
++sandbox_domain_template(sandbox)
++sandbox_domain_template(sandbox_x)
 +role system_r types sandbox_t;
-+
-+type sandbox_file_t;
-+files_type(sandbox_file_t)
++role system_r types sandbox_x_t;
 +
 +########################################
 +#
@@ -4582,27 +4611,18 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +#
 +
 +## internal communication is often done using fifo and unix sockets.
-+allow sandbox_t self:fifo_file rw_file_perms;
-+allow sandbox_t self:unix_stream_socket create_stream_socket_perms;
++allow sandbox_domain self:fifo_file rw_file_perms;
++allow sandbox_domain self:unix_stream_socket create_stream_socket_perms;
 +
-+manage_dirs_pattern(sandbox_t, sandbox_file_t, sandbox_file_t)
-+manage_files_pattern(sandbox_t, sandbox_file_t, sandbox_file_t)
-+manage_lnk_files_pattern(sandbox_t, sandbox_file_t, sandbox_file_t)
-+manage_fifo_files_pattern(sandbox_t, sandbox_file_t, sandbox_file_t)
-+manage_sock_files_pattern(sandbox_t, sandbox_file_t, sandbox_file_t)
++files_rw_all_inherited_files(sandbox_domain)
++files_entrypoint_all_files(sandbox_domain)
 +
-+files_rw_all_inherited_files(sandbox_t)
-+files_entrypoint_all_files(sandbox_t)
++miscfiles_read_localization(sandbox_domain)
 +
-+libs_use_ld_so(sandbox_t)
-+libs_use_shared_libs(sandbox_t)
++userdom_use_user_ptys(sandbox_domain)
 +
-+miscfiles_read_localization(sandbox_t)
-+
-+userdom_use_user_ptys(sandbox_t)
-+
-+kernel_dontaudit_read_system_state(sandbox_t)
-+corecmd_exec_all_executables(sandbox_t)
++kernel_dontaudit_read_system_state(sandbox_domain)
++corecmd_exec_all_executables(sandbox_domain)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/screen.if serefpolicy-3.6.14/policy/modules/apps/screen.if
 --- nsaserefpolicy/policy/modules/apps/screen.if	2009-01-19 11:03:28.000000000 -0500
 +++ serefpolicy-3.6.14/policy/modules/apps/screen.if	2009-06-08 21:43:15.000000000 -0400
@@ -8678,6 +8698,18 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +logging_send_syslog_msg(afs_t)
 +
 +permissive afs_t;
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/amavis.te serefpolicy-3.6.14/policy/modules/services/amavis.te
+--- nsaserefpolicy/policy/modules/services/amavis.te	2009-01-19 11:06:49.000000000 -0500
++++ serefpolicy-3.6.14/policy/modules/services/amavis.te	2009-06-09 07:17:07.000000000 -0400
+@@ -103,6 +103,8 @@
+ kernel_dontaudit_read_proc_symlinks(amavis_t)
+ kernel_dontaudit_read_system_state(amavis_t)
+ 
++fs_getattr_xattr_fs(amavis_t)
++
+ # find perl
+ corecmd_exec_bin(amavis_t)
+ 
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/apache.fc serefpolicy-3.6.14/policy/modules/services/apache.fc
 --- nsaserefpolicy/policy/modules/services/apache.fc	2008-11-11 16:13:46.000000000 -0500
 +++ serefpolicy-3.6.14/policy/modules/services/apache.fc	2009-06-08 21:43:15.000000000 -0400
@@ -12056,16 +12088,19 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /var/run/dbus(/.*)?		gen_context(system_u:object_r:system_dbusd_var_run_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/dbus.if serefpolicy-3.6.14/policy/modules/services/dbus.if
 --- nsaserefpolicy/policy/modules/services/dbus.if	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.14/policy/modules/services/dbus.if	2009-06-08 21:43:15.000000000 -0400
-@@ -44,6 +44,7 @@
++++ serefpolicy-3.6.14/policy/modules/services/dbus.if	2009-06-09 17:09:56.000000000 -0400
+@@ -42,8 +42,10 @@
+ 	gen_require(`
+ 		class dbus { send_msg acquire_svc };
  
++		attribute dbusd_unconfined;
  		attribute session_bus_type;
  		type system_dbusd_t, session_dbusd_tmp_t, dbusd_exec_t, dbusd_etc_t;
 +		type $1_t;
  	')
  
  	##############################
-@@ -76,7 +77,7 @@
+@@ -76,7 +78,7 @@
  	allow $3 $1_dbusd_t:unix_stream_socket connectto;
  
  	# SE-DBus specific permissions
@@ -12074,7 +12109,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	allow $3 system_dbusd_t:dbus { send_msg acquire_svc };
  
  	allow $1_dbusd_t dbusd_etc_t:dir list_dir_perms;
-@@ -91,7 +92,7 @@
+@@ -91,7 +93,7 @@
  	allow $3 $1_dbusd_t:process { sigkill signal };
  
  	# cjp: this seems very broken
@@ -12083,7 +12118,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	allow $1_dbusd_t $3:process sigkill;
  	allow $3 $1_dbusd_t:fd use;
  	allow $3 $1_dbusd_t:fifo_file rw_fifo_file_perms;
-@@ -117,6 +118,7 @@
+@@ -117,6 +119,7 @@
  	dev_read_urand($1_dbusd_t)
  
   	domain_use_interactive_fds($1_dbusd_t)
@@ -12091,7 +12126,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	files_read_etc_files($1_dbusd_t)
  	files_list_home($1_dbusd_t)
-@@ -145,7 +147,10 @@
+@@ -145,7 +148,10 @@
  	seutil_read_config($1_dbusd_t)
  	seutil_read_default_contexts($1_dbusd_t)
  
@@ -12102,7 +12137,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	ifdef(`hide_broken_symptoms', `
  		dontaudit $3 $1_dbusd_t:netlink_selinux_socket { read write };
-@@ -160,6 +165,10 @@
+@@ -160,6 +166,10 @@
  	')
  
  	optional_policy(`
@@ -12113,7 +12148,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  		hal_dbus_chat($1_dbusd_t)
  	')
  
-@@ -169,6 +178,26 @@
+@@ -169,6 +179,26 @@
  	')
  ')
  
@@ -12140,7 +12175,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  #######################################
  ## <summary>
  ##	Template for creating connections to
-@@ -185,10 +214,12 @@
+@@ -185,10 +215,12 @@
  		type system_dbusd_t, system_dbusd_t;
  		type system_dbusd_var_run_t, system_dbusd_var_lib_t;
  		class dbus send_msg;
@@ -12154,7 +12189,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  	read_files_pattern($1, system_dbusd_var_lib_t, system_dbusd_var_lib_t)
  	files_search_var_lib($1)
-@@ -197,6 +228,10 @@
+@@ -197,6 +229,10 @@
  	files_search_pids($1)
  	stream_connect_pattern($1, system_dbusd_var_run_t, system_dbusd_var_run_t, system_dbusd_t)
  	dbus_read_config($1)
@@ -12165,7 +12200,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
  
  #######################################
-@@ -244,6 +279,35 @@
+@@ -244,6 +280,35 @@
  
  ########################################
  ## <summary>
@@ -12201,7 +12236,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##	Read dbus configuration.
  ## </summary>
  ## <param name="domain">
-@@ -318,3 +382,79 @@
+@@ -318,3 +383,79 @@
  
  	allow $1 system_dbusd_t:dbus *;
  ')
@@ -12426,6 +12461,35 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  /var/run/dcc(/.*)?			gen_context(system_u:object_r:dcc_var_run_t,s0)
  /var/run/dcc/map		--	gen_context(system_u:object_r:dcc_client_map_t,s0)
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/dcc.te serefpolicy-3.6.14/policy/modules/services/dcc.te
+--- nsaserefpolicy/policy/modules/services/dcc.te	2009-05-21 08:43:08.000000000 -0400
++++ serefpolicy-3.6.14/policy/modules/services/dcc.te	2009-06-09 07:22:03.000000000 -0400
+@@ -130,11 +130,13 @@
+ 
+ # Access files in /var/dcc. The map file can be updated
+ allow dcc_client_t dcc_var_t:dir list_dir_perms;
+-read_files_pattern(dcc_client_t, dcc_var_t, dcc_var_t)
++manage_files_pattern(dcc_client_t, dcc_var_t, dcc_var_t)
+ read_lnk_files_pattern(dcc_client_t, dcc_var_t, dcc_var_t)
+ 
+ kernel_read_system_state(dcc_client_t)
+ 
++fs_getattr_all_fs(dcc_client_t)
++
+ corenet_all_recvfrom_unlabeled(dcc_client_t)
+ corenet_all_recvfrom_netlabel(dcc_client_t)
+ corenet_udp_sendrecv_generic_if(dcc_client_t)
+@@ -154,6 +156,10 @@
+ userdom_use_user_terminals(dcc_client_t)
+ 
+ optional_policy(`
++	amavis_read_spool_files(dcc_client_t)
++')
++
++optional_policy(`
+ 	spamassassin_read_spamd_tmp_files(dcc_client_t)
+ ')
+ 
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/devicekit.fc serefpolicy-3.6.14/policy/modules/services/devicekit.fc
 --- nsaserefpolicy/policy/modules/services/devicekit.fc	1969-12-31 19:00:00.000000000 -0500
 +++ serefpolicy-3.6.14/policy/modules/services/devicekit.fc	2009-06-08 21:43:15.000000000 -0400
@@ -18747,7 +18811,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/pyzor.te serefpolicy-3.6.14/policy/modules/services/pyzor.te
 --- nsaserefpolicy/policy/modules/services/pyzor.te	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.14/policy/modules/services/pyzor.te	2009-06-08 21:43:15.000000000 -0400
++++ serefpolicy-3.6.14/policy/modules/services/pyzor.te	2009-06-09 07:10:36.000000000 -0400
 @@ -6,6 +6,38 @@
  # Declarations
  #
@@ -18795,7 +18859,15 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  ########################################
  #
-@@ -83,6 +116,8 @@
+@@ -77,12 +110,16 @@
+ 
+ dev_read_urand(pyzor_t)
+ 
++fs_getattr_xattr_fs(pyzor_t)
++
+ files_read_etc_files(pyzor_t)
+ 
+ auth_use_nsswitch(pyzor_t)
  
  miscfiles_read_localization(pyzor_t)
  
@@ -20573,7 +20645,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/setroubleshoot.te serefpolicy-3.6.14/policy/modules/services/setroubleshoot.te
 --- nsaserefpolicy/policy/modules/services/setroubleshoot.te	2009-01-19 11:06:49.000000000 -0500
-+++ serefpolicy-3.6.14/policy/modules/services/setroubleshoot.te	2009-06-08 21:43:15.000000000 -0400
++++ serefpolicy-3.6.14/policy/modules/services/setroubleshoot.te	2009-06-10 11:22:43.000000000 -0400
 @@ -11,6 +11,9 @@
  domain_type(setroubleshootd_t)
  init_daemon_domain(setroubleshootd_t, setroubleshootd_exec_t)
@@ -20633,7 +20705,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  selinux_get_enforce_mode(setroubleshootd_t)
  selinux_validate_context(setroubleshootd_t)
-@@ -94,22 +109,24 @@
+@@ -94,22 +109,28 @@
  
  locallogin_dontaudit_use_fds(setroubleshootd_t)
  
@@ -20650,6 +20722,10 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  userdom_dontaudit_read_user_home_content_files(setroubleshootd_t)
  
  optional_policy(`
++	locate_read_lib_files(setroubleshootd_t)
++')
++
++optional_policy(`
  	dbus_system_bus_client(setroubleshootd_t)
  	dbus_connect_system_bus(setroubleshootd_t)
 +	dbus_system_domain(setroubleshootd_t, setroubleshootd_exec_t)
@@ -22762,7 +22838,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/var/run/libvirt/qemu(/.*)? 	gen_context(system_u:object_r:svirt_var_run_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/virt.if serefpolicy-3.6.14/policy/modules/services/virt.if
 --- nsaserefpolicy/policy/modules/services/virt.if	2009-01-05 15:39:43.000000000 -0500
-+++ serefpolicy-3.6.14/policy/modules/services/virt.if	2009-06-08 21:43:15.000000000 -0400
++++ serefpolicy-3.6.14/policy/modules/services/virt.if	2009-06-09 15:26:36.000000000 -0400
 @@ -2,28 +2,6 @@
  
  ########################################
