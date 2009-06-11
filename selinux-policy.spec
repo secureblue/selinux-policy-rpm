@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.14
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -473,6 +473,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 11 2009 Dan Walsh <dwalsh@redhat.com> 3.6.14-3
+- Allow NetworkManager to read inotifyfs
+
 * Wed Jun 10 2009 Dan Walsh <dwalsh@redhat.com> 3.6.14-2
 - Allow setroubleshoot to run mlocate
 
