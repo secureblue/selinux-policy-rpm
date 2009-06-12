@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.14
-Release: 3%{?dist}
+Version: 3.6.15
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -473,6 +473,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Jun 12 2009 Dan Walsh <dwalsh@redhat.com> 3.6.15-1
+- New version for upstream
+
 * Thu Jun 11 2009 Dan Walsh <dwalsh@redhat.com> 3.6.14-3
 - Allow NetworkManager to read inotifyfs
 
