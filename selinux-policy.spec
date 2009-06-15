@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.16
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -473,6 +473,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jun 15 2009 Dan Walsh <dwalsh@redhat.com> 3.6.16-2
+- Additional rules for consolekit/udev, privoxy and various other fixes
+
 * Fri Jun 12 2009 Dan Walsh <dwalsh@redhat.com> 3.6.16-1
 - New version for upstream
 
