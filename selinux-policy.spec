@@ -19,7 +19,7 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.15
+Version: 3.6.16
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -183,7 +183,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2993.
+Based off of reference policy: Checked out revision  2996.
 
 %build
 
@@ -473,7 +473,7 @@ exit 0
 %endif
 
 %changelog
-* Fri Jun 12 2009 Dan Walsh <dwalsh@redhat.com> 3.6.15-1
+* Fri Jun 12 2009 Dan Walsh <dwalsh@redhat.com> 3.6.16-1
 - New version for upstream
 
 * Thu Jun 11 2009 Dan Walsh <dwalsh@redhat.com> 3.6.14-3
