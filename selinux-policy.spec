@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.16
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -473,6 +473,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 18 2009 Dan Walsh <dwalsh@redhat.com> 3.6.16-4
+- Fix mcs rules to include chr_file and blk_file
+
 * Tue Jun 16 2009 Dan Walsh <dwalsh@redhat.com> 3.6.16-3
 - Add label for udev-acl
 
