@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.16
-Release: 4%{?dist}
+Version: 3.6.17
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -183,7 +183,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2996.
+Based off of reference policy: Checked out revision  3000.
 
 %build
 
@@ -473,6 +473,11 @@ exit 0
 %endif
 
 %changelog
+* Fri Jun 19 2009 Dan Walsh <dwalsh@redhat.com> 3.6.17-1
+- Update to upstream
+- Additional mail ports
+- Add virt_use_usb boolean for svirt
+
 * Thu Jun 18 2009 Dan Walsh <dwalsh@redhat.com> 3.6.16-4
 - Fix mcs rules to include chr_file and blk_file
 
