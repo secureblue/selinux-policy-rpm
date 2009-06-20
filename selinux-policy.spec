@@ -19,7 +19,7 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.17
+Version: 3.6.18
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -473,6 +473,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Jun 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.18-1
+- Update to upstream
+  * cleanup
 * Fri Jun 19 2009 Dan Walsh <dwalsh@redhat.com> 3.6.17-1
 - Update to upstream
 - Additional mail ports
