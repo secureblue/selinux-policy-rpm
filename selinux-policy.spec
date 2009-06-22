@@ -19,7 +19,7 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.18
+Version: 3.6.19
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -183,7 +183,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  3000.
+Based off of reference policy: Checked out revision  3002.
 
 %build
 
@@ -473,6 +473,10 @@ exit 0
 %endif
 
 %changelog
+* Sat Jun 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.19-1
+- Update to upstream
+  * add sssd
+
 * Sat Jun 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.18-1
 - Update to upstream
   * cleanup
