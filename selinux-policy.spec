@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.19
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -473,7 +473,10 @@ exit 0
 %endif
 
 %changelog
-* Sat Jun 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.19-1
+* Tue Jun 23 2009 Dan Walsh <dwalsh@redhat.com> 3.6.19-2
+- Fix last duplicate /var/log/rpmpkgs
+
+* Mon Jun 22 2009 Dan Walsh <dwalsh@redhat.com> 3.6.19-1
 - Update to upstream
   * add sssd
 
