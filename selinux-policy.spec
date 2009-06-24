@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.19
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -473,6 +473,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 24 2009 Dan Walsh <dwalsh@redhat.com> 3.6.19-4
+- Allow rpcd_t to stream connect to rpcbind
+
 * Tue Jun 23 2009 Dan Walsh <dwalsh@redhat.com> 3.6.19-3
 - Allow kpropd to create tmp files
 
