@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.19
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -295,7 +295,7 @@ Summary: SELinux targeted base policy
 Provides: selinux-policy-base
 Group: System Environment/Base
 Obsoletes: selinux-policy-targeted-sources < 2
-Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
+Requires(pre): policycoreutils-python >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 Conflicts:  audispd-plugins <= 1.7.7-1
@@ -381,7 +381,7 @@ exit 0
 Summary: SELinux minimum base policy
 Provides: selinux-policy-base
 Group: System Environment/Base
-Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
+Requires(pre): policycoreutils-python >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 
@@ -415,7 +415,7 @@ exit 0
 Summary: SELinux olpc base policy
 Group: System Environment/Base
 Provides: selinux-policy-base
-Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
+Requires(pre): policycoreutils-python >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 
@@ -446,7 +446,7 @@ Group: System Environment/Base
 Provides: selinux-policy-base
 Obsoletes: selinux-policy-mls-sources < 2
 Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER} setransd
-Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
+Requires(pre): policycoreutils-python >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 
@@ -473,6 +473,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun 23 2009 Dan Walsh <dwalsh@redhat.com> 3.6.19-3
+- Allow kpropd to create tmp files
+
 * Tue Jun 23 2009 Dan Walsh <dwalsh@redhat.com> 3.6.19-2
 - Fix last duplicate /var/log/rpmpkgs
 
