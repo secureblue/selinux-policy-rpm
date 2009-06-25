@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.19
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -473,6 +473,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 25 2009 Dan Walsh <dwalsh@redhat.com> 3.6.19-5
+- Add rtkit policy
+
 * Wed Jun 24 2009 Dan Walsh <dwalsh@redhat.com> 3.6.19-4
 - Allow rpcd_t to stream connect to rpcbind
 
