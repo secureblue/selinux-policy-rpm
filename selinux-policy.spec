@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.19
-Release: 5%{?dist}
+Version: 3.6.20
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -183,7 +183,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  3002.
+Based off of reference policy: Checked out revision  3005.
 
 %build
 
@@ -473,6 +473,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 25 2009 Dan Walsh <dwalsh@redhat.com> 3.6.20-1
+- Update to upstream
+- Fix nlscd_stream_connect
+
 * Thu Jun 25 2009 Dan Walsh <dwalsh@redhat.com> 3.6.19-5
 - Add rtkit policy
 
