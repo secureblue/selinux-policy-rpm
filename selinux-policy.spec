@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.20
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -473,6 +473,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.20-2
+- Add rules for rtkit-daemon
+
 * Thu Jun 25 2009 Dan Walsh <dwalsh@redhat.com> 3.6.20-1
 - Update to upstream
 - Fix nlscd_stream_connect
