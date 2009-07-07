@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.21
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -59,7 +59,9 @@ Provides: selinux-policy-devel
 SELinux Base package
 
 %files 
-%{_mandir}/*
+%{_mandir}/man*/*
+# policycoreutils owns these manpage directories, we only own the files within them
+%{_mandir}/ru/*/*
 %dir %{_usr}/share/selinux
 %dir %{_usr}/share/selinux/devel
 %dir %{_usr}/share/selinux/devel/include
@@ -473,6 +475,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jul  7 2009 Tom "spot" Callaway <tcallawa@redhat.com> 3.6.21-2
+- fix multiple directory ownership of mandirs
+
 * Wed Jul 1 2009 Dan Walsh <dwalsh@redhat.com> 3.6.21-1
 - Update to upstream
 
