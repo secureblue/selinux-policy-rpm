@@ -185,7 +185,7 @@ fi;
 
 %description
 SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  3005.
+Based off of reference policy: Checked out revision  3011.
 
 %build
 
