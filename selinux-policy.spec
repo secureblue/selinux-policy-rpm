@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.22
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -475,6 +475,9 @@ exit 0
 %endif
 
 %changelog
+* Sun Jul 19 2009 Dan Walsh <dwalsh@redhat.com> 3.6.22-2
+- Fix context for VirtualBox
+
 * Tue Jul 14 2009 Dan Walsh <dwalsh@redhat.com> 3.6.22-1
 - Update to upstream
 
