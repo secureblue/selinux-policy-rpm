@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.22
-Release: 2%{?dist}
+Version: 3.6.23
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -348,7 +348,7 @@ if [ $1 -eq 1 ]; then
    %loadpolicy targeted $packages
    restorecon -R /root /var/log /var/run 2> /dev/null
 else
-   semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid 2>/dev/null
+   semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid -r polkit_auth 2>/dev/null
    packages="%{expand:%%moduleList targeted} `get_unconfined`"
    %loadpolicy targeted $packages
    %relabel targeted
@@ -459,7 +459,7 @@ SELinux Reference policy mls base module.
 %saveFileContext mls
 
 %post mls 
-semodule -n -s mls -r mailscanner 2>/dev/null
+semodule -n -s mls -r mailscanner -r polkit_auth 2>/dev/null
 packages="%{expand:%%moduleList mls}"
 %loadpolicy mls $packages
 
@@ -475,7 +475,10 @@ exit 0
 %endif
 
 %changelog
-* Sun Jul 19 2009 Dan Walsh <dwalsh@redhat.com> 3.6.22-2
+* Thu Jul 22 2009 Dan Walsh <dwalsh@redhat.com> 3.6.23-1
+- Update to upstream
+
+* Tue Jul 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.22-3
 - Fix context for VirtualBox
 
 * Tue Jul 14 2009 Dan Walsh <dwalsh@redhat.com> 3.6.22-1
