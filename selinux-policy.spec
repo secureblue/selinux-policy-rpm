@@ -19,7 +19,7 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.24
+Version: 3.6.25
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -475,6 +475,13 @@ exit 0
 %endif
 
 %changelog
+* Tue Jul 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.25-1
+- Fix polkit label
+- Remove hidebrokensymptoms for nss_ldap fix
+- Add modemmanager policy
+- Lots of merges from upstream
+- Begin removing textrel_shlib_t labels, from fixed libraries
+
 * Tue Jul 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.24-1
 - Update to upstream
 
