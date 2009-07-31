@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.26
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -475,7 +475,10 @@ exit 0
 %endif
 
 %changelog
-* Thu Jul 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-1
+* Fri Jul 31 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-2
+- Allod hald_dccm_t to create sock_files in /tmp
+
+* Thu Jul 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-1
 - More fixes from upstream
 
 * Tue Jul 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.25-1
