@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.26
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -475,6 +475,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 4 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-4
+- Allow exim to getattr on mountpoints
+- Fixes for pulseaudio
+
 * Fri Jul 31 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-3
 - Allow svirt_t to stream_connect to virtd_t
 
