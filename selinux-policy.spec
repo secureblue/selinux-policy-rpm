@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.26
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -475,6 +475,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Aug 5 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-6
+- Allow devicekit_disk to list inotify
+
 * Wed Aug 5 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-5
 - Allow svirt images to create sock_file in svirt_var_run_t
 
