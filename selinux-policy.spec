@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.26
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -475,6 +475,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 6 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-7
+- Allow nsplugin to connecto the session bus
+- Allow samba_net to write to coolkey data
+
 * Wed Aug 5 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-6
 - Allow devicekit_disk to list inotify
 
