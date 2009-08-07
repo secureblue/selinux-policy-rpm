@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.26
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -475,6 +475,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 7 2009 Bill Nottingham <notting@redhat.com> 3.6.26-8
+- Turn on execstack on a temporary basis (#512845)
+
 * Thu Aug 6 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-7
 - Allow nsplugin to connecto the session bus
 - Allow samba_net to write to coolkey data
