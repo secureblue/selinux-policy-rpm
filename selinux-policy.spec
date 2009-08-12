@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.26
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -475,6 +475,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 10 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-10
+- Add pt_chown policy
+
 * Mon Aug 10 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-9
 - Add kdump policy for Miroslav Grepl
 - Turn off execstack boolean
