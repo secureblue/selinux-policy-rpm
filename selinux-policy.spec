@@ -15,12 +15,12 @@
 %endif
 %define POLICYVER 23
 %define libsepolver 2.0.20-1
-%define POLICYCOREUTILSVER 2.0.62-10
+%define POLICYCOREUTILSVER 2.0.71-2
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.26
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -348,7 +348,7 @@ if [ $1 -eq 1 ]; then
    %loadpolicy targeted $packages
    restorecon -R /root /var/log /var/run 2> /dev/null
 else
-   semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid -r polkit_auth 2>/dev/null
+   semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid -r polkit 2>/dev/null
    packages="%{expand:%%moduleList targeted} `get_unconfined`"
    %loadpolicy targeted $packages
    %relabel targeted
@@ -459,7 +459,7 @@ SELinux Reference policy mls base module.
 %saveFileContext mls
 
 %post mls 
-semodule -n -s mls -r mailscanner -r polkit_auth 2>/dev/null
+semodule -n -s mls -r mailscanner -r polkit 2>/dev/null
 packages="%{expand:%%moduleList mls}"
 %loadpolicy mls $packages
 
@@ -475,6 +475,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 13 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-11
+- Make all unconfined_domains permissive so we can see what AVC's happen 
+
 * Mon Aug 10 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-10
 - Add pt_chown policy
 
