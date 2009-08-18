@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.26
-Release: 11%{?dist}
+Version: 3.6.27
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -49,7 +49,7 @@ Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-python >= %{POLICYCOREUTILSVER} bzip2 
-Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.14-3
+Requires(pre): policycoreutils-python >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.14-3
 Requires(post): /usr/bin/bunzip2 /bin/mktemp /bin/awk
 Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
 Obsoletes: selinux-policy-devel
@@ -475,6 +475,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 14 2009 Dan Walsh <dwalsh@redhat.com> 3.6.27-1
+- Add policycoreutils-python to pre install
+
 * Thu Aug 13 2009 Dan Walsh <dwalsh@redhat.com> 3.6.26-11
 - Make all unconfined_domains permissive so we can see what AVC's happen 
 
