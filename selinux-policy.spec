@@ -19,7 +19,7 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.27
+Version: 3.6.28
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -475,6 +475,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 18 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-1
+- Allow cupsd_config_t to be started by dbus
+- Add smoltclient policy
+
 * Fri Aug 14 2009 Dan Walsh <dwalsh@redhat.com> 3.6.27-1
 - Add policycoreutils-python to pre install
 
