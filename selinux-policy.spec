@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.28
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -475,6 +475,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-3
+- Fix system-config-services policy
+
 * Wed Aug 19 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-2
 - Allow libvirt to change user componant of virt_domain
 
