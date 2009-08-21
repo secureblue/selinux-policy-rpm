@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.28
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -475,6 +475,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-4
+- Add ABRT policy
+
 * Thu Aug 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-3
 - Fix system-config-services policy
 
