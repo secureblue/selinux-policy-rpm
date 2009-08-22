@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.28
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -475,6 +475,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Aug 22 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-5
+- Allow cronjobs to read exim_spool_t
+
 * Fri Aug 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-4
 - Add ABRT policy
 
