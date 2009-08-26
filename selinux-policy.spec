@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.28
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -97,7 +97,7 @@ cp -f $RPM_SOURCE_DIR/modules-%1.conf  ./policy/modules.conf \
 cp -f $RPM_SOURCE_DIR/booleans-%1.conf ./policy/booleans.conf \
 
 %define moduleList() %([ -f %{_sourcedir}/modules-%{1}.conf ] && \
-awk '$1 !~ "/^#/" && $1 != "unconfined" && $1 != "unconfineduser" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' %{_sourcedir}/modules-%{1}.conf )
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' %{_sourcedir}/modules-%{1}.conf )
 
 %define installCmds() \
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 base.pp \
@@ -310,46 +310,13 @@ SELinux Reference policy targeted base module.
 %saveFileContext targeted
 
 %post targeted
-function get_unconfined() {
-# We only want to upgrade unconfined.pp and unconfineduser if they are 
-# currently installed.  If you have a version 3.0.0 or less of unconfined 
-# installed, you will need to install both, since unconfineduser did not exist 
-# prior to this.
-eval `semodule -l | while read package version; do
-	case $package in
-	"unconfineduser")
-	        echo "unconfineduser=$version"
-		;;
-	"unconfined")
-	 	echo "unconfined=$version"
-		;;
-	esac
-done`
-
-if [ -z "$unconfineduser" -a -n "$unconfined" ]; then
-    f1=`echo $unconfined | cut -d. -f 1`
-    if [ $f1 -lt 3 ]; then
-	unconfineduser="1"
-    else
-        if [ $f1 -eq  3 ]; then
-	    f2=`echo $unconfined | cut -s -d. -f2`
-	    f3=`echo $unconfined | cut -s -d. -f3`
-	    if [ \( -z "$f2" \) -o \( \( "$f2" -eq 0 \)  -a \( -z "f3" -o "$f3" -eq 0 \) \) ]; then 
-	        unconfineduser="1"
-	    fi
-	fi
-    fi
-fi
-echo ${unconfined:+unconfined.pp.bz2} ${unconfineduser:+unconfineduser.pp.bz2}
-}
-
 if [ $1 -eq 1 ]; then
-   packages="%{expand:%%moduleList targeted} unconfined.pp.bz2 unconfineduser.pp.bz2"
+   packages="%{expand:%%moduleList targeted}"
    %loadpolicy targeted $packages
    restorecon -R /root /var/log /var/run 2> /dev/null
 else
    semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid -r polkit 2>/dev/null
-   packages="%{expand:%%moduleList targeted} `get_unconfined`"
+   packages="%{expand:%%moduleList targeted}"
    %loadpolicy targeted $packages
    %relabel targeted
 fi
@@ -394,8 +361,7 @@ SELinux Reference policy minimum base module.
 %saveFileContext minimum
 
 %post minimum
-packages="unconfined.pp.bz2 unconfineduser.pp.bz2"
-%loadpolicy minimum $packages
+%loadpolicy minimum
 if [ $1 -eq 1 ]; then
 semanage -S minimum -i - << __eof
 login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
@@ -428,7 +394,7 @@ SELinux Reference policy olpc base module.
 %saveFileContext olpc
 
 %post olpc 
-packages="%{expand:%%moduleList olpc} unconfined.pp.bz2 unconfineduser.pp.bz2"
+packages="%{expand:%%moduleList olpc}"
 %loadpolicy olpc $packages
 
 if [ $1 -ne 1 ]; then
@@ -475,6 +441,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Aug 26 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-8
+- Add back in unconfined.pp and unconfineduser.pp
+
 * Tue Aug 25 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-7
 - Fixes for cdrecord, mdadm, and others
 
@@ -1363,7 +1332,6 @@ directory)
 * Tue Feb 26 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-2
 - Fix Makefile.devel to build mls modules
 - Fix qemu to be more specific on labeling
-
 
 * Tue Feb 26 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-1
 - Update to upstream fixes
