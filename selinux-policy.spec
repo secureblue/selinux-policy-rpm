@@ -443,6 +443,7 @@ exit 0
 %changelog
 * Wed Aug 26 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-8
 - Add back in unconfined.pp and unconfineduser.pp
+- Add Sandbox unshare
 
 * Tue Aug 25 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-7
 - Fixes for cdrecord, mdadm, and others
