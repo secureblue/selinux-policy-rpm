@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.28
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -475,6 +475,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 25 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-7
+- Fixes for cdrecord, mdadm, and others
+
 * Sat Aug 22 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-6
 - Add capability setting to dhcpc and gpm
 
