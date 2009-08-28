@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.28
-Release: 9%{?dist}
+Version: 3.6.29
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -44,6 +44,7 @@ Source17: booleans-minimum.conf
 Source18: setrans-minimum.conf
 Source19: securetty_types-minimum
 Source20: customizable_types
+Source21: config.tgz
 
 Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -194,6 +195,7 @@ Based off of reference policy: Checked out revision  2.20090730
 %patch -p1
 
 %install
+tar zxvf $RPM_SOURCE_DIR/config.tgz
 # Build targeted policy
 %{__rm} -fR %{buildroot}
 mkdir -p %{buildroot}%{_mandir}
@@ -441,6 +443,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.29-1
+- Update to upstream
+
 * Fri Aug 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-9
 - Remove polkit_auth on upgrades
 
