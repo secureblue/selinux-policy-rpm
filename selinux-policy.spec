@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.28
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -315,7 +315,7 @@ if [ $1 -eq 1 ]; then
    %loadpolicy targeted $packages
    restorecon -R /root /var/log /var/run 2> /dev/null
 else
-   semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid -r polkit 2>/dev/null
+   semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid -r polkit_auth -r polkit 2>/dev/null
    packages="%{expand:%%moduleList targeted}"
    %loadpolicy targeted $packages
    %relabel targeted
@@ -441,6 +441,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 28 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-9
+- Remove polkit_auth on upgrades
+
 * Wed Aug 26 2009 Dan Walsh <dwalsh@redhat.com> 3.6.28-8
 - Add back in unconfined.pp and unconfineduser.pp
 - Add Sandbox unshare
