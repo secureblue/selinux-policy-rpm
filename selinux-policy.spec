@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.30
-Release: 2%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -165,7 +165,7 @@ if [ -s /etc/selinux/config ]; then \
 	. %{_sysconfdir}/selinux/config; \
 	FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 	if [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT} ]; then \
-		cp -f ${FILE_CONTEXT} ${FILE_CONTEXT}.pre; \
+	   [ -f ${FILE_CONTEXT}.pre ] || cp -f ${FILE_CONTEXT} ${FILE_CONTEXT}.pre; \
 	fi \
 fi
 
@@ -443,6 +443,12 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 4 2009 Dan Walsh <dwalsh@redhat.com> 3.6.30-4
+- Allow xserver to use  netlink_kobject_uevent_socket
+
+* Thu Sep 3 2009 Dan Walsh <dwalsh@redhat.com> 3.6.30-3
+- Fixes for sandbox 
+
 * Mon Aug 31 2009 Dan Walsh <dwalsh@redhat.com> 3.6.30-2
 - Dontaudit setroubleshootfix looking at /root directory
 
