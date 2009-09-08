@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.30
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -443,6 +443,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 8 2009 Dan Walsh <dwalsh@redhat.com> 3.6.30-6
+- More fixes
+
 * Tue Sep 8 2009 Dan Walsh <dwalsh@redhat.com> 3.6.30-5
 - Lots of fixes for initrc and other unconfined domains
 
