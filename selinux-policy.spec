@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.31
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -50,7 +50,7 @@ Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-python >= %{POLICYCOREUTILSVER} bzip2 
-Requires(pre): policycoreutils-python >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.14-3
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.14-3
 Requires(post): /usr/bin/bunzip2 /bin/mktemp /bin/awk
 Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
 Obsoletes: selinux-policy-devel
@@ -299,7 +299,7 @@ Summary: SELinux targeted base policy
 Provides: selinux-policy-base
 Group: System Environment/Base
 Obsoletes: selinux-policy-targeted-sources < 2
-Requires(pre): policycoreutils-python >= %{POLICYCOREUTILSVER}
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 Conflicts:  audispd-plugins <= 1.7.7-1
@@ -353,7 +353,7 @@ exit 0
 Summary: SELinux minimum base policy
 Provides: selinux-policy-base
 Group: System Environment/Base
-Requires(pre): policycoreutils-python >= %{POLICYCOREUTILSVER}
+Requires(post): policycoreutils-python >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 Conflicts:  seedit
@@ -387,7 +387,7 @@ exit 0
 Summary: SELinux olpc base policy
 Group: System Environment/Base
 Provides: selinux-policy-base
-Requires(pre): policycoreutils-python >= %{POLICYCOREUTILSVER}
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 Conflicts:  seedit
@@ -419,7 +419,7 @@ Group: System Environment/Base
 Provides: selinux-policy-base
 Obsoletes: selinux-policy-mls-sources < 2
 Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER} setransd
-Requires(pre): policycoreutils-python >= %{POLICYCOREUTILSVER}
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 Conflicts:  seedit
@@ -447,6 +447,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Sep 15 2009 Dan Walsh <dwalsh@redhat.com> 3.6.31-5
+- Fix label on /usr/bin/notepad, /usr/sbin/vboxadd-service
+- Remove policycoreutils-python requirement except for minimum
+
 * Mon Sep 14 2009 Dan Walsh <dwalsh@redhat.com> 3.6.31-4
 - Fix devicekit_disk_t to getattr on all domains sockets and fifo_files
 - Conflicts seedit (You can not use selinux-policy-targeted and seedit at the same time.)
