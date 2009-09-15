@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.31
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -304,6 +304,7 @@ Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 Conflicts:  audispd-plugins <= 1.7.7-1
 Obsoletes: mod_fcgid-selinux
+Conflicts:  seedit
 
 %description targeted
 SELinux Reference policy targeted base module.
@@ -355,6 +356,7 @@ Group: System Environment/Base
 Requires(pre): policycoreutils-python >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
+Conflicts:  seedit
 
 %description minimum
 SELinux Reference policy minimum base module.
@@ -388,6 +390,7 @@ Provides: selinux-policy-base
 Requires(pre): policycoreutils-python >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
+Conflicts:  seedit
 
 %description olpc 
 SELinux Reference policy olpc base module.
@@ -419,6 +422,7 @@ Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER} setransd
 Requires(pre): policycoreutils-python >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
+Conflicts:  seedit
 
 %description mls 
 SELinux Reference policy mls base module.
@@ -443,6 +447,11 @@ exit 0
 %endif
 
 %changelog
+* Mon Sep 14 2009 Dan Walsh <dwalsh@redhat.com> 3.6.31-4
+- Fix devicekit_disk_t to getattr on all domains sockets and fifo_files
+- Conflicts seedit (You can not use selinux-policy-targeted and seedit at the same time.)
+
+
 * Thu Sep 10 2009 Dan Walsh <dwalsh@redhat.com> 3.6.31-3
 - Add wordpress/wp-content/uploads label
 - Fixes for sandbox when run from staff_t
