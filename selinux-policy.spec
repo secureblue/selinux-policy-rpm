@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.31
-Release: 5%{?dist}
+Version: 3.6.32
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -318,7 +318,7 @@ if [ $1 -eq 1 ]; then
    %loadpolicy targeted $packages
    restorecon -R /root /var/log /var/run 2> /dev/null
 else
-   semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid -r polkit_auth -r polkit 2>/dev/null
+   semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid -r polkit_auth -r polkit -r rtkit_daemon 2>/dev/null
    packages="%{expand:%%moduleList targeted}"
    %loadpolicy targeted $packages
    %relabel targeted
@@ -447,6 +447,11 @@ exit 0
 %endif
 
 %changelog
+* Wed Sep 17 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-1
+- Update to upstream
+- Dontaudit nsplugin search /root
+- Dontaudit nsplugin sys_nice
+
 * Mon Sep 15 2009 Dan Walsh <dwalsh@redhat.com> 3.6.31-5
 - Fix label on /usr/bin/notepad, /usr/sbin/vboxadd-service
 - Remove policycoreutils-python requirement except for minimum
