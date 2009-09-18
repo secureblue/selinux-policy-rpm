@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.32
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -447,6 +447,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 18 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-5
+- Allow sshd to create .ssh directory and content
+
 * Fri Sep 18 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-4
 - Fix request_module line to module_request
 
