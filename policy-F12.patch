@@ -1595,7 +1595,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/gnome.te serefpolicy-3.6.32/policy/modules/apps/gnome.te
 --- nsaserefpolicy/policy/modules/apps/gnome.te	2009-07-14 14:19:57.000000000 -0400
-+++ serefpolicy-3.6.32/policy/modules/apps/gnome.te	2009-09-16 10:03:08.000000000 -0400
++++ serefpolicy-3.6.32/policy/modules/apps/gnome.te	2009-09-18 08:09:19.000000000 -0400
 @@ -9,16 +9,18 @@
  attribute gnomedomain;
  
@@ -1634,10 +1634,20 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ##############################
  #
  # Local Policy
-@@ -73,3 +84,79 @@
+@@ -73,3 +84,89 @@
  	xserver_use_xdm_fds(gconfd_t)
  	xserver_rw_xdm_pipes(gconfd_t)
  ')
++
++tunable_policy(`use_nfs_home_dirs',`
++        fs_manage_nfs_dirs(gconfdefaultsm_t)
++        fs_manage_nfs_files(gconfdefaultsm_t)
++')
++
++tunable_policy(`use_samba_home_dirs',`
++        fs_manage_cifs_dirs(gconfdefaultsm_t)
++        fs_manage_cifs_files(gconfdefaultsm_t)
++')
 +
 +#######################################
 +#
@@ -2301,7 +2311,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mozilla.if serefpolicy-3.6.32/policy/modules/apps/mozilla.if
 --- nsaserefpolicy/policy/modules/apps/mozilla.if	2009-07-28 13:28:33.000000000 -0400
-+++ serefpolicy-3.6.32/policy/modules/apps/mozilla.if	2009-09-16 10:03:08.000000000 -0400
++++ serefpolicy-3.6.32/policy/modules/apps/mozilla.if	2009-09-18 10:42:05.000000000 -0400
 @@ -45,6 +45,18 @@
  	relabel_dirs_pattern($2, mozilla_home_t, mozilla_home_t)
  	relabel_files_pattern($2, mozilla_home_t, mozilla_home_t)
@@ -2329,6 +2339,31 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	userdom_search_user_home_dirs($1)
  ')
  
+@@ -88,6 +101,24 @@
+ 
+ ########################################
+ ## <summary>
++##	Dontaudit attempts to write mozilla home directory content
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`mozilla_dontaudit_write_user_home_files',`
++	gen_require(`
++		type mozilla_home_t;
++	')
++
++	dontaudit $1 mozilla_home_t:file write;
++')
++
++########################################
++## <summary>
+ ##	Run mozilla in the mozilla domain.
+ ## </summary>
+ ## <param name="domain">
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mozilla.te serefpolicy-3.6.32/policy/modules/apps/mozilla.te
 --- nsaserefpolicy/policy/modules/apps/mozilla.te	2009-08-14 16:14:31.000000000 -0400
 +++ serefpolicy-3.6.32/policy/modules/apps/mozilla.te	2009-09-16 10:03:08.000000000 -0400
@@ -3587,8 +3622,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +# No types are sandbox_exec_t
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.if serefpolicy-3.6.32/policy/modules/apps/sandbox.if
 --- nsaserefpolicy/policy/modules/apps/sandbox.if	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.6.32/policy/modules/apps/sandbox.if	2009-09-17 16:13:55.000000000 -0400
-@@ -0,0 +1,174 @@
++++ serefpolicy-3.6.32/policy/modules/apps/sandbox.if	2009-09-18 11:27:41.000000000 -0400
+@@ -0,0 +1,177 @@
 +
 +## <summary>policy for sandbox</summary>
 +
@@ -3626,7 +3661,10 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +	role $2 types sandbox_x_domain;
 +	role $2 types sandbox_xserver_t;
 +	allow sandbox_x_domain $1:process sigchld;
-+
++	# Dontaudit leaked file descriptors
++	dontaudit sandbox_x_domain $1:fifo_file rw_fifo_file_perms;
++	dontaudit sandbox_x_domain $1:tcp_socket rw_socket_perms;
++	
 +	manage_files_pattern($1, sandbox_file_type, sandbox_file_type);
 +	manage_dirs_pattern($1, sandbox_file_type, sandbox_file_type);
 +	manage_sock_files_pattern($1, sandbox_file_type, sandbox_file_type);
@@ -3765,8 +3803,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.te serefpolicy-3.6.32/policy/modules/apps/sandbox.te
 --- nsaserefpolicy/policy/modules/apps/sandbox.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.6.32/policy/modules/apps/sandbox.te	2009-09-17 12:56:35.000000000 -0400
-@@ -0,0 +1,315 @@
++++ serefpolicy-3.6.32/policy/modules/apps/sandbox.te	2009-09-18 11:29:38.000000000 -0400
+@@ -0,0 +1,323 @@
 +policy_module(sandbox,1.0.0)
 +dbus_stub()
 +attribute sandbox_domain;
@@ -3830,6 +3868,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +files_read_usr_files(sandbox_xserver_t)
 +files_search_home(sandbox_xserver_t)
 +fs_dontaudit_rw_tmpfs_files(sandbox_xserver_t)
++fs_list_inotifyfs(sandbox_xserver_t)
 +
 +miscfiles_read_fonts(sandbox_xserver_t)
 +miscfiles_read_localization(sandbox_xserver_t)
@@ -3893,7 +3932,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +allow sandbox_x_domain self:fifo_file manage_file_perms;
 +allow sandbox_x_domain self:unix_stream_socket create_stream_socket_perms;
 +
-+allow sandbox_x_domain self:process { signal_perms getsched setpgid };
++allow sandbox_x_domain self:process { signal_perms getsched setpgid execstack execmem };
 +allow sandbox_x_domain self:shm create_shm_perms;
 +allow sandbox_x_domain self:unix_stream_socket { connectto create_stream_socket_perms };
 +allow sandbox_x_domain self:unix_dgram_socket create_socket_perms;
@@ -3901,6 +3940,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +dontaudit sandbox_x_domain self:netlink_audit_socket { create_netlink_socket_perms nlmsg_relay };
 +
 +files_search_home(sandbox_x_domain)
++files_dontaudit_getattr_tmp_dirs(sandbox_x_domain)
 +
 +kernel_read_system_state(sandbox_x_domain)
 +
@@ -3908,6 +3948,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 +dev_read_urand(sandbox_x_domain)
 +dev_dontaudit_read_rand(sandbox_x_domain)
++dev_dontaudit_search_sysfs(sandbox_x_domain)
 +
 +files_entrypoint_all_files(sandbox_x_domain)
 +files_read_etc_files(sandbox_x_domain)
@@ -3948,6 +3989,11 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +#============= sandbox_x_t ==============
 +files_search_home(sandbox_x_t)
 +userdom_use_user_ptys(sandbox_x_t)
++
++optional_policy(`
++	mozilla_dontaudit_write_user_home_files(sandbox_x_t)
++')
++
 +
 +########################################
 +#
@@ -4105,8 +4151,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +/usr/sbin/seunshare	--	gen_context(system_u:object_r:seunshare_exec_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/seunshare.if serefpolicy-3.6.32/policy/modules/apps/seunshare.if
 --- nsaserefpolicy/policy/modules/apps/seunshare.if	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.6.32/policy/modules/apps/seunshare.if	2009-09-17 13:02:52.000000000 -0400
-@@ -0,0 +1,76 @@
++++ serefpolicy-3.6.32/policy/modules/apps/seunshare.if	2009-09-18 11:41:50.000000000 -0400
+@@ -0,0 +1,79 @@
 +
 +## <summary>policy for seunshare</summary>
 +
@@ -4154,6 +4200,9 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +	seunshare_domtrans($1)
 +	sandbox_transition(seunshare_t, $2)
 +	role $2 types seunshare_t;
++
++	# leaks from firefox
++	dontaudit seunshare_t $1:tcp_socket rw_socket_perms;
 +')
 +
 +########################################
@@ -4185,8 +4234,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/seunshare.te serefpolicy-3.6.32/policy/modules/apps/seunshare.te
 --- nsaserefpolicy/policy/modules/apps/seunshare.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.6.32/policy/modules/apps/seunshare.te	2009-09-17 16:38:51.000000000 -0400
-@@ -0,0 +1,39 @@
++++ serefpolicy-3.6.32/policy/modules/apps/seunshare.te	2009-09-18 10:46:57.000000000 -0400
+@@ -0,0 +1,45 @@
 +policy_module(seunshare,1.0.0)
 +
 +########################################
@@ -4213,11 +4262,13 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +allow seunshare_t self:fifo_file rw_file_perms;
 +allow seunshare_t self:unix_stream_socket create_stream_socket_perms;
 +
++corecmd_exec_shell(seunshare_t)
++corecmd_exec_bin(seunshare_t)
++
 +files_read_etc_files(seunshare_t)
 +files_mounton_all_poly_members(seunshare_t)
 +
-+corecmd_exec_shell(seunshare_t)
-+corecmd_exec_bin(seunshare_t)
++fs_list_inotifyfs(seunshare_t)
 +
 +auth_use_nsswitch(seunshare_t)
 +
@@ -4226,6 +4277,10 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +miscfiles_read_localization(seunshare_t)
 +
 +userdom_use_user_terminals(seunshare_t)
++
++optional_policy(`
++	mozilla_dontaudit_write_user_home_files(seunshare_t)
++')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/vmware.te serefpolicy-3.6.32/policy/modules/apps/vmware.te
 --- nsaserefpolicy/policy/modules/apps/vmware.te	2009-09-09 09:23:16.000000000 -0400
 +++ serefpolicy-3.6.32/policy/modules/apps/vmware.te	2009-09-16 10:03:08.000000000 -0400
@@ -4658,7 +4713,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /dev/usb/mdc800.*	-c	gen_context(system_u:object_r:scanner_device_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/devices.if serefpolicy-3.6.32/policy/modules/kernel/devices.if
 --- nsaserefpolicy/policy/modules/kernel/devices.if	2009-08-28 14:58:20.000000000 -0400
-+++ serefpolicy-3.6.32/policy/modules/kernel/devices.if	2009-09-16 10:03:08.000000000 -0400
++++ serefpolicy-3.6.32/policy/modules/kernel/devices.if	2009-09-18 11:29:27.000000000 -0400
 @@ -1692,6 +1692,78 @@
  
  ########################################
@@ -5258,7 +5313,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /var/lib/nfs/rpc_pipefs(/.*)?	<<none>>
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/files.if serefpolicy-3.6.32/policy/modules/kernel/files.if
 --- nsaserefpolicy/policy/modules/kernel/files.if	2009-07-14 14:19:57.000000000 -0400
-+++ serefpolicy-3.6.32/policy/modules/kernel/files.if	2009-09-16 10:03:08.000000000 -0400
++++ serefpolicy-3.6.32/policy/modules/kernel/files.if	2009-09-18 11:28:35.000000000 -0400
 @@ -110,6 +110,11 @@
  ## </param>
  #
@@ -7487,8 +7542,8 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/unconfineduser.te serefpolicy-3.6.32/policy/modules/roles/unconfineduser.te
 --- nsaserefpolicy/policy/modules/roles/unconfineduser.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.6.32/policy/modules/roles/unconfineduser.te	2009-09-16 10:03:09.000000000 -0400
-@@ -0,0 +1,393 @@
++++ serefpolicy-3.6.32/policy/modules/roles/unconfineduser.te	2009-09-18 09:45:33.000000000 -0400
+@@ -0,0 +1,392 @@
 +policy_module(unconfineduser, 1.0.0)
 +
 +########################################
@@ -7808,7 +7863,6 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +')
 +
 +optional_policy(`
-+	xserver_run(unconfined_t, unconfined_r)
 +	xserver_rw_shm(unconfined_t)
 +')
 +
@@ -20632,7 +20686,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/init.fc serefpolicy-3.6.32/policy/modules/system/init.fc
 --- nsaserefpolicy/policy/modules/system/init.fc	2009-07-14 14:19:57.000000000 -0400
-+++ serefpolicy-3.6.32/policy/modules/system/init.fc	2009-09-16 10:03:09.000000000 -0400
++++ serefpolicy-3.6.32/policy/modules/system/init.fc	2009-09-18 09:48:19.000000000 -0400
 @@ -4,10 +4,10 @@
  /etc/init\.d/.*		--	gen_context(system_u:object_r:initrc_exec_t,s0)
  
@@ -20646,15 +20700,16 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  /etc/X11/prefdm		--	gen_context(system_u:object_r:initrc_exec_t,s0)
  
-@@ -45,6 +45,8 @@
+@@ -44,6 +44,9 @@
+ 
  /usr/sbin/apachectl	-- 	gen_context(system_u:object_r:initrc_exec_t,s0)
  /usr/sbin/open_init_pty	--	gen_context(system_u:object_r:initrc_exec_t,s0)
- 
-+/usr/share/system-config-services/system-config-services-mechanism\.py  --	gen_context(system_u:object_r:initrc_exec_t,s0)
++/usr/sbin/startx	-- 	gen_context(system_u:object_r:initrc_exec_t,s0)
 +
++/usr/share/system-config-services/system-config-services-mechanism\.py  --	gen_context(system_u:object_r:initrc_exec_t,s0)
+ 
  #
  # /var
- #
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/init.if serefpolicy-3.6.32/policy/modules/system/init.if
 --- nsaserefpolicy/policy/modules/system/init.if	2009-07-14 14:19:57.000000000 -0400
 +++ serefpolicy-3.6.32/policy/modules/system/init.if	2009-09-16 10:03:09.000000000 -0400
@@ -22733,7 +22788,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  ########################################
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/modutils.te serefpolicy-3.6.32/policy/modules/system/modutils.te
 --- nsaserefpolicy/policy/modules/system/modutils.te	2009-08-14 16:14:31.000000000 -0400
-+++ serefpolicy-3.6.32/policy/modules/system/modutils.te	2009-09-16 10:03:09.000000000 -0400
++++ serefpolicy-3.6.32/policy/modules/system/modutils.te	2009-09-18 09:27:21.000000000 -0400
 @@ -19,6 +19,7 @@
  type insmod_exec_t;
  application_domain(insmod_t, insmod_exec_t)
@@ -22833,7 +22888,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  logging_send_syslog_msg(insmod_t)
  logging_search_logs(insmod_t)
-@@ -157,19 +171,30 @@
+@@ -157,19 +171,31 @@
  
  seutil_read_file_contexts(insmod_t)
  
@@ -22857,6 +22912,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 +optional_policy(`
 +	firstboot_dontaudit_rw_pipes(insmod_t)
++	firstboot_dontaudit_rw_stream_sockets(insmod_t)
 +')
 +
 +optional_policy(`
@@ -22867,7 +22923,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  	hotplug_search_config(insmod_t)
  ')
  
-@@ -228,7 +253,7 @@
+@@ -228,7 +254,7 @@
  can_exec(update_modules_t, update_modules_exec_t)
  
  # manage module loading configuration

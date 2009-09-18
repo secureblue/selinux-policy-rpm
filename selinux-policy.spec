@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.32
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -447,7 +447,11 @@ exit 0
 %endif
 
 %changelog
-* Wed Sep 17 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-2
+* Fri Sep 18 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-3
+- Fix sandbox policy to allow it to run under firefox.  
+- Dont audit leaks.
+
+* Thu Sep 17 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-2
 - Fixes for sandbox
 
 * Wed Sep 17 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-1
