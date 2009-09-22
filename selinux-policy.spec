@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.32
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -447,9 +447,11 @@ exit 0
 %endif
 
 %changelog
-* Mon Sep 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-8
+* Mon Sep 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-9
 - Fix all kernel_request_load_module domains
 
+* Mon Sep 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-8
+- Fix all kernel_request_load_module domains
 
 * Sun Sep 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-7
 - Remove allow_exec* booleans for confined users.  Only available for unconfined_t
