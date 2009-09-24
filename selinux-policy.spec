@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.32
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -80,6 +80,7 @@ SELinux Base package
 Summary: SELinux policy documentation
 Group: System Environment/Base
 Requires(pre): selinux-policy = %{version}-%{release}
+Requires: /usr/bin/xdg-open
 
 %description doc
 SELinux policy documentation package
@@ -447,6 +448,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-10
+- Allow sendmail to request kernel modules load
+
 * Mon Sep 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-9
 - Fix all kernel_request_load_module domains
 
