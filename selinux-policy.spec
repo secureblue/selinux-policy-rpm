@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.32
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -448,6 +448,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 24 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-11
+- Allow users to exec restorecond
+
 * Tue Sep 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-10
 - Allow sendmail to request kernel modules load
 
