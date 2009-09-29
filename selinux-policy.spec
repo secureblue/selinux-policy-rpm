@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.32
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -432,7 +432,7 @@ SELinux Reference policy mls base module.
 %saveFileContext mls
 
 %post mls 
-semodule -n -s mls -r mailscanner -r polkit 2>/dev/null
+semodule -n -s mls -r mailscanner -r polkit -r ModemManager 2>/dev/null
 packages="%{expand:%%moduleList mls}"
 %loadpolicy mls $packages
 
@@ -448,6 +448,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 25 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-12
+- Update rhcs policy
+
 * Thu Sep 24 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-11
 - Allow users to exec restorecond
 
