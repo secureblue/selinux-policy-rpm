@@ -388,7 +388,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  /usr/bin/online_update		--	gen_context(system_u:object_r:rpm_exec_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/admin/rpm.if serefpolicy-3.6.32/policy/modules/admin/rpm.if
 --- nsaserefpolicy/policy/modules/admin/rpm.if	2009-07-14 14:19:57.000000000 -0400
-+++ serefpolicy-3.6.32/policy/modules/admin/rpm.if	2009-09-28 10:22:14.000000000 -0400
++++ serefpolicy-3.6.32/policy/modules/admin/rpm.if	2009-09-29 10:11:37.000000000 -0400
 @@ -13,11 +13,34 @@
  interface(`rpm_domtrans',`
  	gen_require(`
@@ -8438,6 +8438,248 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  files_rw_etc_runtime_files(afs_t)
  
  fs_getattr_xattr_fs(afs_t)
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/aisexec.fc serefpolicy-3.6.32/policy/modules/services/aisexec.fc
+--- nsaserefpolicy/policy/modules/services/aisexec.fc	1969-12-31 19:00:00.000000000 -0500
++++ serefpolicy-3.6.32/policy/modules/services/aisexec.fc	2009-09-29 09:58:56.000000000 -0400
+@@ -0,0 +1,12 @@
++
++/etc/rc\.d/init\.d/openais             --      gen_context(system_u:object_r:aisexec_initrc_exec_t,s0)
++
++/usr/sbin/aisexec                      --      gen_context(system_u:object_r:aisexec_exec_t,s0)
++
++/var/lib/openais(/.*)?                         gen_context(system_u:object_r:aisexec_var_lib_t,s0)
++
++/var/log/cluster/aisexec\.log          --      gen_context(system_u:object_r:aisexec_var_log_t,s0)
++
++/var/run/aisexec\.pid                  --      gen_context(system_u:object_r:aisexec_var_run_t,s0)
++
++/var/run/cman_.*                       -s      gen_context(system_u:object_r:aisexec_var_run_t,s0)
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/aisexec.if serefpolicy-3.6.32/policy/modules/services/aisexec.if
+--- nsaserefpolicy/policy/modules/services/aisexec.if	1969-12-31 19:00:00.000000000 -0500
++++ serefpolicy-3.6.32/policy/modules/services/aisexec.if	2009-09-29 09:58:56.000000000 -0400
+@@ -0,0 +1,106 @@
++## <summary>SELinux policy for Aisexec Cluster Engine</summary>
++
++########################################
++## <summary>
++##      Execute a domain transition to run aisexec.
++## </summary>
++## <param name="domain">
++## <summary>
++##      Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`aisexec_domtrans',`
++        gen_require(`
++                type aisexec_t, aisexec_exec_t;
++        ')
++
++        domtrans_pattern($1, aisexec_exec_t, aisexec_t)
++')
++
++#####################################
++## <summary>
++##      Connect to aisexec over a unix domain
++##      stream socket.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`aisexec_stream_connect',`
++        gen_require(`
++                type aisexec_t, aisexec_var_run_t;
++        ')
++
++        files_search_pids($1)
++        stream_connect_pattern($1, aisexec_var_run_t, aisexec_var_run_t, aisexec_t)
++')
++
++#######################################
++## <summary>
++##      Allow the specified domain to read aisexec's log files.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`aisexec_read_log',`
++        gen_require(`
++                type aisexec_var_log_t;
++        ')
++
++        logging_search_logs($1)
++        list_dirs_pattern($1, aisexec_var_log_t, aisexec_var_log_t)
++        read_files_pattern($1, aisexec_var_log_t, aisexec_var_log_t)
++')
++
++######################################
++## <summary>
++##      All of the rules required to administrate 
++##      an aisexec environment
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++## <param name="role">
++##      <summary>
++##      The role to be allowed to manage the aisexecd domain.
++##      </summary>
++## </param>
++## <rolecap/>
++#
++interface(`aisexecd_admin',`
++        gen_require(`
++                type aisexec_t, aisexec_var_lib_t, aisexec_var_log_t;
++                type aisexec_var_run_t, aisexec_tmp_t, aisexec_tmpfs_t;
++                type aisexec_initrc_exec_t;
++        ')
++
++        allow $1 aisexec_t:process { ptrace signal_perms };
++        ps_process_pattern($1, aisexec_t)
++
++        init_labeled_script_domtrans($1, aisexec_initrc_exec_t)
++        domain_system_change_exemption($1)
++        role_transition $2 aisexec_initrc_exec_t system_r;
++        allow $2 system_r;
++
++        files_search_var_lib($1)
++        admin_pattern($1, aisexec_var_lib_t)
++
++        logging_search_logs($1)
++        admin_pattern($1, aisexec_var_log_t)
++
++        files_search_pids($1)
++        admin_pattern($1, aisexec_var_run_t)
++
++        files_search_tmp($1)
++        admin_pattern($1, aisexec_tmp_t)
++
++        admin_pattern($1, aisexec_tmpfs_t)
++')
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/aisexec.te serefpolicy-3.6.32/policy/modules/services/aisexec.te
+--- nsaserefpolicy/policy/modules/services/aisexec.te	1969-12-31 19:00:00.000000000 -0500
++++ serefpolicy-3.6.32/policy/modules/services/aisexec.te	2009-09-29 09:58:56.000000000 -0400
+@@ -0,0 +1,112 @@
++
++policy_module(aisexec,1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++type aisexec_t;
++type aisexec_exec_t;
++init_daemon_domain(aisexec_t, aisexec_exec_t)
++
++type aisexec_initrc_exec_t;
++init_script_file(aisexec_initrc_exec_t);
++
++# tmp files
++type aisexec_tmp_t;
++files_tmp_file(aisexec_tmp_t)
++
++type aisexec_tmpfs_t;
++files_tmpfs_file(aisexec_tmpfs_t)
++
++# log files
++type aisexec_var_log_t;
++logging_log_file(aisexec_var_log_t)
++
++# var/lib files
++type aisexec_var_lib_t;
++files_type(aisexec_var_lib_t)
++
++# pid files
++type aisexec_var_run_t;
++files_pid_file(aisexec_var_run_t)
++
++########################################
++#
++# aisexec local policy
++#
++
++allow aisexec_t self:capability { sys_nice sys_resource ipc_lock };
++allow aisexec_t self:process { setrlimit setsched signal };
++
++allow aisexec_t self:fifo_file rw_fifo_file_perms;
++allow aisexec_t self:sem create_sem_perms;
++allow aisexec_t self:unix_stream_socket { create_stream_socket_perms connectto };
++allow aisexec_t self:unix_dgram_socket create_socket_perms;
++allow aisexec_t self:udp_socket create_socket_perms;
++
++# tmp files
++manage_dirs_pattern(aisexec_t, aisexec_tmp_t, aisexec_tmp_t)
++manage_files_pattern(aisexec_t, aisexec_tmp_t, aisexec_tmp_t)
++files_tmp_filetrans(aisexec_t, aisexec_tmp_t, { file dir })
++
++manage_dirs_pattern(aisexec_t, aisexec_tmpfs_t, aisexec_tmpfs_t)
++manage_files_pattern(aisexec_t, aisexec_tmpfs_t, aisexec_tmpfs_t)
++fs_tmpfs_filetrans(aisexec_t, aisexec_tmpfs_t,{ dir file })
++
++# var/lib files
++manage_files_pattern(aisexec_t, aisexec_var_lib_t,aisexec_var_lib_t)
++manage_dirs_pattern(aisexec_t, aisexec_var_lib_t,aisexec_var_lib_t)
++manage_sock_files_pattern(aisexec_t, aisexec_var_lib_t,aisexec_var_lib_t)
++files_var_lib_filetrans(aisexec_t,aisexec_var_lib_t, { file dir sock_file })
++
++# log files
++manage_files_pattern(aisexec_t, aisexec_var_log_t,aisexec_var_log_t)
++manage_sock_files_pattern(aisexec_t, aisexec_var_log_t,aisexec_var_log_t)
++logging_log_filetrans(aisexec_t,aisexec_var_log_t,{ sock_file file })
++
++# pid file
++manage_files_pattern(aisexec_t, aisexec_var_run_t,aisexec_var_run_t)
++manage_sock_files_pattern(aisexec_t, aisexec_var_run_t,aisexec_var_run_t)
++files_pid_filetrans(aisexec_t,aisexec_var_run_t, { file sock_file })
++
++corenet_udp_bind_netsupport_port(aisexec_t)
++corenet_tcp_bind_reserved_port(aisexec_t)
++corenet_udp_bind_cluster_port(aisexec_t)
++
++ccs_stream_connect(aisexec_t)
++
++corecmd_exec_bin(aisexec_t)
++
++kernel_read_system_state(aisexec_t)
++
++files_manage_mounttab(aisexec_t)
++
++auth_use_nsswitch(aisexec_t)
++
++dev_read_urand(aisexec_t)
++
++libs_use_ld_so(aisexec_t)
++libs_use_shared_libs(aisexec_t)
++miscfiles_read_localization(aisexec_t)
++
++init_rw_script_tmp_files(aisexec_t)
++
++logging_send_syslog_msg(aisexec_t)
++
++# to communication with RHCS
++dlm_controld_manage_tmpfs_files(aisexec_t)
++dlm_controld_rw_semaphores(aisexec_t)
++
++fenced_manage_tmpfs_files(aisexec_t)
++fenced_rw_semaphores(aisexec_t)
++
++gfs_controld_manage_tmpfs_files(aisexec_t)
++gfs_controld_rw_semaphores(aisexec_t)
++gfs_controld_t_rw_shm(aisexec_t)
++
++groupd_manage_tmpfs_files(aisexec_t)
++groupd_rw_semaphores(aisexec_t)
++groupd_rw_shm(aisexec_t)
++
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/amavis.te serefpolicy-3.6.32/policy/modules/services/amavis.te
 --- nsaserefpolicy/policy/modules/services/amavis.te	2009-08-14 16:14:31.000000000 -0400
 +++ serefpolicy-3.6.32/policy/modules/services/amavis.te	2009-09-28 09:36:06.000000000 -0400
@@ -10089,6 +10331,19 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  		pulseaudio_dbus_chat(bluetooth_t)
  	')
  ')
+diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ccs.fc serefpolicy-3.6.32/policy/modules/services/ccs.fc
+--- nsaserefpolicy/policy/modules/services/ccs.fc	2009-07-14 14:19:57.000000000 -0400
++++ serefpolicy-3.6.32/policy/modules/services/ccs.fc	2009-09-29 15:31:19.000000000 -0400
+@@ -2,9 +2,4 @@
+ 
+ /sbin/ccsd		--	gen_context(system_u:object_r:ccs_exec_t,s0)
+ 
+-/usr/sbin/aisexec 	--	gen_context(system_u:object_r:ccs_exec_t,s0)
+-
+-/var/lib/openais(/.*)?		gen_context(system_u:object_r:ccs_var_lib_t,s0)
+-
+ /var/run/cluster(/.*)?		gen_context(system_u:object_r:ccs_var_run_t,s0)
+-/var/run/cman_.*	-s	gen_context(system_u:object_r:ccs_var_run_t,s0)
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/certmaster.te serefpolicy-3.6.32/policy/modules/services/certmaster.te
 --- nsaserefpolicy/policy/modules/services/certmaster.te	2009-07-14 14:19:57.000000000 -0400
 +++ serefpolicy-3.6.32/policy/modules/services/certmaster.te	2009-09-16 10:03:09.000000000 -0400
@@ -16021,8 +16276,19 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
 +
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ricci.te serefpolicy-3.6.32/policy/modules/services/ricci.te
 --- nsaserefpolicy/policy/modules/services/ricci.te	2009-08-14 16:14:31.000000000 -0400
-+++ serefpolicy-3.6.32/policy/modules/services/ricci.te	2009-09-16 10:03:09.000000000 -0400
-@@ -264,6 +264,7 @@
++++ serefpolicy-3.6.32/policy/modules/services/ricci.te	2009-09-29 09:58:56.000000000 -0400
+@@ -227,6 +227,10 @@
+ ricci_stream_connect_modclusterd(ricci_modcluster_t)
+ 
+ optional_policy(`
++        aisexec_stream_connect(ricci_modcluster_t)
++')
++
++optional_policy(`
+ 	ccs_stream_connect(ricci_modcluster_t)
+ 	ccs_domtrans(ricci_modcluster_t)
+ 	ccs_manage_config(ricci_modcluster_t)
+@@ -264,6 +268,7 @@
  allow ricci_modclusterd_t self:socket create_socket_perms;
  
  allow ricci_modclusterd_t ricci_modcluster_t:unix_stream_socket connectto;
@@ -16030,7 +16296,18 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  # log files
  allow ricci_modclusterd_t ricci_modcluster_var_log_t:dir setattr;
-@@ -440,6 +441,10 @@
+@@ -306,6 +311,10 @@
+ sysnet_dns_name_resolve(ricci_modclusterd_t)
+ 
+ optional_policy(`
++        aisexec_stream_connect(ricci_modclusterd_t)
++')
++
++optional_policy(`
+ 	ccs_domtrans(ricci_modclusterd_t)
+ 	ccs_stream_connect(ricci_modclusterd_t)
+ 	ccs_read_config(ricci_modclusterd_t)
+@@ -440,6 +449,10 @@
  files_read_usr_files(ricci_modstorage_t)
  files_read_kernel_modules(ricci_modstorage_t)
  
@@ -16041,6 +16318,17 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  storage_raw_read_fixed_disk(ricci_modstorage_t)
  
  term_dontaudit_use_console(ricci_modstorage_t)
+@@ -457,6 +470,10 @@
+ mount_domtrans(ricci_modstorage_t)
+ 
+ optional_policy(`
++        aisexec_stream_connect(ricci_modstorage_t)
++')
++
++optional_policy(`
+ 	ccs_stream_connect(ricci_modstorage_t)
+ 	ccs_read_config(ricci_modstorage_t)
+ ')
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/rpcbind.if serefpolicy-3.6.32/policy/modules/services/rpcbind.if
 --- nsaserefpolicy/policy/modules/services/rpcbind.if	2009-07-14 14:19:57.000000000 -0400
 +++ serefpolicy-3.6.32/policy/modules/services/rpcbind.if	2009-09-16 10:03:09.000000000 -0400
@@ -23141,7 +23429,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
 diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/lvm.te serefpolicy-3.6.32/policy/modules/system/lvm.te
 --- nsaserefpolicy/policy/modules/system/lvm.te	2009-08-14 16:14:31.000000000 -0400
-+++ serefpolicy-3.6.32/policy/modules/system/lvm.te	2009-09-16 10:03:09.000000000 -0400
++++ serefpolicy-3.6.32/policy/modules/system/lvm.te	2009-09-29 09:58:56.000000000 -0400
 @@ -10,6 +10,9 @@
  type clvmd_exec_t;
  init_daemon_domain(clvmd_t, clvmd_exec_t)
@@ -23160,7 +23448,18 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  storage_dontaudit_getattr_removable_dev(clvmd_t)
  storage_manage_fixed_disk(clvmd_t)
-@@ -168,7 +172,7 @@
+@@ -138,6 +142,10 @@
+ ')
+ 
+ optional_policy(`
++        aisexec_stream_connect(clvmd_t)
++')
++
++optional_policy(`
+ 	ccs_stream_connect(clvmd_t)
+ ')
+ 
+@@ -168,7 +176,7 @@
  # LVM will complain a lot if it cannot set its priority.
  allow lvm_t self:process setsched;
  allow lvm_t self:file rw_file_perms;
@@ -23169,7 +23468,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  allow lvm_t self:unix_dgram_socket create_socket_perms;
  allow lvm_t self:netlink_kobject_uevent_socket create_socket_perms;
  
-@@ -214,6 +218,7 @@
+@@ -214,6 +222,7 @@
  # it has no reason to need this
  kernel_dontaudit_getattr_core_if(lvm_t)
  kernel_use_fds(lvm_t)
@@ -23177,7 +23476,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  corecmd_exec_bin(lvm_t)
  corecmd_exec_shell(lvm_t)
-@@ -239,6 +244,7 @@
+@@ -239,6 +248,7 @@
  dev_dontaudit_getattr_generic_blk_files(lvm_t)
  dev_dontaudit_getattr_generic_pipes(lvm_t)
  dev_create_generic_dirs(lvm_t)
@@ -23185,7 +23484,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  domain_use_interactive_fds(lvm_t)
  domain_read_all_domains_state(lvm_t)
-@@ -248,6 +254,7 @@
+@@ -248,6 +258,7 @@
  files_read_etc_runtime_files(lvm_t)
  # for when /usr is not mounted:
  files_dontaudit_search_isid_type_dirs(lvm_t)
@@ -23193,7 +23492,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  fs_getattr_xattr_fs(lvm_t)
  fs_search_auto_mountpoints(lvm_t)
-@@ -255,6 +262,7 @@
+@@ -255,6 +266,7 @@
  fs_read_tmpfs_symlinks(lvm_t)
  fs_dontaudit_read_removable_files(lvm_t)
  fs_dontaudit_getattr_tmpfs_files(lvm_t)
@@ -23201,7 +23500,7 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  selinux_get_fs_mount(lvm_t)
  selinux_validate_context(lvm_t)
-@@ -273,10 +281,15 @@
+@@ -273,10 +285,15 @@
  storage_dev_filetrans_fixed_disk(lvm_t)
  # Access raw devices and old /dev/lvm (c 109,0).  Is this needed?
  storage_manage_fixed_disk(lvm_t)
@@ -23217,7 +23516,18 @@ diff -b -B --ignore-all-space --exclude-from=exclude -N -u -r nsaserefpolicy/pol
  
  logging_send_syslog_msg(lvm_t)
  
-@@ -313,8 +326,10 @@
+@@ -299,6 +316,10 @@
+ ')
+ 
+ optional_policy(`
++        aisexec_stream_connect(lvm_t)
++')
++
++optional_policy(`
+ 	bootloader_rw_tmp_files(lvm_t)
+ ')
+ 
+@@ -313,8 +334,10 @@
  optional_policy(`
  	dbus_system_bus_client(lvm_t)
  
