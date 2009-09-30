@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.32
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -448,7 +448,10 @@ exit 0
 %endif
 
 %changelog
-* Tue Sep 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-13
+* Wed Sep 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-14
+- Add plymouth policy
+
+* Tue Sep 29 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-13
 - Allow cupsd_config to read user tmp
 - Allow snmpd_t to signal itself
 - Allow sysstat_t to makedir in sysstat_log_t
