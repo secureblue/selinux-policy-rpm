@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.6.32
-Release: 14%{?dist}
+Release: 16%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -366,7 +366,8 @@ SELinux Reference policy minimum base module.
 %saveFileContext minimum
 
 %post minimum
-%loadpolicy minimum
+packages="unconfined.pp.bz2 unconfineduser.pp.bz2"
+%loadpolicy minimum $packages
 if [ $1 -eq 1 ]; then
 semanage -S minimum -i - << __eof
 login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
@@ -448,8 +449,16 @@ exit 0
 %endif
 
 %changelog
-* Wed Sep 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-14
+* Thu Oct 1 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-17
+- Allow vpnc request the kernel to load modules
+
+* Wed Sep 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-16
+- Fix minimum policy installs
+- Allow udev and rpcbind to request the kernel to load modules
+
+* Wed Sep 30 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-15
 - Add plymouth policy
+- Allow local_login to sys_admin
 
 * Tue Sep 29 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-13
 - Allow cupsd_config to read user tmp
