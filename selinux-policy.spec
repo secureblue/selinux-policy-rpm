@@ -19,12 +19,12 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.6.32
-Release: 16%{?dist}
+Version: 3.6.33
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-F12.patch
+patch: policy-F13.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -449,6 +449,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 12 2009 Dan Walsh <dwalsh@redhat.com> 3.6.33-1
+- Update to upstream
+
 * Thu Oct 1 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-17
 - Allow vpnc request the kernel to load modules
 
