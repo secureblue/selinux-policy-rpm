@@ -449,6 +449,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Nov 16 2009 Dan Walsh <dwalsh@redhat.com> 3.7.2-1
+- Add asterisk policy back in
+
 * Mon Nov 16 2009 Dan Walsh <dwalsh@redhat.com> 3.7.1-1
 - Update to upstream release 2.20091117
 
