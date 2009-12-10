@@ -19,7 +19,7 @@
 %define CHECKPOLICYVER 2.0.16-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.7.3
+Version: 3.7.4
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -449,6 +449,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Dec 4 2009 Dan Walsh <dwalsh@redhat.com> 3.7.4-1
+- Update to upstream release
+
 * Mon Nov 16 2009 Dan Walsh <dwalsh@redhat.com> 3.7.3-1
 - Add asterisk policy back in
 - Update to upstream release 2.20091117
