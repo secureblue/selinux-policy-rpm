@@ -13,14 +13,14 @@
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
-%define POLICYVER 23
-%define libsepolver 2.0.20-1
-%define POLICYCOREUTILSVER 2.0.71-2
-%define CHECKPOLICYVER 2.0.16-3
+%define POLICYVER 24
+%define libsepolver 2.0.41-1
+%define POLICYCOREUTILSVER 2.0.78-3
+%define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.4
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -181,7 +181,7 @@ FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 selinuxenabled; \
 if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
 	fixfiles -C ${FILE_CONTEXT}.pre restore; \
-	restorecon -R /var/log /var/run 2> /dev/null; \
+        restorecon -R /root /var/log /var/run /var/lib 2> /dev/null;\
 	rm -f ${FILE_CONTEXT}.pre; \
 fi; 
 
@@ -317,7 +317,7 @@ SELinux Reference policy targeted base module.
 if [ $1 -eq 1 ]; then
    packages="%{expand:%%moduleList targeted}"
    %loadpolicy targeted $packages
-   restorecon -R /root /var/log /var/run 2> /dev/null
+   restorecon -R /root /var/log /var/run /var/lib 2> /dev/null
 else
    semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid -r polkit_auth -r polkit -r rtkit_daemon -r ModemManager 2>/dev/null
    packages="%{expand:%%moduleList targeted}"
@@ -373,7 +373,7 @@ semanage -S minimum -i - << __eof
 login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
 login -m  -s unconfined_u -r s0-s0:c0.c1023 root
 __eof
-restorecon -R /root /var/log /var/run 2> /dev/null
+restorecon -R /root /var/log /var/run /var/lib 2> /dev/null
 else
 %relabel minimum
 fi
@@ -449,6 +449,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Dec 11 2009 Dan Walsh <dwalsh@redhat.com> 3.7.4-2
+- Add tgtd policy
+
 * Fri Dec 4 2009 Dan Walsh <dwalsh@redhat.com> 3.7.4-1
 - Update to upstream release
 
