@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.4
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -449,6 +449,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec 16 2009 Dan Walsh <dwalsh@redhat.com> 3.7.4-3
+- Fixes for abrt calls
+
 * Fri Dec 11 2009 Dan Walsh <dwalsh@redhat.com> 3.7.4-2
 - Add tgtd policy
 
