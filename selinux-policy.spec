@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.7.4
-Release: 4%{?dist}
+Version: 3.7.5
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -449,7 +449,10 @@ exit 0
 %endif
 
 %changelog
-* Thu Dec 16 2009 Dan Walsh <dwalsh@redhat.com> 3.7.4-4
+* Fri Dec 18 2009 Dan Walsh <dwalsh@redhat.com> 3.7.5-1
+- Update to upstream
+
+* Thu Dec 17 2009 Dan Walsh <dwalsh@redhat.com> 3.7.4-4
 - Rename udisks-daemon back to devicekit_disk_t policy
 
 * Wed Dec 16 2009 Dan Walsh <dwalsh@redhat.com> 3.7.4-3
