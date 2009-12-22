@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.5
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -449,6 +449,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 22 2009 Dan Walsh <dwalsh@redhat.com> 3.7.5-3
+- Add back xserver_manage_home_fonts
+
 * Mon Dec 21 2009 Dan Walsh <dwalsh@redhat.com> 3.7.5-2
 - Dontaudit sandbox trying to read nscd and sssd
 
