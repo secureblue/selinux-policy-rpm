@@ -1,4 +1,4 @@
-t%define distro redhat
+%define distro redhat
 %define polyinstatiate n
 %define monolithic n
 %if %{?BUILD_TARGETED:0}%{!?BUILD_TARGETED:1}
