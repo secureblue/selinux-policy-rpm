@@ -1,4 +1,4 @@
-%define distro redhat
+t%define distro redhat
 %define polyinstatiate n
 %define monolithic n
 %if %{?BUILD_TARGETED:0}%{!?BUILD_TARGETED:1}
@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.5
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
