@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.5
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -449,6 +449,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec 23 2009 Dan Walsh <dwalsh@redhat.com> 3.7.5-4
+- Cleanups from dgrift
+
 * Tue Dec 22 2009 Dan Walsh <dwalsh@redhat.com> 3.7.5-3
 - Add back xserver_manage_home_fonts
 
