@@ -449,6 +449,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec 30 2009 Dan Walsh <dwalsh@redhat.com> 3.7.5-5
+- Lots of fixes found in F12, fixes from Tom London
+
 * Wed Dec 23 2009 Dan Walsh <dwalsh@redhat.com> 3.7.5-4
 - Cleanups from dgrift
 
