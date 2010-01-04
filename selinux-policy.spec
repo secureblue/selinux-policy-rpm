@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.5
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -449,6 +449,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 4 2010 Dan Walsh <dwalsh@redhat.com> 3.7.5-6
+- add usbmon device
+- Add allow rulse for devicekit_disk
+
 * Wed Dec 30 2009 Dan Walsh <dwalsh@redhat.com> 3.7.5-5
 - Lots of fixes found in F12, fixes from Tom London
 
