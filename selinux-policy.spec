@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.5
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -449,6 +449,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan 5 2010 Dan Walsh <dwalsh@redhat.com> 3.7.5-7
+- Add cobbler policy from dgrift
+
 * Mon Jan 4 2010 Dan Walsh <dwalsh@redhat.com> 3.7.5-6
 - add usbmon device
 - Add allow rulse for devicekit_disk
