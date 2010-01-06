@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.5
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -449,6 +449,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 6 2010 Dan Walsh <dwalsh@redhat.com> 3.7.5-8
+- Remove most of the permissive domains from F12.
+
 * Tue Jan 5 2010 Dan Walsh <dwalsh@redhat.com> 3.7.5-7
 - Add cobbler policy from dgrift
 
