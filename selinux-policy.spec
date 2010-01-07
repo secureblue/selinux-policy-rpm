@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.7.5
-Release: 8%{?dist}
+Version: 3.7.6
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -86,6 +86,7 @@ Requires: /usr/bin/xdg-open
 SELinux policy documentation package
 
 %files doc
+%defattr(-,root,root,-)
 %doc %{_usr}/share/doc/%{name}-%{version}
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
 
@@ -449,6 +450,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jan 7 2010 Dan Walsh <dwalsh@redhat.com> 3.7.6-1
+- Update to upstream
+
 * Wed Jan 6 2010 Dan Walsh <dwalsh@redhat.com> 3.7.5-8
 - Remove most of the permissive domains from F12.
 
