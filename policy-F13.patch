@@ -10269,6 +10269,183 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/afs.
  allow afs_t self:process setsched;
  allow afs_t self:udp_socket create_socket_perms;
  allow afs_t self:fifo_file rw_file_perms;
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/aiccu.fc serefpolicy-3.7.6/policy/modules/services/aiccu.fc
+--- nsaserefpolicy/policy/modules/services/aiccu.fc	1969-12-31 19:00:00.000000000 -0500
++++ serefpolicy-3.7.6/policy/modules/services/aiccu.fc	2010-01-09 09:03:46.000000000 -0500
+@@ -0,0 +1,5 @@
++
++/usr/sbin/aiccu	--	gen_context(system_u:object_r:aiccu_exec_t,s0)
++
++/etc/rc\.d/init\.d/aiccu	--	gen_context(system_u:object_r:aiccu_initrc_exec_t,s0)
++/var/run/aiccu.pid		--	gen_context(system_u:object_r:aiccu_var_run_t,s0)
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/aiccu.if serefpolicy-3.7.6/policy/modules/services/aiccu.if
+--- nsaserefpolicy/policy/modules/services/aiccu.if	1969-12-31 19:00:00.000000000 -0500
++++ serefpolicy-3.7.6/policy/modules/services/aiccu.if	2010-01-09 09:03:46.000000000 -0500
+@@ -0,0 +1,119 @@
++
++## <summary>policy for aiccu</summary>
++
++########################################
++## <summary>
++##	Execute a domain transition to run aiccu.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`aiccu_domtrans',`
++	gen_require(`
++		type aiccu_t, aiccu_exec_t;
++	')
++
++	domtrans_pattern($1, aiccu_exec_t, aiccu_t)
++')
++
++
++########################################
++## <summary>
++##	Execute aiccu server in the aiccu domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	The type of the process performing this action.
++##	</summary>
++## </param>
++#
++interface(`aiccu_initrc_domtrans',`
++	gen_require(`
++		type aiccu_initrc_exec_t;
++	')
++
++	init_labeled_script_domtrans($1, aiccu_initrc_exec_t)
++')
++
++########################################
++## <summary>
++##	Read aiccu PID files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`aiccu_read_pid_files',`
++	gen_require(`
++		type aiccu_var_run_t;
++	')
++
++	files_search_pids($1)
++	allow $1 aiccu_var_run_t:file read_file_perms;
++')
++
++########################################
++## <summary>
++##	Manage aiccu var_run files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`aiccu_manage_var_run',`
++	gen_require(`
++		type aiccu_var_run_t;
++	')
++
++         manage_dirs_pattern($1, aiccu_var_run_t, aiccu_var_run_t)
++         manage_files_pattern($1, aiccu_var_run_t, aiccu_var_run_t)
++         manage_lnk_files_pattern($1, aiccu_var_run_t, aiccu_var_run_t)
++')
++
++
++########################################
++## <summary>
++##	All of the rules required to administrate 
++##	an aiccu environment
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	Role allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`aiccu_admin',`
++	gen_require(`
++		type aiccu_t;
++	')
++
++	allow $1 aiccu_t:process { ptrace signal_perms getattr };
++	read_files_pattern($1, aiccu_t, aiccu_t)
++	        
++
++	gen_require(`
++		type aiccu_initrc_exec_t;
++	')
++
++	# Allow aiccu_t to restart the apache service
++	aiccu_initrc_domtrans($1)
++	domain_system_change_exemption($1)
++	role_transition $2 aiccu_initrc_exec_t system_r;
++	allow $2 system_r;
++
++	aiccu_manage_var_run($1)
++
++')
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/aiccu.te serefpolicy-3.7.6/policy/modules/services/aiccu.te
+--- nsaserefpolicy/policy/modules/services/aiccu.te	1969-12-31 19:00:00.000000000 -0500
++++ serefpolicy-3.7.6/policy/modules/services/aiccu.te	2010-01-09 09:03:46.000000000 -0500
+@@ -0,0 +1,41 @@
++policy_module(aiccu,1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++type aiccu_t;
++type aiccu_exec_t;
++init_daemon_domain(aiccu_t, aiccu_exec_t)
++
++permissive aiccu_t;
++
++type aiccu_initrc_exec_t;
++init_script_file(aiccu_initrc_exec_t)
++
++type aiccu_var_run_t;
++files_pid_file(aiccu_var_run_t)
++
++########################################
++#
++# aiccu local policy
++#
++
++allow aiccu_t self:capability { kill };
++allow aiccu_t self:process { fork signal };
++
++# Init script handling
++domain_use_interactive_fds(aiccu_t)
++
++# internal communication is often done using fifo and unix sockets.
++allow aiccu_t self:fifo_file rw_file_perms;
++allow aiccu_t self:unix_stream_socket create_stream_socket_perms;
++
++files_read_etc_files(aiccu_t)
++
++miscfiles_read_localization(aiccu_t)
++
++manage_dirs_pattern(aiccu_t, aiccu_var_run_t,  aiccu_var_run_t)
++manage_files_pattern(aiccu_t, aiccu_var_run_t,  aiccu_var_run_t)
++files_pid_filetrans(aiccu_t, aiccu_var_run_t, { file dir })
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/aisexec.fc serefpolicy-3.7.6/policy/modules/services/aisexec.fc
 --- nsaserefpolicy/policy/modules/services/aisexec.fc	1969-12-31 19:00:00.000000000 -0500
 +++ serefpolicy-3.7.6/policy/modules/services/aisexec.fc	2010-01-07 15:28:30.000000000 -0500
@@ -25343,6 +25520,61 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
 +    fs_manage_cifs_dirs(sftpd_t)
 +    fs_manage_cifs_files(sftpd_t)
 +')
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/sssd.if serefpolicy-3.7.6/policy/modules/services/sssd.if
+--- nsaserefpolicy/policy/modules/services/sssd.if	2010-01-07 14:53:53.000000000 -0500
++++ serefpolicy-3.7.6/policy/modules/services/sssd.if	2010-01-09 08:10:39.000000000 -0500
+@@ -57,6 +57,25 @@
+ 
+ ########################################
+ ## <summary>
++##	Read sssd config files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`sssd_read_config_files',`
++	gen_require(`
++		type sssd_config_t;
++	')
++
++	sssd_search_lib($1)
++	read_files_pattern($1, sssd_config_t, sssd_config_t)
++')
++
++########################################
++## <summary>
+ ##	Manage sssd var_run files.
+ ## </summary>
+ ## <param name="domain">
+@@ -95,6 +114,25 @@
+ 
+ ########################################
+ ## <summary>
++##	dontaudit search sssd lib directories.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`sssd_dontaudit_search_lib',`
++	gen_require(`
++		type sssd_var_lib_t;
++	')
++
++	dontaudit $1 sssd_var_lib_t:dir search_dir_perms;
++	files_search_var_lib($1)
++')
++
++########################################
++## <summary>
+ ##	Read sssd lib files.
+ ## </summary>
+ ## <param name="domain">
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/sssd.te serefpolicy-3.7.6/policy/modules/services/sssd.te
 --- nsaserefpolicy/policy/modules/services/sssd.te	2010-01-07 14:53:53.000000000 -0500
 +++ serefpolicy-3.7.6/policy/modules/services/sssd.te	2010-01-07 15:29:03.000000000 -0500
@@ -29721,7 +29953,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/iscsi.
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/libraries.fc serefpolicy-3.7.6/policy/modules/system/libraries.fc
 --- nsaserefpolicy/policy/modules/system/libraries.fc	2009-08-14 16:14:31.000000000 -0400
-+++ serefpolicy-3.7.6/policy/modules/system/libraries.fc	2010-01-08 09:16:04.000000000 -0500
++++ serefpolicy-3.7.6/policy/modules/system/libraries.fc	2010-01-09 08:58:18.000000000 -0500
 @@ -60,12 +60,15 @@
  #
  # /opt
@@ -29938,7 +30170,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/librar
  ') dnl end distro_redhat
  
  #
-@@ -307,10 +317,132 @@
+@@ -307,10 +317,134 @@
  
  /var/mailman/pythonlib(/.*)?/.+\.so(\..*)? --	gen_context(system_u:object_r:lib_t,s0)
  
@@ -30071,6 +30303,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/librar
 +/usr/lib(64)?/libGLcore\.so.*	     --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 +
 +/usr/lib(64)?/libkmplayercommon\.so.*	     --	gen_context(system_u:object_r:textrel_shlib_t,s0)
++
++/opt/Unify/SQLBase/libgptsblmsui11\.so.*	     --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/libraries.if serefpolicy-3.7.6/policy/modules/system/libraries.if
 --- nsaserefpolicy/policy/modules/system/libraries.if	2009-07-14 14:19:57.000000000 -0400
 +++ serefpolicy-3.7.6/policy/modules/system/libraries.if	2010-01-07 15:28:30.000000000 -0500
@@ -35586,7 +35820,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/xen.if
  ## <param name="domain">
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/xen.te serefpolicy-3.7.6/policy/modules/system/xen.te
 --- nsaserefpolicy/policy/modules/system/xen.te	2009-11-25 11:47:19.000000000 -0500
-+++ serefpolicy-3.7.6/policy/modules/system/xen.te	2010-01-07 15:28:30.000000000 -0500
++++ serefpolicy-3.7.6/policy/modules/system/xen.te	2010-01-09 08:22:11.000000000 -0500
 @@ -85,6 +85,7 @@
  type xenconsoled_t;
  type xenconsoled_exec_t;
@@ -35603,7 +35837,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/xen.te
  
  storage_raw_read_fixed_disk(xend_t)
  storage_raw_write_fixed_disk(xend_t)
-@@ -259,10 +261,11 @@
+@@ -259,6 +261,7 @@
  #
  
  allow xenconsoled_t self:capability { dac_override fsetid ipc_lock };
@@ -35611,11 +35845,6 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/xen.te
  allow xenconsoled_t self:unix_stream_socket create_stream_socket_perms;
  allow xenconsoled_t self:fifo_file rw_fifo_file_perms;
  
--allow xenconsoled_t xen_devpts_t:chr_file rw_term_perms;
-+allow xenconsoled_t xen_devpts_t:chr_file manage_term_perms;
- 
- # pid file
- manage_files_pattern(xenconsoled_t, xenconsoled_var_run_t, xenconsoled_var_run_t)
 @@ -279,6 +282,7 @@
  
  domain_dontaudit_ptrace_all_domains(xenconsoled_t)
