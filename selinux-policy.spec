@@ -19,7 +19,7 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.7.6
+Version: 3.7.7
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -45,6 +45,10 @@ Source18: setrans-minimum.conf
 Source19: securetty_types-minimum
 Source20: customizable_types
 Source21: config.tgz
+Source22: users-mls
+Source23: users-targeted
+Source24: users-olpc
+Source25: users-minimum
 
 Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -98,6 +102,7 @@ make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOL
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024  conf \
 cp -f $RPM_SOURCE_DIR/modules-%1.conf  ./policy/modules.conf \
 cp -f $RPM_SOURCE_DIR/booleans-%1.conf ./policy/booleans.conf \
+cp -f $RPM_SOURCE_DIR/users-%1 ./policy/users \
 
 %define moduleList() %([ -f %{_sourcedir}/modules-%{1}.conf ] && \
 awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' %{_sourcedir}/modules-%{1}.conf )
@@ -450,6 +455,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 7 2010 Dan Walsh <dwalsh@redhat.com> 3.7.7-1
+- Move users file to selection by spec file.
+- Allow vncserver to run as unconfined_u:unconfined_r:unconfined_t
+
 * Thu Jan 7 2010 Dan Walsh <dwalsh@redhat.com> 3.7.6-1
 - Update to upstream
 
