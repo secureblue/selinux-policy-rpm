@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.7
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -455,6 +455,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Jan 7 2010 Dan Walsh <dwalsh@redhat.com> 3.7.7-2
+- Turn on puppet policy
+- Update to dgrift git policy
+
 * Mon Jan 7 2010 Dan Walsh <dwalsh@redhat.com> 3.7.7-1
 - Move users file to selection by spec file.
 - Allow vncserver to run as unconfined_u:unconfined_r:unconfined_t
