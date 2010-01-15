@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.7
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -309,6 +309,7 @@ Obsoletes: selinux-policy-targeted-sources < 2
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
+Requires: selinux-policy = %{version}-%{release}
 Conflicts:  audispd-plugins <= 1.7.7-1
 Obsoletes: mod_fcgid-selinux
 Conflicts:  seedit
@@ -363,6 +364,7 @@ Group: System Environment/Base
 Requires(post): policycoreutils-python >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
+Requires: selinux-policy = %{version}-%{release}
 Conflicts:  seedit
 
 %description minimum
@@ -398,6 +400,7 @@ Provides: selinux-policy-base
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
+Requires: selinux-policy = %{version}-%{release}
 Conflicts:  seedit
 
 %description olpc 
@@ -430,6 +433,7 @@ Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER} setransd
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
+Requires: selinux-policy = %{version}-%{release}
 Conflicts:  seedit
 
 %description mls 
@@ -455,6 +459,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 15 2010 Dan Walsh <dwalsh@redhat.com> 3.7.7-3
+- Fix git
+
 * Thu Jan 7 2010 Dan Walsh <dwalsh@redhat.com> 3.7.7-2
 - Turn on puppet policy
 - Update to dgrift git policy
