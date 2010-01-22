@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.8
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -459,6 +459,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jan 21 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-2
+- Add gstreamer_home_t for ~/.gstreamer
+
 * Mon Jan 18 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-1
 - Update to upstream
 
