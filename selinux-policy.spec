@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.8
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -459,6 +459,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 25 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-3
+- Allow abrt_helper to getattr on all filesystems
+- Add label for /opt/real/RealPlayer/plugins/oggfformat\.so	
+
 * Thu Jan 21 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-2
 - Add gstreamer_home_t for ~/.gstreamer
 
