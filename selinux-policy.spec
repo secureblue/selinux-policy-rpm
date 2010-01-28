@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.8
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -459,6 +459,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jan 27 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-5
+- Fix rpm_dontaudit_leaks
+
 * Wed Jan 27 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-4
 - Add getsched to hald_t
 - Add file context for Fedora/Redhat Directory Server
