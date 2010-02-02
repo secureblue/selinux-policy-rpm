@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.8
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -284,8 +284,6 @@ else
 	# if first time update booleans.local needs to be copied to sandbox
 	[ -f /etc/selinux/${SELINUXTYPE}/booleans.local ] && mv /etc/selinux/${SELINUXTYPE}/booleans.local /etc/selinux/targeted/modules/active/
 	[ -f /etc/selinux/${SELINUXTYPE}/seusers ] && cp -f /etc/selinux/${SELINUXTYPE}/seusers /etc/selinux/${SELINUXTYPE}/modules/active/seusers
-	grep -q "^SETLOCALDEFS" /etc/selinux/config || echo -n "
-">> /etc/selinux/config
 fi
 exit 0
 
@@ -459,6 +457,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Feb 1 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-6
+- Lots of fixes found in F12
+
 * Thu Jan 27 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-5
 - Fix rpm_dontaudit_leaks
 
