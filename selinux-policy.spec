@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.8
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -457,6 +457,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 3 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-7
+- Add mcelog policy
+
 * Mon Feb 1 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-6
 - Lots of fixes found in F12
 
