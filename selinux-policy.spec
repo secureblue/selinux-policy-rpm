@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.8
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -30,10 +30,10 @@ Source2: booleans-targeted.conf
 Source3: Makefile.devel
 Source4: setrans-targeted.conf
 Source5: modules-mls.conf
-Source6: booleans-mls.conf	
+Source6: booleans-mls.conf
 Source8: setrans-mls.conf
 Source9: modules-olpc.conf
-Source10: booleans-olpc.conf	
+Source10: booleans-olpc.conf
 Source11: setrans-olpc.conf
 Source12: securetty_types-olpc
 Source13: policygentool
@@ -57,13 +57,14 @@ BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-p
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.14-3
 Requires(post): /usr/bin/bunzip2 /bin/mktemp /bin/awk
 Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
-Obsoletes: selinux-policy-devel
-Provides: selinux-policy-devel
+Obsoletes: selinux-policy-devel <= %{version}-%{release}
+Provides: selinux-policy-devel = %{version}-%{release}
 
 %description 
 SELinux Base package
 
 %files 
+%defattr(-,root,root,-)
 %{_mandir}/man*/*
 # policycoreutils owns these manpage directories, we only own the files within them
 %{_mandir}/ru/*/*
@@ -97,15 +98,12 @@ SELinux policy documentation package
 %check
 /usr/bin/sepolgen-ifgen -i %{buildroot}%{_usr}/share/selinux/devel/include -o /dev/null
 
-%define setupCmds() \
+%define makeCmds() \
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 bare \
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024  conf \
-cp -f $RPM_SOURCE_DIR/modules-%1.conf  ./policy/modules.conf \
-cp -f $RPM_SOURCE_DIR/booleans-%1.conf ./policy/booleans.conf \
-cp -f $RPM_SOURCE_DIR/users-%1 ./policy/users \
-
-%define moduleList() %([ -f %{_sourcedir}/modules-%{1}.conf ] && \
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' %{_sourcedir}/modules-%{1}.conf )
+cp -f selinux_config/modules-%1.conf  ./policy/modules.conf \
+cp -f selinux_config/booleans-%1.conf ./policy/booleans.conf \
+cp -f selinux_config/users-%1 ./policy/users \
 
 %define installCmds() \
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 base.pp \
@@ -123,16 +121,18 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/seusers \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
-install -m0644 $RPM_SOURCE_DIR/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
-install -m0644 $RPM_SOURCE_DIR/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
-install -m0644 $RPM_SOURCE_DIR/customizable_types %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
-bzip2 %{buildroot}/%{_usr}/share/selinux/%1/*.pp
+install -m0644 selinux_config/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
+install -m0644 selinux_config/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
+install -m0644 selinux_config/customizable_types %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
+bzip2 %{buildroot}/%{_usr}/share/selinux/%1/*.pp \
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' ./policy/modules.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules.lst
 %nil
 
 %define fileList() \
 %defattr(-,root,root) \
 %dir %{_usr}/share/selinux/%1 \
 %{_usr}/share/selinux/%1/*.pp.bz2 \
+%{_usr}/share/selinux/%1/modules.lst \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %ghost %{_sysconfdir}/selinux/%1/seusers \
@@ -149,8 +149,8 @@ bzip2 %{buildroot}/%{_usr}/share/selinux/%1/*.pp
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/dbus_contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/x_contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/default_contexts \
-%config	%{_sysconfdir}/selinux/%1/contexts/virtual_domain_context \
-%config	%{_sysconfdir}/selinux/%1/contexts/virtual_image_context \
+%config %{_sysconfdir}/selinux/%1/contexts/virtual_domain_context \
+%config %{_sysconfdir}/selinux/%1/contexts/virtual_image_context \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/default_type \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/failsafe_context \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/initrc_context \
@@ -169,11 +169,11 @@ bzip2 %{buildroot}/%{_usr}/share/selinux/%1/*.pp
 
 %define saveFileContext() \
 if [ -s /etc/selinux/config ]; then \
-	. %{_sysconfdir}/selinux/config; \
-	FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
-	if [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT} ]; then \
-	   [ -f ${FILE_CONTEXT}.pre ] || cp -f ${FILE_CONTEXT} ${FILE_CONTEXT}.pre; \
-	fi \
+     . %{_sysconfdir}/selinux/config; \
+     FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
+     if [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT} ]; then \
+        [ -f ${FILE_CONTEXT}.pre ] || cp -f ${FILE_CONTEXT} ${FILE_CONTEXT}.pre; \
+     fi \
 fi
 
 %define loadpolicy() \
@@ -186,9 +186,9 @@ semodule -b base.pp.bz2 -i %2 -s %1; \
 FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 selinuxenabled; \
 if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
-	fixfiles -C ${FILE_CONTEXT}.pre restore; \
-        restorecon -R /root /var/log /var/run /var/lib 2> /dev/null;\
-	rm -f ${FILE_CONTEXT}.pre; \
+     fixfiles -C ${FILE_CONTEXT}.pre restore; \
+     restorecon -R /root /var/log /var/run /var/lib 2> /dev/null; \
+     rm -f ${FILE_CONTEXT}.pre; \
 fi; 
 
 %description
@@ -200,9 +200,13 @@ Based off of reference policy: Checked out revision  2.20091117
 %prep 
 %setup -n serefpolicy-%{version} -q
 %patch -p1
+mkdir selinux_config
+for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE9} %{SOURCE10} %{SOURCE11} %{SOURCE12} %{SOURCE13} %{SOURCE14} %{SOURCE15} %{SOURCE16} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE21} %{SOURCE22} %{SOURCE23} %{SOURCE24} %{SOURCE25};do
+ cp $i selinux_config
+done
+tar zxvf selinux_config/config.tgz
 
 %install
-tar zxvf $RPM_SOURCE_DIR/config.tgz
 # Build targeted policy
 %{__rm} -fR %{buildroot}
 mkdir -p %{buildroot}%{_mandir}
@@ -220,27 +224,27 @@ make clean
 %if %{BUILD_TARGETED}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-%setupCmds targeted mcs n y allow
+%makeCmds targeted mcs n y allow
 %installCmds targeted mcs n y allow
 %endif
 
 %if %{BUILD_MINIMUM}
 # Build minimum policy
 # Commented out because only minimum ref policy currently builds
-%setupCmds minimum mcs n y allow
+%makeCmds minimum mcs n y allow
 %installCmds minimum mcs n y allow
 %endif
 
 %if %{BUILD_MLS}
 # Build mls policy
-%setupCmds mls mls n y deny
+%makeCmds mls mls n y deny
 %installCmds mls mls n y deny
 %endif
 
 %if %{BUILD_OLPC}
 # Build olpc policy
 # Commented out because only olpc ref policy currently builds
-%setupCmds olpc mcs n y allow
+%makeCmds olpc mcs n y allow
 %installCmds olpc mcs n y allow
 %endif
 
@@ -248,60 +252,60 @@ make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITR
 mkdir %{buildroot}%{_usr}/share/selinux/devel/
 mkdir %{buildroot}%{_usr}/share/selinux/packages/
 mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
-install -m 755 $RPM_SOURCE_DIR/policygentool %{buildroot}%{_usr}/share/selinux/devel/
-install -m 644 $RPM_SOURCE_DIR/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
+install -m 755 selinux_config/policygentool %{buildroot}%{_usr}/share/selinux/devel/
+install -m 644 selinux_config/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
 install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
 install -m 644 doc/policy.* %{buildroot}%{_usr}/share/selinux/devel/
 echo  "xdg-open file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
-
+rm -rf selinux_config
 %clean
 %{__rm} -fR %{buildroot}
 
 %post
 if [ ! -s /etc/selinux/config ]; then
-	#
-	#	New install so we will default to targeted policy
-	#
-	echo "
+#
+#     New install so we will default to targeted policy
+#
+echo "
 # This file controls the state of SELinux on the system.
 # SELINUX= can take one of these three values:
-#	enforcing - SELinux security policy is enforced.
-#	permissive - SELinux prints warnings instead of enforcing.
-#	disabled - No SELinux policy is loaded.
+#     enforcing - SELinux security policy is enforced.
+#     permissive - SELinux prints warnings instead of enforcing.
+#     disabled - No SELinux policy is loaded.
 SELINUX=enforcing
 # SELINUXTYPE= can take one of these two values:
-#	targeted - Targeted processes are protected,
-#	mls - Multi Level Security protection.
+#     targeted - Targeted processes are protected,
+#     mls - Multi Level Security protection.
 SELINUXTYPE=targeted 
 
 " > /etc/selinux/config
 
-	ln -sf ../selinux/config /etc/sysconfig/selinux 
-	restorecon /etc/selinux/config 2> /dev/null || :
+     ln -sf ../selinux/config /etc/sysconfig/selinux 
+     restorecon /etc/selinux/config 2> /dev/null || :
 else
-	. /etc/selinux/config
-	# if first time update booleans.local needs to be copied to sandbox
-	[ -f /etc/selinux/${SELINUXTYPE}/booleans.local ] && mv /etc/selinux/${SELINUXTYPE}/booleans.local /etc/selinux/targeted/modules/active/
-	[ -f /etc/selinux/${SELINUXTYPE}/seusers ] && cp -f /etc/selinux/${SELINUXTYPE}/seusers /etc/selinux/${SELINUXTYPE}/modules/active/seusers
+     . /etc/selinux/config
+     # if first time update booleans.local needs to be copied to sandbox
+     [ -f /etc/selinux/${SELINUXTYPE}/booleans.local ] && mv /etc/selinux/${SELINUXTYPE}/booleans.local /etc/selinux/targeted/modules/active/
+     [ -f /etc/selinux/${SELINUXTYPE}/seusers ] && cp -f /etc/selinux/${SELINUXTYPE}/seusers /etc/selinux/${SELINUXTYPE}/modules/active/seusers
 fi
 exit 0
 
 %postun
 if [ $1 = 0 ]; then
-	setenforce 0 2> /dev/null
-	if [ ! -s /etc/selinux/config ]; then
-		echo "SELINUX=disabled" > /etc/selinux/config
-	else
-		sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
-	fi
+     setenforce 0 2> /dev/null
+     if [ ! -s /etc/selinux/config ]; then
+          echo "SELINUX=disabled" > /etc/selinux/config
+     else
+          sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+     fi
 fi
 exit 0
 
 %if %{BUILD_TARGETED}
 %package targeted
 Summary: SELinux targeted base policy
-Provides: selinux-policy-base
+Provides: selinux-policy-base = %{version}-%{release}
 Group: System Environment/Base
 Obsoletes: selinux-policy-targeted-sources < 2
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
@@ -309,7 +313,7 @@ Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 Requires: selinux-policy = %{version}-%{release}
 Conflicts:  audispd-plugins <= 1.7.7-1
-Obsoletes: mod_fcgid-selinux
+Obsoletes: mod_fcgid-selinux <= %{version}-%{release}
 Conflicts:  seedit
 
 %description targeted
@@ -319,13 +323,12 @@ SELinux Reference policy targeted base module.
 %saveFileContext targeted
 
 %post targeted
+packages=`cat /usr/share/selinux/targeted/modules.lst`
 if [ $1 -eq 1 ]; then
-   packages="%{expand:%%moduleList targeted}"
    %loadpolicy targeted $packages
    restorecon -R /root /var/log /var/run /var/lib 2> /dev/null
 else
    semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid -r polkit_auth -r polkit -r rtkit_daemon -r ModemManager 2>/dev/null
-   packages="%{expand:%%moduleList targeted}"
    %loadpolicy targeted $packages
    %relabel targeted
 fi
@@ -350,6 +353,7 @@ semodule -r qmail 2> /dev/null
 exit 0
 
 %files targeted
+%defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/unconfined_u
 %fileList targeted
 %endif
@@ -357,7 +361,7 @@ exit 0
 %if %{BUILD_MINIMUM}
 %package minimum
 Summary: SELinux minimum base policy
-Provides: selinux-policy-base
+Provides: selinux-policy-base = %{version}-%{release}
 Group: System Environment/Base
 Requires(post): policycoreutils-python >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
@@ -372,7 +376,7 @@ SELinux Reference policy minimum base module.
 %saveFileContext minimum
 
 %post minimum
-packages="unconfined.pp.bz2 unconfineduser.pp.bz2"
+packages="execmem.pp.bz2 unconfined.pp.bz2 unconfineduser.pp.bz2"
 %loadpolicy minimum $packages
 if [ $1 -eq 1 ]; then
 semanage -S minimum -i - << __eof
@@ -386,6 +390,7 @@ fi
 exit 0
 
 %files minimum
+%defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %fileList minimum
 %endif
@@ -394,7 +399,7 @@ exit 0
 %package olpc 
 Summary: SELinux olpc base policy
 Group: System Environment/Base
-Provides: selinux-policy-base
+Provides: selinux-policy-base = %{version}-%{release}
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
@@ -408,7 +413,7 @@ SELinux Reference policy olpc base module.
 %saveFileContext olpc
 
 %post olpc 
-packages="%{expand:%%moduleList olpc}"
+packages=`cat /usr/share/selinux/olpc/modules.lst`
 %loadpolicy olpc $packages
 
 if [ $1 -ne 1 ]; then
@@ -417,6 +422,7 @@ fi
 exit 0
 
 %files olpc
+%defattr(-,root,root,-)
 %fileList olpc
 
 %endif
@@ -425,7 +431,7 @@ exit 0
 %package mls 
 Summary: SELinux mls base policy
 Group: System Environment/Base
-Provides: selinux-policy-base
+Provides: selinux-policy-base = %{version}-%{release}
 Obsoletes: selinux-policy-mls-sources < 2
 Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER} setransd
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
@@ -442,21 +448,28 @@ SELinux Reference policy mls base module.
 
 %post mls 
 semodule -n -s mls -r mailscanner -r polkit -r ModemManager 2>/dev/null
-packages="%{expand:%%moduleList mls}"
+packages=`cat /usr/share/selinux/mls/modules.lst`
 %loadpolicy mls $packages
 
-if [ $1 != 1 ]; then
+if [ $1 -eq 1 ]; then
+   restorecon -R /root /var/log /var/run /var/lib 2> /dev/null
+else
 %relabel mls
 fi
 exit 0
 
 %files mls
+%defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/mls/contexts/users/unconfined_u
 %fileList mls
 
 %endif
 
 %changelog
+* Thu Feb 4 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-8
+- Add icecast policy
+- Cleanup  spec file
+
 * Wed Feb 3 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-7
 - Add mcelog policy
 
@@ -472,7 +485,7 @@ exit 0
 
 * Mon Jan 25 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-3
 - Allow abrt_helper to getattr on all filesystems
-- Add label for /opt/real/RealPlayer/plugins/oggfformat\.so	
+- Add label for /opt/real/RealPlayer/plugins/oggfformat\.so     
 
 * Thu Jan 21 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-2
 - Add gstreamer_home_t for ~/.gstreamer
@@ -1267,7 +1280,7 @@ exit 0
 
 * Wed Sep 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.6-1
 - Update to upstream
-- 	 New handling of init scripts
+-       New handling of init scripts
 
 * Fri Aug 29 2008 Dan Walsh <dwalsh@redhat.com> 3.5.5-4
 - Allow pcsd to dbus
@@ -2007,8 +2020,8 @@ directory)
 - More fixes for alsactl
 - Transition from hal and modutils
 - Fixes for suspend resume.  
-	- insmod domtrans to alsactl
-	- insmod writes to hal log
+     - insmod domtrans to alsactl
+     - insmod writes to hal log
 
 * Wed May 16 2007 Dan Walsh <dwalsh@redhat.com> 2.6.4-2
 - Allow unconfined_t to transition to NetworkManager_t
@@ -2932,7 +2945,7 @@ Resolves: #217725
 
 * Tue Mar 14 2006 Dan Walsh <dwalsh@redhat.com> 2.2.23-17
 - MLS Fixes
-	dmidecode needs mls_file_read_up
+     dmidecode needs mls_file_read_up
 - add ypxfr_t
 - run init needs access to nscd
 - udev needs setuid
@@ -3270,8 +3283,8 @@ Resolves: #217725
 
 * Fri Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.1-3
 - Add two new httpd booleans, turned off by default
-	* httpd_can_network_relay
-	* httpd_can_network_connect_db
+     * httpd_can_network_relay
+     * httpd_can_network_connect_db
 
 * Fri Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.1-2
 - Add ghost for policy.20
