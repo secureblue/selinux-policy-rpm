@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.7.8
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 11 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-11
+- Allow sandbox to work with MLS 
+
 * Tue Feb 9 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-9
 - Make Chrome work with staff user
 
