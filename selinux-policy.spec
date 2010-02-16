@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.7.8
-Release: 11%{?dist}
+Version: 3.7.9
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -200,13 +200,13 @@ Based off of reference policy: Checked out revision  2.20091117
 %prep 
 %setup -n serefpolicy-%{version} -q
 %patch -p1
+
+%install
 mkdir selinux_config
 for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE9} %{SOURCE10} %{SOURCE11} %{SOURCE12} %{SOURCE13} %{SOURCE14} %{SOURCE15} %{SOURCE16} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE21} %{SOURCE22} %{SOURCE23} %{SOURCE24} %{SOURCE25};do
  cp $i selinux_config
 done
 tar zxvf selinux_config/config.tgz
-
-%install
 # Build targeted policy
 %{__rm} -fR %{buildroot}
 mkdir -p %{buildroot}%{_mandir}
@@ -466,6 +466,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 12 2010 Dan Walsh <dwalsh@redhat.com> 3.7.9-1
+- Merge with upstream
+
 * Thu Feb 11 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-11
 - Allow sandbox to work with MLS 
 
