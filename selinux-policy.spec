@@ -19,7 +19,7 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.7.9
+Version: 3.7.15
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -466,6 +466,91 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 18 2010 Dan Walsh <dwalsh@redhat.com> 3.7.15-1
+- Update to upstream
+
+* Tue Mar 16 2010 Dan Walsh <dwalsh@redhat.com> 3.7.14-5
+- Allow boinc to read kernel sysctl
+- Fix snmp port definitions
+- Allow apache to read anon_inodefs
+
+* Sun Mar 14 2010 Dan Walsh <dwalsh@redhat.com> 3.7.14-4
+- Allow shutdown dac_override
+
+* Sat Mar 13 2010 Dan Walsh <dwalsh@redhat.com> 3.7.14-3
+- Add device_t as a file system
+- Fix sysfs association
+
+* Fri Mar 12 2010 Dan Walsh <dwalsh@redhat.com> 3.7.14-2
+- Dontaudit ipsec_mgmt sys_ptrace
+- Allow at to mail its spool files
+- Allow nsplugin to search in .pulse directory
+
+* Fri Mar 12 2010 Dan Walsh <dwalsh@redhat.com> 3.7.14-1
+- Update to upstream
+
+* Fri Mar 12 2010 Dan Walsh <dwalsh@redhat.com> 3.7.13-4
+- Allow users to dbus chat with xdm
+- Allow users to r/w wireless_device_t
+- Dontaudit reading of process states by ipsec_mgmt
+
+* Thu Mar 11 2010 Dan Walsh <dwalsh@redhat.com> 3.7.13-3
+- Fix openoffice from unconfined_t
+
+* Wed Mar 10 2010 Dan Walsh <dwalsh@redhat.com> 3.7.13-2
+- Add shutdown policy so consolekit can shutdown system
+
+* Tue Mar 9 2010 Dan Walsh <dwalsh@redhat.com> 3.7.13-1
+- Update to upstream
+
+* Thu Mar 4 2010 Dan Walsh <dwalsh@redhat.com> 3.7.12-1
+- Update to upstream
+
+* Thu Mar 4 2010 Dan Walsh <dwalsh@redhat.com> 3.7.11-1
+- Update to upstream - These are merges of my patches
+- Remove 389 labeling conflicts
+- Add MLS fixes found in RHEL6 testing
+- Allow pulseaudio to run as a service
+- Add label for mssql and allow apache to connect to this database port if boolean set
+- Dontaudit searches of debugfs mount point
+- Allow policykit_auth to send signals to itself
+- Allow modcluster to call getpwnam
+- Allow swat to signal winbind
+- Allow usbmux to run as a system role
+- Allow svirt to create and use devpts
+
+* Mon Mar 1 2010 Dan Walsh <dwalsh@redhat.com> 3.7.10-5
+- Add MLS fixes found in RHEL6 testing
+- Allow domains to append to rpm_tmp_t
+- Add cachefilesfd policy
+- Dontaudit leaks when transitioning
+
+* Wed Feb 23 2010 Dan Walsh <dwalsh@redhat.com> 3.7.10-4
+- Change allow_execstack and allow_execmem booleans to on
+- dontaudit acct using console
+- Add label for fping
+- Allow tmpreaper to delete sandbox_file_t
+- Fix wine dontaudit mmap_zero
+- Allow abrt to read var_t symlinks
+
+* Tue Feb 22 2010 Dan Walsh <dwalsh@redhat.com> 3.7.10-3
+- Additional policy for rgmanager
+
+* Mon Feb 22 2010 Dan Walsh <dwalsh@redhat.com> 3.7.10-2
+- Allow sshd to setattr on pseudo terms
+
+* Mon Feb 22 2010 Dan Walsh <dwalsh@redhat.com> 3.7.10-1
+- Update to upstream
+
+* Thu Feb 18 2010 Dan Walsh <dwalsh@redhat.com> 3.7.9-4
+- Allow policykit to send itself signals
+
+* Wed Feb 17 2010 Dan Walsh <dwalsh@redhat.com> 3.7.9-3
+- Fix duplicate cobbler definition
+
+* Wed Feb 17 2010 Dan Walsh <dwalsh@redhat.com> 3.7.9-2
+- Fix file context of /var/lib/avahi-autoipd
+
 * Fri Feb 12 2010 Dan Walsh <dwalsh@redhat.com> 3.7.9-1
 - Merge with upstream
 
