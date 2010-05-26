@@ -19,12 +19,12 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.7.15
+Version: 3.8.1
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-F13.patch
+patch: policy-F14.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -96,7 +96,9 @@ SELinux policy documentation package
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
 
 %check
-/usr/bin/sepolgen-ifgen -i %{buildroot}%{_usr}/share/selinux/devel/include -o /dev/null
+if /usr/sbin/selinuxenabled; then
+/usr/bin/sepolgen-ifgen -i %{buildroot}%{_usr}/share/selinux/devel/include -o /dev/null 
+fi
 
 %define makeCmds() \
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 bare \
@@ -314,6 +316,7 @@ Requires(pre): selinux-policy = %{version}-%{release}
 Requires: selinux-policy = %{version}-%{release}
 Conflicts:  audispd-plugins <= 1.7.7-1
 Obsoletes: mod_fcgid-selinux <= %{version}-%{release}
+Obsoletes: cachefilesd-selinux <= 0.10-1
 Conflicts:  seedit
 
 %description targeted
@@ -466,6 +469,222 @@ exit 0
 %endif
 
 %changelog
+* Tue May 25 2010 Dan Walsh <dwalsh@redhat.com> 3.8.1-1
+- Update to upstream
+
+* Tue May 25 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-22
+- Allow procmail to execute scripts in the users home dir that are labeled home_bin_t
+- Fix /var/run/abrtd.lock label
+
+* Mon May 24 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-21
+- Allow login programs to read krb5_home_t
+Resolves: 594833
+- Add obsoletes for cachefilesfd-selinux package
+Resolves: #575084
+
+* Thu May 20 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-20
+- Allow mount to r/w abrt fifo file
+- Allow svirt_t to getattr on hugetlbfs
+- Allow abrt to create a directory under /var/spool
+
+* Wed May 19 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-19
+- Add labels for /sys
+- Allow sshd to getattr on shutdown
+- Fixes for munin
+- Allow sssd to use the kernel key ring
+- Allow tor to send syslog messages
+- Allow iptabels to read usr files
+- allow policykit to read all domains state
+
+* Thu May 13 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-17
+- Fix path for /var/spool/abrt
+- Allow nfs_t as an entrypoint for http_sys_script_t
+- Add policy for piranha
+- Lots of fixes for sosreport
+
+* Wed May 12 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-16
+- Allow xm_t to read network state and get and set capabilities
+- Allow policykit to getattr all processes
+- Allow denyhosts to connect to tcp port 9911
+- Allow pyranha to use raw ip sockets and ptrace itself
+- Allow unconfined_execmem_t and gconfsd mechanism to dbus
+- Allow staff to kill ping process
+- Add additional MLS rules
+
+* Mon May 10 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-15
+- Allow gdm to edit ~/.gconf dir
+Resolves: #590677
+- Allow dovecot to create directories in /var/lib/dovecot
+Partially resolves 590224
+- Allow avahi to dbus chat with NetworkManager
+- Fix cobbler labels
+- Dontaudit iceauth_t leaks
+- fix /var/lib/lxdm file context
+- Allow aiccu to use tun tap devices
+- Dontaudit shutdown using xserver.log
+
+* Fri May 6 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-14
+- Fixes for sandbox_x_net_t  to match access for sandbox_web_t ++
+- Add xdm_etc_t for /etc/gdm directory, allow accountsd to manage this directory
+- Add dontaudit interface for bluetooth dbus
+- Add chronyd_read_keys, append_keys for initrc_t
+- Add log support for ksmtuned
+Resolves: #586663
+
+* Thu May 6 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-13
+- Allow boinc to send mail
+
+* Wed May 5 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-12
+- Allow initrc_t to remove dhcpc_state_t
+- Fix label on sa-update.cron
+- Allow dhcpc to restart chrony initrc
+- Don't allow sandbox to send signals to its parent processes
+- Fix transition from unconfined_t -> unconfined_mount_t -> rpcd_t
+Resolves: #589136
+
+* Mon May 3 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-11
+- Fix location of oddjob_mkhomedir
+Resolves: #587385
+- fix labeling on /root/.shosts and ~/.shosts
+- Allow ipsec_mgmt_t to manage net_conf_t
+Resolves: #586760
+
+* Fri Apr 30 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-10
+- Dontaudit sandbox trying to connect to netlink sockets
+Resolves: #587609
+- Add policy for piranha
+
+* Thu Apr 29 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-9
+- Fixups for xguest policy
+- Fixes for running sandbox firefox
+
+* Wed Apr 28 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-8
+- Allow ksmtuned to use terminals
+Resolves: #586663
+- Allow lircd to write to generic usb devices
+
+* Tue Apr 27 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-7
+- Allow sandbox_xserver to connectto unconfined stream
+Resolves: #585171
+
+* Mon Apr 26 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-6
+- Allow initrc_t to read slapd_db_t
+Resolves: #585476
+- Allow ipsec_mgmt to use unallocated devpts and to create /etc/resolv.conf
+Resolves: #585963
+
+* Thu Apr 22 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-5
+- Allow rlogind_t to search /root for .rhosts
+Resolves: #582760
+- Fix path for cached_var_t
+- Fix prelink paths /var/lib/prelink	
+- Allow confined users to direct_dri
+- Allow mls lvm/cryptosetup to work
+
+* Wed Apr 21 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-4
+- Allow virtd_t to manage firewall/iptables config
+Resolves: #573585
+
+* Tue Apr 20 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-3
+- Fix label on /root/.rhosts
+Resolves: #582760
+- Add labels for Picasa
+- Allow openvpn to read home certs
+- Allow plymouthd_t to use tty_device_t
+- Run ncftool as iptables_t
+- Allow mount to unmount unlabeled_t
+- Dontaudit hal leaks
+
+* Wed Apr 14 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-2
+- Allow livecd to transition to mount
+
+* Tue Apr 13 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-1
+- Update to upstream
+- Allow abrt to delete sosreport
+Resolves: #579998
+- Allow snmp to setuid and gid
+Resolves: #582155
+- Allow smartd to use generic scsi devices
+Resolves: #582145
+
+* Tue Apr 13 2010 Dan Walsh <dwalsh@redhat.com> 3.7.18-3
+- Allow ipsec_t to create /etc/resolv.conf with the correct label
+- Fix reserved port destination
+- Allow autofs to transition to showmount
+- Stop crashing tuned
+
+* Mon Apr 12 2010 Dan Walsh <dwalsh@redhat.com> 3.7.18-2
+- Add telepathysofiasip policy
+
+* Mon Apr 5 2010 Dan Walsh <dwalsh@redhat.com> 3.7.18-1
+- Update to upstream
+- Fix label for  /opt/google/chrome/chrome-sandbox
+- Allow modemmanager to dbus with policykit
+
+* Mon Apr 5 2010 Dan Walsh <dwalsh@redhat.com> 3.7.17-6
+- Fix allow_httpd_mod_auth_pam to use 	auth_use_pam(httpd_t)
+- Allow accountsd to read shadow file
+- Allow apache to send audit messages when using pam
+- Allow asterisk to bind and connect to sip tcp ports
+- Fixes for dovecot 2.0
+- Allow initrc_t to setattr on milter directories
+- Add procmail_home_t for .procmailrc file
+
+
+* Thu Apr 1 2010 Dan Walsh <dwalsh@redhat.com> 3.7.17-5
+- Fixes for labels during install from livecd
+
+* Thu Apr 1 2010 Dan Walsh <dwalsh@redhat.com> 3.7.17-4
+- Fix /cgroup file context 
+- Fix broken afs use of unlabled_t
+- Allow getty to use the console for s390
+
+* Wed Mar 31 2010 Dan Walsh <dwalsh@redhat.com> 3.7.17-3
+- Fix cgroup handling adding policy for /cgroup
+- Allow confined users to write to generic usb devices, if user_rw_noexattrfile boolean set
+
+* Tue Mar 30 2010 Dan Walsh <dwalsh@redhat.com> 3.7.17-2
+- Merge patches from dgrift
+
+* Mon Mar 29 2010 Dan Walsh <dwalsh@redhat.com> 3.7.17-1
+- Update upstream
+- Allow abrt to write to the /proc under any process
+
+* Fri Mar 26 2010 Dan Walsh <dwalsh@redhat.com> 3.7.16-2
+  - Fix ~/.fontconfig label
+- Add /root/.cert label
+- Allow reading of the fixed_file_disk_t:lnk_file if you can read file
+- Allow qemu_exec_t as an entrypoint to svirt_t
+
+* Tue Mar 23 2010 Dan Walsh <dwalsh@redhat.com> 3.7.16-1
+- Update to upstream
+- Allow tmpreaper to delete sandbox sock files
+- Allow chrome-sandbox_t to use /dev/zero, and dontaudit getattr file systems
+- Fixes for gitosis
+- No transition on livecd to passwd or chfn
+- Fixes for denyhosts
+
+* Tue Mar 23 2010 Dan Walsh <dwalsh@redhat.com> 3.7.15-4
+- Add label for /var/lib/upower
+- Allow logrotate to run sssd
+- dontaudit readahead on tmpfs blk files
+- Allow tmpreaper to setattr on sandbox files
+- Allow confined users to execute dos files
+- Allow sysadm_t to kill processes running within its clearance
+- Add accountsd policy
+- Fixes for corosync policy
+- Fixes from crontab policy
+- Allow svirt to manage svirt_image_t chr files
+- Fixes for qdisk policy
+- Fixes for sssd policy
+- Fixes for newrole policy
+
+* Thu Mar 18 2010 Dan Walsh <dwalsh@redhat.com> 3.7.15-3
+- make libvirt work on an MLS platform
+
+* Thu Mar 18 2010 Dan Walsh <dwalsh@redhat.com> 3.7.15-2
+- Add qpidd policy
+
 * Thu Mar 18 2010 Dan Walsh <dwalsh@redhat.com> 3.7.15-1
 - Update to upstream
 
