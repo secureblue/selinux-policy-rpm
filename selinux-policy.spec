@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.8.1
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,10 @@ exit 0
 %endif
 
 %changelog
+* Thu May 27 2010 Dan Walsh <dwalsh@redhat.com> 3.8.1-3
+- Fixes for accountsdialog
+- Fixes for boinc
+
 * Thu May 27 2010 Dan Walsh <dwalsh@redhat.com> 3.8.1-2
 - Fix label on /var/lib/dokwiki
 - Change permissive domains to enforcing
