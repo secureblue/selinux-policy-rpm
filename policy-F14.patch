@@ -10,6 +10,119 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/Makefile serefpolicy-3.8.1/M
  net_contexts := $(builddir)net_contexts
  
  all_layers := $(shell find $(wildcard $(moddir)/*) -maxdepth 0 -type d)
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/man/man8/git_selinux.8 serefpolicy-3.8.1/man/man8/git_selinux.8
+--- nsaserefpolicy/man/man8/git_selinux.8	1969-12-31 19:00:00.000000000 -0500
++++ serefpolicy-3.8.1/man/man8/git_selinux.8	2010-06-01 10:28:42.000000000 -0400
+@@ -0,0 +1,109 @@
++.TH  "git_selinux"  "8"  "27 May 2010" "domg472@gmail.com" "Git SELinux policy documentation"
++.de EX
++.nf
++.ft CW
++..
++.de EE
++.ft R
++.fi
++..
++.SH "NAME"
++git_selinux \- Security Enhanced Linux Policy for the Git daemon.
++.SH "DESCRIPTION"
++Security-Enhanced Linux secures the Git server via flexible mandatory access
++control.
++.SH FILE_CONTEXTS
++SELinux requires files to have an extended attribute to define the file type. 
++Policy governs the access daemons have to these files. 
++SELinux Git policy is very flexible allowing users to setup their web services in as secure a method as possible.
++.PP 
++The following file contexts types are by default defined for Git:
++.EX
++git_system_content_t 
++.EE 
++- Set files with git_system_content_t if you want the Git system daemon to read the file, and if you want the file to be modifiable and executable by all "Git shell" users.
++.EX
++git_session_content_t 
++.EE 
++- Set files with git_session_content_t if you want the Git session and system daemon to read the file, and if you want the file to be modifiable and executable by all users. Note that "Git shell" users may not interact with this type.
++.SH BOOLEANS
++SELinux policy is customizable based on least access required. Git policy is extremely flexible and has several booleans that allow you to manipulate the policy and run Git with the tightest access possible.
++.PP
++Allow the Git system daemon to search user home directories so that it can find git session content. This is useful if you want the Git system daemon to host users personal repositories. 
++.EX
++sudo setsebool -P git_system_enable_homedirs 1
++.EE
++.PP
++Allow the Git system daemon to read system shared repositories on NFS shares.
++.EX
++sudo setsebool -P git_system_use_nfs 1
++.EE
++.PP
++Allow the Git system daemon to read system shared repositories on Samba shares.
++.EX
++sudo setsebool -P git_system_use_cifs 1
++.EE
++.PP
++Allow the Git session daemon to read users personal repositories on NFS mounted home directories.
++.EX
++sudo setsebool -P use_nfs_home_dirs 1
++.EE
++.PP
++Allow the Git session daemon to read users personal repositories on Samba mounted home directories.
++.EX
++sudo setsebool -P use_samba_home_dirs 1
++.EE
++.PP
++To also allow Git system daemon to read users personal repositories on NFS and Samba mounted home directories you must also allow the Git system daemon to search home directories so that it can find the repositories.
++.EX
++sudo setsebool -P git_system_enable_homedirs 1
++.EE
++.PP
++To allow the Git System daemon mass hosting of users personal repositories you can allow the to listen to any unreserved ports.
++.EX
++sudo setsebool -P git_session_bind_all_unreserved_ports 1
++.EE
++.SH GIT_SHELL
++The Git policy by default provides a restricted user environment to be used with "Git shell". This default git_shell_u SELinux user can modify and execute generic Git system content (generic system shared respositories with type git_system_content_t).
++.PP
++To add a new Linux user and map him to this Git shell user domain automatically:
++.EX
++sudo useradd -Z git_shell_u joe
++.EE
++.SH ADVANCED_SYSTEM_SHARED_REPOSITORY_AND GIT_SHELL_RESTRICTIONS
++Alternatively Git SELinux policy can be used to restrict "Git shell" users to git system shared repositories. The policy allows for the creation of new types of Git system content and Git shell user environment. The policy allows for delegation of types of "Git shell" environments to types of Git system content.
++.PP
++To add a new Git system repository type, for example "project1" create a file named project1.te and add to it:
++.EX
++policy_module(project1, 1.0.0)
++git_content_template(project1)
++.EE
++Next create a file named project1.fc and add a file context specification for the new repository type to it:
++.EX
++/srv/git/project1\.git(/.*)? gen_context(system_u:object_r:git_project1_content_t,s0)
++.EE
++Build a binary representation of this source policy module, load it into the policy store and restore the context of the repository:
++.EX
++make -f /usr/share/selinux/devel/Makefile project.pp
++sudo semodule -i project1.pp
++sudo restorecon -R -v /srv/git/project1
++.EE
++To create a "Git shell" domain that can interact with this repository create a file named project1user.te in the same directory as where the source policy for the Git systemm content type is and add the following:
++.EX
++policy_module(project1user, 1.0.0) 
++git_role_template(project1user)
++git_content_delegation(project1user_t, git_project1_content_t)
++gen_user(project1user_u, user, project1user_r, s0, s0)
++.EE
++Build a binary representation of this source policy module, load it into the policy store and map Linux users to the new project1user_u SELinux user:
++.EX
++make -f /usr/share/selinux/devel/Makefile project1user.pp
++sudo semodule -i project1user.pp
++sudo useradd -Z project1user_u jane
++.EE
++.PP
++system-config-selinux is a GUI tool available to customize SELinux policy settings.
++.SH AUTHOR	
++This manual page was written by Dominick Grift <domg472@gmail.com>.
++.SH "SEE ALSO"
++selinux(8), git(8), chcon(1), semodule(8), setsebool(8)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/global_tunables serefpolicy-3.8.1/policy/global_tunables
 --- nsaserefpolicy/policy/global_tunables	2009-07-23 14:11:04.000000000 -0400
 +++ serefpolicy-3.8.1/policy/global_tunables	2010-05-26 16:28:29.000000000 -0400
@@ -361,6 +474,17 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/admin/console
  ')
  
  ########################################
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/admin/consoletype.te serefpolicy-3.8.1/policy/modules/admin/consoletype.te
+--- nsaserefpolicy/policy/modules/admin/consoletype.te	2010-05-25 16:28:22.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/admin/consoletype.te	2010-05-30 05:20:56.000000000 -0400
+@@ -85,6 +85,7 @@
+ 	hal_dontaudit_use_fds(consoletype_t)
+ 	hal_dontaudit_rw_pipes(consoletype_t)
+ 	hal_dontaudit_rw_dgram_sockets(consoletype_t)
++	hal_dontaudit_write_log(consoletype_t)
+ ')
+ 
+ optional_policy(`
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/admin/dmesg.te serefpolicy-3.8.1/policy/modules/admin/dmesg.te
 --- nsaserefpolicy/policy/modules/admin/dmesg.te	2009-07-14 14:19:57.000000000 -0400
 +++ serefpolicy-3.8.1/policy/modules/admin/dmesg.te	2010-05-26 16:28:29.000000000 -0400
@@ -2532,7 +2656,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/gnome.if
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/gnome.te serefpolicy-3.8.1/policy/modules/apps/gnome.te
 --- nsaserefpolicy/policy/modules/apps/gnome.te	2009-07-14 14:19:57.000000000 -0400
-+++ serefpolicy-3.8.1/policy/modules/apps/gnome.te	2010-05-26 16:28:29.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/apps/gnome.te	2010-06-01 10:54:19.000000000 -0400
 @@ -7,18 +7,33 @@
  #
  
@@ -2591,7 +2715,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/gnome.te
  ##############################
  #
  # Local Policy
-@@ -73,3 +97,89 @@
+@@ -73,3 +97,91 @@
  	xserver_use_xdm_fds(gconfd_t)
  	xserver_rw_xdm_pipes(gconfd_t)
  ')
@@ -2663,6 +2787,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/gnome.te
 +
 +files_read_etc_files(gnomesystemmm_t)
 +files_read_usr_files(gnomesystemmm_t)
++
++miscfiles_read_localization(gnomesystemmm_t)
 +
 +userdom_read_all_users_state(gnomesystemmm_t)
 +userdom_dontaudit_search_admin_dir(gnomesystemmm_t)
@@ -4176,8 +4302,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/nsplugin
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/nsplugin.te serefpolicy-3.8.1/policy/modules/apps/nsplugin.te
 --- nsaserefpolicy/policy/modules/apps/nsplugin.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.8.1/policy/modules/apps/nsplugin.te	2010-05-26 16:28:29.000000000 -0400
-@@ -0,0 +1,297 @@
++++ serefpolicy-3.8.1/policy/modules/apps/nsplugin.te	2010-05-30 05:20:36.000000000 -0400
+@@ -0,0 +1,298 @@
 +
 +policy_module(nsplugin, 1.0.0)
 +
@@ -4261,6 +4387,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/nsplugin
 +manage_lnk_files_pattern(nsplugin_t, nsplugin_home_t, nsplugin_home_t)
 +userdom_user_home_dir_filetrans(nsplugin_t, nsplugin_home_t, {file dir})
 +userdom_user_home_content_filetrans(nsplugin_t, nsplugin_home_t, {file dir})
++userdom_dontaudit_getattr_user_home_content(nsplugin_t)
 +userdom_dontaudit_write_user_home_content_files(nsplugin_t)
 +userdom_dontaudit_search_admin_dir(nsplugin_t)
 +
@@ -4754,7 +4881,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/pulseaud
  ')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/pulseaudio.te serefpolicy-3.8.1/policy/modules/apps/pulseaudio.te
 --- nsaserefpolicy/policy/modules/apps/pulseaudio.te	2010-05-25 16:28:22.000000000 -0400
-+++ serefpolicy-3.8.1/policy/modules/apps/pulseaudio.te	2010-05-26 16:28:29.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/apps/pulseaudio.te	2010-05-28 11:59:46.000000000 -0400
 @@ -41,6 +41,7 @@
  manage_dirs_pattern(pulseaudio_t, pulseaudio_home_t, pulseaudio_home_t)
  manage_files_pattern(pulseaudio_t, pulseaudio_home_t, pulseaudio_home_t)
@@ -4763,6 +4890,15 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/pulseaud
  
  manage_dirs_pattern(pulseaudio_t, pulseaudio_var_lib_t, pulseaudio_var_lib_t)
  manage_files_pattern(pulseaudio_t, pulseaudio_var_lib_t, pulseaudio_var_lib_t)
+@@ -78,7 +79,7 @@
+ files_read_usr_files(pulseaudio_t)
+ 
+ fs_rw_anon_inodefs_files(pulseaudio_t)
+-fs_getattr_tmpfs(pulseaudio_t)
++fs_read_tmpfs_files(pulseaudio_t)
+ fs_list_inotifyfs(pulseaudio_t)
+ 
+ term_use_all_ttys(pulseaudio_t)
 @@ -128,6 +129,7 @@
  ')
  
@@ -8103,7 +8239,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/files.
  #
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/filesystem.if serefpolicy-3.8.1/policy/modules/kernel/filesystem.if
 --- nsaserefpolicy/policy/modules/kernel/filesystem.if	2010-03-12 11:48:14.000000000 -0500
-+++ serefpolicy-3.8.1/policy/modules/kernel/filesystem.if	2010-05-28 08:07:42.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/kernel/filesystem.if	2010-05-28 11:59:23.000000000 -0400
 @@ -559,7 +559,7 @@
  
  ########################################
@@ -11067,7 +11203,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/abrt
  ##	All of the rules required to administrate
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/abrt.te serefpolicy-3.8.1/policy/modules/services/abrt.te
 --- nsaserefpolicy/policy/modules/services/abrt.te	2010-05-25 16:28:22.000000000 -0400
-+++ serefpolicy-3.8.1/policy/modules/services/abrt.te	2010-05-27 10:01:25.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/services/abrt.te	2010-06-01 11:18:45.000000000 -0400
 @@ -70,16 +70,19 @@
  manage_dirs_pattern(abrt_t, abrt_tmp_t, abrt_tmp_t)
  manage_files_pattern(abrt_t, abrt_tmp_t, abrt_tmp_t)
@@ -11096,7 +11232,15 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/abrt
  dev_getattr_all_chr_files(abrt_t)
  dev_read_urand(abrt_t)
  dev_rw_sysfs(abrt_t)
-@@ -150,13 +152,24 @@
+@@ -140,6 +142,7 @@
+ miscfiles_read_localization(abrt_t)
+ 
+ userdom_dontaudit_read_user_home_content_files(abrt_t)
++userdom_dontaudit_read_admin_home_files(abrt_t)
+ 
+ optional_policy(`
+ 	dbus_system_domain(abrt_t, abrt_exec_t)
+@@ -150,13 +153,24 @@
  ')
  
  optional_policy(`
@@ -11123,7 +11267,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/abrt
  optional_policy(`
  	rpm_exec(abrt_t)
  	rpm_dontaudit_manage_db(abrt_t)
-@@ -172,6 +185,12 @@
+@@ -172,6 +186,12 @@
  ')
  
  optional_policy(`
@@ -11136,7 +11280,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/abrt
  	sssd_stream_connect(abrt_t)
  ')
  
-@@ -180,11 +199,12 @@
+@@ -180,11 +200,12 @@
  # abrt--helper local policy
  #
  
@@ -11150,7 +11294,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/abrt
  manage_dirs_pattern(abrt_helper_t, abrt_var_cache_t, abrt_var_cache_t)
  manage_files_pattern(abrt_helper_t, abrt_var_cache_t, abrt_var_cache_t)
  manage_lnk_files_pattern(abrt_helper_t, abrt_var_cache_t, abrt_var_cache_t)
-@@ -196,6 +216,7 @@
+@@ -196,6 +217,7 @@
  domain_read_all_domains_state(abrt_helper_t)
  
  files_read_etc_files(abrt_helper_t)
@@ -11158,7 +11302,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/abrt
  
  fs_list_inotifyfs(abrt_helper_t)
  fs_getattr_all_fs(abrt_helper_t)
-@@ -210,11 +231,26 @@
+@@ -210,11 +232,26 @@
  term_dontaudit_use_all_ptys(abrt_helper_t)
  
  ifdef(`hide_broken_symptoms', `
@@ -11187,7 +11331,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/abrt
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/afs.te serefpolicy-3.8.1/policy/modules/services/afs.te
 --- nsaserefpolicy/policy/modules/services/afs.te	2010-05-25 16:28:22.000000000 -0400
-+++ serefpolicy-3.8.1/policy/modules/services/afs.te	2010-05-26 16:28:29.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/services/afs.te	2010-06-01 16:54:21.000000000 -0400
 @@ -88,9 +88,14 @@
  
  fs_getattr_xattr_fs(afs_t)
@@ -12638,8 +12782,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/boin
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/boinc.te serefpolicy-3.8.1/policy/modules/services/boinc.te
 --- nsaserefpolicy/policy/modules/services/boinc.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.8.1/policy/modules/services/boinc.te	2010-05-28 08:14:12.000000000 -0400
-@@ -0,0 +1,93 @@
++++ serefpolicy-3.8.1/policy/modules/services/boinc.te	2010-06-01 15:29:02.000000000 -0400
+@@ -0,0 +1,94 @@
 +
 +policy_module(boinc,1.0.0)
 +
@@ -12670,7 +12814,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/boin
 +#
 +
 +allow boinc_t self:capability { kill };
-+allow boinc_t self:process { execmem fork setsched signal signull sigkill };
++allow boinc_t self:process { execmem ptrace setsched signal signull sigstop sigkill };
 +
 +allow boinc_t self:fifo_file rw_fifo_file_perms;
 +allow boinc_t self:unix_stream_socket create_stream_socket_perms;
@@ -12691,6 +12835,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/boin
 +files_var_lib_filetrans(boinc_t, boinc_var_lib_t, { file dir } )
 +
 +kernel_read_system_state(boinc_t)
++kernel_read_network_state(boinc_t)
 +kernel_read_kernel_sysctls(boinc_t)
 +kernel_search_vm_sysctl(boinc_t)
 +
@@ -13623,8 +13768,25 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/clam
  ')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cobbler.te serefpolicy-3.8.1/policy/modules/services/cobbler.te
 --- nsaserefpolicy/policy/modules/services/cobbler.te	2010-05-25 16:28:22.000000000 -0400
-+++ serefpolicy-3.8.1/policy/modules/services/cobbler.te	2010-05-26 16:28:29.000000000 -0400
-@@ -87,6 +87,10 @@
++++ serefpolicy-3.8.1/policy/modules/services/cobbler.te	2010-06-01 16:55:15.000000000 -0400
+@@ -36,6 +36,7 @@
+ #
+ 
+ allow cobblerd_t self:capability { chown dac_override fowner sys_nice };
++dontaudit cobblerd_t self:capability sys_tty_config;
+ allow cobblerd_t self:process { getsched setsched signal };
+ allow cobblerd_t self:fifo_file rw_fifo_file_perms;
+ allow cobblerd_t self:tcp_socket create_stream_socket_perms;
+@@ -75,6 +76,8 @@
+ # read /etc/nsswitch.conf
+ files_read_etc_files(cobblerd_t)
+ 
++term_dontaudit_use_console(cobblerd_t)
++
+ miscfiles_read_localization(cobblerd_t)
+ miscfiles_read_public_files(cobblerd_t)
+ 
+@@ -87,6 +90,10 @@
  ')
  
  optional_policy(`
@@ -14262,7 +14424,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cups
 +/usr/local/linuxprinter/ppd(/.*)?      gen_context(system_u:object_r:cupsd_rw_etc_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cups.te serefpolicy-3.8.1/policy/modules/services/cups.te
 --- nsaserefpolicy/policy/modules/services/cups.te	2010-05-25 16:28:22.000000000 -0400
-+++ serefpolicy-3.8.1/policy/modules/services/cups.te	2010-05-26 16:28:29.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/services/cups.te	2010-06-01 16:11:19.000000000 -0400
 @@ -16,6 +16,7 @@
  type cupsd_t;
  type cupsd_exec_t;
@@ -14317,8 +14479,11 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/cups
  	hal_domtrans(cupsd_config_t)
  	hal_read_tmp_files(cupsd_config_t)
  	hal_dontaudit_use_fds(hplip_t)
-@@ -590,11 +600,15 @@
+@@ -588,13 +598,18 @@
+ 
+ miscfiles_read_localization(cups_pdf_t)
  miscfiles_read_fonts(cups_pdf_t)
++miscfiles_setattr_fonts_cache_dirs(cups_pdf_t)
  
  userdom_home_filetrans_user_home_dir(cups_pdf_t)
 +userdom_user_home_dir_filetrans_pattern(cups_pdf_t, { file dir })
@@ -15671,7 +15836,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/gpsd
  
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/hal.if serefpolicy-3.8.1/policy/modules/services/hal.if
 --- nsaserefpolicy/policy/modules/services/hal.if	2010-02-12 10:33:09.000000000 -0500
-+++ serefpolicy-3.8.1/policy/modules/services/hal.if	2010-05-26 16:28:29.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/services/hal.if	2010-05-30 05:18:07.000000000 -0400
 @@ -377,6 +377,26 @@
  
  ########################################
@@ -18764,6 +18929,18 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/qpid
 +miscfiles_read_localization(qpidd_t)
 +
 +sysnet_dns_name_resolve(qpidd_t)
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/radius.te serefpolicy-3.8.1/policy/modules/services/radius.te
+--- nsaserefpolicy/policy/modules/services/radius.te	2009-08-14 16:14:31.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/services/radius.te	2010-06-01 11:07:28.000000000 -0400
+@@ -37,7 +37,7 @@
+ # gzip also needs chown access to preserve GID for radwtmp files
+ allow radiusd_t self:capability { chown dac_override fsetid kill setgid setuid sys_resource sys_tty_config };
+ dontaudit radiusd_t self:capability sys_tty_config;
+-allow radiusd_t self:process { getsched setsched sigkill signal };
++allow radiusd_t self:process { getsched setrlimit setsched sigkill signal };
+ allow radiusd_t self:fifo_file rw_fifo_file_perms;
+ allow radiusd_t self:unix_stream_socket create_stream_socket_perms;
+ allow radiusd_t self:tcp_socket create_stream_socket_perms;
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/razor.fc serefpolicy-3.8.1/policy/modules/services/razor.fc
 --- nsaserefpolicy/policy/modules/services/razor.fc	2009-07-14 14:19:57.000000000 -0400
 +++ serefpolicy-3.8.1/policy/modules/services/razor.fc	2010-05-26 16:28:29.000000000 -0400
@@ -19599,8 +19776,18 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/samb
  ')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/samba.te serefpolicy-3.8.1/policy/modules/services/samba.te
 --- nsaserefpolicy/policy/modules/services/samba.te	2010-05-25 16:28:22.000000000 -0400
-+++ serefpolicy-3.8.1/policy/modules/services/samba.te	2010-05-26 16:28:29.000000000 -0400
-@@ -324,6 +324,7 @@
++++ serefpolicy-3.8.1/policy/modules/services/samba.te	2010-06-01 16:31:48.000000000 -0400
+@@ -153,9 +153,6 @@
+ type winbind_log_t;
+ logging_log_file(winbind_log_t)
+ 
+-type winbind_tmp_t;
+-files_tmp_file(winbind_tmp_t)
+-
+ type winbind_var_run_t;
+ files_pid_file(winbind_var_run_t)
+ 
+@@ -324,6 +321,7 @@
  dev_getattr_all_chr_files(smbd_t)
  
  fs_getattr_all_fs(smbd_t)
@@ -19608,7 +19795,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/samb
  fs_get_xattr_fs_quotas(smbd_t)
  fs_search_auto_mountpoints(smbd_t)
  fs_getattr_rpc_dirs(smbd_t)
-@@ -386,12 +387,7 @@
+@@ -386,12 +384,7 @@
  ')
  
  tunable_policy(`samba_enable_home_dirs',`
@@ -19622,7 +19809,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/samb
  ')
  
  # Support Samba sharing of NFS mount points
-@@ -446,8 +442,8 @@
+@@ -446,8 +439,8 @@
  tunable_policy(`samba_create_home_dirs',`
  	allow smbd_t self:capability chown;
  	userdom_create_user_home_dirs(smbd_t)
@@ -19632,7 +19819,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/samb
  
  tunable_policy(`samba_export_all_ro',`
  	fs_read_noxattr_fs_files(smbd_t) 
-@@ -463,8 +459,8 @@
+@@ -463,8 +456,8 @@
  	auth_manage_all_files_except_shadow(smbd_t)
  	fs_read_noxattr_fs_files(nmbd_t) 
  	auth_manage_all_files_except_shadow(nmbd_t)
@@ -19642,7 +19829,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/samb
  
  ########################################
  #
-@@ -568,6 +564,7 @@
+@@ -568,6 +561,7 @@
  
  allow smbcontrol_t winbind_t:process { signal signull };
  
@@ -19650,7 +19837,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/samb
  samba_read_config(smbcontrol_t)
  samba_rw_var_files(smbcontrol_t)
  samba_search_var(smbcontrol_t)
-@@ -693,6 +690,7 @@
+@@ -693,6 +687,7 @@
  manage_files_pattern(swat_t, samba_etc_t, samba_secrets_t)
  
  manage_files_pattern(swat_t, samba_var_t, samba_var_t)
@@ -19658,7 +19845,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/samb
  
  allow swat_t smbd_exec_t:file mmap_file_perms ;
  
-@@ -755,6 +753,8 @@
+@@ -755,6 +750,8 @@
  
  miscfiles_read_localization(swat_t)
  
@@ -19667,7 +19854,21 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/samb
  optional_policy(`
  	cups_read_rw_config(swat_t)
  	cups_stream_connect(swat_t)
-@@ -834,6 +834,7 @@
+@@ -807,10 +804,9 @@
+ allow winbind_t winbind_log_t:file manage_file_perms;
+ logging_log_filetrans(winbind_t, winbind_log_t, file)
+ 
+-manage_dirs_pattern(winbind_t, winbind_tmp_t, winbind_tmp_t)
+-manage_files_pattern(winbind_t, winbind_tmp_t, winbind_tmp_t)
+-manage_sock_files_pattern(winbind_t, winbind_tmp_t, winbind_tmp_t)
+-files_tmp_filetrans(winbind_t, winbind_tmp_t, { file dir })
++userdom_manage_user_tmp_dirs(winbind_t)
++userdom_manage_user_tmp_files(winbind_t)
++userdom_tmp_filetrans_user_tmp(winbind_t, { file dir })
+ 
+ manage_files_pattern(winbind_t, winbind_var_run_t, winbind_var_run_t)
+ manage_sock_files_pattern(winbind_t, winbind_var_run_t, winbind_var_run_t)
+@@ -834,6 +830,7 @@
  corenet_tcp_bind_generic_node(winbind_t)
  corenet_udp_bind_generic_node(winbind_t)
  corenet_tcp_connect_smbd_port(winbind_t)
@@ -19675,7 +19876,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/samb
  corenet_tcp_connect_epmap_port(winbind_t)
  corenet_tcp_connect_all_unreserved_ports(winbind_t)
  
-@@ -923,6 +924,18 @@
+@@ -923,6 +920,18 @@
  #
  
  optional_policy(`
@@ -19694,7 +19895,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/samb
  	type samba_unconfined_script_t;
  	type samba_unconfined_script_exec_t;
  	domain_type(samba_unconfined_script_t)
-@@ -933,9 +946,12 @@
+@@ -933,9 +942,12 @@
  	allow smbd_t samba_unconfined_script_exec_t:dir search_dir_perms;
  	allow smbd_t samba_unconfined_script_exec_t:file ioctl;
  
@@ -20527,7 +20728,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
 +/root/\.shosts				gen_context(system_u:object_r:home_ssh_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.if serefpolicy-3.8.1/policy/modules/services/ssh.if
 --- nsaserefpolicy/policy/modules/services/ssh.if	2010-05-25 16:28:22.000000000 -0400
-+++ serefpolicy-3.8.1/policy/modules/services/ssh.if	2010-05-26 16:28:29.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/services/ssh.if	2010-06-01 16:02:19.000000000 -0400
 @@ -36,6 +36,7 @@
  	gen_require(`
  		attribute ssh_server;
@@ -20650,7 +20851,15 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
  ')
  
  ########################################
-@@ -584,6 +598,25 @@
+@@ -338,6 +352,7 @@
+ 	manage_lnk_files_pattern($3, ssh_home_t, ssh_home_t)
+ 	manage_sock_files_pattern($3, ssh_home_t, ssh_home_t)
+ 	userdom_search_user_home_dirs($1_t)
++	userdom_manage_tmp_role($2, ssh_t)
+ 
+ 	##############################
+ 	#
+@@ -584,6 +599,25 @@
  	domtrans_pattern($1, sshd_exec_t, sshd_t)
  ')
  
@@ -20678,8 +20887,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
  ##	Execute the ssh client in the caller domain.
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.te serefpolicy-3.8.1/policy/modules/services/ssh.te
 --- nsaserefpolicy/policy/modules/services/ssh.te	2010-05-25 16:28:22.000000000 -0400
-+++ serefpolicy-3.8.1/policy/modules/services/ssh.te	2010-05-26 16:28:29.000000000 -0400
-@@ -34,6 +34,9 @@
++++ serefpolicy-3.8.1/policy/modules/services/ssh.te	2010-06-01 16:29:59.000000000 -0400
+@@ -34,13 +34,12 @@
  ssh_server_template(sshd)
  init_daemon_domain(sshd_t, sshd_exec_t)
  
@@ -20689,7 +20898,26 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
  type sshd_key_t;
  files_type(sshd_key_t)
  
-@@ -114,6 +117,7 @@
+-type sshd_tmp_t;
+-files_tmp_file(sshd_tmp_t)
+-files_poly_parent(sshd_tmp_t)
+-
+ ifdef(`enable_mcs',`
+ 	init_ranged_daemon_domain(sshd_t, sshd_exec_t, s0 - mcs_systemhigh)
+ ')
+@@ -100,11 +99,6 @@
+ # Read the ssh key file.
+ allow ssh_t sshd_key_t:file read_file_perms;
+ 
+-# Access the ssh temporary files.
+-allow ssh_t sshd_tmp_t:dir manage_dir_perms;
+-allow ssh_t sshd_tmp_t:file manage_file_perms;
+-files_tmp_filetrans(ssh_t, sshd_tmp_t, { file dir })
+-
+ manage_files_pattern(ssh_t, ssh_tmpfs_t, ssh_tmpfs_t)
+ manage_lnk_files_pattern(ssh_t, ssh_tmpfs_t, ssh_tmpfs_t)
+ manage_fifo_files_pattern(ssh_t, ssh_tmpfs_t, ssh_tmpfs_t)
+@@ -114,6 +108,7 @@
  manage_dirs_pattern(ssh_t, ssh_home_t, ssh_home_t)
  manage_sock_files_pattern(ssh_t, ssh_home_t, ssh_home_t)
  userdom_user_home_dir_filetrans(ssh_t, ssh_home_t, { dir sock_file })
@@ -20697,7 +20925,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
  
  # Allow the ssh program to communicate with ssh-agent.
  stream_connect_pattern(ssh_t, ssh_agent_tmp_t, ssh_agent_tmp_t, ssh_agent_type)
-@@ -125,9 +129,10 @@
+@@ -125,9 +120,10 @@
  read_lnk_files_pattern(ssh_t, ssh_home_t, ssh_home_t)
  
  # ssh servers can read the user keys and config
@@ -20711,7 +20939,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
  
  kernel_read_kernel_sysctls(ssh_t)
  kernel_read_system_state(ssh_t)
-@@ -139,6 +144,8 @@
+@@ -139,6 +135,8 @@
  corenet_tcp_sendrecv_all_ports(ssh_t)
  corenet_tcp_connect_ssh_port(ssh_t)
  corenet_sendrecv_ssh_client_packets(ssh_t)
@@ -20720,7 +20948,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
  
  dev_read_urand(ssh_t)
  
-@@ -170,8 +177,10 @@
+@@ -170,8 +168,10 @@
  userdom_search_user_home_dirs(ssh_t)
  # Write to the user domain tty.
  userdom_use_user_terminals(ssh_t)
@@ -20732,16 +20960,18 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
  
  tunable_policy(`allow_ssh_keysign',`
  	domain_auto_trans(ssh_t, ssh_keysign_exec_t, ssh_keysign_t)
-@@ -282,6 +291,8 @@
+@@ -282,44 +282,59 @@
  allow sshd_t self:netlink_route_socket r_netlink_socket_perms;
  allow sshd_t self:key { search link write };
  
+-manage_dirs_pattern(sshd_t, sshd_tmp_t, sshd_tmp_t)
+-manage_files_pattern(sshd_t, sshd_tmp_t, sshd_tmp_t)
+-manage_sock_files_pattern(sshd_t, sshd_tmp_t, sshd_tmp_t)
+-files_tmp_filetrans(sshd_t, sshd_tmp_t, { dir file sock_file })
 +allow sshd_t self:process setcurrent;
-+
- manage_dirs_pattern(sshd_t, sshd_tmp_t, sshd_tmp_t)
- manage_files_pattern(sshd_t, sshd_tmp_t, sshd_tmp_t)
- manage_sock_files_pattern(sshd_t, sshd_tmp_t, sshd_tmp_t)
-@@ -292,34 +303,51 @@
+ 
+ kernel_search_key(sshd_t)
+ kernel_link_key(sshd_t)
  
  term_use_all_ptys(sshd_t)
  term_setattr_all_ptys(sshd_t)
@@ -20755,6 +20985,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
 +userdom_read_user_home_content_files(sshd_t)
 +userdom_read_user_home_content_symlinks(sshd_t)
 +userdom_search_admin_dir(sshd_t)
++userdom_manage_tmp_role(system_r, sshd_t)
 +
  tunable_policy(`ssh_sysadm_login',`
  	# Relabel and access ptys created by sshd
@@ -20798,7 +21029,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
  ')
  
  optional_policy(`
-@@ -333,6 +361,11 @@
+@@ -333,6 +348,11 @@
  ')
  
  optional_policy(`
@@ -23617,7 +23848,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/init.i
 +
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/init.te serefpolicy-3.8.1/policy/modules/system/init.te
 --- nsaserefpolicy/policy/modules/system/init.te	2010-05-25 16:28:22.000000000 -0400
-+++ serefpolicy-3.8.1/policy/modules/system/init.te	2010-05-27 10:37:16.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/system/init.te	2010-06-01 10:43:58.000000000 -0400
 @@ -17,6 +17,20 @@
  ## </desc>
  gen_tunable(init_upstart, false)
@@ -23688,7 +23919,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/init.t
  corecmd_exec_bin(init_t)
  
  dev_read_sysfs(init_t)
-+dev_rw_generic_chr_files(init_t)
++dev_read_urand(init_t)
  
  domain_getpgid_all_domains(init_t)
  domain_kill_all_domains(init_t)
@@ -24328,7 +24559,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/iscsi.
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/libraries.fc serefpolicy-3.8.1/policy/modules/system/libraries.fc
 --- nsaserefpolicy/policy/modules/system/libraries.fc	2010-03-23 11:19:40.000000000 -0400
-+++ serefpolicy-3.8.1/policy/modules/system/libraries.fc	2010-05-26 16:28:29.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/system/libraries.fc	2010-06-01 10:56:17.000000000 -0400
 @@ -131,13 +131,13 @@
  /usr/lib/vlc/codec/libdmo_plugin\.so	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/vlc/codec/librealaudio_plugin\.so --	gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -24353,7 +24584,15 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/librar
  /usr/lib(64)?/libglide3\.so.* 		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib(64)?/libglide3-v[0-9]*\.so.* 	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib(64)?/helix/plugins/[^/]*\.so --	gen_context(system_u:object_r:textrel_shlib_t,s0)
-@@ -302,13 +303,8 @@
+@@ -247,6 +248,7 @@
+ /usr/lib(64)?/ladspa/sc3_1427\.so	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
+ /usr/lib(64)?/ladspa/sc4_1882\.so	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
+ /usr/lib(64)?/ladspa/se4_1883\.so	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
++/usr/lib(64)?/sane/libsane-epkowa\.so.* --  gen_context(system_u:object_r:textrel_shlib_t,s0)
+ /usr/lib(64)?/ocaml/stublibs/dllnums\.so --	gen_context(system_u:object_r:textrel_shlib_t,s0)
+ 
+ # Livna.org packages: xmms-mp3, ffmpeg, xvidcore, xine-lib, gsm, lame
+@@ -302,13 +304,8 @@
  /usr/lib/acroread/(.*/)?lib/[^/]*\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/acroread/.+\.api		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/acroread/(.*/)?ADMPlugin\.apl	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -24369,7 +24608,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/librar
  ') dnl end distro_redhat
  
  #
-@@ -319,14 +315,148 @@
+@@ -319,14 +316,148 @@
  /var/ftp/lib(64)?(/.*)?				gen_context(system_u:object_r:lib_t,s0)
  /var/ftp/lib(64)?/ld[^/]*\.so(\.[^/]*)*	--	gen_context(system_u:object_r:ld_so_t,s0)
  
@@ -27833,7 +28072,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
 +HOME_DIR/\.gvfs(/.*)?	<<none>>
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdomain.if serefpolicy-3.8.1/policy/modules/system/userdomain.if
 --- nsaserefpolicy/policy/modules/system/userdomain.if	2010-03-03 23:26:37.000000000 -0500
-+++ serefpolicy-3.8.1/policy/modules/system/userdomain.if	2010-05-28 08:05:41.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/system/userdomain.if	2010-06-01 16:31:26.000000000 -0400
 @@ -30,8 +30,9 @@
  	')
  
@@ -29125,7 +29364,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
  ##	Do not audit attempts to set the
  ##	attributes of user home files.
  ## </summary>
-@@ -1692,6 +1964,7 @@
+@@ -1692,12 +1964,32 @@
  		type user_home_dir_t, user_home_t;
  	')
  
@@ -29133,7 +29372,32 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
  	read_files_pattern($1, { user_home_dir_t user_home_t }, user_home_t)
  	files_search_home($1)
  ')
-@@ -1708,11 +1981,14 @@
+ 
+ ########################################
+ ## <summary>
++##	Do not audit attempts to getattr user home files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`userdom_dontaudit_getattr_user_home_content',`
++	gen_require(`
++		attribute user_home_type;
++	')
++
++	dontaudit $1 user_home_type:dir getattr;
++	dontaudit $1 user_home_type:file getattr;
++')
++
++########################################
++## <summary>
+ ##	Do not audit attempts to read user home files.
+ ## </summary>
+ ## <param name="domain">
+@@ -1708,11 +2000,14 @@
  #
  interface(`userdom_dontaudit_read_user_home_content_files',`
  	gen_require(`
@@ -29151,7 +29415,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
  ')
  
  ########################################
-@@ -1802,8 +2078,7 @@
+@@ -1802,8 +2097,7 @@
  		type user_home_dir_t, user_home_t;
  	')
  
@@ -29161,7 +29425,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
  ')
  
  ########################################
-@@ -1819,21 +2094,15 @@
+@@ -1819,20 +2113,14 @@
  #
  interface(`userdom_exec_user_home_content_files',`
  	gen_require(`
@@ -29175,19 +29439,18 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
 -
 -	tunable_policy(`use_nfs_home_dirs',`
 -		fs_exec_nfs_files($1)
+-	')
+-
+-	tunable_policy(`use_samba_home_dirs',`
+-		fs_exec_cifs_files($1)
 +	exec_files_pattern($1, { user_home_dir_t user_home_type }, user_home_type)
 +	dontaudit $1 user_home_type:sock_file execute;
  	')
- 
--	tunable_policy(`use_samba_home_dirs',`
--		fs_exec_cifs_files($1)
--	')
 -')
--
+ 
  ########################################
  ## <summary>
- ##	Do not audit attempts to execute user home files.
-@@ -2427,13 +2696,14 @@
+@@ -2427,13 +2715,14 @@
  	')
  
  	read_files_pattern($1, user_tmpfs_t, user_tmpfs_t)
@@ -29203,7 +29466,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2787,7 +3057,7 @@
+@@ -2787,7 +3076,7 @@
  
  	domain_entry_file_spec_domtrans($1, unpriv_userdomain)
  	allow unpriv_userdomain $1:fd use;
@@ -29212,7 +29475,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
  	allow unpriv_userdomain $1:process sigchld;
  ')
  
-@@ -2803,11 +3073,13 @@
+@@ -2803,11 +3092,13 @@
  #
  interface(`userdom_search_user_home_content',`
  	gen_require(`
@@ -29228,23 +29491,21 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
  ')
  
  ########################################
-@@ -2944,16 +3216,35 @@
+@@ -2944,7 +3235,26 @@
  		type user_tmp_t;
  	')
  
 -	allow $1 user_tmp_t:file write_file_perms;
 +	write_files_pattern($1, user_tmp_t, user_tmp_t)
- ')
- 
- ########################################
- ## <summary>
--##	Do not audit attempts to use user ttys.
++')
++
++########################################
++## <summary>
 +##	Do not audit attempts to write users
 +##	temporary files.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
--##	Domain allowed access.
++## </summary>
++## <param name="domain">
++##	<summary>
 +##	Domain to not audit.
 +##	</summary>
 +## </param>
@@ -29255,19 +29516,10 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
 +	')
 +
 +	dontaudit $1 user_tmp_t:file write;
-+')
-+
-+########################################
-+## <summary>
-+##	Do not audit attempts to use user ttys.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
- ##	</summary>
- ## </param>
- #
-@@ -2981,6 +3272,7 @@
+ ')
+ 
+ ########################################
+@@ -2981,6 +3291,7 @@
  	')
  
  	read_files_pattern($1, userdomain, userdomain)
@@ -29275,7 +29527,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
  	kernel_search_proc($1)
  ')
  
-@@ -3111,3 +3403,739 @@
+@@ -3111,3 +3422,757 @@
  
  	allow $1 userdomain:dbus send_msg;
  ')
@@ -29868,6 +30120,24 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
 +
 +########################################
 +## <summary>
++##	dontaudit read /root files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`userdom_dontaudit_read_admin_home_files',`
++	gen_require(`
++		type admin_home_t;
++	')
++
++	dontaudit $1 admin_home_t:file read_file_perms;
++')
++
++########################################
++## <summary>
 +##	Create, read, write, and delete user
 +##	temporary chr files.
 +## </summary>
@@ -30017,7 +30287,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdomain.te serefpolicy-3.8.1/policy/modules/system/userdomain.te
 --- nsaserefpolicy/policy/modules/system/userdomain.te	2010-05-25 16:28:22.000000000 -0400
-+++ serefpolicy-3.8.1/policy/modules/system/userdomain.te	2010-05-26 16:28:29.000000000 -0400
++++ serefpolicy-3.8.1/policy/modules/system/userdomain.te	2010-06-01 16:31:59.000000000 -0400
 @@ -54,11 +54,20 @@
  # all user domains
  attribute userdomain;
@@ -30049,6 +30319,15 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
  userdom_user_home_content(user_home_t)
  fs_associate_tmpfs(user_home_t)
  files_associate_tmp(user_home_t)
+@@ -85,7 +95,7 @@
+ files_type(user_devpts_t)
+ ubac_constrained(user_devpts_t)
+ 
+-type user_tmp_t alias { staff_tmp_t sysadm_tmp_t secadm_tmp_t auditadm_tmp_t unconfined_tmp_t };
++type user_tmp_t alias { winbind_tmp_t sshd_tmp_t staff_tmp_t sysadm_tmp_t secadm_tmp_t auditadm_tmp_t unconfined_tmp_t };
+ typealias user_tmp_t alias { staff_untrusted_content_tmp_t sysadm_untrusted_content_tmp_t secadm_untrusted_content_tmp_t auditadm_untrusted_content_tmp_t unconfined_untrusted_content_tmp_t };
+ files_tmp_file(user_tmp_t)
+ userdom_user_home_content(user_tmp_t)
 @@ -97,3 +107,20 @@
  type user_tty_device_t alias { staff_tty_device_t sysadm_tty_device_t secadm_tty_device_t auditadm_tty_device_t unconfined_tty_device_t };
  dev_node(user_tty_device_t)
@@ -30150,7 +30429,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/xen.te
  	files_search_mnt(xend_t)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/support/misc_patterns.spt serefpolicy-3.8.1/policy/support/misc_patterns.spt
 --- nsaserefpolicy/policy/support/misc_patterns.spt	2010-05-25 16:28:22.000000000 -0400
-+++ serefpolicy-3.8.1/policy/support/misc_patterns.spt	2010-05-26 16:28:29.000000000 -0400
++++ serefpolicy-3.8.1/policy/support/misc_patterns.spt	2010-06-01 10:21:47.000000000 -0400
 @@ -15,7 +15,7 @@
  	domain_transition_pattern($1,$2,$3)
  
@@ -30160,21 +30439,19 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/support/misc_patterns
  	allow $3 $1:process sigchld;
  ')
  
-@@ -34,10 +34,13 @@
+@@ -34,8 +34,12 @@
  	domain_auto_transition_pattern($1,$2,$3)
  
  	allow $3 $1:fd use;
 -	allow $3 $1:fifo_file rw_fifo_file_perms;
 +	allow $3 $1:fifo_file rw_inherited_fifo_file_perms;
  	allow $3 $1:process sigchld;
--')
- 
++
 +	ifdef(`hide_broken_symptoms', `
-+	        dontaudit $3 $1:socket_class_set { read write };
++		dontaudit $3 $1:socket_class_set { read write };
 +	')
-+')
- #
- # Dynamic transition pattern
+ ')
+ 
  #
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/support/obj_perm_sets.spt serefpolicy-3.8.1/policy/support/obj_perm_sets.spt
 --- nsaserefpolicy/policy/support/obj_perm_sets.spt	2010-03-04 11:44:07.000000000 -0500
