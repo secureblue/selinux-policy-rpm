@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.8.1
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,7 +469,11 @@ exit 0
 %endif
 
 %changelog
-* Mon Jun 1 2010 Dan Walsh <dwalsh@redhat.com> 3.8.1-4
+* Wed Jun 2 2010 Dan Walsh <dwalsh@redhat.com> 3.8.1-5
+- Add xdm_var_run_t to xserver_stream_connect_xdm
+- Add cmorrord and mpd policy from Miroslav Grepl
+
+* Tue Jun 1 2010 Dan Walsh <dwalsh@redhat.com> 3.8.1-4
 - Fix sshd creation of krb cc files for users to be user_tmp_t
 
 * Thu May 27 2010 Dan Walsh <dwalsh@redhat.com> 3.8.1-3
