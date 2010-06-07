@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.8.1
-Release: 5%{?dist}
+Version: 3.8.2
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,11 @@ exit 0
 %endif
 
 %changelog
+* Fri Jun 4 2010 Dan Walsh <dwalsh@redhat.com> 3.8.2-1
+- Update to upstream
+- Allow prelink script to signal itself
+- Cobbler fixes
+
 * Wed Jun 2 2010 Dan Walsh <dwalsh@redhat.com> 3.8.1-5
 - Add xdm_var_run_t to xserver_stream_connect_xdm
 - Add cmorrord and mpd policy from Miroslav Grepl
