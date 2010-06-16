@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.8.3
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 9 2010 Dan Walsh <dwalsh@redhat.com> 3.8.3-4
+- Add Zarafa policy
+
 * Wed Jun 9 2010 Dan Walsh <dwalsh@redhat.com> 3.8.3-3
 - Cleanup of aiccu policy
 - initial mock policy
