@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.8.3
-Release: 4%{?dist}
+Version: 3.8.4
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,7 +469,10 @@ exit 0
 %endif
 
 %changelog
-* Wed Jun 9 2010 Dan Walsh <dwalsh@redhat.com> 3.8.3-4
+* Thu Jun 17 2010 Dan Walsh <dwalsh@redhat.com> 3.8.4-1
+-Update to upstream
+
+* Wed Jun 16 2010 Dan Walsh <dwalsh@redhat.com> 3.8.3-4
 - Add Zarafa policy
 
 * Wed Jun 9 2010 Dan Walsh <dwalsh@redhat.com> 3.8.3-3
