@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.8.6
-Release: 3%{?dist}
+Version: 3.8.7
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -331,7 +331,7 @@ if [ $1 -eq 1 ]; then
    %loadpolicy targeted $packages
    restorecon -R /root /var/log /var/run /var/lib 2> /dev/null
 else
-   semodule -n -s targeted -r moilscanner -r mailscanner -r gamin -r audio_entropy -r iscsid -r polkit_auth -r polkit -r rtkit_daemon -r ModemManager 2>/dev/null
+   semodule -n -s targeted -r moilscanner mailscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal 2>/dev/null
    %loadpolicy targeted $packages
    %relabel targeted
 fi
@@ -450,7 +450,7 @@ SELinux Reference policy mls base module.
 %saveFileContext mls
 
 %post mls 
-semodule -n -s mls -r mailscanner -r polkit -r ModemManager 2>/dev/null
+semodule -n -s mls -r mailscanner polkit ModemManager telepathysofiasip ethereal 2>/dev/null
 packages=`cat /usr/share/selinux/mls/modules.lst`
 %loadpolicy mls $packages
 
@@ -469,6 +469,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 14 2010 Dan Walsh <dwalsh@redhat.com> 3.8.7-1
+- Update to upstream
+
 * Mon Jul 12 2010 Dan Walsh <dwalsh@redhat.com> 3.8.6-3
 - Add boolean to turn off port forwarding in sshd.
 
