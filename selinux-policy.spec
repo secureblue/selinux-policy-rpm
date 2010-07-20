@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.8.7
-Release: 3%{?dist}
+Version: 3.8.8
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jul 20 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-1
+- Update to latest policy
+
 * Mon Jul 14 2010 Dan Walsh <dwalsh@redhat.com> 3.8.7-3
 - Fix eclipse labeling from IBMSupportAssasstant packageing
 
