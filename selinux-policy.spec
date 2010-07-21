@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.8.8
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jul 21 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-2
+- Remove debugfs label
+
 * Tue Jul 20 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-1
 - Update to latest policy
 
