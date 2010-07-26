@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.8.8
-Release: 3%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,13 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 26 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-5
+- New permissions for syslog
+- New labels for /lib/upstart
+
+* Fri Jul 23 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-4
+- Add mojomojo policy
+
 * Thu Jul 22 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-3
 - Allow systemd to setsockcon on sockets to immitate other services
 
