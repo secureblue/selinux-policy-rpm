@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.8.8
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Jul 27 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-7
+- Update boinc policy
+- Fix sysstat policy to allow sys_admin
+- Change failsafe_context to unconfined_r:unconfined_t:s0
+
 * Mon Jul 26 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-6
 - New paths for upstart
 
