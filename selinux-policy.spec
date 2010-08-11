@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.8.8
-Release: 8%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -331,7 +331,7 @@ if [ $1 -eq 1 ]; then
    %loadpolicy targeted $packages
    restorecon -R /root /var/log /var/run /var/lib 2> /dev/null
 else
-   semodule -n -s targeted -r moilscanner mailscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal 2>/dev/null
+   semodule -n -s targeted -r pyzor -r razor -r moilscanner mailscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal 2>/dev/null
    %loadpolicy targeted $packages
    %relabel targeted
 fi
@@ -450,7 +450,7 @@ SELinux Reference policy mls base module.
 %saveFileContext mls
 
 %post mls 
-semodule -n -s mls -r mailscanner polkit ModemManager telepathysofiasip ethereal 2>/dev/null
+semodule -n -s mls -r pyzor -r razor -r mailscanner polkit ModemManager telepathysofiasip ethereal 2>/dev/null
 packages=`cat /usr/share/selinux/mls/modules.lst`
 %loadpolicy mls $packages
 
@@ -469,6 +469,23 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 10 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-12
+- Fix devicekit_power bug
+- Allow policykit_auth_t more access.
+
+* Thu Aug 5 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-11
+- Fix nis calls to allow bind to ports 512-1024
+- Fix smartmon
+
+* Wed Aug 4 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-10
+- Allow pcscd to read sysfs
+- systemd fixes 
+- Fix wine_mmap_zero_ignore boolean
+
+* Tue Aug 3 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-9
+- Apply Miroslav munin patch
+- Turn back on allow_execmem and allow_execmod booleans
+
 * Tue Jul 27 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-8
 - Merge in fixes from dgrift repository
 
