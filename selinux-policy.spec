@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.8.8
-Release: 12%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 17 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-15
+- label dead.letter as mail_home_t
+
+* Fri Aug 13 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-14
+- Allow login programs to search /cgroups
+
+* Thu Aug 12 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-13
+- Fix cert handling
+
 * Tue Aug 10 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-12
 - Fix devicekit_power bug
 - Allow policykit_auth_t more access.
