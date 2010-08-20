@@ -4697,7 +4697,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mono.if 
  #
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mozilla.fc serefpolicy-3.8.8/policy/modules/apps/mozilla.fc
 --- nsaserefpolicy/policy/modules/apps/mozilla.fc	2010-07-27 16:06:04.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/apps/mozilla.fc	2010-07-30 14:06:53.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/apps/mozilla.fc	2010-08-19 06:50:14.000000000 -0400
 @@ -1,6 +1,7 @@
  HOME_DIR/\.galeon(/.*)?			gen_context(system_u:object_r:mozilla_home_t,s0)
  HOME_DIR/\.java(/.*)?			gen_context(system_u:object_r:mozilla_home_t,s0)
@@ -4706,10 +4706,24 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mozilla.
  HOME_DIR/\.netscape(/.*)?		gen_context(system_u:object_r:mozilla_home_t,s0)
  HOME_DIR/\.phoenix(/.*)?		gen_context(system_u:object_r:mozilla_home_t,s0)
  
+@@ -27,3 +28,4 @@
+ /usr/lib(64)?/[^/]*firefox[^/]*/firefox-bin -- gen_context(system_u:object_r:mozilla_exec_t,s0)
+ /usr/lib/[^/]*firefox[^/]*/firefox --	gen_context(system_u:object_r:mozilla_exec_t,s0)
+ /usr/lib64/[^/]*firefox[^/]*/firefox -- gen_context(system_u:object_r:mozilla_exec_t,s0)
++/usr/lib(64)?/xulrunner[^/]*/plugin-container		--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mozilla.if serefpolicy-3.8.8/policy/modules/apps/mozilla.if
 --- nsaserefpolicy/policy/modules/apps/mozilla.if	2010-07-27 16:06:04.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/apps/mozilla.if	2010-07-30 14:06:53.000000000 -0400
-@@ -48,6 +48,12 @@
++++ serefpolicy-3.8.8/policy/modules/apps/mozilla.if	2010-08-19 06:49:11.000000000 -0400
+@@ -29,6 +29,8 @@
+ 	allow mozilla_t $2:process { sigchld signull };
+ 	allow mozilla_t $2:unix_stream_socket connectto;
+ 
++	mozilla_plugin_run(mozilla_t, $2)
++
+ 	# Allow the user domain to signal/ps.
+ 	ps_process_pattern($2, mozilla_t)
+ 	allow $2 mozilla_t:process signal_perms;
+@@ -48,6 +50,12 @@
  
  	mozilla_dbus_chat($2)
  
@@ -4722,7 +4736,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mozilla.
  	optional_policy(`
  		pulseaudio_role($1, mozilla_t)
  	')
-@@ -108,7 +114,7 @@
+@@ -108,7 +116,7 @@
  		type mozilla_home_t;
  	')
  
@@ -4731,9 +4745,60 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mozilla.
  ')
  
  ########################################
+@@ -168,6 +176,50 @@
+ 
+ ########################################
+ ## <summary>
++##	Execute a domain transition to run mozilla_plugin.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed access.
++## </summary>
++## </param>
++#
++interface(`mozilla_domtrans_plugin',`
++	gen_require(`
++		type mozilla_plugin_t, mozilla_plugin_exec_t;
++	')
++
++	domtrans_pattern($1, mozilla_plugin_exec_t, mozilla_plugin_t)
++')
++
++
++########################################
++## <summary>
++##	Execute mozilla_plugin in the mozilla_plugin domain, and
++##	allow the specified role the mozilla_plugin domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	The role to be allowed the mozilla_plugin domain.
++##	</summary>
++## </param>
++#
++interface(`mozilla_run_plugin',`
++	gen_require(`
++		type mozilla_plugin_t;
++	')
++
++	mozilla_domtrans_plugin($1)
++	role $2 types mozilla_plugin_t;
++')
++
++########################################
++## <summary>
+ ##	Send and receive messages from
+ ##	mozilla over dbus.
+ ## </summary>
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mozilla.te serefpolicy-3.8.8/policy/modules/apps/mozilla.te
 --- nsaserefpolicy/policy/modules/apps/mozilla.te	2010-07-27 16:06:04.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/apps/mozilla.te	2010-07-30 14:06:53.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/apps/mozilla.te	2010-08-19 06:47:05.000000000 -0400
 @@ -25,6 +25,7 @@
  type mozilla_home_t;
  typealias mozilla_home_t alias { user_mozilla_home_t staff_mozilla_home_t sysadm_mozilla_home_t };
@@ -4742,7 +4807,21 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mozilla.
  userdom_user_home_content(mozilla_home_t)
  
  type mozilla_tmpfs_t;
-@@ -89,6 +90,7 @@
+@@ -33,6 +34,13 @@
+ files_tmpfs_file(mozilla_tmpfs_t)
+ ubac_constrained(mozilla_tmpfs_t)
+ 
++type mozilla_plugin_t;
++type mozilla_plugin_exec_t;
++application_domain(mozilla_plugin_t, mozilla_plugin_exec_t)
++role system_r types mozilla_plugin_t;
++
++permissive mozilla_plugin_t;
++
+ ########################################
+ #
+ # Local policy
+@@ -89,6 +97,7 @@
  corenet_raw_sendrecv_generic_node(mozilla_t)
  corenet_tcp_sendrecv_http_port(mozilla_t)
  corenet_tcp_sendrecv_http_cache_port(mozilla_t)
@@ -4750,7 +4829,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mozilla.
  corenet_tcp_sendrecv_ftp_port(mozilla_t)
  corenet_tcp_sendrecv_ipp_port(mozilla_t)
  corenet_tcp_connect_http_port(mozilla_t)
-@@ -238,6 +240,7 @@
+@@ -238,6 +247,7 @@
  optional_policy(`
  	gnome_stream_connect_gconf(mozilla_t)
  	gnome_manage_config(mozilla_t)
@@ -4758,7 +4837,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mozilla.
  ')
  
  optional_policy(`
-@@ -258,6 +261,11 @@
+@@ -258,6 +268,11 @@
  ')
  
  optional_policy(`
@@ -4770,6 +4849,24 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mozilla.
  	pulseaudio_exec(mozilla_t)
  	pulseaudio_stream_connect(mozilla_t)
  	pulseaudio_manage_home_files(mozilla_t)
+@@ -266,3 +281,17 @@
+ optional_policy(`
+ 	thunderbird_domtrans(mozilla_t)
+ ')
++
++########################################
++#
++# mozilla_plugin local policy
++#
++
++allow mozilla_plugin_t self:fifo_file manage_fifo_file_perms;
++allow mozilla_plugin_t self:unix_stream_socket create_stream_socket_perms;
++
++domain_use_interactive_fds(mozilla_plugin_t)
++
++files_read_etc_files(mozilla_plugin_t)
++
++miscfiles_read_localization(mozilla_plugin_t)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/mplayer.if serefpolicy-3.8.8/policy/modules/apps/mplayer.if
 --- nsaserefpolicy/policy/modules/apps/mplayer.if	2010-07-27 16:06:04.000000000 -0400
 +++ serefpolicy-3.8.8/policy/modules/apps/mplayer.if	2010-07-30 14:06:53.000000000 -0400
@@ -6019,7 +6116,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.
 +# No types are sandbox_exec_t
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.if serefpolicy-3.8.8/policy/modules/apps/sandbox.if
 --- nsaserefpolicy/policy/modules/apps/sandbox.if	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.8.8/policy/modules/apps/sandbox.if	2010-08-03 14:37:32.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/apps/sandbox.if	2010-08-18 06:43:23.000000000 -0400
 @@ -0,0 +1,314 @@
 +
 +## <summary>policy for sandbox</summary>
@@ -6337,8 +6434,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.te serefpolicy-3.8.8/policy/modules/apps/sandbox.te
 --- nsaserefpolicy/policy/modules/apps/sandbox.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.8.8/policy/modules/apps/sandbox.te	2010-08-16 07:01:26.000000000 -0400
-@@ -0,0 +1,392 @@
++++ serefpolicy-3.8.8/policy/modules/apps/sandbox.te	2010-08-19 07:46:41.000000000 -0400
+@@ -0,0 +1,397 @@
 +policy_module(sandbox,1.0.0)
 +dbus_stub()
 +attribute sandbox_domain;
@@ -6404,7 +6501,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.
 +
 +dev_rwx_zero(sandbox_xserver_t)
 +
-+files_read_etc_files(sandbox_xserver_t)
++files_read_config_files(sandbox_xserver_t)
 +files_read_usr_files(sandbox_xserver_t)
 +files_search_home(sandbox_xserver_t)
 +fs_dontaudit_rw_tmpfs_files(sandbox_xserver_t)
@@ -6463,7 +6560,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.
 +files_rw_all_inherited_files(sandbox_domain, -exec_type -configfile -usr_t -lib_t -locale_t -var_t -var_run_t -device_t -rpm_log_t )
 +files_entrypoint_all_files(sandbox_domain)
 +
-+files_read_etc_files(sandbox_domain)
++files_read_config_files(sandbox_domain)
 +files_read_usr_files(sandbox_domain)
 +files_read_var_files(sandbox_domain)
 +files_dontaudit_search_all_dirs(sandbox_domain)
@@ -6474,6 +6571,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.
 +corecmd_exec_all_executables(sandbox_domain)
 +
 +userdom_dontaudit_use_user_terminals(sandbox_domain)
++
++mta_dontaudit_read_spool_symlinks(sandbox_domain)
 +
 +########################################
 +#
@@ -6511,7 +6610,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.
 +dev_read_sysfs(sandbox_x_domain)
 +
 +files_entrypoint_all_files(sandbox_x_domain)
-+files_read_etc_files(sandbox_x_domain)
++files_read_config_files(sandbox_x_domain)
 +files_read_usr_files(sandbox_x_domain)
 +files_read_usr_symlinks(sandbox_x_domain)
 +
@@ -6559,6 +6658,10 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.
 +
 +optional_policy(`
 +	sssd_dontaudit_search_lib(sandbox_x_domain)
++')
++
++optional_policy(`
++	udev_read_db(sandbox_x_domain)
 +')
 +
 +userdom_dontaudit_use_user_terminals(sandbox_x_domain)
@@ -6705,7 +6808,6 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/sandbox.
 +
 +optional_policy(`
 +	udev_read_state(sandbox_web_type)
-+	udev_read_db(sandbox_web_type)
 +')
 +
 +########################################
@@ -7063,8 +7165,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/telepath
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/telepathy.te serefpolicy-3.8.8/policy/modules/apps/telepathy.te
 --- nsaserefpolicy/policy/modules/apps/telepathy.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.8.8/policy/modules/apps/telepathy.te	2010-08-04 11:57:36.000000000 -0400
-@@ -0,0 +1,310 @@
++++ serefpolicy-3.8.8/policy/modules/apps/telepathy.te	2010-08-19 05:59:57.000000000 -0400
+@@ -0,0 +1,311 @@
 +
 +policy_module(telepathy, 1.0.0)
 +
@@ -7185,6 +7287,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/telepath
 +dev_read_urand(telepathy_gabble_t)
 +
 +files_read_etc_files(telepathy_gabble_t)
++files_read_usr_files(telepathy_gabble_t)
 +
 +miscfiles_read_certs(telepathy_gabble_t)
 +
@@ -7707,7 +7810,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/apps/wm.if se
  		dbus_session_bus_client($1_wm_t)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/corecommands.fc serefpolicy-3.8.8/policy/modules/kernel/corecommands.fc
 --- nsaserefpolicy/policy/modules/kernel/corecommands.fc	2010-07-27 16:06:04.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/kernel/corecommands.fc	2010-07-30 14:06:53.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/kernel/corecommands.fc	2010-08-19 06:39:36.000000000 -0400
 @@ -9,8 +9,10 @@
  /bin/bash2			--	gen_context(system_u:object_r:shell_exec_t,s0)
  /bin/fish			--	gen_context(system_u:object_r:shell_exec_t,s0)
@@ -7781,7 +7884,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/coreco
  ')
  
  ifdef(`distro_suse', `
-@@ -340,3 +355,24 @@
+@@ -340,3 +355,27 @@
  ifdef(`distro_suse',`
  /var/lib/samba/bin/.+			gen_context(system_u:object_r:bin_t,s0)
  ')
@@ -7806,6 +7909,9 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/coreco
 +/usr/lib(64)?/rpm/rpmv		-- 	gen_context(system_u:object_r:bin_t,s0)
 +
 +/usr/lib(64)?/gimp/.*/plug-ins(/.*)?  gen_context(system_u:object_r:bin_t,s0)
++
++/etc/kde/env(/.*)?  gen_context(system_u:object_r:bin_t,s0)
++/etc/kde/shutdown(/.*)?  gen_context(system_u:object_r:bin_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/kernel/corecommands.if serefpolicy-3.8.8/policy/modules/kernel/corecommands.if
 --- nsaserefpolicy/policy/modules/kernel/corecommands.if	2010-07-27 16:06:04.000000000 -0400
 +++ serefpolicy-3.8.8/policy/modules/kernel/corecommands.if	2010-07-30 14:06:53.000000000 -0400
@@ -9798,8 +9904,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/secadm.
  #
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/staff.te serefpolicy-3.8.8/policy/modules/roles/staff.te
 --- nsaserefpolicy/policy/modules/roles/staff.te	2010-07-27 16:06:05.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/roles/staff.te	2010-07-30 14:06:53.000000000 -0400
-@@ -8,25 +8,55 @@
++++ serefpolicy-3.8.8/policy/modules/roles/staff.te	2010-08-19 06:52:30.000000000 -0400
+@@ -8,25 +8,60 @@
  role staff_r;
  
  userdom_unpriv_user_template(staff)
@@ -9820,6 +9926,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/staff.t
 +
 +auth_domtrans_pam_console(staff_t)
 +
++init_dbus_chat(staff_t)
 +init_dbus_chat_script(staff_t)
 +
 +seutil_read_module_store(staff_t)
@@ -9831,9 +9938,13 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/staff.t
  	apache_role(staff_r, staff_t)
  ')
  
+ optional_policy(`
++	mozilla_run_plugin(staff_t, staff_r)
++')
++
 +ifndef(`distro_redhat',`
 +
- optional_policy(`
++optional_policy(`
  	auth_role(staff_r, staff_t)
  ')
 +')
@@ -9855,7 +9966,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/staff.t
  	bluetooth_role(staff_r, staff_t)
  ')
  
-@@ -94,12 +124,18 @@
+@@ -94,12 +129,18 @@
  	oident_manage_user_content(staff_t)
  	oident_relabel_user_content(staff_t)
  ')
@@ -9874,7 +9985,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/staff.t
  	pyzor_role(staff_r, staff_t)
  ')
  
-@@ -114,22 +150,27 @@
+@@ -114,22 +155,27 @@
  optional_policy(`
  	screen_role_template(staff, staff_r, staff_t)
  ')
@@ -9902,7 +10013,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/staff.t
  
  optional_policy(`
  	sudo_role_template(staff, staff_r, staff_t)
-@@ -141,6 +182,11 @@
+@@ -141,6 +187,11 @@
  ')
  
  optional_policy(`
@@ -9914,7 +10025,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/staff.t
  	thunderbird_role(staff_r, staff_t)
  ')
  
-@@ -164,6 +210,78 @@
+@@ -164,6 +215,78 @@
  	wireshark_role(staff_r, staff_t)
  ')
  
@@ -9995,8 +10106,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/staff.t
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.te serefpolicy-3.8.8/policy/modules/roles/sysadm.te
 --- nsaserefpolicy/policy/modules/roles/sysadm.te	2010-07-27 16:06:05.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/roles/sysadm.te	2010-08-11 08:20:53.000000000 -0400
-@@ -27,17 +27,29 @@
++++ serefpolicy-3.8.8/policy/modules/roles/sysadm.te	2010-08-18 09:32:07.000000000 -0400
+@@ -27,17 +27,30 @@
  
  corecmd_exec_shell(sysadm_t)
  
@@ -10014,6 +10125,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
 +
  init_exec(sysadm_t)
 +init_exec_script_files(sysadm_t)
++init_dbus_chat(sysadm_t)
  
  # Add/remove user home directories
  userdom_manage_user_home_dirs(sysadm_t)
@@ -10026,7 +10138,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  ifdef(`direct_sysadm_daemon',`
  	optional_policy(`
-@@ -55,6 +67,7 @@
+@@ -55,6 +68,7 @@
  	logging_manage_audit_log(sysadm_t)
  	logging_manage_audit_config(sysadm_t)
  	logging_run_auditctl(sysadm_t, sysadm_r)
@@ -10034,7 +10146,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  ')
  
  tunable_policy(`allow_ptrace',`
-@@ -69,7 +82,9 @@
+@@ -69,7 +83,9 @@
  	apache_run_helper(sysadm_t, sysadm_r)
  	#apache_run_all_scripts(sysadm_t, sysadm_r)
  	#apache_domtrans_sys_script(sysadm_t)
@@ -10045,7 +10157,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  ')
  
  optional_policy(`
-@@ -85,9 +100,11 @@
+@@ -85,9 +101,11 @@
  	auditadm_role_change(sysadm_r)
  ')
  
@@ -10057,7 +10169,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	backup_run(sysadm_t, sysadm_r)
-@@ -97,17 +114,25 @@
+@@ -97,17 +115,25 @@
  	bind_run_ndc(sysadm_t, sysadm_r)
  ')
  
@@ -10083,7 +10195,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	certwatch_run(sysadm_t, sysadm_r)
-@@ -125,16 +150,18 @@
+@@ -125,16 +151,18 @@
  	consoletype_run(sysadm_t, sysadm_r)
  ')
  
@@ -10104,7 +10216,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  ')
  
  optional_policy(`
-@@ -159,9 +186,11 @@
+@@ -159,9 +187,11 @@
  	dpkg_run(sysadm_t, sysadm_r)
  ')
  
@@ -10116,7 +10228,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	firstboot_run(sysadm_t, sysadm_r)
-@@ -171,6 +200,7 @@
+@@ -171,6 +201,7 @@
  	fstools_run(sysadm_t, sysadm_r)
  ')
  
@@ -10124,7 +10236,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  optional_policy(`
  	games_role(sysadm_r, sysadm_t)
  ')
-@@ -186,6 +216,7 @@
+@@ -186,6 +217,7 @@
  optional_policy(`
  	gpg_role(sysadm_r, sysadm_t)
  ')
@@ -10132,7 +10244,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	hostname_run(sysadm_t, sysadm_r)
-@@ -199,6 +230,13 @@
+@@ -199,6 +231,13 @@
  	ipsec_stream_connect(sysadm_t)
  	# for lsof
  	ipsec_getattr_key_sockets(sysadm_t)
@@ -10146,7 +10258,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  ')
  
  optional_policy(`
-@@ -206,12 +244,18 @@
+@@ -206,12 +245,18 @@
  ')
  
  optional_policy(`
@@ -10165,7 +10277,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	kudzu_run(sysadm_t, sysadm_r)
-@@ -221,9 +265,11 @@
+@@ -221,9 +266,11 @@
  	libs_run_ldconfig(sysadm_t, sysadm_r)
  ')
  
@@ -10177,7 +10289,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	logrotate_run(sysadm_t, sysadm_r)
-@@ -246,8 +292,10 @@
+@@ -246,8 +293,10 @@
  
  optional_policy(`
  	mount_run(sysadm_t, sysadm_r)
@@ -10188,7 +10300,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  optional_policy(`
  	mozilla_role(sysadm_r, sysadm_t)
  ')
-@@ -255,6 +303,7 @@
+@@ -255,6 +304,7 @@
  optional_policy(`
  	mplayer_role(sysadm_r, sysadm_t)
  ')
@@ -10196,7 +10308,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	mta_role(sysadm_r, sysadm_t)
-@@ -269,6 +318,10 @@
+@@ -269,6 +319,10 @@
  ')
  
  optional_policy(`
@@ -10207,7 +10319,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  	netutils_run(sysadm_t, sysadm_r)
  	netutils_run_ping(sysadm_t, sysadm_r)
  	netutils_run_traceroute(sysadm_t, sysadm_r)
-@@ -302,8 +355,14 @@
+@@ -302,8 +356,14 @@
  ')
  
  optional_policy(`
@@ -10222,7 +10334,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	quota_run(sysadm_t, sysadm_r)
-@@ -313,9 +372,11 @@
+@@ -313,9 +373,11 @@
  	raid_domtrans_mdadm(sysadm_t)
  ')
  
@@ -10234,7 +10346,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	rpc_domtrans_nfsd(sysadm_t)
-@@ -325,9 +386,11 @@
+@@ -325,9 +387,11 @@
  	rpm_run(sysadm_t, sysadm_r)
  ')
  
@@ -10246,7 +10358,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	rsync_exec(sysadm_t)
-@@ -352,8 +415,14 @@
+@@ -352,8 +416,14 @@
  ')
  
  optional_policy(`
@@ -10261,7 +10373,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	ssh_role_template(sysadm, sysadm_r, sysadm_t)
-@@ -376,9 +445,11 @@
+@@ -376,9 +446,11 @@
  	sysnet_run_dhcpc(sysadm_t, sysadm_r)
  ')
  
@@ -10273,7 +10385,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	tripwire_run_siggen(sysadm_t, sysadm_r)
-@@ -387,17 +458,21 @@
+@@ -387,17 +459,21 @@
  	tripwire_run_twprint(sysadm_t, sysadm_r)
  ')
  
@@ -10295,7 +10407,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	unconfined_domtrans(sysadm_t)
-@@ -411,9 +486,11 @@
+@@ -411,9 +487,11 @@
  	usbmodules_run(sysadm_t, sysadm_r)
  ')
  
@@ -10307,7 +10419,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	usermanage_run_admin_passwd(sysadm_t, sysadm_r)
-@@ -421,9 +498,15 @@
+@@ -421,9 +499,15 @@
  	usermanage_run_useradd(sysadm_t, sysadm_r)
  ')
  
@@ -10323,7 +10435,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/sysadm.
  
  optional_policy(`
  	vpn_run(sysadm_t, sysadm_r)
-@@ -434,13 +517,30 @@
+@@ -434,13 +518,30 @@
  ')
  
  optional_policy(`
@@ -10368,8 +10480,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/unconfi
 +/usr/sbin/xrdp-sesman   --  gen_context(system_u:object_r:unconfined_exec_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/unconfineduser.if serefpolicy-3.8.8/policy/modules/roles/unconfineduser.if
 --- nsaserefpolicy/policy/modules/roles/unconfineduser.if	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.8.8/policy/modules/roles/unconfineduser.if	2010-07-30 14:06:53.000000000 -0400
-@@ -0,0 +1,667 @@
++++ serefpolicy-3.8.8/policy/modules/roles/unconfineduser.if	2010-08-18 09:42:34.000000000 -0400
+@@ -0,0 +1,687 @@
 +## <summary>Unconfiend user role</summary>
 +
 +########################################
@@ -11037,10 +11149,30 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/unconfi
 +
 +	allow $1 unconfined_r;
 +')
++
++########################################
++## <summary>
++##	Allow domain to attach to TUN devices created by unconfined_t users.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`unconfined_attach_tun_iface',`
++	gen_require(`
++		type unconfined_t;
++	')
++
++	allow $1 unconfined_t:tun_socket relabelfrom;
++	allow $1 self:tun_socket relabelto;
++')
++
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/unconfineduser.te serefpolicy-3.8.8/policy/modules/roles/unconfineduser.te
 --- nsaserefpolicy/policy/modules/roles/unconfineduser.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.8.8/policy/modules/roles/unconfineduser.te	2010-08-11 08:23:36.000000000 -0400
-@@ -0,0 +1,453 @@
++++ serefpolicy-3.8.8/policy/modules/roles/unconfineduser.te	2010-08-19 06:51:51.000000000 -0400
+@@ -0,0 +1,458 @@
 +policy_module(unconfineduser, 1.0.0)
 +
 +########################################
@@ -11280,6 +11412,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/unconfi
 +		')
 +	')
 +
++	init_dbus_chat(unconfined_usertype)
 +	init_dbus_chat_script(unconfined_usertype)
 +
 +	dbus_stub(unconfined_t)
@@ -11358,6 +11491,10 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/unconfi
 +	mono_role_template(unconfined, unconfined_r, unconfined_t)
 +	unconfined_domain_noaudit(unconfined_mono_t)
 +	role system_r types unconfined_mono_t;
++')
++
++optional_policy(`
++	mozilla_run_plugin(unconfined_usertype, unconfined_r)
 +')
 +
 +optional_policy(`
@@ -11496,8 +11633,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/unconfi
 +
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/unprivuser.te serefpolicy-3.8.8/policy/modules/roles/unprivuser.te
 --- nsaserefpolicy/policy/modules/roles/unprivuser.te	2010-07-27 16:06:05.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/roles/unprivuser.te	2010-07-30 14:06:53.000000000 -0400
-@@ -12,10 +12,13 @@
++++ serefpolicy-3.8.8/policy/modules/roles/unprivuser.te	2010-08-19 06:52:56.000000000 -0400
+@@ -12,11 +12,18 @@
  
  userdom_unpriv_user_template(user)
  
@@ -11507,11 +11644,16 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/unprivu
  	apache_role(user_r, user_t)
  ')
  
-+ifndef(`distro_redhat',`
  optional_policy(`
++	mozilla_run_plugin(user_t, user_r)
++')
++
++ifndef(`distro_redhat',`
++optional_policy(`
  	auth_role(user_r, user_t)
  ')
-@@ -104,12 +107,30 @@
+ 
+@@ -104,12 +111,30 @@
  optional_policy(`
  	rssh_role(user_r, user_t)
  ')
@@ -11542,7 +11684,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/unprivu
  	spamassassin_role(user_r, user_t)
  ')
  
-@@ -149,6 +170,12 @@
+@@ -149,6 +174,12 @@
  	wireshark_role(user_r, user_t)
  ')
  
@@ -11557,7 +11699,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/unprivu
  ')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/xguest.te serefpolicy-3.8.8/policy/modules/roles/xguest.te
 --- nsaserefpolicy/policy/modules/roles/xguest.te	2010-07-27 16:06:05.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/roles/xguest.te	2010-08-06 11:01:58.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/roles/xguest.te	2010-08-19 07:42:55.000000000 -0400
 @@ -14,7 +14,7 @@
  
  ## <desc>
@@ -11616,7 +11758,16 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/xguest.
  	')
  ')
  
-@@ -80,19 +88,74 @@
+@@ -76,23 +84,87 @@
+ ')
+ 
+ optional_policy(`
++	chrome_role(xguest_r, xguest_usertype)
++')
++
++
++optional_policy(`
+ 	hal_dbus_chat(xguest_t)
  ')
  
  optional_policy(`
@@ -11630,11 +11781,15 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/xguest.
 +
 +optional_policy(`
 +	java_role_template(xguest, xguest_r, xguest_t)
++')
++
++optional_policy(`
++	mono_role_template(xguest, xguest_r, xguest_t)
  ')
  
  optional_policy(`
 -	mozilla_role(xguest_r, xguest_t)
-+	mono_role_template(xguest, xguest_r, xguest_t)
++	mozilla_run_plugin(xguest_t, xguest_r)
 +')
 +
 +optional_policy(`
@@ -11678,14 +11833,13 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/xguest.
 +		corenet_tcp_connect_speech_port(xguest_usertype)
 +		corenet_tcp_sendrecv_transproxy_port(xguest_usertype)
 +		corenet_tcp_connect_transproxy_port(xguest_usertype)
-+	')
+ 	')
 +
 +	optional_policy(`
 +		telepathy_dbus_session_role(xguest_r, xguest_t)
- 	')
- ')
- 
--#gen_user(xguest_u,, xguest_r, s0, s0)
++	')
++')
++
 +optional_policy(`
 +	gen_require(`
 +		type mozilla_t;
@@ -11693,8 +11847,9 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/roles/xguest.
 +
 +	allow xguest_t mozilla_t:process transition;
 +	role xguest_r types mozilla_t;
-+')
-+
+ ')
+ 
+-#gen_user(xguest_u,, xguest_r, s0, s0)
 +gen_user(xguest_u, user, xguest_r, s0, s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/abrt.fc serefpolicy-3.8.8/policy/modules/services/abrt.fc
 --- nsaserefpolicy/policy/modules/services/abrt.fc	2010-07-27 16:06:05.000000000 -0400
@@ -12196,6 +12351,18 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/aise
  optional_policy(`
  	ccs_stream_connect(aisexec_t)
  ')
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/amavis.if serefpolicy-3.8.8/policy/modules/services/amavis.if
+--- nsaserefpolicy/policy/modules/services/amavis.if	2010-07-27 16:06:05.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/services/amavis.if	2010-08-19 05:56:46.000000000 -0400
+@@ -56,7 +56,7 @@
+ 	')
+ 
+ 	files_search_spool($1)
+-	allow $1 amavis_spool_t:file read_file_perms;
++	read_files_pattern($1, amavis_spool_t, amavis_spool_t)
+ ')
+ 
+ ########################################
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/amavis.te serefpolicy-3.8.8/policy/modules/services/amavis.te
 --- nsaserefpolicy/policy/modules/services/amavis.te	2010-07-27 16:06:05.000000000 -0400
 +++ serefpolicy-3.8.8/policy/modules/services/amavis.te	2010-07-30 14:06:53.000000000 -0400
@@ -12213,7 +12380,16 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/amav
  # amavis tries to access /proc/self/stat, /etc/shadow and /root - perl...
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/apache.fc serefpolicy-3.8.8/policy/modules/services/apache.fc
 --- nsaserefpolicy/policy/modules/services/apache.fc	2010-07-27 16:06:05.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/services/apache.fc	2010-07-30 14:06:53.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/services/apache.fc	2010-08-20 07:38:00.000000000 -0400
+@@ -2,7 +2,7 @@
+ 
+ /etc/apache(2)?(/.*)?			gen_context(system_u:object_r:httpd_config_t,s0)
+ /etc/apache-ssl(2)?(/.*)?		gen_context(system_u:object_r:httpd_config_t,s0)
+-/etc/drupal(/.*)?			gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
++/etc/drupal(6)?(/.*)?			gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
+ /etc/htdig(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
+ /etc/httpd(/.*)?			gen_context(system_u:object_r:httpd_config_t,s0)
+ /etc/httpd/conf/keytab		--	gen_context(system_u:object_r:httpd_keytab_t,s0)
 @@ -24,7 +24,6 @@
  
  /usr/lib/apache-ssl/.+		--	gen_context(system_u:object_r:httpd_exec_t,s0)
@@ -12222,22 +12398,26 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/apac
  /usr/lib(64)?/apache(/.*)?		gen_context(system_u:object_r:httpd_modules_t,s0)
  /usr/lib(64)?/apache2/modules(/.*)?	gen_context(system_u:object_r:httpd_modules_t,s0)
  /usr/lib(64)?/apache(2)?/suexec(2)? --	gen_context(system_u:object_r:httpd_suexec_exec_t,s0)
-@@ -43,7 +42,6 @@
+@@ -43,8 +42,7 @@
  /usr/sbin/httpd2-.*		--	gen_context(system_u:object_r:httpd_exec_t,s0)
  ')
  
 -/usr/share/dirsrv(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
- /usr/share/drupal(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
+-/usr/share/drupal(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
++/usr/share/drupal(6)?(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
  /usr/share/htdig(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
  /usr/share/icecast(/.*)?		gen_context(system_u:object_r:httpd_sys_content_t,s0)
-@@ -74,6 +72,7 @@
+ /usr/share/mythweb(/.*)?		gen_context(system_u:object_r:httpd_sys_content_t,s0)
+@@ -74,7 +72,8 @@
  
  /var/lib/cacti/rra(/.*)?		gen_context(system_u:object_r:httpd_sys_content_t,s0)
  /var/lib/dav(/.*)?			gen_context(system_u:object_r:httpd_var_lib_t,s0)
+-/var/lib/drupal(/.*)?			gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
 +/var/lib/dokuwiki(/.*)?			gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
- /var/lib/drupal(/.*)?			gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
++/var/lib/drupal(6)?(/.*)?			gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
  /var/lib/htdig(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
  /var/lib/httpd(/.*)?			gen_context(system_u:object_r:httpd_var_lib_t,s0)
+ /var/lib/php/session(/.*)?		gen_context(system_u:object_r:httpd_var_run_t,s0)
 @@ -86,7 +85,6 @@
  /var/log/cgiwrap\.log.*		--	gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/httpd(/.*)?			gen_context(system_u:object_r:httpd_log_t,s0)
@@ -13784,8 +13964,8 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/boin
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/boinc.te serefpolicy-3.8.8/policy/modules/services/boinc.te
 --- nsaserefpolicy/policy/modules/services/boinc.te	1969-12-31 19:00:00.000000000 -0500
-+++ serefpolicy-3.8.8/policy/modules/services/boinc.te	2010-08-11 07:44:10.000000000 -0400
-@@ -0,0 +1,145 @@
++++ serefpolicy-3.8.8/policy/modules/services/boinc.te	2010-08-20 07:29:39.000000000 -0400
+@@ -0,0 +1,146 @@
 +policy_module(boinc,1.0.0)
 +
 +########################################
@@ -13901,6 +14081,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/boin
 +#
 +
 +domtrans_pattern(boinc_t, boinc_project_var_lib_t, boinc_project_t)
++allow boinc_t boinc_project_t:process sigkill;
 +
 +allow boinc_project_t self:process { ptrace setsched signal signull sigkill sigstop };
 +allow boinc_project_t self:process { execmem execstack };
@@ -14587,7 +14768,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/chro
  corenet_udp_bind_chronyd_port(chronyd_t)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/clamav.te serefpolicy-3.8.8/policy/modules/services/clamav.te
 --- nsaserefpolicy/policy/modules/services/clamav.te	2010-07-27 16:06:05.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/services/clamav.te	2010-08-16 07:42:43.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/services/clamav.te	2010-08-18 19:16:59.000000000 -0400
 @@ -80,6 +80,7 @@
  files_tmp_filetrans(clamd_t, clamd_tmp_t, { file dir })
  
@@ -14608,7 +14789,18 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/clam
  
  kernel_dontaudit_list_proc(clamd_t)
  kernel_read_sysctl(clamd_t)
-@@ -182,6 +184,9 @@
+@@ -147,8 +149,10 @@
+ 
+ tunable_policy(`clamd_use_jit',`
+ 	allow clamd_t self:process execmem;
++	allow clamscan_t self:process execmem;
+ ', `
+ 	dontaudit clamd_t self:process execmem;
++	dontaudit clamscan_t self:process execmem;
+ ')
+ 
+ ########################################
+@@ -182,6 +186,9 @@
  allow freshclam_t clamd_var_log_t:dir search_dir_perms;
  logging_log_filetrans(freshclam_t, freshclam_var_log_t, file)
  
@@ -14618,7 +14810,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/clam
  corenet_all_recvfrom_unlabeled(freshclam_t)
  corenet_all_recvfrom_netlabel(freshclam_t)
  corenet_tcp_sendrecv_generic_if(freshclam_t)
-@@ -189,6 +194,7 @@
+@@ -189,6 +196,7 @@
  corenet_tcp_sendrecv_all_ports(freshclam_t)
  corenet_tcp_sendrecv_clamd_port(freshclam_t)
  corenet_tcp_connect_http_port(freshclam_t)
@@ -14626,7 +14818,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/clam
  corenet_sendrecv_http_client_packets(freshclam_t)
  
  dev_read_rand(freshclam_t)
-@@ -207,6 +213,8 @@
+@@ -207,6 +215,8 @@
  
  clamav_stream_connect(freshclam_t)
  
@@ -18496,6 +18688,18 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/lpd.
  	fs_list_auto_mountpoints(lpr_t)
  	fs_read_cifs_files(lpr_t)
  	fs_read_cifs_symlinks(lpr_t)
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/mailman.if serefpolicy-3.8.8/policy/modules/services/mailman.if
+--- nsaserefpolicy/policy/modules/services/mailman.if	2010-07-27 16:06:05.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/services/mailman.if	2010-08-18 09:30:10.000000000 -0400
+@@ -74,7 +74,7 @@
+ 	corecmd_exec_all_executables(mailman_$1_t)
+ 
+ 	files_exec_etc_files(mailman_$1_t)
+-	files_list_usr(mailman_$1_t)
++	files_read_usr_files(mailman_$1_t)
+ 	files_list_var(mailman_$1_t)
+ 	files_list_var_lib(mailman_$1_t)
+ 	files_read_var_lib_symlinks(mailman_$1_t)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/memcached.if serefpolicy-3.8.8/policy/modules/services/memcached.if
 --- nsaserefpolicy/policy/modules/services/memcached.if	2010-07-27 16:06:05.000000000 -0400
 +++ serefpolicy-3.8.8/policy/modules/services/memcached.if	2010-07-30 14:06:53.000000000 -0400
@@ -19443,28 +19647,27 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/mpd.
 +')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/mta.fc serefpolicy-3.8.8/policy/modules/services/mta.fc
 --- nsaserefpolicy/policy/modules/services/mta.fc	2010-07-27 16:06:05.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/services/mta.fc	2010-08-17 07:18:28.000000000 -0400
-@@ -1,4 +1,7 @@
++++ serefpolicy-3.8.8/policy/modules/services/mta.fc	2010-08-18 09:25:56.000000000 -0400
+@@ -1,4 +1,5 @@
 -HOME_DIR/\.forward	--	gen_context(system_u:object_r:mail_forward_t,s0)
 +HOME_DIR/\.forward	--	gen_context(system_u:object_r:mail_home_t,s0)
 +HOME_DIR/dead.letter	--	gen_context(system_u:object_r:mail_home_t,s0)
-+/root/\.forward	--	gen_context(system_u:object_r:mail_home_t,s0)
-+/root/dead.letter	--	gen_context(system_u:object_r:mail_home_t,s0)
  
  /bin/mail(x)?		--	gen_context(system_u:object_r:sendmail_exec_t,s0)
  
-@@ -13,6 +16,8 @@
+@@ -11,6 +12,9 @@
+ /etc/postfix/aliases.*		gen_context(system_u:object_r:etc_aliases_t,s0)
+ ')
  
++/root/\.forward	--	gen_context(system_u:object_r:mail_home_t,s0)
++/root/dead.letter	--	gen_context(system_u:object_r:mail_home_t,s0)
++
  /usr/bin/esmtp			-- gen_context(system_u:object_r:sendmail_exec_t,s0)
  
-+/root/\.forward		--	gen_context(system_u:object_r:mail_forward_t,s0)
-+
  /usr/lib(64)?/sendmail	--	gen_context(system_u:object_r:sendmail_exec_t,s0)
- /usr/lib/courier/bin/sendmail	--	gen_context(system_u:object_r:sendmail_exec_t,s0)
- 
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/mta.if serefpolicy-3.8.8/policy/modules/services/mta.if
 --- nsaserefpolicy/policy/modules/services/mta.if	2010-07-27 16:06:05.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/services/mta.if	2010-08-17 07:17:30.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/services/mta.if	2010-08-18 06:49:03.000000000 -0400
 @@ -220,6 +220,25 @@
  	application_executable_file($1)
  ')
@@ -20761,7 +20964,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/open
  kernel_list_proc(openct_t)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/openvpn.te serefpolicy-3.8.8/policy/modules/services/openvpn.te
 --- nsaserefpolicy/policy/modules/services/openvpn.te	2010-07-27 16:06:06.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/services/openvpn.te	2010-08-12 16:38:44.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/services/openvpn.te	2010-08-18 09:44:00.000000000 -0400
 @@ -24,6 +24,9 @@
  type openvpn_etc_rw_t;
  files_config_file(openvpn_etc_rw_t)
@@ -20794,14 +20997,23 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/open
  
  corecmd_exec_bin(openvpn_t)
  corecmd_exec_shell(openvpn_t)
-@@ -113,6 +121,7 @@
+@@ -113,6 +121,8 @@
  sysnet_etc_filetrans_config(openvpn_t)
  
  userdom_use_user_terminals(openvpn_t)
 +userdom_read_home_certs(openvpn_t)
++userdom_attach_admin_tun_iface(openvpn_t)
  
  tunable_policy(`openvpn_enable_homedirs',`
  	userdom_read_user_home_content_files(openvpn_t)
+@@ -138,3 +148,7 @@
+ 
+ 	networkmanager_dbus_chat(openvpn_t)
+ ')
++
++optional_policy(`
++	unconfined_attach_tun_iface(openvpn_t)
++')
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/pcscd.te serefpolicy-3.8.8/policy/modules/services/pcscd.te
 --- nsaserefpolicy/policy/modules/services/pcscd.te	2010-07-27 16:06:06.000000000 -0400
 +++ serefpolicy-3.8.8/policy/modules/services/pcscd.te	2010-08-04 14:25:34.000000000 -0400
@@ -23824,6 +24036,17 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/rlog
  
  remotelogin_domtrans(rlogind_t)
  remotelogin_signal(rlogind_t)
+diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/rpcbind.fc serefpolicy-3.8.8/policy/modules/services/rpcbind.fc
+--- nsaserefpolicy/policy/modules/services/rpcbind.fc	2010-07-27 16:06:06.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/services/rpcbind.fc	2010-08-20 07:30:37.000000000 -0400
+@@ -2,6 +2,7 @@
+ 
+ /sbin/rpcbind		--	gen_context(system_u:object_r:rpcbind_exec_t,s0)
+ 
++/var/cache/rpcbind(/.*)?	gen_context(system_u:object_r:rpcbind_var_lib_t,s0)
+ /var/lib/rpcbind(/.*)?		gen_context(system_u:object_r:rpcbind_var_lib_t,s0)
+ 
+ /var/run/rpc.statd\.pid	--	gen_context(system_u:object_r:rpcbind_var_run_t,s0)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/rpcbind.if serefpolicy-3.8.8/policy/modules/services/rpcbind.if
 --- nsaserefpolicy/policy/modules/services/rpcbind.if	2010-07-27 16:06:06.000000000 -0400
 +++ serefpolicy-3.8.8/policy/modules/services/rpcbind.if	2010-07-30 14:06:53.000000000 -0400
@@ -25982,9 +26205,13 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/ssh.
  
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/sssd.te serefpolicy-3.8.8/policy/modules/services/sssd.te
 --- nsaserefpolicy/policy/modules/services/sssd.te	2010-07-27 16:06:06.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/services/sssd.te	2010-07-30 14:06:53.000000000 -0400
-@@ -31,6 +31,7 @@
- allow sssd_t self:capability { dac_read_search dac_override kill sys_nice setgid setuid };
++++ serefpolicy-3.8.8/policy/modules/services/sssd.te	2010-08-18 07:03:35.000000000 -0400
+@@ -28,9 +28,10 @@
+ #
+ # sssd local policy
+ #
+-allow sssd_t self:capability { dac_read_search dac_override kill sys_nice setgid setuid };
++allow sssd_t self:capability { chown dac_read_search dac_override kill sys_nice setgid setuid };
  allow sssd_t self:process { setfscreate setsched sigkill signal getsched };
  allow sssd_t self:fifo_file rw_file_perms;
 +allow sssd_t self:key manage_key_perms;
@@ -26175,7 +26402,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/tgtd
 +iscsi_manage_semaphores(tgtd_t)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/tor.te serefpolicy-3.8.8/policy/modules/services/tor.te
 --- nsaserefpolicy/policy/modules/services/tor.te	2010-07-27 16:06:06.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/services/tor.te	2010-07-30 14:06:53.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/services/tor.te	2010-08-18 07:42:58.000000000 -0400
 @@ -67,9 +67,10 @@
  logging_log_filetrans(tor_t, tor_var_log_t, { sock_file file dir })
  
@@ -26188,7 +26415,15 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/services/tor.
  
  kernel_read_system_state(tor_t)
  
-@@ -100,6 +101,8 @@
+@@ -88,6 +89,7 @@
+ corenet_sendrecv_all_client_packets(tor_t)
+ # ... especially including port 80 and other privileged ports
+ corenet_tcp_connect_all_reserved_ports(tor_t)
++corenet_udp_bind_dns_port(tor_t)
+ 
+ # tor uses crypto and needs random
+ dev_read_urand(tor_t)
+@@ -100,6 +102,8 @@
  
  auth_use_nsswitch(tor_t)
  
@@ -31761,7 +31996,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/loggin
  	domain_system_change_exemption($1)
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/logging.te serefpolicy-3.8.8/policy/modules/system/logging.te
 --- nsaserefpolicy/policy/modules/system/logging.te	2010-07-27 16:06:06.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/system/logging.te	2010-07-30 14:06:53.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/system/logging.te	2010-08-18 07:09:50.000000000 -0400
 @@ -60,6 +60,7 @@
  type syslogd_t;
  type syslogd_exec_t;
@@ -31779,19 +32014,20 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/loggin
  miscfiles_read_localization(auditd_t)
  
  mls_file_read_all_levels(auditd_t)
-@@ -234,7 +237,11 @@
+@@ -234,7 +237,12 @@
  files_read_etc_files(audisp_t)
  files_read_etc_runtime_files(audisp_t)
  
 +mls_file_read_all_levels(audisp_t)
  mls_file_write_all_levels(audisp_t)
++mls_socket_write_all_levels(audisp_t)
 +mls_dbus_send_all_levels(audisp_t)
 +
 +auth_use_nsswitch(audisp_t)
  
  logging_send_syslog_msg(audisp_t)
  
-@@ -244,14 +251,22 @@
+@@ -244,14 +252,22 @@
  
  optional_policy(`
  	dbus_system_bus_client(audisp_t)
@@ -31815,7 +32051,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/loggin
  
  corenet_all_recvfrom_unlabeled(audisp_remote_t)
  corenet_all_recvfrom_netlabel(audisp_remote_t)
-@@ -266,9 +281,16 @@
+@@ -266,9 +282,16 @@
  files_read_etc_files(audisp_remote_t)
  
  logging_send_syslog_msg(audisp_remote_t)
@@ -31832,7 +32068,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/loggin
  sysnet_dns_name_resolve(audisp_remote_t)
  
  ########################################
-@@ -369,9 +391,15 @@
+@@ -369,9 +392,15 @@
  manage_files_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
  files_tmp_filetrans(syslogd_t, syslogd_tmp_t, { dir file })
  
@@ -31848,7 +32084,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/loggin
  # manage pid file
  manage_files_pattern(syslogd_t, syslogd_var_run_t, syslogd_var_run_t)
  files_pid_filetrans(syslogd_t, syslogd_var_run_t, file)
-@@ -412,6 +440,7 @@
+@@ -412,6 +441,7 @@
  
  dev_filetrans(syslogd_t, devlog_t, sock_file)
  dev_read_sysfs(syslogd_t)
@@ -31856,7 +32092,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/loggin
  
  domain_use_interactive_fds(syslogd_t)
  
-@@ -488,6 +517,10 @@
+@@ -488,6 +518,10 @@
  ')
  
  optional_policy(`
@@ -35390,7 +35626,7 @@ diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdo
 +HOME_DIR/\.gvfs(/.*)?	<<none>>
 diff --exclude-from=exclude -N -u -r nsaserefpolicy/policy/modules/system/userdomain.if serefpolicy-3.8.8/policy/modules/system/userdomain.if
 --- nsaserefpolicy/policy/modules/system/userdomain.if	2010-07-27 16:06:06.000000000 -0400
-+++ serefpolicy-3.8.8/policy/modules/system/userdomain.if	2010-08-11 08:23:58.000000000 -0400
++++ serefpolicy-3.8.8/policy/modules/system/userdomain.if	2010-08-19 07:42:28.000000000 -0400
 @@ -30,8 +30,9 @@
  	')
  

@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.8.8
-Release: 15%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,13 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 18 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-17
+- Allow clamscan_t execmem if clamd_use_jit set
+- Add policy for firefox plugin-container
+
+* Wed Aug 17 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-16
+- Fix /root/.forward definition
+
 * Tue Aug 17 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-15
 - label dead.letter as mail_home_t
 
