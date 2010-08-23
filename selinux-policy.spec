@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.8.8
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,11 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 23 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-18
+- Allow clamscan to read proc_t
+- Allow mount_t to write to debufs_t dir
+- Dontaudit mount_t trying to write to security_t dir
+
 * Thu Aug 18 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-17
 - Allow clamscan_t execmem if clamd_use_jit set
 - Add policy for firefox plugin-container
