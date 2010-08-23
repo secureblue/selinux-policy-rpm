@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.8.8
-Release: 18%{?dist}
+Release: 19%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 23 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-19
+- Update policy for mozilla_plugin_t
+
 * Mon Aug 23 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-18
 - Allow clamscan to read proc_t
 - Allow mount_t to write to debufs_t dir
