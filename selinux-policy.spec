@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.8.8
-Release: 19%{?dist}
+Release: 20%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,12 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 24 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-20
+- Allow cron to look at user_cron_spool links
+- Lots of fixes for mozilla_plugin_t
+- Add sysv file system
+- Turn unconfined domains to permissive to find additional avcs
+
 * Mon Aug 23 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-19
 - Update policy for mozilla_plugin_t
 
