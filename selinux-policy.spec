@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.8.8
-Release: 21%{?dist}
+Version: 3.9.0
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 26 2010 Dan Walsh <dwalsh@redhat.com> 3.9.0-1
+- Merge with upstream
+
 * Tue Aug 24 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-21
 - Allow seunshare to fowner
 
