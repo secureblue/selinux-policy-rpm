@@ -19,7 +19,7 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.9.1
+Version: 3.9.2
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -469,6 +469,23 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 31 2010 Dan Walsh <dwalsh@redhat.com> 3.9.2-1
+- Merge upstream fix of mmap_zero
+- Allow mount to write files in debugfs_t
+- Allow corosync to communicate with clvmd via tmpfs
+- Allow certmaster to read usr_t files
+- Allow dbus system services to search cgroup_t
+- Define rlogind_t as a login pgm
+
+
+* Wed Aug 31 2010 Dan Walsh <dwalsh@redhat.com> 3.9.1-3
+- Allow mdadm_t to read/write hugetlbfs
+
+* Tue Aug 30 2010 Dan Walsh <dwalsh@redhat.com> 3.9.1-2
+- Dominic Grift Cleanup
+- Miroslav Grepl policy for jabberd
+- Various fixes for mount/livecd and prelink
+
 * Mon Aug 30 2010 Dan Walsh <dwalsh@redhat.com> 3.9.1-1
 - Merge with upstream
 
