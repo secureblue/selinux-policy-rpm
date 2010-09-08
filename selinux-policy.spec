@@ -19,7 +19,7 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.9.2
+Version: 3.9.3
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
@@ -469,6 +469,20 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 31 2010 Dan Walsh <dwalsh@redhat.com> 3.9.3-1
+Allow iptables to read shorewall tmp files
+Change chfn and passwd to use auth_use_pam so they can send dbus messages to fpr
+intd
+label vlc as an execmem_exec_t 
+Lots of fixes for mozilla_plugin to run google vidio chat
+Allow telepath_msn to execute ldconfig and its own tmp files
+Fix labels on hugepages
+Allow mdadm to read files on /dev
+Remove permissive domains and change back to unconfined
+Allow freshclam to execute shell and bin_t
+Allow devicekit_power to transition to dhcpc
+Add boolean to allow icecast to connect to any port
+
 * Thu Aug 31 2010 Dan Walsh <dwalsh@redhat.com> 3.9.2-1
 - Merge upstream fix of mmap_zero
 - Allow mount to write files in debugfs_t
