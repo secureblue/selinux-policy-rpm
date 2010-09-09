@@ -1545,11 +1545,38 @@ index a0aa8c5..1b60ad8 100644
  
  	ifdef(`distro_redhat',`
  		# RHEL5 and possibly newer releases incl. Fedora
+diff --git a/policy/modules/admin/sudo.fc b/policy/modules/admin/sudo.fc
+index 7bddc02..2b59ed0 100644
+--- a/policy/modules/admin/sudo.fc
++++ b/policy/modules/admin/sudo.fc
+@@ -1,2 +1,4 @@
+ 
+ /usr/bin/sudo(edit)?	--	gen_context(system_u:object_r:sudo_exec_t,s0)
++
++/var/db/sudo(/.*)?		gen_context(system_u:object_r:sudo_db_t,s0)
 diff --git a/policy/modules/admin/sudo.if b/policy/modules/admin/sudo.if
-index 5f44f1b..e753ac9 100644
+index 5f44f1b..464a11e 100644
 --- a/policy/modules/admin/sudo.if
 +++ b/policy/modules/admin/sudo.if
-@@ -76,6 +76,8 @@ template(`sudo_role_template',`
+@@ -32,6 +32,7 @@ template(`sudo_role_template',`
+ 
+ 	gen_require(`
+ 		type sudo_exec_t;
++		type sudo_db_t;
+ 		attribute sudodomain;
+ 	')
+ 
+@@ -47,6 +48,9 @@ template(`sudo_role_template',`
+ 	ubac_constrained($1_sudo_t)
+ 	role $2 types $1_sudo_t;
+ 
++	manage_dirs_pattern($1_sudo_t, sudo_db_t, sudo_db_t)
++	manage_files_pattern($1_sudo_t, sudo_db_t, sudo_db_t)
++
+ 	##############################
+ 	#
+ 	# Local Policy
+@@ -76,6 +80,8 @@ template(`sudo_role_template',`
  	# By default, revert to the calling domain when a shell is executed.
  	corecmd_shell_domtrans($1_sudo_t, $3)
  	corecmd_bin_domtrans($1_sudo_t, $3)
@@ -1558,7 +1585,15 @@ index 5f44f1b..e753ac9 100644
  	allow $3 $1_sudo_t:fd use;
  	allow $3 $1_sudo_t:fifo_file rw_file_perms;
  	allow $3 $1_sudo_t:process signal_perms;
-@@ -134,12 +136,16 @@ template(`sudo_role_template',`
+@@ -111,6 +117,7 @@ template(`sudo_role_template',`
+ 
+ 	term_relabel_all_ttys($1_sudo_t)
+ 	term_relabel_all_ptys($1_sudo_t)
++	term_getattr_pty_fs($1_sudo_t)
+ 
+ 	auth_run_chk_passwd($1_sudo_t, $2)
+ 	# sudo stores a token in the pam_pid directory
+@@ -134,12 +141,16 @@ template(`sudo_role_template',`
  	userdom_manage_user_tmp_symlinks($1_sudo_t)
  	userdom_use_user_terminals($1_sudo_t)
  	# for some PAM modules and for cwd
@@ -1576,6 +1611,18 @@ index 5f44f1b..e753ac9 100644
  	tunable_policy(`use_nfs_home_dirs',`
  		fs_manage_nfs_files($1_sudo_t)
  	')
+diff --git a/policy/modules/admin/sudo.te b/policy/modules/admin/sudo.te
+index c368bdc..c927b85 100644
+--- a/policy/modules/admin/sudo.te
++++ b/policy/modules/admin/sudo.te
+@@ -7,3 +7,7 @@ attribute sudodomain;
+ 
+ type sudo_exec_t;
+ application_executable_file(sudo_exec_t)
++
++type sudo_db_t;
++files_type(sudo_db_t)
++
 diff --git a/policy/modules/admin/tmpreaper.te b/policy/modules/admin/tmpreaper.te
 index 6a5004b..50cd538 100644
 --- a/policy/modules/admin/tmpreaper.te
@@ -4880,7 +4927,7 @@ index 2ba7787..3b0d3be 100644
  	allow pulseaudio_t $2:dbus { acquire_svc send_msg };
  ')
 diff --git a/policy/modules/apps/pulseaudio.te b/policy/modules/apps/pulseaudio.te
-index 5c2680c..88fc6f6 100644
+index 5c2680c..db96581 100644
 --- a/policy/modules/apps/pulseaudio.te
 +++ b/policy/modules/apps/pulseaudio.te
 @@ -44,6 +44,7 @@ allow pulseaudio_t self:netlink_kobject_uevent_socket create_socket_perms;
@@ -4900,7 +4947,7 @@ index 5c2680c..88fc6f6 100644
  
  can_exec(pulseaudio_t, pulseaudio_exec_t)
  
-@@ -94,11 +95,6 @@ logging_send_syslog_msg(pulseaudio_t)
+@@ -94,10 +95,9 @@ logging_send_syslog_msg(pulseaudio_t)
  
  miscfiles_read_localization(pulseaudio_t)
  
@@ -4908,11 +4955,13 @@ index 5c2680c..88fc6f6 100644
 -userdom_manage_user_home_content_files(pulseaudio_t)
 -userdom_manage_user_tmp_files(pulseaudio_t)
 -userdom_manage_user_tmpfs_files(pulseaudio_t)
--
++optional_policy(`
++	alsa_read_rw_config(pulseaudio_t)
++')
+ 
  optional_policy(`
  	bluetooth_stream_connect(pulseaudio_t)
- ')
-@@ -131,6 +127,10 @@ optional_policy(`
+@@ -131,6 +131,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -4923,7 +4972,7 @@ index 5c2680c..88fc6f6 100644
  	policykit_domtrans_auth(pulseaudio_t)
  	policykit_read_lib(pulseaudio_t)
  	policykit_read_reload(pulseaudio_t)
-@@ -148,3 +148,7 @@ optional_policy(`
+@@ -148,3 +152,7 @@ optional_policy(`
  	xserver_read_xdm_pid(pulseaudio_t)
  	xserver_user_x_domain_template(pulseaudio, pulseaudio_t, pulseaudio_tmpfs_t)
  ')
@@ -4932,10 +4981,35 @@ index 5c2680c..88fc6f6 100644
 +	sandbox_manage_tmpfs_files(pulseaudio_t)
 +')
 diff --git a/policy/modules/apps/qemu.if b/policy/modules/apps/qemu.if
-index c1d5f50..95bb89d 100644
+index c1d5f50..8d8d961 100644
 --- a/policy/modules/apps/qemu.if
 +++ b/policy/modules/apps/qemu.if
-@@ -275,6 +275,67 @@ interface(`qemu_domtrans_unconfined',`
+@@ -157,6 +157,24 @@ interface(`qemu_domtrans',`
+ 
+ ########################################
+ ## <summary>
++##	Execute a qemu in the callers domain
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed access.
++## </summary>
++## </param>
++#
++interface(`qemu_exec',`
++	gen_require(`
++		type qemu_exec_t;
++	')
++
++	can_exec($1, qemu_exec_t)
++')
++
++########################################
++## <summary>
+ ##	Execute qemu in the qemu domain.
+ ## </summary>
+ ## <param name="domain">
+@@ -275,6 +293,67 @@ interface(`qemu_domtrans_unconfined',`
  
  ########################################
  ## <summary>
@@ -5003,7 +5077,7 @@ index c1d5f50..95bb89d 100644
  ##	Manage qemu temporary dirs.
  ## </summary>
  ## <param name="domain">
-@@ -308,3 +369,24 @@ interface(`qemu_manage_tmp_files',`
+@@ -308,3 +387,24 @@ interface(`qemu_manage_tmp_files',`
  
  	manage_files_pattern($1, qemu_tmp_t, qemu_tmp_t)
  ')
@@ -15274,7 +15348,7 @@ index 35241ed..cbd01be 100644
 +	manage_files_pattern($1, system_cronjob_var_lib_t,  system_cronjob_var_lib_t)
  ')
 diff --git a/policy/modules/services/cron.te b/policy/modules/services/cron.te
-index f35b243..38a83ea 100644
+index f35b243..c72dd92 100644
 --- a/policy/modules/services/cron.te
 +++ b/policy/modules/services/cron.te
 @@ -63,9 +63,12 @@ init_script_file(crond_initrc_exec_t)
@@ -15569,7 +15643,7 @@ index f35b243..38a83ea 100644
 +rw_dirs_pattern(crond_t, user_cron_spool_t, user_cron_spool_t)
  read_files_pattern(crond_t, user_cron_spool_t, user_cron_spool_t)
 +read_lnk_files_pattern(crond_t, user_cron_spool_t, user_cron_spool_t)
-+allow cronjob_t user_cron_spool_t:file manage_lnk_file_perms;
++allow crond_t user_cron_spool_t:file manage_lnk_file_perms;
  
  tunable_policy(`fcron_crond', `
  	allow crond_t user_cron_spool_t:file manage_file_perms;
@@ -15786,7 +15860,7 @@ index 2a0f1c1..ab82c3c 100644
  	snmp_dontaudit_write_snmp_var_lib_files(cyrus_t)
  	snmp_stream_connect(cyrus_t)
 diff --git a/policy/modules/services/dbus.if b/policy/modules/services/dbus.if
-index 39e901a..e385f2f 100644
+index 39e901a..63c82b7 100644
 --- a/policy/modules/services/dbus.if
 +++ b/policy/modules/services/dbus.if
 @@ -42,8 +42,10 @@ template(`dbus_role_template',`
@@ -15880,6 +15954,29 @@ index 39e901a..e385f2f 100644
  	ifdef(`hide_broken_symptoms', `
  		dontaudit $1 system_dbusd_t:netlink_selinux_socket { read write };
  	')
+@@ -479,3 +503,22 @@ interface(`dbus_unconfined',`
+ 
+ 	typeattribute $1 dbusd_unconfined;
+ ')
++
++########################################
++## <summary>
++##	Delete all dbus pid files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dbus_delete_pid_files',`
++	gen_require(`
++		type dbus_var_run_t;
++	')
++
++	delete_files_pattern($1, system_dbusd_var_run_t, system_dbusd_var_run_t)
++')
++
 diff --git a/policy/modules/services/dbus.te b/policy/modules/services/dbus.te
 index b738e94..4b3d9c4 100644
 --- a/policy/modules/services/dbus.te
@@ -26466,7 +26563,7 @@ index 7c5d8d8..1a0701b 100644
 +')
 +
 diff --git a/policy/modules/services/virt.te b/policy/modules/services/virt.te
-index 3cce663..8f0fac9 100644
+index 3cce663..5a77c23 100644
 --- a/policy/modules/services/virt.te
 +++ b/policy/modules/services/virt.te
 @@ -4,6 +4,7 @@ policy_module(virt, 1.4.0)
@@ -26477,7 +26574,21 @@ index 3cce663..8f0fac9 100644
  
  ## <desc>
  ## <p>
-@@ -50,12 +51,12 @@ gen_tunable(virt_use_usb, true)
+@@ -42,6 +43,13 @@ gen_tunable(virt_use_sysfs, false)
+ 
+ ## <desc>
+ ## <p>
++## Allow virtual machine to interact with the xserver
++## </p>
++## </desc>
++gen_tunable(virt_use_xserver, false)
++
++## <desc>
++## <p>
+ ## Allow virt to use usb devices
+ ## </p>
+ ## </desc>
+@@ -50,12 +58,12 @@ gen_tunable(virt_use_usb, true)
  virt_domain_template(svirt)
  role system_r types svirt_t;
  
@@ -26493,7 +26604,7 @@ index 3cce663..8f0fac9 100644
  type virt_etc_t;
  files_config_file(virt_etc_t)
  
-@@ -65,20 +66,25 @@ files_type(virt_etc_rw_t)
+@@ -65,20 +73,25 @@ files_type(virt_etc_rw_t)
  # virt Image files
  type virt_image_t; # customizable
  virt_image(virt_image_t)
@@ -26520,7 +26631,7 @@ index 3cce663..8f0fac9 100644
  
  type virtd_t;
  type virtd_exec_t;
-@@ -89,6 +95,11 @@ domain_subj_id_change_exemption(virtd_t)
+@@ -89,6 +102,11 @@ domain_subj_id_change_exemption(virtd_t)
  type virtd_initrc_exec_t;
  init_script_file(virtd_initrc_exec_t)
  
@@ -26532,7 +26643,7 @@ index 3cce663..8f0fac9 100644
  ifdef(`enable_mcs',`
  	init_ranged_daemon_domain(virtd_t, virtd_exec_t, s0 - mcs_systemhigh)
  ')
-@@ -104,15 +115,12 @@ ifdef(`enable_mls',`
+@@ -104,15 +122,12 @@ ifdef(`enable_mls',`
  
  allow svirt_t self:udp_socket create_socket_perms;
  
@@ -26549,7 +26660,7 @@ index 3cce663..8f0fac9 100644
  fs_hugetlbfs_filetrans(svirt_t, svirt_image_t, file)
  
  list_dirs_pattern(svirt_t, virt_content_t, virt_content_t)
-@@ -147,11 +155,15 @@ tunable_policy(`virt_use_fusefs',`
+@@ -147,11 +162,15 @@ tunable_policy(`virt_use_fusefs',`
  tunable_policy(`virt_use_nfs',`
  	fs_manage_nfs_dirs(svirt_t)
  	fs_manage_nfs_files(svirt_t)
@@ -26565,7 +26676,7 @@ index 3cce663..8f0fac9 100644
  ')
  
  tunable_policy(`virt_use_sysfs',`
-@@ -160,6 +172,7 @@ tunable_policy(`virt_use_sysfs',`
+@@ -160,11 +179,22 @@ tunable_policy(`virt_use_sysfs',`
  
  tunable_policy(`virt_use_usb',`
  	dev_rw_usbfs(svirt_t)
@@ -26573,17 +26684,22 @@ index 3cce663..8f0fac9 100644
  	fs_manage_dos_dirs(svirt_t)
  	fs_manage_dos_files(svirt_t)
  ')
-@@ -168,28 +181,39 @@ optional_policy(`
- 	xen_rw_image_files(svirt_t)
- ')
  
+ optional_policy(`
++	tunable_policy(`virt_use_xserver',`
++		xserver_stream_connect(svirt_t)
++	')
++')
++
 +optional_policy(`
 +	xen_rw_image_files(svirt_t)
 +')
 +
- ########################################
- #
- # virtd local policy
++optional_policy(`
+ 	xen_rw_image_files(svirt_t)
+ ')
+ 
+@@ -174,22 +204,29 @@ optional_policy(`
  #
  
  allow virtd_t self:capability { chown dac_override fowner ipc_lock kill mknod net_admin net_raw setpcap setuid setgid sys_admin sys_nice sys_ptrace };
@@ -26616,7 +26732,7 @@ index 3cce663..8f0fac9 100644
  read_files_pattern(virtd_t, virt_etc_t, virt_etc_t)
  read_lnk_files_pattern(virtd_t, virt_etc_t, virt_etc_t)
  
-@@ -200,9 +224,15 @@ filetrans_pattern(virtd_t, virt_etc_t, virt_etc_rw_t, dir)
+@@ -200,9 +237,15 @@ filetrans_pattern(virtd_t, virt_etc_t, virt_etc_rw_t, dir)
  
  manage_files_pattern(virtd_t, virt_image_type, virt_image_type)
  manage_blk_files_pattern(virtd_t, virt_image_type, virt_image_type)
@@ -26632,7 +26748,7 @@ index 3cce663..8f0fac9 100644
  manage_dirs_pattern(virtd_t, virt_log_t, virt_log_t)
  manage_files_pattern(virtd_t, virt_log_t, virt_log_t)
  logging_log_filetrans(virtd_t, virt_log_t, { file dir })
-@@ -220,6 +250,7 @@ files_pid_filetrans(virtd_t, virt_var_run_t, { file dir })
+@@ -220,6 +263,7 @@ files_pid_filetrans(virtd_t, virt_var_run_t, { file dir })
  kernel_read_system_state(virtd_t)
  kernel_read_network_state(virtd_t)
  kernel_rw_net_sysctls(virtd_t)
@@ -26640,7 +26756,7 @@ index 3cce663..8f0fac9 100644
  kernel_request_load_module(virtd_t)
  kernel_search_debugfs(virtd_t)
  
-@@ -243,18 +274,27 @@ dev_read_rand(virtd_t)
+@@ -243,18 +287,27 @@ dev_read_rand(virtd_t)
  dev_rw_kvm(virtd_t)
  dev_getattr_all_chr_files(virtd_t)
  dev_rw_mtrr(virtd_t)
@@ -26669,7 +26785,7 @@ index 3cce663..8f0fac9 100644
  
  fs_list_auto_mountpoints(virtd_t)
  fs_getattr_xattr_fs(virtd_t)
-@@ -262,6 +302,17 @@ fs_rw_anon_inodefs_files(virtd_t)
+@@ -262,6 +315,17 @@ fs_rw_anon_inodefs_files(virtd_t)
  fs_list_inotifyfs(virtd_t)
  fs_manage_cgroup_dirs(virtd_t)
  fs_rw_cgroup_files(virtd_t)
@@ -26687,7 +26803,7 @@ index 3cce663..8f0fac9 100644
  
  mcs_process_set_categories(virtd_t)
  
-@@ -286,15 +337,24 @@ modutils_manage_module_config(virtd_t)
+@@ -286,15 +350,24 @@ modutils_manage_module_config(virtd_t)
  
  logging_send_syslog_msg(virtd_t)
  
@@ -26712,15 +26828,16 @@ index 3cce663..8f0fac9 100644
  
  tunable_policy(`virt_use_nfs',`
  	fs_manage_nfs_dirs(virtd_t)
-@@ -365,6 +425,7 @@ optional_policy(`
+@@ -365,6 +438,8 @@ optional_policy(`
  	qemu_signal(virtd_t)
  	qemu_kill(virtd_t)
  	qemu_setsched(virtd_t)
 +	qemu_entry_type(virt_domain)
++	qemu_exec(virt_domain)
  ')
  
  optional_policy(`
-@@ -402,6 +463,19 @@ allow virt_domain self:unix_stream_socket create_stream_socket_perms;
+@@ -402,6 +477,19 @@ allow virt_domain self:unix_stream_socket create_stream_socket_perms;
  allow virt_domain self:unix_dgram_socket { create_socket_perms sendto };
  allow virt_domain self:tcp_socket create_stream_socket_perms;
  
@@ -26740,7 +26857,7 @@ index 3cce663..8f0fac9 100644
  append_files_pattern(virt_domain, virt_log_t, virt_log_t)
  
  append_files_pattern(virt_domain, virt_var_lib_t, virt_var_lib_t)
-@@ -422,6 +496,7 @@ corenet_rw_tun_tap_dev(virt_domain)
+@@ -422,6 +510,7 @@ corenet_rw_tun_tap_dev(virt_domain)
  corenet_tcp_bind_virt_migration_port(virt_domain)
  corenet_tcp_connect_virt_migration_port(virt_domain)
  
@@ -26748,7 +26865,7 @@ index 3cce663..8f0fac9 100644
  dev_read_rand(virt_domain)
  dev_read_sound(virt_domain)
  dev_read_urand(virt_domain)
-@@ -429,10 +504,12 @@ dev_write_sound(virt_domain)
+@@ -429,10 +518,12 @@ dev_write_sound(virt_domain)
  dev_rw_ksm(virt_domain)
  dev_rw_kvm(virt_domain)
  dev_rw_qemu(virt_domain)
@@ -26761,7 +26878,7 @@ index 3cce663..8f0fac9 100644
  files_read_usr_files(virt_domain)
  files_read_var_files(virt_domain)
  files_search_all(virt_domain)
-@@ -440,6 +517,11 @@ files_search_all(virt_domain)
+@@ -440,6 +531,11 @@ files_search_all(virt_domain)
  fs_getattr_tmpfs(virt_domain)
  fs_rw_anon_inodefs_files(virt_domain)
  fs_rw_tmpfs_files(virt_domain)
@@ -26773,7 +26890,7 @@ index 3cce663..8f0fac9 100644
  
  term_use_all_terms(virt_domain)
  term_getattr_pty_fs(virt_domain)
-@@ -457,8 +539,121 @@ optional_policy(`
+@@ -457,8 +553,121 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -29943,7 +30060,7 @@ index f6aafe7..f28524b 100644
 +	allow $1 init_t:unix_stream_socket rw_stream_socket_perms;
 +')
 diff --git a/policy/modules/system/init.te b/policy/modules/system/init.te
-index abab4cf..a80b4c7 100644
+index abab4cf..d96bf27 100644
 --- a/policy/modules/system/init.te
 +++ b/policy/modules/system/init.te
 @@ -16,6 +16,27 @@ gen_require(`
@@ -30058,7 +30175,7 @@ index abab4cf..a80b4c7 100644
  	corecmd_shell_domtrans(init_t, initrc_t)
  ',`
  	# Run the shell in the sysadm role for single-user mode.
-@@ -186,23 +217,92 @@ tunable_policy(`init_upstart',`
+@@ -186,12 +217,74 @@ tunable_policy(`init_upstart',`
  	sysadm_shell_domtrans(init_t)
  ')
  
@@ -30091,6 +30208,7 @@ index abab4cf..a80b4c7 100644
 +	files_manage_all_pids_dirs(init_t)
 +
 +	fs_manage_cgroup_dirs(init_t)
++	fs_manage_hugetlbfs_dirs(init_t)
 +	fs_manage_tmpfs_dirs(init_t)
 +	fs_mount_all_fs(init_t)
 +	fs_list_auto_mountpoints(init_t)
@@ -30120,18 +30238,19 @@ index abab4cf..a80b4c7 100644
 +optional_policy(`
 +	dbus_connect_system_bus(init_t)
  	dbus_system_bus_client(init_t)
- ')
- 
- optional_policy(`
++	dbus_delete_pid_files(init_t)
++')
++
++optional_policy(`
 +	# /var/run/dovecot/login/ssl-parameters.dat is a hard link to
 +	# /var/lib/dovecot/ssl-parameters.dat and init tries to clean up
 +	# the directory. But we do not want to allow this.
 +	# The master process of dovecot will manage this file.
 +	dovecot_dontaudit_unlink_lib_files(initrc_t)
-+')
-+
-+optional_policy(`
- 	nscd_socket_use(init_t)
+ ')
+ 
+ optional_policy(`
+@@ -199,10 +292,19 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30151,7 +30270,7 @@ index abab4cf..a80b4c7 100644
  	unconfined_domain(init_t)
  ')
  
-@@ -212,7 +312,7 @@ optional_policy(`
+@@ -212,7 +314,7 @@ optional_policy(`
  #
  
  allow initrc_t self:process { getpgid setsched setpgid setrlimit getsched };
@@ -30160,7 +30279,7 @@ index abab4cf..a80b4c7 100644
  dontaudit initrc_t self:capability sys_module; # sysctl is triggering this
  allow initrc_t self:passwd rootok;
  allow initrc_t self:key manage_key_perms;
-@@ -241,6 +341,7 @@ manage_fifo_files_pattern(initrc_t, initrc_state_t, initrc_state_t)
+@@ -241,6 +343,7 @@ manage_fifo_files_pattern(initrc_t, initrc_state_t, initrc_state_t)
  
  allow initrc_t initrc_var_run_t:file manage_file_perms;
  files_pid_filetrans(initrc_t, initrc_var_run_t, file)
@@ -30168,7 +30287,7 @@ index abab4cf..a80b4c7 100644
  
  can_exec(initrc_t, initrc_tmp_t)
  manage_files_pattern(initrc_t, initrc_tmp_t, initrc_tmp_t)
-@@ -258,11 +359,22 @@ kernel_change_ring_buffer_level(initrc_t)
+@@ -258,11 +361,22 @@ kernel_change_ring_buffer_level(initrc_t)
  kernel_clear_ring_buffer(initrc_t)
  kernel_get_sysvipc_info(initrc_t)
  kernel_read_all_sysctls(initrc_t)
@@ -30191,7 +30310,7 @@ index abab4cf..a80b4c7 100644
  
  corecmd_exec_all_executables(initrc_t)
  
-@@ -291,6 +403,7 @@ dev_read_sound_mixer(initrc_t)
+@@ -291,6 +405,7 @@ dev_read_sound_mixer(initrc_t)
  dev_write_sound_mixer(initrc_t)
  dev_setattr_all_chr_files(initrc_t)
  dev_rw_lvm_control(initrc_t)
@@ -30199,7 +30318,7 @@ index abab4cf..a80b4c7 100644
  dev_delete_lvm_control_dev(initrc_t)
  dev_manage_generic_symlinks(initrc_t)
  dev_manage_generic_files(initrc_t)
-@@ -298,13 +411,13 @@ dev_manage_generic_files(initrc_t)
+@@ -298,13 +413,13 @@ dev_manage_generic_files(initrc_t)
  dev_delete_generic_symlinks(initrc_t)
  dev_getattr_all_blk_files(initrc_t)
  dev_getattr_all_chr_files(initrc_t)
@@ -30215,7 +30334,7 @@ index abab4cf..a80b4c7 100644
  domain_sigchld_all_domains(initrc_t)
  domain_read_all_domains_state(initrc_t)
  domain_getattr_all_domains(initrc_t)
-@@ -323,8 +436,10 @@ files_getattr_all_symlinks(initrc_t)
+@@ -323,8 +438,10 @@ files_getattr_all_symlinks(initrc_t)
  files_getattr_all_pipes(initrc_t)
  files_getattr_all_sockets(initrc_t)
  files_purge_tmp(initrc_t)
@@ -30227,7 +30346,7 @@ index abab4cf..a80b4c7 100644
  files_delete_all_pids(initrc_t)
  files_delete_all_pid_dirs(initrc_t)
  files_read_etc_files(initrc_t)
-@@ -340,8 +455,12 @@ files_list_isid_type_dirs(initrc_t)
+@@ -340,8 +457,12 @@ files_list_isid_type_dirs(initrc_t)
  files_mounton_isid_type_dirs(initrc_t)
  files_list_default(initrc_t)
  files_mounton_default(initrc_t)
@@ -30241,7 +30360,7 @@ index abab4cf..a80b4c7 100644
  fs_list_inotifyfs(initrc_t)
  fs_register_binary_executable_type(initrc_t)
  # rhgb-console writes to ramfs
-@@ -351,6 +470,8 @@ fs_mount_all_fs(initrc_t)
+@@ -351,6 +472,8 @@ fs_mount_all_fs(initrc_t)
  fs_unmount_all_fs(initrc_t)
  fs_remount_all_fs(initrc_t)
  fs_getattr_all_fs(initrc_t)
@@ -30250,7 +30369,7 @@ index abab4cf..a80b4c7 100644
  
  # initrc_t needs to do a pidof which requires ptrace
  mcs_ptrace_all(initrc_t)
-@@ -363,6 +484,7 @@ mls_process_read_up(initrc_t)
+@@ -363,6 +486,7 @@ mls_process_read_up(initrc_t)
  mls_process_write_down(initrc_t)
  mls_rangetrans_source(initrc_t)
  mls_fd_share_all_levels(initrc_t)
@@ -30258,7 +30377,7 @@ index abab4cf..a80b4c7 100644
  
  selinux_get_enforce_mode(initrc_t)
  
-@@ -394,13 +516,14 @@ logging_read_audit_config(initrc_t)
+@@ -394,13 +518,14 @@ logging_read_audit_config(initrc_t)
  
  miscfiles_read_localization(initrc_t)
  # slapd needs to read cert files from its initscript
@@ -30274,7 +30393,7 @@ index abab4cf..a80b4c7 100644
  userdom_read_user_home_content_files(initrc_t)
  # Allow access to the sysadm TTYs. Note that this will give access to the
  # TTYs to any process in the initrc_t domain. Therefore, daemons and such
-@@ -473,7 +596,7 @@ ifdef(`distro_redhat',`
+@@ -473,7 +598,7 @@ ifdef(`distro_redhat',`
  
  	# Red Hat systems seem to have a stray
  	# fd open from the initrd
@@ -30283,7 +30402,7 @@ index abab4cf..a80b4c7 100644
  	files_dontaudit_read_root_files(initrc_t)
  
  	# These seem to be from the initrd
-@@ -519,6 +642,19 @@ ifdef(`distro_redhat',`
+@@ -519,6 +644,19 @@ ifdef(`distro_redhat',`
  	optional_policy(`
  		bind_manage_config_dirs(initrc_t)
  		bind_write_config(initrc_t)
@@ -30303,7 +30422,7 @@ index abab4cf..a80b4c7 100644
  	')
  
  	optional_policy(`
-@@ -526,10 +662,17 @@ ifdef(`distro_redhat',`
+@@ -526,10 +664,17 @@ ifdef(`distro_redhat',`
  		rpc_write_exports(initrc_t)
  		rpc_manage_nfs_state_data(initrc_t)
  	')
@@ -30321,7 +30440,7 @@ index abab4cf..a80b4c7 100644
  	')
  
  	optional_policy(`
-@@ -544,6 +687,35 @@ ifdef(`distro_suse',`
+@@ -544,6 +689,35 @@ ifdef(`distro_suse',`
  	')
  ')
  
@@ -30357,7 +30476,7 @@ index abab4cf..a80b4c7 100644
  optional_policy(`
  	amavis_search_lib(initrc_t)
  	amavis_setattr_pid_files(initrc_t)
-@@ -556,6 +728,8 @@ optional_policy(`
+@@ -556,6 +730,8 @@ optional_policy(`
  optional_policy(`
  	apache_read_config(initrc_t)
  	apache_list_modules(initrc_t)
@@ -30366,7 +30485,7 @@ index abab4cf..a80b4c7 100644
  ')
  
  optional_policy(`
-@@ -572,6 +746,7 @@ optional_policy(`
+@@ -572,6 +748,7 @@ optional_policy(`
  
  optional_policy(`
  	cgroup_stream_connect_cgred(initrc_t)
@@ -30374,7 +30493,7 @@ index abab4cf..a80b4c7 100644
  ')
  
  optional_policy(`
-@@ -584,6 +759,11 @@ optional_policy(`
+@@ -584,6 +761,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30386,15 +30505,17 @@ index abab4cf..a80b4c7 100644
  	dev_getattr_printer_dev(initrc_t)
  
  	cups_read_log(initrc_t)
-@@ -600,6 +780,7 @@ optional_policy(`
+@@ -600,6 +782,9 @@ optional_policy(`
  	dbus_connect_system_bus(initrc_t)
  	dbus_system_bus_client(initrc_t)
  	dbus_read_config(initrc_t)
 +	dbus_manage_lib_files(initrc_t)
++
++	init_dbus_chat(initrc_t)
  
  	optional_policy(`
  		consolekit_dbus_chat(initrc_t)
-@@ -701,7 +882,13 @@ optional_policy(`
+@@ -701,7 +886,13 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30408,7 +30529,7 @@ index abab4cf..a80b4c7 100644
  	mta_dontaudit_read_spool_symlinks(initrc_t)
  ')
  
-@@ -724,6 +911,10 @@ optional_policy(`
+@@ -724,6 +915,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30419,7 +30540,7 @@ index abab4cf..a80b4c7 100644
  	postgresql_manage_db(initrc_t)
  	postgresql_read_config(initrc_t)
  ')
-@@ -745,6 +936,10 @@ optional_policy(`
+@@ -745,6 +940,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30430,7 +30551,7 @@ index abab4cf..a80b4c7 100644
  	fs_write_ramfs_sockets(initrc_t)
  	fs_search_ramfs(initrc_t)
  
-@@ -766,8 +961,6 @@ optional_policy(`
+@@ -766,8 +965,6 @@ optional_policy(`
  	# bash tries ioctl for some reason
  	files_dontaudit_ioctl_all_pids(initrc_t)
  
@@ -30439,7 +30560,7 @@ index abab4cf..a80b4c7 100644
  ')
  
  optional_policy(`
-@@ -776,14 +969,21 @@ optional_policy(`
+@@ -776,14 +973,21 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30461,7 +30582,7 @@ index abab4cf..a80b4c7 100644
  
  optional_policy(`
  	ssh_dontaudit_read_server_keys(initrc_t)
-@@ -805,11 +1005,19 @@ optional_policy(`
+@@ -805,11 +1009,19 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30482,7 +30603,7 @@ index abab4cf..a80b4c7 100644
  
  	ifdef(`distro_redhat',`
  		# system-config-services causes avc messages that should be dontaudited
-@@ -819,6 +1027,25 @@ optional_policy(`
+@@ -819,6 +1031,25 @@ optional_policy(`
  	optional_policy(`
  		mono_domtrans(initrc_t)
  	')
@@ -30508,7 +30629,7 @@ index abab4cf..a80b4c7 100644
  ')
  
  optional_policy(`
-@@ -844,3 +1071,55 @@ optional_policy(`
+@@ -844,3 +1075,55 @@ optional_policy(`
  optional_policy(`
  	zebra_read_config(initrc_t)
  ')
@@ -34278,7 +34399,7 @@ index 025348a..59bc26b 100644
  
  ########################################
 diff --git a/policy/modules/system/udev.te b/policy/modules/system/udev.te
-index a054cf5..9f316ca 100644
+index a054cf5..4867243 100644
 --- a/policy/modules/system/udev.te
 +++ b/policy/modules/system/udev.te
 @@ -52,6 +52,7 @@ allow udev_t self:unix_dgram_socket sendto;
@@ -34320,7 +34441,15 @@ index a054cf5..9f316ca 100644
  
  mcs_ptrace_all(udev_t)
  
-@@ -216,11 +222,16 @@ optional_policy(`
+@@ -186,6 +192,7 @@ ifdef(`distro_redhat',`
+ 	fs_manage_tmpfs_chr_files(udev_t)
+ 	fs_relabel_tmpfs_blk_file(udev_t)
+ 	fs_relabel_tmpfs_chr_file(udev_t)
++	fs_manage_hugetlbfs_dirs(udev_t)
+ 
+ 	term_search_ptys(udev_t)
+ 
+@@ -216,11 +223,16 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -34337,7 +34466,7 @@ index a054cf5..9f316ca 100644
  ')
  
  optional_policy(`
-@@ -233,6 +244,10 @@ optional_policy(`
+@@ -233,6 +245,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -34348,7 +34477,7 @@ index a054cf5..9f316ca 100644
  	lvm_domtrans(udev_t)
  ')
  
-@@ -259,6 +274,10 @@ optional_policy(`
+@@ -259,6 +275,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -34359,7 +34488,7 @@ index a054cf5..9f316ca 100644
  	openct_read_pid_files(udev_t)
  	openct_domtrans(udev_t)
  ')
-@@ -273,6 +292,11 @@ optional_policy(`
+@@ -273,6 +293,11 @@ optional_policy(`
  ')
  
  optional_policy(`

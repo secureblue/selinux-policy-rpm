@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,7 +469,12 @@ exit 0
 %endif
 
 %changelog
-* Thu Aug 31 2010 Dan Walsh <dwalsh@redhat.com> 3.9.3-1
+* Wed Sep 8 2010 Dan Walsh <dwalsh@redhat.com> 3.9.3-2
+- Handle /var/db/sudo
+- Allow pulseaudio to read alsa config
+- Allow init to send initrc_t dbus messages
+
+* Tue Sep 7 2010 Dan Walsh <dwalsh@redhat.com> 3.9.3-1
 Allow iptables to read shorewall tmp files
 Change chfn and passwd to use auth_use_pam so they can send dbus messages to fpr
 intd
