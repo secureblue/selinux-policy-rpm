@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.4
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 14 2010 Dan Walsh <dwalsh@redhat.com> 3.9.4-2
+- Allow all domains that can use cgroups to search tmpfs_t directory
+- Allow init to send audit messages
+
 * Thu Sep 8 2010 Dan Walsh <dwalsh@redhat.com> 3.9.4-1
 - Update to upstream
 
