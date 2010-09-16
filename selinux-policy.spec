@@ -19,8 +19,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.9.4
-Release: 2%{?dist}
+Version: 3.9.5
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,15 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 16 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-1
+- Update to upstream
+
+* Wed Sep 15 2010 Dan Walsh <dwalsh@redhat.com> 3.9.4-3
+- Add the ability to send audit messages to confined admin policies
+- Remove permissive domain from cmirrord and dontaudit sys_tty_config
+- Split out unconfined_domain() calls from other unconfined_ calls so we can d
+- virt needs to be able to read processes to clearance for MLS
+
 * Tue Sep 14 2010 Dan Walsh <dwalsh@redhat.com> 3.9.4-2
 - Allow all domains that can use cgroups to search tmpfs_t directory
 - Allow init to send audit messages
