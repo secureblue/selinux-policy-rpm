@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,11 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 16 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-2
+- Add vnstat policy
+- allow libvirt to send audit messages
+- Allow chrome-sandbox to search nfs_t
+
 * Thu Sep 16 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-1
 - Update to upstream
 
