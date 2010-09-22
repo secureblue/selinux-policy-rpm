@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.5
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Sep 21 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-3
+- Fix up Xguest policy
+
 * Thu Sep 16 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-2
 - Add vnstat policy
 - allow libvirt to send audit messages
