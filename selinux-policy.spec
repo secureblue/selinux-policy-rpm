@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.5
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,11 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 23 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-4
+- Cleanup policy via dgrift
+- Allow dovecot_deliver to append to inherited log files
+- Lots of fixes for consolehelper
+
 * Wed Sep 21 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-3
 - Fix up Xguest policy
 
