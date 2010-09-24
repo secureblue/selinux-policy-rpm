@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.5
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,11 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 24 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-5
+- Pull in cleanups from dgrift
+- Allow mozilla_plugin_t to execute mozilla_home_t
+- Allow rpc.quota to do quotamod
+
 * Thu Sep 23 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-4
 - Cleanup policy via dgrift
 - Allow dovecot_deliver to append to inherited log files
