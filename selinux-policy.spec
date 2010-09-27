@@ -20,7 +20,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.5
-Release: 5%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,6 +469,23 @@ exit 0
 %endif
 
 %changelog
+* Mon Sep 26 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-7
+- Fixes to allow mozilla_plugin_t to create nsplugin_home_t directory.
+- Allow mozilla_plugin_t to create tcp/udp/netlink_route sockets
+- Allow confined users to read xdm_etc_t files
+- Allow xdm_t to transition to xauth_t for lxdm program
+
+* Sun Sep 26 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-6
+- Rearrange firewallgui policy to be more easily updated to upstream, dontaudit search of /home
+- Allow clamd to send signals to itself
+- Allow mozilla_plugin_t to read user home content.  And unlink pulseaudio shm.
+- Allow haze to connect to yahoo chat and messenger port tcp:5050.
+Bz #637339
+- Allow guest to run ps command on its processes by allowing it to read /proc
+- Allow firewallgui to sys_rawio which seems to be required to setup masqerading
+- Allow all domains to search through default_t directories, in order to find differnet labels.  For example people serring up /foo/bar to be share via samba.
+- Add label for /var/log/slim.log
+
 * Fri Sep 24 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-5
 - Pull in cleanups from dgrift
 - Allow mozilla_plugin_t to execute mozilla_home_t
