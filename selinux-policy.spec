@@ -1,3 +1,4 @@
+
 %define distro redhat
 %define polyinstatiate n
 %define monolithic n
@@ -20,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.5
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -469,7 +470,11 @@ exit 0
 %endif
 
 %changelog
-* Mon Sep 26 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-7
+* Wed Sep 29 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-8
+- Dontaudit attempts by xdm_t to write to bin_t for kdm
+- Allow initrc_t to manage system_conf_t
+
+* Mon Sep 27 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-7
 - Fixes to allow mozilla_plugin_t to create nsplugin_home_t directory.
 - Allow mozilla_plugin_t to create tcp/udp/netlink_route sockets
 - Allow confined users to read xdm_etc_t files
