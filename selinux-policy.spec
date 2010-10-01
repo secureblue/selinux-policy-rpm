@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.5
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,20 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 30 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-9
+- Turn off default transition to mozilla_plugin and telepathy domains from unconfined user 
+- Turn off iptables from unconfined user 
+- Allow sudo to send signals to any domains the user could have transitioned to.
+- Passwd in single user mode needs to talk to console_device_t
+- Mozilla_plugin_t needs to connect to web ports, needs to write to video device, and read alsa_home_t alsa setsup pulseaudio
+- locate tried to read a symbolic link, will dontaudit
+- New labels for telepathy-sunshine content in homedir
+- Google is storing other binaries under /opt/google/talkplugin
+- bluetooth/kernel is creating unlabeled_t socket that I will allow it to use until kernel fixes bug
+- Add boolean for unconfined_t transition to mozilla_plugin_t and telepathy domains, turned off in F14 on in F15
+- modemmanger and bluetooth send dbus messages to devicekit_power
+- Samba needs to getquota on filesystems labeld samba_share_t
+
 * Wed Sep 29 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-8
 - Dontaudit attempts by xdm_t to write to bin_t for kdm
 - Allow initrc_t to manage system_conf_t
