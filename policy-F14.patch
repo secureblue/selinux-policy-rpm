@@ -232,6 +232,43 @@ index af90ef2..9fef0f8 100644
  #
  # MCS policy for SELinux-enabled databases
  #
+diff --git a/policy/modules/admin/alsa.if b/policy/modules/admin/alsa.if
+index 69aa742..20d51d0 100644
+--- a/policy/modules/admin/alsa.if
++++ b/policy/modules/admin/alsa.if
+@@ -21,6 +21,32 @@ interface(`alsa_domtrans',`
+ 
+ ########################################
+ ## <summary>
++##	Execute a domain transition to run
++##	Alsa, and allow the specified role
++##	the Alsa domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed to transition.
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	Role allowed access.
++##	</summary>
++## </param>
++#
++interface(`alsa_run',`
++	gen_require(`
++		type alsa_t;
++	')
++
++	alsa_domtrans($1)
++	role $2 types alsa_t;
++')
++
++########################################
++## <summary>
+ ##	Read and write Alsa semaphores.
+ ## </summary>
+ ## <param name="domain">
 diff --git a/policy/modules/admin/anaconda.te b/policy/modules/admin/anaconda.te
 index f76ed8a..9a9526a 100644
 --- a/policy/modules/admin/anaconda.te
@@ -3623,14 +3660,14 @@ index 93ac529..aafece7 100644
  /usr/lib64/[^/]*firefox[^/]*/firefox -- gen_context(system_u:object_r:mozilla_exec_t,s0)
 +/usr/lib(64)?/xulrunner[^/]*/plugin-container		--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)
 diff --git a/policy/modules/apps/mozilla.if b/policy/modules/apps/mozilla.if
-index 9a6d67d..47aa143 100644
+index 9a6d67d..dfac7cc 100644
 --- a/policy/modules/apps/mozilla.if
 +++ b/policy/modules/apps/mozilla.if
 @@ -29,6 +29,8 @@ interface(`mozilla_role',`
  	allow mozilla_t $2:process { sigchld signull };
  	allow mozilla_t $2:unix_stream_socket connectto;
  
-+	mozilla_plugin_run(mozilla_t, $2)
++	mozilla_run_plugin(mozilla_t, $2)
 +
  	# Allow the user domain to signal/ps.
  	ps_process_pattern($2, mozilla_t)
@@ -3657,7 +3694,32 @@ index 9a6d67d..47aa143 100644
  ')
  
  ########################################
-@@ -168,6 +176,52 @@ interface(`mozilla_domtrans',`
+@@ -132,6 +140,24 @@ interface(`mozilla_dontaudit_manage_user_home_files',`
+ 
+ ########################################
+ ## <summary>
++##	Execute mozilla home directory content.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`mozilla_execute_user_home_files',`
++	gen_require(`
++		type mozilla_home_t;
++	')
++
++	can_exec($1, mozilla_home_t)
++')
++
++########################################
++## <summary>
+ ##	Execmod mozilla home directory content.
+ ## </summary>
+ ## <param name="domain">
+@@ -168,6 +194,69 @@ interface(`mozilla_domtrans',`
  
  ########################################
  ## <summary>
@@ -3675,6 +3737,7 @@ index 9a6d67d..47aa143 100644
 +	')
 +
 +	domtrans_pattern($1, mozilla_plugin_exec_t, mozilla_plugin_t)
++	allow mozilla_plugin_t $1:process signull;	
 +')
 +
 +
@@ -3701,8 +3764,24 @@ index 9a6d67d..47aa143 100644
 +
 +	mozilla_domtrans_plugin($1)
 +	role $2 types mozilla_plugin_t;
++')
 +
-+	allow mozilla_plugin_t $1:process signull;	
++########################################
++## <summary>
++##	Execute qemu unconfined programs in the role.
++## </summary>
++## <param name="role">
++##	<summary>
++##	The role to allow the mozilla_plugin domain.
++##	</summary>
++## </param>
++#
++interface(`mozilla_role_plugin',`
++	gen_require(`
++		type mozilla_plugin_t;
++	')
++
++	role $1 types mozilla_plugin_t;
 +')
 +
 +########################################
@@ -3711,7 +3790,7 @@ index 9a6d67d..47aa143 100644
  ##	mozilla over dbus.
  ## </summary>
 diff --git a/policy/modules/apps/mozilla.te b/policy/modules/apps/mozilla.te
-index cbf4bec..70d899d 100644
+index cbf4bec..cc87b60 100644
 --- a/policy/modules/apps/mozilla.te
 +++ b/policy/modules/apps/mozilla.te
 @@ -25,6 +25,7 @@ files_config_file(mozilla_conf_t)
@@ -3784,7 +3863,7 @@ index cbf4bec..70d899d 100644
  	pulseaudio_exec(mozilla_t)
  	pulseaudio_stream_connect(mozilla_t)
  	pulseaudio_manage_home_files(mozilla_t)
-@@ -266,3 +291,121 @@ optional_policy(`
+@@ -266,3 +291,124 @@ optional_policy(`
  optional_policy(`
  	thunderbird_domtrans(mozilla_t)
  ')
@@ -3809,6 +3888,7 @@ index cbf4bec..70d899d 100644
 +manage_dirs_pattern(mozilla_plugin_t, mozilla_plugin_tmp_t, mozilla_plugin_tmp_t)
 +manage_files_pattern(mozilla_plugin_t, mozilla_plugin_tmp_t, mozilla_plugin_tmp_t)
 +files_tmp_filetrans(mozilla_plugin_t, mozilla_plugin_tmp_t, { dir file })
++can_exec(mozilla_plugin_t, mozilla_plugin_tmp_t)
 +
 +manage_files_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t)
 +manage_lnk_files_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t)
@@ -3862,6 +3942,7 @@ index cbf4bec..70d899d 100644
 +userdom_delete_user_tmpfs_files(mozilla_plugin_t)
 +userdom_stream_connect(mozilla_plugin_t)
 +userdom_dontaudit_use_user_ptys(mozilla_plugin_t)
++userdom_manage_user_tmp_sockets(mozilla_plugin_t)
 +
 +userdom_list_user_tmp(mozilla_plugin_t)
 +userdom_read_user_tmp_files(mozilla_plugin_t)
@@ -3905,6 +3986,7 @@ index cbf4bec..70d899d 100644
 +	xserver_read_xdm_pid(mozilla_plugin_t)
 +	xserver_stream_connect(mozilla_plugin_t)
 +	xserver_use_user_fonts(mozilla_plugin_t)
++	xserver_read_user_iceauth(mozilla_plugin_t)
 +')
 diff --git a/policy/modules/apps/mplayer.if b/policy/modules/apps/mplayer.if
 index d8ea41d..8bdc526 100644
@@ -3992,12 +4074,13 @@ index 815a467..192d54e 100644
  
 diff --git a/policy/modules/apps/nsplugin.fc b/policy/modules/apps/nsplugin.fc
 new file mode 100644
-index 0000000..63abc5c
+index 0000000..717eb3f
 --- /dev/null
 +++ b/policy/modules/apps/nsplugin.fc
-@@ -0,0 +1,10 @@
+@@ -0,0 +1,11 @@
 +HOME_DIR/\.adobe(/.*)?			gen_context(system_u:object_r:nsplugin_home_t,s0)
 +HOME_DIR/\.macromedia(/.*)?		gen_context(system_u:object_r:nsplugin_home_t,s0)
++HOME_DIR/\.gnash(/.*)?			gen_context(system_u:object_r:nsplugin_home_t,s0)
 +HOME_DIR/\.gcjwebplugin(/.*)?		gen_context(system_u:object_r:nsplugin_home_t,s0)
 +HOME_DIR/\.icedteaplugin(/.*)?		gen_context(system_u:object_r:nsplugin_home_t,s0)
 +
@@ -4450,10 +4533,10 @@ index 0000000..4dbb161
 +')
 diff --git a/policy/modules/apps/nsplugin.te b/policy/modules/apps/nsplugin.te
 new file mode 100644
-index 0000000..4e8a49e
+index 0000000..1ca0e76
 --- /dev/null
 +++ b/policy/modules/apps/nsplugin.te
-@@ -0,0 +1,310 @@
+@@ -0,0 +1,313 @@
 +policy_module(nsplugin, 1.0.0)
 +
 +########################################
@@ -4585,6 +4668,7 @@ index 0000000..4e8a49e
 +fs_search_auto_mountpoints(nsplugin_t)
 +fs_rw_anon_inodefs_files(nsplugin_t)
 +fs_list_inotifyfs(nsplugin_t)
++fs_dontaudit_list_fusefs(nsplugin_t)
 +
 +storage_dontaudit_getattr_fixed_disk_dev(nsplugin_t)
 +storage_dontaudit_getattr_removable_dev(nsplugin_t)
@@ -4636,6 +4720,7 @@ index 0000000..4e8a49e
 +')
 +
 +optional_policy(`
++	mozilla_execute_user_home_files(nsplugin_t)
 +	mozilla_read_user_home_files(nsplugin_t)
 +	mozilla_write_user_home_files(nsplugin_t)
 +')
@@ -4681,6 +4766,7 @@ index 0000000..4e8a49e
 +allow nsplugin_config_t self:unix_stream_socket create_stream_socket_perms;
 +
 +dev_dontaudit_read_rand(nsplugin_config_t)
++dev_dontaudit_rw_dri(nsplugin_config_t)
 +
 +fs_search_auto_mountpoints(nsplugin_config_t)
 +fs_list_inotifyfs(nsplugin_config_t)
@@ -5047,7 +5133,7 @@ index 5c2680c..db96581 100644
 +	sandbox_manage_tmpfs_files(pulseaudio_t)
 +')
 diff --git a/policy/modules/apps/qemu.if b/policy/modules/apps/qemu.if
-index c1d5f50..8d8d961 100644
+index c1d5f50..f4e1572 100644
 --- a/policy/modules/apps/qemu.if
 +++ b/policy/modules/apps/qemu.if
 @@ -157,6 +157,24 @@ interface(`qemu_domtrans',`
@@ -5125,7 +5211,7 @@ index c1d5f50..8d8d961 100644
 +## </summary>
 +## <param name="role">
 +##	<summary>
-+##	The role to allow the PAM domain.
++##	The role to allow the qemu unconfined domain.
 +##	</summary>
 +## </param>
 +#
@@ -6340,10 +6426,10 @@ index 0000000..3d12484
 +')
 diff --git a/policy/modules/apps/telepathy.te b/policy/modules/apps/telepathy.te
 new file mode 100644
-index 0000000..34a2b48
+index 0000000..0b28cf8
 --- /dev/null
 +++ b/policy/modules/apps/telepathy.te
-@@ -0,0 +1,327 @@
+@@ -0,0 +1,329 @@
 +
 +policy_module(telepathy, 1.0.0)
 +
@@ -6422,6 +6508,8 @@ index 0000000..34a2b48
 +files_read_usr_files(telepathy_msn_t)
 +
 +auth_use_nsswitch(telepathy_msn_t)
++
++init_read_state(telepathy_msn_t)
 +
 +libs_exec_ldconfig(telepathy_msn_t)
 +
@@ -11033,10 +11121,10 @@ index 0000000..8b2cdf3
 +
 diff --git a/policy/modules/roles/unconfineduser.te b/policy/modules/roles/unconfineduser.te
 new file mode 100644
-index 0000000..0e47a85
+index 0000000..31bbe95
 --- /dev/null
 +++ b/policy/modules/roles/unconfineduser.te
-@@ -0,0 +1,492 @@
+@@ -0,0 +1,489 @@
 +policy_module(unconfineduser, 1.0.0)
 +
 +########################################
@@ -11058,13 +11146,6 @@ index 0000000..0e47a85
 +## </p>
 +## </desc>
 +gen_tunable(unconfined_mozilla_plugin_transition, false)
-+
-+## <desc>
-+## <p>
-+## Transition unconfined user to telepathy confined domains.
-+## </p>
-+## </desc>
-+gen_tunable(unconfined_telepathy_transition, false)
 +
 +## <desc>
 +## <p>
@@ -11266,6 +11347,10 @@ index 0000000..0e47a85
 +')
 +
 +optional_policy(`
++	alsa_run(unconfined_t, unconfined_r)
++')
++
++optional_policy(`
 +	apache_run_helper(unconfined_t, unconfined_r)
 +')
 +
@@ -11380,8 +11465,10 @@ index 0000000..0e47a85
 +
 +
 +optional_policy(`
++	mozilla_role_plugin(unconfined_r)
++
 +	tunable_policy(`unconfined_mozilla_plugin_transition', `
-+			mozilla_run_plugin(unconfined_usertype, unconfined_r)
++			mozilla_domtrans_plugin(unconfined_usertype)
 +	')
 +')
 +
@@ -11412,7 +11499,7 @@ index 0000000..0e47a85
 +		qemu_domtrans(unconfined_t)
 +	',`
 +		qemu_domtrans_unconfined(unconfined_t)
-+')
++	')
 +')
 +
 +optional_policy(`
@@ -11443,9 +11530,7 @@ index 0000000..0e47a85
 +')
 +
 +optional_policy(`
-+	tunable_policy(`unconfined_telepathy_transition', `
-+		   telepathy_dbus_session_role(unconfined_r, unconfined_t)
-+	')
++	telepathy_dbus_session_role(unconfined_r, unconfined_t)
 +')
 +
 +optional_policy(`
@@ -13153,7 +13238,7 @@ index c9e1a44..ba64143 100644
 +	dontaudit $1 httpd_t:unix_stream_socket { read write };
  ')
 diff --git a/policy/modules/services/apache.te b/policy/modules/services/apache.te
-index 08dfa0c..300dffb 100644
+index 08dfa0c..411a3ff 100644
 --- a/policy/modules/services/apache.te
 +++ b/policy/modules/services/apache.te
 @@ -18,130 +18,195 @@ policy_module(apache, 2.2.0)
@@ -13725,7 +13810,7 @@ index 08dfa0c..300dffb 100644
  ')
  
  optional_policy(`
-+	smokeping_getattr_lib_files(httpd_t)
++	smokeping_read_lib_files(httpd_t)
 +')
 +
 +optional_policy(`
@@ -30674,7 +30759,7 @@ index 82cb169..9e72970 100644
 +	admin_pattern($1, samba_unconfined_script_exec_t)
  ')
 diff --git a/policy/modules/services/samba.te b/policy/modules/services/samba.te
-index e30bb63..e4334a6 100644
+index e30bb63..8e36be0 100644
 --- a/policy/modules/services/samba.te
 +++ b/policy/modules/services/samba.te
 @@ -152,9 +152,6 @@ domain_entry_file(winbind_helper_t, winbind_helper_exec_t)
@@ -30714,7 +30799,7 @@ index e30bb63..e4334a6 100644
  
  allow smbd_t swat_t:process signal;
  
-@@ -323,6 +320,7 @@ dev_getattr_all_blk_files(smbd_t)
+@@ -323,10 +320,12 @@ dev_getattr_all_blk_files(smbd_t)
  dev_getattr_all_chr_files(smbd_t)
  
  fs_getattr_all_fs(smbd_t)
@@ -30722,7 +30807,12 @@ index e30bb63..e4334a6 100644
  fs_get_xattr_fs_quotas(smbd_t)
  fs_search_auto_mountpoints(smbd_t)
  fs_getattr_rpc_dirs(smbd_t)
-@@ -343,6 +341,7 @@ files_read_usr_files(smbd_t)
+ fs_list_inotifyfs(smbd_t)
++fs_get_all_fs_quotas(smbd_t)
+ 
+ auth_use_nsswitch(smbd_t)
+ auth_domtrans_chk_passwd(smbd_t)
+@@ -343,6 +342,7 @@ files_read_usr_files(smbd_t)
  files_search_spool(smbd_t)
  # smbd seems to getattr all mountpoints
  files_dontaudit_getattr_all_dirs(smbd_t)
@@ -30730,7 +30820,7 @@ index e30bb63..e4334a6 100644
  # Allow samba to list mnt_t for potential mounted dirs
  files_list_mnt(smbd_t)
  
-@@ -385,12 +384,7 @@ tunable_policy(`samba_domain_controller',`
+@@ -385,12 +385,7 @@ tunable_policy(`samba_domain_controller',`
  ')
  
  tunable_policy(`samba_enable_home_dirs',`
@@ -30744,7 +30834,7 @@ index e30bb63..e4334a6 100644
  ')
  
  # Support Samba sharing of NFS mount points
-@@ -445,8 +439,8 @@ optional_policy(`
+@@ -445,8 +440,8 @@ optional_policy(`
  tunable_policy(`samba_create_home_dirs',`
  	allow smbd_t self:capability chown;
  	userdom_create_user_home_dirs(smbd_t)
@@ -30754,7 +30844,7 @@ index e30bb63..e4334a6 100644
  
  tunable_policy(`samba_export_all_ro',`
  	fs_read_noxattr_fs_files(smbd_t) 
-@@ -462,8 +456,8 @@ tunable_policy(`samba_export_all_rw',`
+@@ -462,8 +457,8 @@ tunable_policy(`samba_export_all_rw',`
  	auth_manage_all_files_except_shadow(smbd_t)
  	fs_read_noxattr_fs_files(nmbd_t) 
  	auth_manage_all_files_except_shadow(nmbd_t)
@@ -30764,7 +30854,7 @@ index e30bb63..e4334a6 100644
  
  ########################################
  #
-@@ -484,8 +478,9 @@ allow nmbd_t self:udp_socket create_socket_perms;
+@@ -484,8 +479,9 @@ allow nmbd_t self:udp_socket create_socket_perms;
  allow nmbd_t self:unix_dgram_socket { create_socket_perms sendto };
  allow nmbd_t self:unix_stream_socket { create_stream_socket_perms connectto };
  
@@ -30775,7 +30865,7 @@ index e30bb63..e4334a6 100644
  
  read_files_pattern(nmbd_t, samba_etc_t, samba_etc_t)
  read_lnk_files_pattern(nmbd_t, samba_etc_t, samba_etc_t)
-@@ -560,13 +555,13 @@ allow smbcontrol_t self:fifo_file rw_file_perms;
+@@ -560,13 +556,13 @@ allow smbcontrol_t self:fifo_file rw_file_perms;
  allow smbcontrol_t self:unix_stream_socket create_stream_socket_perms;
  
  allow smbcontrol_t nmbd_t:process { signal signull };
@@ -30793,7 +30883,7 @@ index e30bb63..e4334a6 100644
  samba_read_config(smbcontrol_t)
  samba_rw_var_files(smbcontrol_t)
  samba_search_var(smbcontrol_t)
-@@ -677,7 +672,7 @@ samba_domtrans_nmbd(swat_t)
+@@ -677,7 +673,7 @@ samba_domtrans_nmbd(swat_t)
  allow swat_t nmbd_t:process { signal signull };
  allow nmbd_t swat_t:process signal;
  
@@ -30802,7 +30892,7 @@ index e30bb63..e4334a6 100644
  
  allow swat_t smbd_port_t:tcp_socket name_bind;
  
-@@ -692,12 +687,14 @@ manage_files_pattern(swat_t, samba_log_t, samba_log_t)
+@@ -692,12 +688,14 @@ manage_files_pattern(swat_t, samba_log_t, samba_log_t)
  manage_files_pattern(swat_t, samba_etc_t, samba_secrets_t)
  
  manage_files_pattern(swat_t, samba_var_t, samba_var_t)
@@ -30817,7 +30907,7 @@ index e30bb63..e4334a6 100644
  
  manage_dirs_pattern(swat_t, swat_tmp_t, swat_tmp_t)
  manage_files_pattern(swat_t, swat_tmp_t, swat_tmp_t)
-@@ -710,6 +707,7 @@ allow swat_t winbind_exec_t:file mmap_file_perms;
+@@ -710,6 +708,7 @@ allow swat_t winbind_exec_t:file mmap_file_perms;
  domtrans_pattern(swat_t, winbind_exec_t, winbind_t)
  allow swat_t winbind_t:process { signal signull };
  
@@ -30825,7 +30915,7 @@ index e30bb63..e4334a6 100644
  allow swat_t winbind_var_run_t:dir { write add_name remove_name };
  allow swat_t winbind_var_run_t:sock_file { create unlink };
  
-@@ -754,6 +752,8 @@ logging_search_logs(swat_t)
+@@ -754,6 +753,8 @@ logging_search_logs(swat_t)
  
  miscfiles_read_localization(swat_t)
  
@@ -30834,7 +30924,7 @@ index e30bb63..e4334a6 100644
  optional_policy(`
  	cups_read_rw_config(swat_t)
  	cups_stream_connect(swat_t)
-@@ -806,14 +806,14 @@ rw_files_pattern(winbind_t, smbd_tmp_t, smbd_tmp_t)
+@@ -806,14 +807,14 @@ rw_files_pattern(winbind_t, smbd_tmp_t, smbd_tmp_t)
  allow winbind_t winbind_log_t:file manage_file_perms;
  logging_log_filetrans(winbind_t, winbind_log_t, file)
  
@@ -30854,7 +30944,7 @@ index e30bb63..e4334a6 100644
  
  kernel_read_kernel_sysctls(winbind_t)
  kernel_read_system_state(winbind_t)
-@@ -833,6 +833,7 @@ corenet_udp_sendrecv_all_ports(winbind_t)
+@@ -833,6 +834,7 @@ corenet_udp_sendrecv_all_ports(winbind_t)
  corenet_tcp_bind_generic_node(winbind_t)
  corenet_udp_bind_generic_node(winbind_t)
  corenet_tcp_connect_smbd_port(winbind_t)
@@ -30862,7 +30952,7 @@ index e30bb63..e4334a6 100644
  corenet_tcp_connect_epmap_port(winbind_t)
  corenet_tcp_connect_all_unreserved_ports(winbind_t)
  
-@@ -922,6 +923,18 @@ optional_policy(`
+@@ -922,6 +924,18 @@ optional_policy(`
  #
  
  optional_policy(`
@@ -30881,7 +30971,7 @@ index e30bb63..e4334a6 100644
  	type samba_unconfined_script_t;
  	type samba_unconfined_script_exec_t;
  	domain_type(samba_unconfined_script_t)
-@@ -932,9 +945,12 @@ optional_policy(`
+@@ -932,9 +946,12 @@ optional_policy(`
  	allow smbd_t samba_unconfined_script_exec_t:dir search_dir_perms;
  	allow smbd_t samba_unconfined_script_exec_t:file ioctl;
  
@@ -31282,7 +31372,7 @@ index 824d206..8265278 100644
  #
  interface(`smokeping_domtrans',`
 diff --git a/policy/modules/services/smokeping.te b/policy/modules/services/smokeping.te
-index 4ca5449..058bfc9 100644
+index 4ca5449..247beaf 100644
 --- a/policy/modules/services/smokeping.te
 +++ b/policy/modules/services/smokeping.te
 @@ -23,6 +23,7 @@ files_type(smokeping_var_lib_t)
@@ -31301,6 +31391,14 @@ index 4ca5449..058bfc9 100644
  
  logging_send_syslog_msg(smokeping_t)
  
+@@ -63,6 +65,7 @@ optional_policy(`
+ 
+ 	allow httpd_smokeping_cgi_script_t self:udp_socket create_socket_perms;
+ 
++	manage_dirs_pattern(httpd_smokeping_cgi_script_t, smokeping_var_lib_t, smokeping_var_lib_t)
+ 	manage_files_pattern(httpd_smokeping_cgi_script_t, smokeping_var_lib_t, smokeping_var_lib_t)
+ 
+ 	getattr_files_pattern(httpd_smokeping_cgi_script_t, smokeping_var_run_t, smokeping_var_run_t)
 diff --git a/policy/modules/services/snmp.fc b/policy/modules/services/snmp.fc
 index 623c8fa..ac10740 100644
 --- a/policy/modules/services/snmp.fc
@@ -37558,7 +37656,7 @@ index 1c4b1e7..2997dd7 100644
  /var/lib/pam_ssh(/.*)?		gen_context(system_u:object_r:var_auth_t,s0)
  
 diff --git a/policy/modules/system/authlogin.if b/policy/modules/system/authlogin.if
-index bea0ade..149e383 100644
+index bea0ade..c411b5e 100644
 --- a/policy/modules/system/authlogin.if
 +++ b/policy/modules/system/authlogin.if
 @@ -57,6 +57,8 @@ interface(`auth_use_pam',`
@@ -37750,33 +37848,7 @@ index bea0ade..149e383 100644
  ##	Manage var auth files. Used by various other applications
  ##	and pam applets etc.
  ## </summary>
-@@ -1346,6 +1432,25 @@ interface(`auth_read_login_records',`
- 
- ########################################
- ## <summary>
-+##	Read login records files (/var/log/wtmp).
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+## <rolecap/>
-+#
-+interface(`auth_dontaudit_read_login_records',`
-+	gen_require(`
-+		type wtmp_t;
-+	')
-+
-+	dontaudit $1 wtmp_t:file read_file_perms;
-+')
-+
-+########################################
-+## <summary>
- ##	Do not audit attempts to read login records
- ##	files (/var/log/wtmp).
- ## </summary>
-@@ -1500,6 +1605,8 @@ interface(`auth_manage_login_records',`
+@@ -1500,6 +1586,8 @@ interface(`auth_manage_login_records',`
  #
  interface(`auth_use_nsswitch',`
  
@@ -37785,7 +37857,7 @@ index bea0ade..149e383 100644
  	files_list_var_lib($1)
  
  	# read /etc/nsswitch.conf
-@@ -1531,7 +1638,15 @@ interface(`auth_use_nsswitch',`
+@@ -1531,7 +1619,15 @@ interface(`auth_use_nsswitch',`
  	')
  
  	optional_policy(`
