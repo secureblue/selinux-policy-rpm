@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.5
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,11 @@ exit 0
 %endif
 
 %changelog
+* Mon Oct 4 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-10
+- Start adding support for use_fusefs_home_dirs
+- Add /var/lib/syslog directory file context
+- Add /etc/localtime as locale file context
+
 * Thu Sep 30 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-9
 - Turn off default transition to mozilla_plugin and telepathy domains from unconfined user 
 - Turn off iptables from unconfined user 
