@@ -20,8 +20,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.9.5
-Release: 12%{?dist}
+Version: 3.9.6
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,9 +470,10 @@ exit 0
 %endif
 
 %changelog
-* Thu Oct 7 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-12
+* Thu Oct 7 2010 Dan Walsh <dwalsh@redhat.com> 3.9.6-1
 - Allow smbd to use sys_admin
 - Remove duplicate file context for tcfmgr
+- Update to upstream
 
 * Wed Oct 6 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-11
 - Fix fusefs handling
