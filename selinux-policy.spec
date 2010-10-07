@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.5
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,18 @@ exit 0
 %endif
 
 %changelog
+* Wed Oct 6 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-11
+- Fix fusefs handling
+- Do not allow sandbox to manage nsplugin_rw_t
+- Allow mozilla_plugin_t to connecto its parent
+- Allow init_t to connect to plymouthd running as kernel_t
+- Add mediawiki policy
+- dontaudit sandbox sending signals to itself.  This can happen when they are running at different mcs.
+- Disable transition from dbus_session_domain to telepathy for F14
+- Allow boinc_project to use shm
+- Allow certmonger to search through directories that contain certs
+- Allow fail2ban the DAC Override so it can read log files owned by non root users
+
 * Mon Oct 4 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-10
 - Start adding support for use_fusefs_home_dirs
 - Add /var/lib/syslog directory file context
