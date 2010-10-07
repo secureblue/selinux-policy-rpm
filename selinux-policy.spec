@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.5
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Oct 7 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-12
+- Allow smbd to use sys_admin
+- Remove duplicate file context for tcfmgr
+
 * Wed Oct 6 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-11
 - Fix fusefs handling
 - Do not allow sandbox to manage nsplugin_rw_t
