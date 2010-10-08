@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.6
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,12 @@ exit 0
 %endif
 
 %changelog
+
+* Fri Oct 8 2010 Dan Walsh <dwalsh@redhat.com> 3.9.6-2
+- Lots of fixes for systemd
+- systemd now executes readahead and tmpwatch type scripts
+- Needs to manage random seed
+
 * Thu Oct 7 2010 Dan Walsh <dwalsh@redhat.com> 3.9.6-1
 - Allow smbd to use sys_admin
 - Remove duplicate file context for tcfmgr
