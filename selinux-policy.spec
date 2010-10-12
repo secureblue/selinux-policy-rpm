@@ -20,8 +20,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.9.6
-Release: 3%{?dist}
+Version: 3.9.7
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 12 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-1
+- Update to upstream
+
 * Tue Oct 12 2010 Dan Walsh <dwalsh@redhat.com> 3.9.6-3
 -Mount command from a confined user generates setattr on /etc/mtab file, need to dontaudit this access
 - dovecot-auth_t needs ipc_lock
