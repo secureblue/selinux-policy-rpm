@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.6
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 12 2010 Dan Walsh <dwalsh@redhat.com> 3.9.6-3
+-Mount command from a confined user generates setattr on /etc/mtab file, need to dontaudit this access
+- dovecot-auth_t needs ipc_lock
+- gpm needs to use the user terminal
+- Allow system_mail_t to append ~/dead.letter
+- Allow NetworkManager to edit /etc/NetworkManager/NetworkManager.conf
+- Add pid file to vnstatd
+- Allow mount to communicate with gfs_controld
+- Dontaudit hal leaks in setfiles
 
 * Fri Oct 8 2010 Dan Walsh <dwalsh@redhat.com> 3.9.6-2
 - Lots of fixes for systemd
