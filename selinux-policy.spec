@@ -470,7 +470,7 @@ exit 0
 %endif
 
 %changelog
-* Tue Oct 12 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-1
+* Wed Oct 13 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-1
 - Update to upstream
 
 * Tue Oct 12 2010 Dan Walsh <dwalsh@redhat.com> 3.9.6-3
