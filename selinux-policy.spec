@@ -21,12 +21,11 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.7
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-F14.patch
-patch2: telepathy_removal.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -204,7 +203,6 @@ Based off of reference policy: Checked out revision  2.20091117
 %prep 
 %setup -n serefpolicy-%{version} -q
 %patch -p1
-%patch2 -p1
 
 %install
 mkdir selinux_config
@@ -472,6 +470,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 15 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-3
+- Allow cobblerd to list cobler appache content
+
 * Fri Oct 15 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-2
 - Fixup for the latest version of upowed
 - Dontaudit sandbox sending SIGNULL to desktop apps
