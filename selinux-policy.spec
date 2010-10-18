@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.7
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 15 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-4
+- Allow sandbox_x_domains to work with nfs/cifs/fusefs home dirs.
+
 * Fri Oct 15 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-3
 - Allow cobblerd to list cobler appache content
 
