@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.7
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 22 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-6
+- Fixes for systemd to manage /var/run
+- Dontaudit leaks by firstboot
+
 * Tue Oct 19 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-5
 - Allow chome to create netlink_route_socket
 - Add additional MATHLAB file context
