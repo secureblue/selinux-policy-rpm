@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.7
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,8 +470,26 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 19 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-5
+- Allow chome to create netlink_route_socket
+- Add additional MATHLAB file context
+- Define nsplugin as an application_domain
+- Dontaudit sending signals from sandboxed domains to other domains
+- systemd requires init to build /tmp /var/auth and /var/lock dirs
+- mount wants to read devicekit_power /proc/ entries
+- mpd wants to connect to soundd port
+- Openoffice causes a setattr on a lib_t file for normal users, add dontaudit
+- Treat lib_t and textrel_shlib_t directories the same
+- Allow mount read access on virtual images
+
 * Fri Oct 15 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-4
 - Allow sandbox_x_domains to work with nfs/cifs/fusefs home dirs.
+- Allow devicekit_power to domtrans to mount
+- Allow dhcp to bind to udp ports > 1024 to do named stuff
+- Allow ssh_t to exec ssh_exec_t
+- Remove telepathy_butterfly_rw_tmp_files(), dev_read_printk() interfaces which are nolonger used
+- Fix clamav_append_log() intefaces
+- Fix 'psad_rw_fifo_file' interface
 
 * Fri Oct 15 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-3
 - Allow cobblerd to list cobler appache content
