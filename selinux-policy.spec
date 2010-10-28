@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.7
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,17 @@ exit 0
 %endif
 
 %changelog
+* Thu Oct 28 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-7
+- Dontaudit sandbox sending sigkill to all user domains
+- Add policy for rssh_chroot_helper
+- Add missing flask definitions
+- Allow udev to relabelto removable_t
+- Fix label on /var/log/wicd.log
+- Transition to initrc_t from init when executing bin_t
+- Add audit_access permissions to file
+- Make removable_t a device_node 
+- Fix label on /lib/systemd/*
+
 * Fri Oct 22 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-6
 - Fixes for systemd to manage /var/run
 - Dontaudit leaks by firstboot
