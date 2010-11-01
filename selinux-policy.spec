@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.7
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,12 @@ exit 0
 %endif
 
 %changelog
+* Mon Nov 1 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-8
+- Allow NetworkManager to read openvpn_etc_t
+- Dontaudit hplip to write of /usr dirs
+- Allow system_mail_t to create /root/dead.letter as mail_home_t
+- Add vdagent policy for spice agent daemon
+
 * Thu Oct 28 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-7
 - Dontaudit sandbox sending sigkill to all user domains
 - Add policy for rssh_chroot_helper
