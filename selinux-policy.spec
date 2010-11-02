@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.7
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 2 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-9
+- 
+
 * Mon Nov 1 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-8
 - Allow NetworkManager to read openvpn_etc_t
 - Dontaudit hplip to write of /usr dirs
