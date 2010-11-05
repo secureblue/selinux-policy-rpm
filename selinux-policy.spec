@@ -470,6 +470,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Nov 5 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-1
+- Update to upstream
+- Add vlock policy
+
 * Wed Nov 3 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-10
 - Fix sandbox to work on nfs homedirs
 - Allow cdrecord to setrlimit
