@@ -25,7 +25,7 @@ Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-F14.patch
+patch: policy-F15.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
