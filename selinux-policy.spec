@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.7
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,8 +470,17 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov 3 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-10
+- Fix sandbox to work on nfs homedirs
+- Allow cdrecord to setrlimit
+- Allow mozilla_plugin to read xauth
+- Change label on systemd-logger to syslogd_exec_t
+- Install dirsrv policy from dirsrv package
+
 * Tue Nov 2 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-9
-- 
+- Add virt_home_t, allow init to setattr on xserver_tmp_t and relabel it
+- Udev needs to stream connect to init and kernel
+- Add xdm_exec_bootloader boolean, which allows xdm to execute /sbin/grub and read files in /boot directory
 
 * Mon Nov 1 2010 Dan Walsh <dwalsh@redhat.com> 3.9.7-8
 - Allow NetworkManager to read openvpn_etc_t
