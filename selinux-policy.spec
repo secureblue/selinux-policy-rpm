@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.8
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,20 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 9 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-3
+- Fix up corecommands.fc to match upstream
+- Make sure /lib/systemd/* is labeled init_exec_t
+- mount wants to setattr on all mountpoints
+- dovecot auth wants to read dovecot etc files
+- nscd daemon looks at the exe file of the comunicating daemon
+- openvpn wants to read utmp file
+- postfix apps now set sys_nice and lower limits
+- remote_login (telnetd/login) wants to use telnetd_devpts_t and user_devpts_t to work correctly
+- Also resolves nsswitch
+- Fix labels on /etc/hosts.*
+- Cleanup to make upsteam patch work
+- allow abrt to read etc_runtime_t
+
 * Fri Nov 5 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-2
 - Add conflicts for dirsrv package
 
