@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.8
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -319,6 +319,7 @@ Conflicts:  audispd-plugins <= 1.7.7-1
 Obsoletes: mod_fcgid-selinux <= %{version}-%{release}
 Obsoletes: cachefilesd-selinux <= 0.10-1
 Conflicts:  seedit
+Conflicts:  389-ds-base < 1.2.7, 389-admin < 1.1.12
 
 %description targeted
 SELinux Reference policy targeted base module.
@@ -470,6 +471,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Nov 5 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-2
+- Add conflicts for dirsrv package
+
 * Fri Nov 5 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-1
 - Update to upstream
 - Add vlock policy
