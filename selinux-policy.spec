@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.8
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov 10 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-4
+- Fix init to be able to relabel wtmp, tmp files
+
 * Tue Nov 9 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-3
 - Fix up corecommands.fc to match upstream
 - Make sure /lib/systemd/* is labeled init_exec_t
