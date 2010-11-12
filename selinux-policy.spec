@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.8
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Nov 12 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-6
+- Remove saslauthd_tmp_t and transition tmp files to krb5_host_rcache_t
+
 * Thu Nov 11 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-5
 - kdump leaks kdump_etc_t to ifconfig, add dontaudit
 - uux needs to transition to uucpd_t
