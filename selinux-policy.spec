@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.8
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,15 @@ exit 0
 %endif
 
 %changelog
+* Fri Nov 12 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.8-5
+- Turn on mediawiki policy
+- kdump leaks kdump_etc_t to ifconfig, add dontaudit
+- uux needs to transition to uucpd_t
+- More init fixes relabels man,faillog
+- Remove maxima defs in libraries.fc
+- insmod needs to be able to create tmpfs_t files
+- ping needs setcap
+
 * Wed Nov 10 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.8-4
 - Allow groupd transition to fenced domain when executes fence_node
 - Fixes for rchs policy
