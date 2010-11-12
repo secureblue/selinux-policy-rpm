@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.8
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,18 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 11 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-5
+- kdump leaks kdump_etc_t to ifconfig, add dontaudit
+- uux needs to transition to uucpd_t
+- More init fixes relabels man,faillog
+- Remove maxima defs in libraries.fc
+- insmod needs to be able to create tmpfs_t files
+- ping needs setcap
+- init executes mcelog, initrc_t needs to manage faillog.
+- fix xserver_ralabel_xdm_tmp_dirs
+- Allow dovecot_deliver_t to list dovecot_etc_t
+- Run acroread as execmem_t
+
 * Wed Nov 10 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-4
 - Fix init to be able to relabel wtmp, tmp files
 
