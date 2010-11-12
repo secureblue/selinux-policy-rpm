@@ -473,21 +473,23 @@ exit 0
 %changelog
 * Fri Nov 12 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-6
 - Remove saslauthd_tmp_t and transition tmp files to krb5_host_rcache_t
+- Allow saslauthd_t to create krb5_host_rcache_t files in /tmp
+- Fix xserver interface
+- Fix definition of /var/run/lxdm
 
-* Thu Nov 11 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-5
+* Fri Nov 12 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.8-5
+- Turn on mediawiki policy
 - kdump leaks kdump_etc_t to ifconfig, add dontaudit
 - uux needs to transition to uucpd_t
 - More init fixes relabels man,faillog
 - Remove maxima defs in libraries.fc
 - insmod needs to be able to create tmpfs_t files
 - ping needs setcap
-- init executes mcelog, initrc_t needs to manage faillog.
-- fix xserver_ralabel_xdm_tmp_dirs
-- Allow dovecot_deliver_t to list dovecot_etc_t
-- Run acroread as execmem_t
 
-* Wed Nov 10 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-4
-- Fix init to be able to relabel wtmp, tmp files
+* Wed Nov 10 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.8-4
+- Allow groupd transition to fenced domain when executes fence_node
+- Fixes for rchs policy
+- Allow mpd to be able to read samba/nfs files
 
 * Tue Nov 9 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-3
 - Fix up corecommands.fc to match upstream
