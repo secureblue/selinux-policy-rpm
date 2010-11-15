@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.8
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,16 @@ exit 0
 %endif
 
 %changelog
+* Mon Nov 15 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.8-7
+- Allow nagios plugins to read usr files
+- Allow mysqld-safe to send system log messages
+- Fixes fpr ddclient policy
+- Fix sasl_admin interface
+- Allow apache to search zarafa config
+- Allow munin plugins to search /var/lib directory
+- Allow gpsd to read sysfs_t
+- Fix labels on /etc/mcelog/triggers to bin_t
+
 * Fri Nov 12 2010 Dan Walsh <dwalsh@redhat.com> 3.9.8-6
 - Remove saslauthd_tmp_t and transition tmp files to krb5_host_rcache_t
 - Allow saslauthd_t to create krb5_host_rcache_t files in /tmp
