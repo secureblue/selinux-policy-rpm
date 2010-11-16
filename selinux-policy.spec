@@ -20,8 +20,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.9.8
-Release: 7%{?dist}
+Version: 3.9.9
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,13 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 16 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-1
+- Update to upstream
+- Dontaudit leaked sockets from userdomains to user domains
+- Fixes for mcelog to handle scripts
+- Apply patch from Ruben Kerkhof
+- Allow syslog to search spool dirs
+
 * Mon Nov 15 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.8-7
 - Allow nagios plugins to read usr files
 - Allow mysqld-safe to send system log messages
