@@ -490,16 +490,39 @@ index 75ce30f..f3347aa 100644
  ')
  
 diff --git a/policy/modules/admin/mcelog.te b/policy/modules/admin/mcelog.te
-index 5a9cebf..276941d 100644
+index 5a9cebf..2e08bef 100644
 --- a/policy/modules/admin/mcelog.te
 +++ b/policy/modules/admin/mcelog.te
-@@ -7,6 +7,7 @@ policy_module(mcelog, 1.0.1)
+@@ -7,9 +7,13 @@ policy_module(mcelog, 1.0.1)
  
  type mcelog_t;
  type mcelog_exec_t;
 +init_system_domain(mcelog_t, mcelog_exec_t)
  application_domain(mcelog_t, mcelog_exec_t)
  cron_system_entry(mcelog_t, mcelog_exec_t)
+ 
++type mcelog_var_run_t;
++files_pid_file(mcelog_var_run_t)
++
+ ########################################
+ #
+ # mcelog local policy
+@@ -17,10 +21,16 @@ cron_system_entry(mcelog_t, mcelog_exec_t)
+ 
+ allow mcelog_t self:capability sys_admin;
+ 
++allow mcelog_t mcelog_var_run_t:file manage_file_perms;
++allow mcelog_t mcelog_var_run_t:sock_file manage_sock_file_perms;
++allow mcelog_t mcelog_var_run_t:dir manage_dir_perms;
++files_pid_filetrans(mcelog_t, mcelog_var_run_t, { dir file sock_file })
++
+ kernel_read_system_state(mcelog_t)
+ 
+ dev_read_raw_memory(mcelog_t)
+ dev_read_kmsg(mcelog_t)
++dev_rw_sysfs(mcelog_t)
+ 
+ files_read_etc_files(mcelog_t)
  
 diff --git a/policy/modules/admin/mrtg.te b/policy/modules/admin/mrtg.te
 index 0e19d80..9d58abe 100644
@@ -3518,7 +3541,7 @@ index 86c1768..cd76e6a 100644
  /usr/java/eclipse[^/]*/eclipse	--	gen_context(system_u:object_r:java_exec_t,s0)
  ')
 diff --git a/policy/modules/apps/java.if b/policy/modules/apps/java.if
-index e6d84e8..f0c4777 100644
+index e6d84e8..b027189 100644
 --- a/policy/modules/apps/java.if
 +++ b/policy/modules/apps/java.if
 @@ -72,7 +72,8 @@ template(`java_role_template',`
@@ -3531,16 +3554,19 @@ index e6d84e8..f0c4777 100644
  
  	allow $1_java_t self:process { ptrace signal getsched execmem execstack };
  
-@@ -82,7 +83,7 @@ template(`java_role_template',`
+@@ -82,7 +83,10 @@ template(`java_role_template',`
  
  	domtrans_pattern($3, java_exec_t, $1_java_t)
  
 -	corecmd_bin_domtrans($1_java_t, $3)
 +	corecmd_bin_domtrans($1_java_t, $1_t)
++	ifdef(`hide_broken_symptoms', `
++		dontaudit $1_t $1_java_t:socket_class_set { read write };
++	')
  
  	dev_dontaudit_append_rand($1_java_t)
  
-@@ -179,6 +180,7 @@ interface(`java_run_unconfined',`
+@@ -179,6 +183,7 @@ interface(`java_run_unconfined',`
  
  	java_domtrans_unconfined($1)
  	role $2 types unconfined_java_t;
@@ -3783,10 +3809,10 @@ index 0000000..b7f569d
 +')
 +
 diff --git a/policy/modules/apps/mono.if b/policy/modules/apps/mono.if
-index 7b08e13..9c9e6c1 100644
+index 7b08e13..515a88a 100644
 --- a/policy/modules/apps/mono.if
 +++ b/policy/modules/apps/mono.if
-@@ -41,7 +41,6 @@ template(`mono_role_template',`
+@@ -41,15 +41,22 @@ template(`mono_role_template',`
  	application_type($1_mono_t)
  
  	allow $1_mono_t self:process { ptrace signal getsched execheap execmem execstack };
@@ -3794,9 +3820,12 @@ index 7b08e13..9c9e6c1 100644
  	allow $3 $1_mono_t:process { getattr ptrace noatsecure signal_perms };
  
  	domtrans_pattern($3, mono_exec_t, $1_mono_t)
-@@ -49,7 +48,12 @@ template(`mono_role_template',`
+ 
  	fs_dontaudit_rw_tmpfs_files($1_mono_t)
  	corecmd_bin_domtrans($1_mono_t, $1_t)
++	ifdef(`hide_broken_symptoms', `
++		dontaudit $1_t $1_mono_t:socket_class_set { read write };
++	')
  
 -	userdom_manage_user_tmpfs_files($1_mono_t)
 +	userdom_unpriv_usertype($1, $1_mono_t)
@@ -7260,7 +7289,7 @@ index 9d24449..9782698 100644
  /opt/google/picasa(/.*)?/bin/notepad --	gen_context(system_u:object_r:wine_exec_t,s0)
  /opt/google/picasa(/.*)?/bin/progman --	gen_context(system_u:object_r:wine_exec_t,s0)
 diff --git a/policy/modules/apps/wine.if b/policy/modules/apps/wine.if
-index 0440b4c..e10101a 100644
+index 0440b4c..4b055c1 100644
 --- a/policy/modules/apps/wine.if
 +++ b/policy/modules/apps/wine.if
 @@ -29,12 +29,16 @@
@@ -7298,8 +7327,13 @@ index 0440b4c..e10101a 100644
  		type wine_exec_t;
  	')
  
-@@ -101,7 +105,7 @@ template(`wine_role_template',`
+@@ -99,9 +103,12 @@ template(`wine_role_template',`
+ 	allow $3 $1_wine_t:process { getattr ptrace noatsecure signal_perms };
+ 	domtrans_pattern($3, wine_exec_t, $1_wine_t)
  	corecmd_bin_domtrans($1_wine_t, $1_t)
++	ifdef(`hide_broken_symptoms', `
++		dontaudit $1_t $1_wine_t:socket_class_set { read write };
++	')
  
  	userdom_unpriv_usertype($1, $1_wine_t)
 -	userdom_manage_user_tmpfs_files($1_wine_t)
@@ -7307,7 +7341,7 @@ index 0440b4c..e10101a 100644
  
  	domain_mmap_low($1_wine_t)
  
-@@ -109,6 +113,10 @@ template(`wine_role_template',`
+@@ -109,6 +116,10 @@ template(`wine_role_template',`
  		dontaudit $1_wine_t self:memprotect mmap_zero;
  	')
  
@@ -7318,7 +7352,7 @@ index 0440b4c..e10101a 100644
  	optional_policy(`
  		xserver_role($1_r, $1_wine_t)
  	')
-@@ -157,3 +165,22 @@ interface(`wine_run',`
+@@ -157,3 +168,22 @@ interface(`wine_run',`
  	wine_domtrans($1)
  	role $2 types wine_t;
  ')
@@ -24701,7 +24735,7 @@ index 343cee3..2f948ad 100644
 +	')
 +')
 diff --git a/policy/modules/services/mta.te b/policy/modules/services/mta.te
-index 64268e4..6543734 100644
+index 64268e4..ce7924b 100644
 --- a/policy/modules/services/mta.te
 +++ b/policy/modules/services/mta.te
 @@ -20,8 +20,8 @@ files_type(etc_aliases_t)
@@ -24739,18 +24773,20 @@ index 64268e4..6543734 100644
  dev_read_sysfs(system_mail_t)
  dev_read_rand(system_mail_t)
  dev_read_urand(system_mail_t)
-@@ -82,6 +71,10 @@ init_use_script_ptys(system_mail_t)
+@@ -82,6 +71,12 @@ init_use_script_ptys(system_mail_t)
  
  userdom_use_user_terminals(system_mail_t)
  userdom_dontaudit_search_user_home_dirs(system_mail_t)
 +userdom_dontaudit_list_admin_dir(system_mail_t)
++
++allow system_mail_t mail_home_t:file manage_file_perms;
 +userdom_admin_home_dir_filetrans(system_mail_t, mail_home_t, file)
 +
 +logging_append_all_logs(system_mail_t)
  
  optional_policy(`
  	apache_read_squirrelmail_data(system_mail_t)
-@@ -92,17 +85,28 @@ optional_policy(`
+@@ -92,17 +87,28 @@ optional_policy(`
  	apache_dontaudit_rw_stream_sockets(system_mail_t)
  	apache_dontaudit_rw_tcp_sockets(system_mail_t)
  	apache_dontaudit_rw_sys_script_stream_sockets(system_mail_t)
@@ -24780,7 +24816,7 @@ index 64268e4..6543734 100644
  	clamav_stream_connect(system_mail_t)
  	clamav_append_log(system_mail_t)
  ')
-@@ -111,6 +115,8 @@ optional_policy(`
+@@ -111,6 +117,8 @@ optional_policy(`
  	cron_read_system_job_tmp_files(system_mail_t)
  	cron_dontaudit_write_pipes(system_mail_t)
  	cron_rw_system_job_stream_sockets(system_mail_t)
@@ -24789,7 +24825,7 @@ index 64268e4..6543734 100644
  ')
  
  optional_policy(`
-@@ -124,12 +130,8 @@ optional_policy(`
+@@ -124,12 +132,8 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -24803,7 +24839,7 @@ index 64268e4..6543734 100644
  ')
  
  optional_policy(`
-@@ -146,6 +148,10 @@ optional_policy(`
+@@ -146,6 +150,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -24814,7 +24850,7 @@ index 64268e4..6543734 100644
  	nagios_read_tmp_files(system_mail_t)
  ')
  
-@@ -158,18 +164,6 @@ optional_policy(`
+@@ -158,18 +166,6 @@ optional_policy(`
  	files_etc_filetrans(system_mail_t, etc_aliases_t, { file lnk_file sock_file fifo_file })
  
  	domain_use_interactive_fds(system_mail_t)
@@ -24833,7 +24869,7 @@ index 64268e4..6543734 100644
  ')
  
  optional_policy(`
-@@ -189,6 +183,10 @@ optional_policy(`
+@@ -189,6 +185,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -24844,7 +24880,7 @@ index 64268e4..6543734 100644
  	smartmon_read_tmp_files(system_mail_t)
  ')
  
-@@ -199,7 +197,7 @@ optional_policy(`
+@@ -199,7 +199,7 @@ optional_policy(`
  	arpwatch_search_data(mailserver_delivery)
  	arpwatch_manage_tmp_files(mta_user_agent)
  
@@ -24853,7 +24889,7 @@ index 64268e4..6543734 100644
  		arpwatch_dontaudit_rw_packet_sockets(mta_user_agent)
  	')
  
-@@ -220,7 +218,8 @@ append_files_pattern(mailserver_delivery, mail_spool_t, mail_spool_t)
+@@ -220,7 +220,8 @@ append_files_pattern(mailserver_delivery, mail_spool_t, mail_spool_t)
  create_lnk_files_pattern(mailserver_delivery, mail_spool_t, mail_spool_t)
  read_lnk_files_pattern(mailserver_delivery, mail_spool_t, mail_spool_t)
  
@@ -24863,7 +24899,7 @@ index 64268e4..6543734 100644
  
  read_files_pattern(mailserver_delivery, system_mail_tmp_t, system_mail_tmp_t)
  
-@@ -249,11 +248,16 @@ optional_policy(`
+@@ -249,11 +250,16 @@ optional_policy(`
  	mailman_read_data_symlinks(mailserver_delivery)
  ')
  
@@ -24880,7 +24916,7 @@ index 64268e4..6543734 100644
  domain_use_interactive_fds(user_mail_t)
  
  userdom_use_user_terminals(user_mail_t)
-@@ -292,3 +296,44 @@ optional_policy(`
+@@ -292,3 +298,44 @@ optional_policy(`
  	postfix_read_config(user_mail_t)
  	postfix_list_spool(user_mail_t)
  ')
@@ -25422,7 +25458,7 @@ index 8581040..f54b3b8 100644
  
  	allow $1 nagios_t:process { ptrace signal_perms };
 diff --git a/policy/modules/services/nagios.te b/policy/modules/services/nagios.te
-index da5b33d..b9ab551 100644
+index da5b33d..5416fde 100644
 --- a/policy/modules/services/nagios.te
 +++ b/policy/modules/services/nagios.te
 @@ -107,13 +107,11 @@ files_read_etc_files(nagios_t)
@@ -25484,6 +25520,15 @@ index da5b33d..b9ab551 100644
  allow nagios_mail_plugin_t self:netlink_route_socket r_netlink_socket_perms;
  allow nagios_mail_plugin_t self:tcp_socket create_stream_socket_perms;
  allow nagios_mail_plugin_t self:udp_socket create_socket_perms;
+@@ -299,7 +299,7 @@ optional_policy(`
+ 
+ optional_policy(`
+ 	postfix_stream_connect_master(nagios_mail_plugin_t)
+-	posftix_exec_postqueue(nagios_mail_plugin_t)
++	postfix_exec_postqueue(nagios_mail_plugin_t)
+ ')
+ 
+ ######################################
 @@ -323,7 +323,6 @@ storage_raw_read_fixed_disk(nagios_checkdisk_plugin_t)
  
  allow nagios_services_plugin_t self:capability { net_bind_service net_raw };
@@ -28084,7 +28129,7 @@ index 55e62d2..c114a40 100644
  /usr/sbin/postfix	--	gen_context(system_u:object_r:postfix_master_exec_t,s0)
  /usr/sbin/postkick	--	gen_context(system_u:object_r:postfix_master_exec_t,s0)
 diff --git a/policy/modules/services/postfix.if b/policy/modules/services/postfix.if
-index 46bee12..9c13189 100644
+index 46bee12..b87375e 100644
 --- a/policy/modules/services/postfix.if
 +++ b/policy/modules/services/postfix.if
 @@ -34,8 +34,9 @@ template(`postfix_domain_template',`
@@ -28169,6 +28214,15 @@ index 46bee12..9c13189 100644
  #
  interface(`postfix_stream_connect_master',`
  	gen_require(`
+@@ -462,7 +484,7 @@ interface(`postfix_domtrans_postqueue',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`posftix_exec_postqueue',`
++interface(`postfix_exec_postqueue',`
+ 	gen_require(`
+ 		type postfix_postqueue_exec_t;
+ 	')
 @@ -529,6 +551,25 @@ interface(`postfix_domtrans_smtp',`
  
  ########################################
@@ -40361,7 +40415,7 @@ index 9775375..51bde2a 100644
  #
  # /var
 diff --git a/policy/modules/system/init.if b/policy/modules/system/init.if
-index df3fa64..73dc579 100644
+index df3fa64..852a6ad 100644
 --- a/policy/modules/system/init.if
 +++ b/policy/modules/system/init.if
 @@ -105,7 +105,11 @@ interface(`init_domain',`
@@ -40429,13 +40483,15 @@ index df3fa64..73dc579 100644
  	')
  
  	application_domain($1,$2)
-@@ -345,6 +367,17 @@ interface(`init_system_domain',`
+@@ -345,6 +367,19 @@ interface(`init_system_domain',`
  	role system_r types $1;
  
  	domtrans_pattern(initrc_t,$2,$1)
 +	allow initrc_t $1:process siginh;
 +	allow $1 initrc_transition_domain:fifo_file rw_inherited_fifo_file_perms;
 +	allow $1 initrc_transition_domain:fd use;
++
++	dontaudit $1 init_t:unix_stream_socket getattr;
 +
 +	tunable_policy(`init_systemd',`
 +		# Handle upstart/systemd direct transition to a executable
@@ -40447,7 +40503,7 @@ index df3fa64..73dc579 100644
  
  	ifdef(`hide_broken_symptoms',`
  		# RHEL4 systems seem to have a stray
-@@ -353,6 +386,37 @@ interface(`init_system_domain',`
+@@ -353,6 +388,37 @@ interface(`init_system_domain',`
  			kernel_dontaudit_use_fds($1)
  		')
  	')
@@ -40485,7 +40541,7 @@ index df3fa64..73dc579 100644
  ')
  
  ########################################
-@@ -687,19 +751,24 @@ interface(`init_telinit',`
+@@ -687,19 +753,24 @@ interface(`init_telinit',`
  		type initctl_t;
  	')
  
@@ -40511,7 +40567,7 @@ index df3fa64..73dc579 100644
  	')
  ')
  
-@@ -772,18 +841,19 @@ interface(`init_script_file_entry_type',`
+@@ -772,18 +843,19 @@ interface(`init_script_file_entry_type',`
  #
  interface(`init_spec_domtrans_script',`
  	gen_require(`
@@ -40535,7 +40591,7 @@ index df3fa64..73dc579 100644
  	')
  ')
  
-@@ -799,23 +869,45 @@ interface(`init_spec_domtrans_script',`
+@@ -799,23 +871,45 @@ interface(`init_spec_domtrans_script',`
  #
  interface(`init_domtrans_script',`
  	gen_require(`
@@ -40585,7 +40641,7 @@ index df3fa64..73dc579 100644
  ##	Execute a init script in a specified domain.
  ## </summary>
  ## <desc>
-@@ -867,8 +959,12 @@ interface(`init_script_file_domtrans',`
+@@ -867,8 +961,12 @@ interface(`init_script_file_domtrans',`
  interface(`init_labeled_script_domtrans',`
  	gen_require(`
  		type initrc_t;
@@ -40598,7 +40654,7 @@ index df3fa64..73dc579 100644
  	domtrans_pattern($1, $2, initrc_t)
  	files_search_etc($1)
  ')
-@@ -1129,12 +1225,7 @@ interface(`init_read_script_state',`
+@@ -1129,12 +1227,7 @@ interface(`init_read_script_state',`
  	')
  
  	kernel_search_proc($1)
@@ -40612,7 +40668,7 @@ index df3fa64..73dc579 100644
  ')
  
  ########################################
-@@ -1374,6 +1465,27 @@ interface(`init_dbus_send_script',`
+@@ -1374,6 +1467,27 @@ interface(`init_dbus_send_script',`
  ########################################
  ## <summary>
  ##	Send and receive messages from
@@ -40640,7 +40696,7 @@ index df3fa64..73dc579 100644
  ##	init scripts over dbus.
  ## </summary>
  ## <param name="domain">
-@@ -1460,6 +1572,25 @@ interface(`init_getattr_script_status_files',`
+@@ -1460,6 +1574,25 @@ interface(`init_getattr_script_status_files',`
  
  ########################################
  ## <summary>
@@ -40666,7 +40722,7 @@ index df3fa64..73dc579 100644
  ##	Do not audit attempts to read init script
  ##	status files.
  ## </summary>
-@@ -1673,7 +1804,7 @@ interface(`init_dontaudit_rw_utmp',`
+@@ -1673,7 +1806,7 @@ interface(`init_dontaudit_rw_utmp',`
  		type initrc_var_run_t;
  	')
  
@@ -40675,7 +40731,7 @@ index df3fa64..73dc579 100644
  ')
  
  ########################################
-@@ -1748,3 +1879,74 @@ interface(`init_udp_recvfrom_all_daemons',`
+@@ -1748,3 +1881,74 @@ interface(`init_udp_recvfrom_all_daemons',`
  	')
  	corenet_udp_recvfrom_labeled($1, daemon)
  ')
@@ -42457,7 +42513,7 @@ index 3fb1915..26e9f79 100644
 -	nscd_socket_use(sulogin_t)
 -')
 diff --git a/policy/modules/system/logging.fc b/policy/modules/system/logging.fc
-index 362614c..c5757eb 100644
+index 571599b..17dd196 100644
 --- a/policy/modules/system/logging.fc
 +++ b/policy/modules/system/logging.fc
 @@ -17,6 +17,10 @@
@@ -42601,7 +42657,7 @@ index c7cfb62..db7ad6b 100644
  	init_labeled_script_domtrans($1, syslogd_initrc_exec_t)
  	domain_system_change_exemption($1)
 diff --git a/policy/modules/system/logging.te b/policy/modules/system/logging.te
-index 828156a..4762f02 100644
+index aa2b0a6..ec04f4f 100644
 --- a/policy/modules/system/logging.te
 +++ b/policy/modules/system/logging.te
 @@ -60,6 +60,7 @@ files_type(syslog_conf_t)
@@ -42675,23 +42731,31 @@ index 828156a..4762f02 100644
  sysnet_dns_name_resolve(audisp_remote_t)
  
  ########################################
-@@ -369,9 +392,15 @@ manage_dirs_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
+@@ -360,6 +383,7 @@ files_pid_filetrans(syslogd_t, devlog_t, sock_file)
+ # create/append log files.
+ manage_files_pattern(syslogd_t, var_log_t, var_log_t)
+ rw_fifo_files_pattern(syslogd_t, var_log_t, var_log_t)
++files_search_spool(syslogd_t)
+ 
+ # Allow access for syslog-ng
+ allow syslogd_t var_log_t:dir { create setattr };
+@@ -369,8 +393,15 @@ manage_dirs_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
  manage_files_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
  files_tmp_filetrans(syslogd_t, syslogd_tmp_t, { dir file })
  
 +manage_sock_files_pattern(syslogd_t, syslogd_var_lib_t, syslogd_var_lib_t)
  manage_files_pattern(syslogd_t, syslogd_var_lib_t, syslogd_var_lib_t)
  files_search_var_lib(syslogd_t)
- 
++files_search_spool(syslogd_t)
++
 +manage_dirs_pattern(syslogd_t, syslogd_var_run_t, syslogd_var_run_t)
 +manage_files_pattern(syslogd_t, syslogd_var_run_t, syslogd_var_run_t)
 +manage_sock_files_pattern(syslogd_t, syslogd_var_run_t, syslogd_var_run_t)
 +files_pid_filetrans(syslogd_t, syslogd_var_run_t, { file dir })
-+
+ 
  # manage pid file
  manage_files_pattern(syslogd_t, syslogd_var_run_t, syslogd_var_run_t)
- files_pid_filetrans(syslogd_t, syslogd_var_run_t, file)
-@@ -412,6 +441,7 @@ corenet_sendrecv_mysqld_client_packets(syslogd_t)
+@@ -412,6 +443,7 @@ corenet_sendrecv_mysqld_client_packets(syslogd_t)
  
  dev_filetrans(syslogd_t, devlog_t, sock_file)
  dev_read_sysfs(syslogd_t)
@@ -42699,7 +42763,7 @@ index 828156a..4762f02 100644
  
  domain_use_interactive_fds(syslogd_t)
  
-@@ -488,6 +518,10 @@ optional_policy(`
+@@ -488,6 +520,10 @@ optional_policy(`
  ')
  
  optional_policy(`
