@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.9
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,16 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 18 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-2
+- Turn on allow_postfix_local_write_mail_spool
+- Allow initrc_t to transition to shutdown_t
+- Allow logwatch and cron to mls_read_to_clearance for MLS boxes
+- Allow wm to send signull to all applications and receive them from users
+- lircd patch from field
+- Login programs have to read /etc/samba
+- New programs under /lib/systemd
+- Abrt needs to read config files
+
 * Tue Nov 16 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-1
 - Update to upstream
 - Dontaudit leaked sockets from userdomains to user domains
