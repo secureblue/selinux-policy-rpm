@@ -118,7 +118,7 @@ index 3316f6e..6e82b1e 100644
 +gen_tunable(allow_console_login,false)
 +
 diff --git a/policy/mcs b/policy/mcs
-index af90ef2..9fef0f8 100644
+index af90ef2..bc9693c 100644
 --- a/policy/mcs
 +++ b/policy/mcs
 @@ -86,10 +86,10 @@ mlsconstrain file { create relabelto }
@@ -144,6 +144,14 @@ index af90ef2..9fef0f8 100644
  #
  # MCS policy for SELinux-enabled databases
  #
+@@ -132,4 +135,7 @@ mlsconstrain db_procedure { drop getattr setattr execute install }
+ mlsconstrain db_blob { drop getattr setattr relabelfrom read write import export }
+ 	( h1 dom h2 );
+ 
++mlsconstrain packet { send recv }
++	( h1 dom h2 );
++
+ ') dnl end enable_mcs
 diff --git a/policy/modules/admin/alsa.if b/policy/modules/admin/alsa.if
 index 90d5203..1392679 100644
 --- a/policy/modules/admin/alsa.if
@@ -508,7 +516,7 @@ index 56c43c0..de535e4 100644
 +/var/run/mcelog-client  -s 	gen_context(system_u:object_r:mcelog_var_run_t,s0)
 +
 diff --git a/policy/modules/admin/mcelog.te b/policy/modules/admin/mcelog.te
-index 5a9cebf..2e08bef 100644
+index 5a9cebf..ef413f2 100644
 --- a/policy/modules/admin/mcelog.te
 +++ b/policy/modules/admin/mcelog.te
 @@ -7,9 +7,13 @@ policy_module(mcelog, 1.0.1)
@@ -525,7 +533,7 @@ index 5a9cebf..2e08bef 100644
  ########################################
  #
  # mcelog local policy
-@@ -17,10 +21,16 @@ cron_system_entry(mcelog_t, mcelog_exec_t)
+@@ -17,10 +21,18 @@ cron_system_entry(mcelog_t, mcelog_exec_t)
  
  allow mcelog_t self:capability sys_admin;
  
@@ -536,6 +544,8 @@ index 5a9cebf..2e08bef 100644
 +
  kernel_read_system_state(mcelog_t)
  
++corecmd_exec_bin(mcelog_t)
++
  dev_read_raw_memory(mcelog_t)
  dev_read_kmsg(mcelog_t)
 +dev_rw_sysfs(mcelog_t)
@@ -23181,110 +23191,11 @@ index ae9d49f..65e6d81 100644
  
  manage_files_pattern(netlogond_t, likewise_etc_t, likewise_etc_t)
  
-diff --git a/policy/modules/services/lircd.if b/policy/modules/services/lircd.if
-index 418cc81..b9a3327 100644
---- a/policy/modules/services/lircd.if
-+++ b/policy/modules/services/lircd.if
-@@ -5,9 +5,9 @@
- ##	Execute a domain transition to run lircd.
- ## </summary>
- ## <param name="domain">
--## <summary>
-+##	<summary>
- ##	Domain allowed to transition.
--## </summary>
-+##	</summary>
- ## </param>
- #
- interface(`lircd_domtrans',`
-@@ -16,7 +16,6 @@ interface(`lircd_domtrans',`
- 	')
- 
- 	domain_auto_trans($1, lircd_exec_t, lircd_t)
--
- ')
- 
- ######################################
-@@ -39,24 +38,6 @@ interface(`lircd_stream_connect',`
- 	stream_connect_pattern($1, lircd_var_run_t, lircd_var_run_t, lircd_t)
- ')
- 
--#######################################
--## <summary>
--##	Read lircd etc file
--## </summary>
--## <param name="domain">
--## <summary>
--##	Domain allowed access.
--## </summary>
--## </param>
--#
--interface(`lircd_read_config',`
--	gen_require(`
--		type lircd_etc_t;
--	')
--
--	read_files_pattern($1, lircd_etc_t, lircd_etc_t)
--')
--
- ########################################
- ## <summary>
- ##	All of the rules required to administrate
-@@ -77,7 +58,7 @@ interface(`lircd_read_config',`
- interface(`lircd_admin',`
- 	gen_require(`
- 		type lircd_t, lircd_var_run_t;
--		type lircd_initrc_exec_t, lircd_etc_t;
-+		type lircd_initrc_exec_t;
- 	')
- 
- 	allow $1 lircd_t:process { ptrace signal_perms };
-@@ -88,9 +69,6 @@ interface(`lircd_admin',`
- 	role_transition $2 lircd_initrc_exec_t system_r;
- 	allow $2 system_r;
- 
--	files_search_etc($1)
--	admin_pattern($1, lircd_etc_t)
--
--	files_search_pids($1)
-+	files_list_pids($1)
- 	admin_pattern($1, lircd_var_run_t)
- ')
 diff --git a/policy/modules/services/lircd.te b/policy/modules/services/lircd.te
-index 6a78de1..d90cb9b 100644
+index 6a78de1..b229ba0 100644
 --- a/policy/modules/services/lircd.te
 +++ b/policy/modules/services/lircd.te
-@@ -12,9 +12,6 @@ init_daemon_domain(lircd_t, lircd_exec_t)
- type lircd_initrc_exec_t;
- init_script_file(lircd_initrc_exec_t)
- 
--type lircd_etc_t;
--files_type(lircd_etc_t)
--
- type lircd_var_run_t alias lircd_sock_t;
- files_pid_file(lircd_var_run_t)
- 
-@@ -24,17 +21,15 @@ files_pid_file(lircd_var_run_t)
- #
- 
- allow lircd_t self:capability { chown kill sys_admin };
-+allow lircd_t self:process { fork signal };
- allow lircd_t self:fifo_file rw_fifo_file_perms;
- allow lircd_t self:unix_dgram_socket create_socket_perms;
- allow lircd_t self:tcp_socket create_stream_socket_perms;
- 
--# etc file
--read_files_pattern(lircd_t, lircd_etc_t, lircd_etc_t)
--
- manage_dirs_pattern(lircd_t, lircd_var_run_t, lircd_var_run_t)
- manage_files_pattern(lircd_t, lircd_var_run_t, lircd_var_run_t)
- manage_sock_files_pattern(lircd_t, lircd_var_run_t, lircd_var_run_t)
--files_pid_filetrans(lircd_t, lircd_var_run_t, { dir file })
-+files_pid_filetrans(lircd_t, lircd_var_run_t, { file dir })
- # /dev/lircd socket
- dev_filetrans(lircd_t, lircd_var_run_t, sock_file)
- 
-@@ -44,13 +39,13 @@ corenet_tcp_bind_lirc_port(lircd_t)
+@@ -44,13 +44,13 @@ corenet_tcp_bind_lirc_port(lircd_t)
  corenet_tcp_sendrecv_all_ports(lircd_t)
  corenet_tcp_connect_lirc_port(lircd_t)
  
@@ -40930,7 +40841,7 @@ index df3fa64..852a6ad 100644
 +	allow $1 init_t:unix_stream_socket rw_stream_socket_perms;
 +')
 diff --git a/policy/modules/system/init.te b/policy/modules/system/init.te
-index 8a105fd..3f105f0 100644
+index 8a105fd..fda765f 100644
 --- a/policy/modules/system/init.te
 +++ b/policy/modules/system/init.te
 @@ -16,6 +16,27 @@ gen_require(`
@@ -41060,7 +40971,7 @@ index 8a105fd..3f105f0 100644
  	corecmd_shell_domtrans(init_t, initrc_t)
  ',`
  	# Run the shell in the sysadm role for single-user mode.
-@@ -186,12 +221,113 @@ tunable_policy(`init_upstart',`
+@@ -186,12 +221,114 @@ tunable_policy(`init_upstart',`
  	sysadm_shell_domtrans(init_t)
  ')
  
@@ -41130,6 +41041,7 @@ index 8a105fd..3f105f0 100644
 +	files_relabel_all_pid_files(init_t)
 +	files_manage_all_pids(init_t)
 +	files_manage_all_locks(init_t)
++	files_setattr_all_tmp_dirs(init_t)
 +
 +	files_purge_tmp(init_t)
 +	files_manage_generic_tmp_files(init_t)
@@ -41174,7 +41086,7 @@ index 8a105fd..3f105f0 100644
  ')
  
  optional_policy(`
-@@ -199,10 +335,24 @@ optional_policy(`
+@@ -199,10 +336,24 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41199,7 +41111,7 @@ index 8a105fd..3f105f0 100644
  	unconfined_domain(init_t)
  ')
  
-@@ -212,7 +362,7 @@ optional_policy(`
+@@ -212,7 +363,7 @@ optional_policy(`
  #
  
  allow initrc_t self:process { getpgid setsched setpgid setrlimit getsched };
@@ -41208,7 +41120,7 @@ index 8a105fd..3f105f0 100644
  dontaudit initrc_t self:capability sys_module; # sysctl is triggering this
  allow initrc_t self:passwd rootok;
  allow initrc_t self:key manage_key_perms;
-@@ -241,12 +391,14 @@ manage_fifo_files_pattern(initrc_t, initrc_state_t, initrc_state_t)
+@@ -241,12 +392,14 @@ manage_fifo_files_pattern(initrc_t, initrc_state_t, initrc_state_t)
  
  allow initrc_t initrc_var_run_t:file manage_file_perms;
  files_pid_filetrans(initrc_t, initrc_var_run_t, file)
@@ -41223,7 +41135,7 @@ index 8a105fd..3f105f0 100644
  
  init_write_initctl(initrc_t)
  
-@@ -258,11 +410,23 @@ kernel_change_ring_buffer_level(initrc_t)
+@@ -258,11 +411,23 @@ kernel_change_ring_buffer_level(initrc_t)
  kernel_clear_ring_buffer(initrc_t)
  kernel_get_sysvipc_info(initrc_t)
  kernel_read_all_sysctls(initrc_t)
@@ -41247,7 +41159,7 @@ index 8a105fd..3f105f0 100644
  
  corecmd_exec_all_executables(initrc_t)
  
-@@ -291,6 +455,7 @@ dev_read_sound_mixer(initrc_t)
+@@ -291,6 +456,7 @@ dev_read_sound_mixer(initrc_t)
  dev_write_sound_mixer(initrc_t)
  dev_setattr_all_chr_files(initrc_t)
  dev_rw_lvm_control(initrc_t)
@@ -41255,7 +41167,7 @@ index 8a105fd..3f105f0 100644
  dev_delete_lvm_control_dev(initrc_t)
  dev_manage_generic_symlinks(initrc_t)
  dev_manage_generic_files(initrc_t)
-@@ -298,13 +463,13 @@ dev_manage_generic_files(initrc_t)
+@@ -298,13 +464,13 @@ dev_manage_generic_files(initrc_t)
  dev_delete_generic_symlinks(initrc_t)
  dev_getattr_all_blk_files(initrc_t)
  dev_getattr_all_chr_files(initrc_t)
@@ -41271,7 +41183,7 @@ index 8a105fd..3f105f0 100644
  domain_sigchld_all_domains(initrc_t)
  domain_read_all_domains_state(initrc_t)
  domain_getattr_all_domains(initrc_t)
-@@ -323,8 +488,10 @@ files_getattr_all_symlinks(initrc_t)
+@@ -323,8 +489,10 @@ files_getattr_all_symlinks(initrc_t)
  files_getattr_all_pipes(initrc_t)
  files_getattr_all_sockets(initrc_t)
  files_purge_tmp(initrc_t)
@@ -41283,7 +41195,7 @@ index 8a105fd..3f105f0 100644
  files_delete_all_pids(initrc_t)
  files_delete_all_pid_dirs(initrc_t)
  files_read_etc_files(initrc_t)
-@@ -340,8 +507,12 @@ files_list_isid_type_dirs(initrc_t)
+@@ -340,8 +508,12 @@ files_list_isid_type_dirs(initrc_t)
  files_mounton_isid_type_dirs(initrc_t)
  files_list_default(initrc_t)
  files_mounton_default(initrc_t)
@@ -41297,7 +41209,7 @@ index 8a105fd..3f105f0 100644
  fs_list_inotifyfs(initrc_t)
  fs_register_binary_executable_type(initrc_t)
  # rhgb-console writes to ramfs
-@@ -351,6 +522,8 @@ fs_mount_all_fs(initrc_t)
+@@ -351,6 +523,8 @@ fs_mount_all_fs(initrc_t)
  fs_unmount_all_fs(initrc_t)
  fs_remount_all_fs(initrc_t)
  fs_getattr_all_fs(initrc_t)
@@ -41306,7 +41218,7 @@ index 8a105fd..3f105f0 100644
  
  # initrc_t needs to do a pidof which requires ptrace
  mcs_ptrace_all(initrc_t)
-@@ -363,6 +536,7 @@ mls_process_read_up(initrc_t)
+@@ -363,6 +537,7 @@ mls_process_read_up(initrc_t)
  mls_process_write_down(initrc_t)
  mls_rangetrans_source(initrc_t)
  mls_fd_share_all_levels(initrc_t)
@@ -41314,7 +41226,7 @@ index 8a105fd..3f105f0 100644
  
  selinux_get_enforce_mode(initrc_t)
  
-@@ -374,6 +548,7 @@ term_use_all_terms(initrc_t)
+@@ -374,6 +549,7 @@ term_use_all_terms(initrc_t)
  term_reset_tty_labels(initrc_t)
  
  auth_rw_login_records(initrc_t)
@@ -41322,7 +41234,7 @@ index 8a105fd..3f105f0 100644
  auth_setattr_login_records(initrc_t)
  auth_rw_lastlog(initrc_t)
  auth_read_pam_pid(initrc_t)
-@@ -394,13 +569,14 @@ logging_read_audit_config(initrc_t)
+@@ -394,13 +570,14 @@ logging_read_audit_config(initrc_t)
  
  miscfiles_read_localization(initrc_t)
  # slapd needs to read cert files from its initscript
@@ -41338,7 +41250,7 @@ index 8a105fd..3f105f0 100644
  userdom_read_user_home_content_files(initrc_t)
  # Allow access to the sysadm TTYs. Note that this will give access to the
  # TTYs to any process in the initrc_t domain. Therefore, daemons and such
-@@ -473,7 +649,7 @@ ifdef(`distro_redhat',`
+@@ -473,7 +650,7 @@ ifdef(`distro_redhat',`
  
  	# Red Hat systems seem to have a stray
  	# fd open from the initrd
@@ -41347,7 +41259,7 @@ index 8a105fd..3f105f0 100644
  	files_dontaudit_read_root_files(initrc_t)
  
  	# These seem to be from the initrd
-@@ -519,6 +695,23 @@ ifdef(`distro_redhat',`
+@@ -519,6 +696,23 @@ ifdef(`distro_redhat',`
  	optional_policy(`
  		bind_manage_config_dirs(initrc_t)
  		bind_write_config(initrc_t)
@@ -41371,7 +41283,7 @@ index 8a105fd..3f105f0 100644
  	')
  
  	optional_policy(`
-@@ -526,10 +719,17 @@ ifdef(`distro_redhat',`
+@@ -526,10 +720,17 @@ ifdef(`distro_redhat',`
  		rpc_write_exports(initrc_t)
  		rpc_manage_nfs_state_data(initrc_t)
  	')
@@ -41389,7 +41301,7 @@ index 8a105fd..3f105f0 100644
  	')
  
  	optional_policy(`
-@@ -544,6 +744,35 @@ ifdef(`distro_suse',`
+@@ -544,6 +745,35 @@ ifdef(`distro_suse',`
  	')
  ')
  
@@ -41425,7 +41337,7 @@ index 8a105fd..3f105f0 100644
  optional_policy(`
  	amavis_search_lib(initrc_t)
  	amavis_setattr_pid_files(initrc_t)
-@@ -556,6 +785,8 @@ optional_policy(`
+@@ -556,6 +786,8 @@ optional_policy(`
  optional_policy(`
  	apache_read_config(initrc_t)
  	apache_list_modules(initrc_t)
@@ -41434,7 +41346,7 @@ index 8a105fd..3f105f0 100644
  ')
  
  optional_policy(`
-@@ -572,6 +803,7 @@ optional_policy(`
+@@ -572,6 +804,7 @@ optional_policy(`
  
  optional_policy(`
  	cgroup_stream_connect_cgred(initrc_t)
@@ -41442,7 +41354,7 @@ index 8a105fd..3f105f0 100644
  ')
  
  optional_policy(`
-@@ -584,6 +816,11 @@ optional_policy(`
+@@ -584,6 +817,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41454,7 +41366,7 @@ index 8a105fd..3f105f0 100644
  	dev_getattr_printer_dev(initrc_t)
  
  	cups_read_log(initrc_t)
-@@ -600,9 +837,13 @@ optional_policy(`
+@@ -600,9 +838,13 @@ optional_policy(`
  	dbus_connect_system_bus(initrc_t)
  	dbus_system_bus_client(initrc_t)
  	dbus_read_config(initrc_t)
@@ -41468,7 +41380,7 @@ index 8a105fd..3f105f0 100644
  	')
  
  	optional_policy(`
-@@ -701,7 +942,13 @@ optional_policy(`
+@@ -701,7 +943,13 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41482,7 +41394,7 @@ index 8a105fd..3f105f0 100644
  	mta_dontaudit_read_spool_symlinks(initrc_t)
  ')
  
-@@ -724,6 +971,10 @@ optional_policy(`
+@@ -724,6 +972,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41493,7 +41405,7 @@ index 8a105fd..3f105f0 100644
  	postgresql_manage_db(initrc_t)
  	postgresql_read_config(initrc_t)
  ')
-@@ -737,6 +988,10 @@ optional_policy(`
+@@ -737,6 +989,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41504,7 +41416,7 @@ index 8a105fd..3f105f0 100644
  	quota_manage_flags(initrc_t)
  ')
  
-@@ -745,6 +1000,10 @@ optional_policy(`
+@@ -745,6 +1001,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41515,7 +41427,7 @@ index 8a105fd..3f105f0 100644
  	fs_write_ramfs_sockets(initrc_t)
  	fs_search_ramfs(initrc_t)
  
-@@ -766,8 +1025,6 @@ optional_policy(`
+@@ -766,8 +1026,6 @@ optional_policy(`
  	# bash tries ioctl for some reason
  	files_dontaudit_ioctl_all_pids(initrc_t)
  
@@ -41524,7 +41436,7 @@ index 8a105fd..3f105f0 100644
  ')
  
  optional_policy(`
-@@ -776,14 +1033,21 @@ optional_policy(`
+@@ -776,14 +1034,21 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41546,7 +41458,7 @@ index 8a105fd..3f105f0 100644
  
  optional_policy(`
  	ssh_dontaudit_read_server_keys(initrc_t)
-@@ -805,11 +1069,19 @@ optional_policy(`
+@@ -805,11 +1070,19 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41567,7 +41479,7 @@ index 8a105fd..3f105f0 100644
  
  	ifdef(`distro_redhat',`
  		# system-config-services causes avc messages that should be dontaudited
-@@ -819,6 +1091,25 @@ optional_policy(`
+@@ -819,6 +1092,25 @@ optional_policy(`
  	optional_policy(`
  		mono_domtrans(initrc_t)
  	')
@@ -41593,7 +41505,7 @@ index 8a105fd..3f105f0 100644
  ')
  
  optional_policy(`
-@@ -844,3 +1135,59 @@ optional_policy(`
+@@ -844,3 +1136,59 @@ optional_policy(`
  optional_policy(`
  	zebra_read_config(initrc_t)
  ')
@@ -43082,7 +42994,7 @@ index 7711464..a8bd9fe 100644
  ifdef(`distro_debian',`
  /var/lib/msttcorefonts(/.*)?	gen_context(system_u:object_r:fonts_t,s0)
 diff --git a/policy/modules/system/miscfiles.if b/policy/modules/system/miscfiles.if
-index fe4e741..9ce4a4f 100644
+index fe4e741..1dfa62a 100644
 --- a/policy/modules/system/miscfiles.if
 +++ b/policy/modules/system/miscfiles.if
 @@ -414,9 +414,6 @@ interface(`miscfiles_read_localization',`
@@ -43095,7 +43007,7 @@ index fe4e741..9ce4a4f 100644
  ')
  
  ########################################
-@@ -585,6 +582,25 @@ interface(`miscfiles_manage_man_pages',`
+@@ -585,6 +582,26 @@ interface(`miscfiles_manage_man_pages',`
  
  ########################################
  ## <summary>
@@ -43113,6 +43025,7 @@ index fe4e741..9ce4a4f 100644
 +	')
 +
 +	files_search_usr($1)
++	relabel_dirs_pattern($1, man_t, man_t)
 +	relabel_files_pattern($1, man_t, man_t)
 +')
 +

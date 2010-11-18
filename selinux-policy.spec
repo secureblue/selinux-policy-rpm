@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.9
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 18 2010 Dan Walsh <dwalsh@redhat.com> 3.9.9-3
+- Put back in lircd_etc_t so policy will install
+
 * Thu Nov 18 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-2
 - Turn on allow_postfix_local_write_mail_spool
 - Allow initrc_t to transition to shutdown_t
