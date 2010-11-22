@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.9
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,13 @@ exit 0
 %endif
 
 %changelog
+* Mon Nov 22 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-4
+- Allow ddclient to fix file mode bits of ddclient conf file
+- init leaks file descriptors to daemons
+- Add labels for /etc/lirc/ and
+- Allow amavis_t to exec shell
+- Add label for gssd_tmp_t for /var/tmp/nfs_0
+
 * Thu Nov 18 2010 Dan Walsh <dwalsh@redhat.com> 3.9.9-3
 - Put back in lircd_etc_t so policy will install
 
