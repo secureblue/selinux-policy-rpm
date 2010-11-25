@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.10
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 25 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-2
+- Remove duplicate declaration
+
 * Thu Nov 25 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-1
 - Update to upstream
 - Cleanup for sandbox
