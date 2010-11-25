@@ -20,8 +20,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.9.9
-Release: 4%{?dist}
+Version: 3.9.10
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,11 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 25 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-1
+- Update to upstream
+- Cleanup for sandbox
+- Add attribute to be able to select sandbox types
+
 * Mon Nov 22 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-4
 - Allow ddclient to fix file mode bits of ddclient conf file
 - init leaks file descriptors to daemons
