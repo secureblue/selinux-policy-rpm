@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.10
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,13 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 30 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-3
+- fixes to allow /var/run and /var/lock as tmpfs
+- Allow chrome sandbox to connect to web ports
+- Allow dovecot to listem on lmtp and sieve ports
+- Allov ddclient to search sysctl_net_t
+- Transition back to original domain if you execute the shell
+
 * Thu Nov 25 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-2
 - Remove duplicate declaration
 
