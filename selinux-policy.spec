@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.10
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,18 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 30 2010 Dan Walsh <dwalsh@redhat.com> 3.9.9-4
+- Fix up handling of dnsmasq_t creating /var/run/libvirt/network
+- Turn on sshd_forward_ports boolean by default
+- Allow sysadmin to dbus chat with rpm
+- Add interface for rw_tpm_dev
+- Allow cron to execute bin
+- fsadm needs to write sysfs
+- Dontaudit consoletype reading /var/run/pm-utils
+- Lots of new privs fro mozilla_plugin_t running java app, make mozilla_plugin
+- certmonger needs to manage dirsrv data
+- /var/run/pm-utils should be labeled as devicekit_var_run_t
+
 * Tue Nov 30 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-3
 - fixes to allow /var/run and /var/lock as tmpfs
 - Allow chrome sandbox to connect to web ports
