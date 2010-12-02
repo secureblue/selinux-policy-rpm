@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.10
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,13 @@ exit 0
 %endif
 
 %changelog
+* Thu Dec 1 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-5
+- Fix cron to run ranged when started by init
+- Fix devicekit to use log files
+- Dontaudit use of devicekit_var_run_t for fstools
+- Allow init to setattr on logfile directories
+- Allow hald to manage files in /var/run/pm-utils/ dir which is now labeled as devicekit_var_run_t
+
 * Tue Nov 30 2010 Dan Walsh <dwalsh@redhat.com> 3.9.9-4
 - Fix up handling of dnsmasq_t creating /var/run/libvirt/network
 - Turn on sshd_forward_ports boolean by default
