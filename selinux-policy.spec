@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.10
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,11 @@ exit 0
 %endif
 
 %changelog
+* Fri Dec 3 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-6
+- Fix gnome_manage_data interface
+- Dontaudit sys_ptrace capability for iscsid
+- Fixes for nagios plugin policy
+
 * Thu Dec 1 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-5
 - Fix cron to run ranged when started by init
 - Fix devicekit to use log files
