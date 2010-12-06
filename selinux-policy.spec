@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.10
-Release: 5%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,23 @@ exit 0
 %endif
 
 %changelog
+* Mon Dec 6 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-7
+- Fix the label for wicd log
+- plymouthd creates force-display-on-active-vt file
+- Allow avahi to request the kernel to load a module
+- Dontaudit hal leaks
+- Fix gnome_manage_data interface
+- Add new interface corenet_packet to define a type as being an packet_type.
+- Removed general access to packet_type from icecast and squid.
+- Allow mpd to read alsa config
+- Fix the label for wicd log
+- Add systemd policy
+
+* Fri Dec 3 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-6
+- Fix gnome_manage_data interface
+- Dontaudit sys_ptrace capability for iscsid
+- Fixes for nagios plugin policy
+
 * Thu Dec 1 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-5
 - Fix cron to run ranged when started by init
 - Fix devicekit to use log files
