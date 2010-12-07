@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.10
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 7 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-8
+- Fixes for lvm to work with systemd
+
 * Mon Dec 6 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-7
 - Fix the label for wicd log
 - plymouthd creates force-display-on-active-vt file
