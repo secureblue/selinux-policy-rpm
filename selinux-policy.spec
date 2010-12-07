@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.10
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 7 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-9
+- Push fixes to allow disabling of unlabeled_t packet access
+- Enable unlabelednet policy
+
 * Tue Dec 7 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-8
 - Fixes for lvm to work with systemd
 
