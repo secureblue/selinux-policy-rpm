@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.10
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,11 @@ exit 0
 %endif
 
 %changelog
+* Fri Dec 10 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-10
+- Fixes for clamscan and boinc policy
+- Add boinc_project_t setpgid
+- Allow alsa to create tmp files in /tmp
+
 * Tue Dec 7 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-9
 - Push fixes to allow disabling of unlabeled_t packet access
 - Enable unlabelednet policy
