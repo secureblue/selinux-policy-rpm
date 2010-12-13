@@ -855,6 +855,50 @@ index 0000000..eef0c87
 +optional_policy(`
 +	netutils_domtrans(ncftool_t)
 +')
+diff --git a/policy/modules/admin/netutils.if b/policy/modules/admin/netutils.if
+index c6ca761..46e0767 100644
+--- a/policy/modules/admin/netutils.if
++++ b/policy/modules/admin/netutils.if
+@@ -42,6 +42,7 @@ interface(`netutils_run',`
+ 	')
+ 
+ 	netutils_domtrans($1)
++	allow $1 netutils_t:process { signal sigkill };
+ 	role $2 types netutils_t;
+ ')
+ 
+@@ -161,6 +162,7 @@ interface(`netutils_run_ping',`
+ 
+ 	netutils_domtrans_ping($1)
+ 	role $2 types ping_t;
++	allow $1 ping_t:process { signal sigkill };
+ ')
+ 
+ ########################################
+@@ -190,6 +192,7 @@ interface(`netutils_run_ping_cond',`
+ 
+ 	if ( user_ping ) {
+ 		netutils_domtrans_ping($1)
++		allow $1 ping_t:process { signal sigkill };
+ 	}
+ ')
+ 
+@@ -254,6 +257,7 @@ interface(`netutils_run_traceroute',`
+ 	')
+ 
+ 	netutils_domtrans_traceroute($1)
++	allow $1 traceroute_t:process { signal sigkill };
+ 	role $2 types traceroute_t;
+ ')
+ 
+@@ -284,6 +288,7 @@ interface(`netutils_run_traceroute_cond',`
+ 
+ 	if( user_ping ) {
+ 		netutils_domtrans_traceroute($1)
++		allow $1 traceroute_t:process { signal sigkill };
+ 	}
+ ')
+ 
 diff --git a/policy/modules/admin/netutils.te b/policy/modules/admin/netutils.te
 index 6a53a18..1bc14ea 100644
 --- a/policy/modules/admin/netutils.te
@@ -11093,10 +11137,10 @@ index 5a3d720..924baee 100644
  ########################################
  #
 diff --git a/policy/modules/roles/staff.te b/policy/modules/roles/staff.te
-index d62886d..cc51f57 100644
+index d62886d..2e8ae26 100644
 --- a/policy/modules/roles/staff.te
 +++ b/policy/modules/roles/staff.te
-@@ -8,12 +8,46 @@ policy_module(staff, 2.1.4)
+@@ -8,12 +8,48 @@ policy_module(staff, 2.1.4)
  role staff_r;
  
  userdom_unpriv_user_template(staff)
@@ -11138,12 +11182,14 @@ index d62886d..cc51f57 100644
 +modutils_read_module_deps(staff_usertype)
 +
 +netutils_run_ping(staff_t, staff_r)
++netutils_run_traceroute(staff_t, staff_r)
 +netutils_signal_ping(staff_t)
++netutils_kill_ping(staff_t)
 +
  optional_policy(`
  	apache_role(staff_r, staff_t)
  ')
-@@ -27,25 +61,104 @@ optional_policy(`
+@@ -27,25 +63,104 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -11250,7 +11296,7 @@ index d62886d..cc51f57 100644
  
  optional_policy(`
  	vlock_run(staff_t, staff_r)
-@@ -137,10 +250,6 @@ ifndef(`distro_redhat',`
+@@ -137,10 +252,6 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -12783,10 +12829,10 @@ index 0000000..7d5de28
 +
 +gen_user(unconfined_u, user, unconfined_r system_r, s0, s0 - mls_systemhigh, mcs_allcats)
 diff --git a/policy/modules/roles/unprivuser.te b/policy/modules/roles/unprivuser.te
-index 606a257..ea81c3f 100644
+index 606a257..aa3da20 100644
 --- a/policy/modules/roles/unprivuser.te
 +++ b/policy/modules/roles/unprivuser.te
-@@ -12,15 +12,46 @@ role user_r;
+@@ -12,15 +12,51 @@ role user_r;
  
  userdom_unpriv_user_template(user)
  
@@ -12803,6 +12849,11 @@ index 606a257..ea81c3f 100644
 +
 +optional_policy(`
 +	mozilla_run_plugin(user_t, user_r)
++')
++
++optional_policy(`
++	netutils_run_ping_cond(user_t, user_r)
++	netutils_run_traceroute_cond(user_t, user_r)
 +')
 +
 +optional_policy(`
@@ -12833,7 +12884,7 @@ index 606a257..ea81c3f 100644
  	vlock_run(user_t, user_r)
  ')
  
-@@ -114,7 +145,7 @@ ifndef(`distro_redhat',`
+@@ -114,7 +150,7 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -12842,6 +12893,11 @@ index 606a257..ea81c3f 100644
  	')
  
  	optional_policy(`
+@@ -153,3 +189,4 @@ ifndef(`distro_redhat',`
+ 		wireshark_role(user_r, user_t)
+ 	')
+ ')
++
 diff --git a/policy/modules/roles/webadm.te b/policy/modules/roles/webadm.te
 index 0ecc786..dbf2710 100644
 --- a/policy/modules/roles/webadm.te
@@ -18359,10 +18415,10 @@ index 13d2f63..a048c53 100644
  type cpuspeed_t;
  type cpuspeed_exec_t;
 diff --git a/policy/modules/services/cron.fc b/policy/modules/services/cron.fc
-index 2eefc08..3e8ad69 100644
+index 2eefc08..6030f34 100644
 --- a/policy/modules/services/cron.fc
 +++ b/policy/modules/services/cron.fc
-@@ -14,7 +14,7 @@
+@@ -14,9 +14,10 @@
  /var/run/anacron\.pid		--	gen_context(system_u:object_r:crond_var_run_t,s0)
  /var/run/atd\.pid		--	gen_context(system_u:object_r:crond_var_run_t,s0)
  /var/run/crond?\.pid		--	gen_context(system_u:object_r:crond_var_run_t,s0)
@@ -18370,8 +18426,11 @@ index 2eefc08..3e8ad69 100644
 +/var/run/crond?\.reboot		--	gen_context(system_u:object_r:crond_var_run_t,s0)
  /var/run/fcron\.fifo		-s	gen_context(system_u:object_r:crond_var_run_t,s0)
  /var/run/fcron\.pid		--	gen_context(system_u:object_r:crond_var_run_t,s0)
++/var/run/.*cron.*		--	gen_context(system_u:object_r:crond_var_run_t,s0)
  
-@@ -45,3 +45,7 @@ ifdef(`distro_suse', `
+ /var/spool/anacron(/.*)?		gen_context(system_u:object_r:system_cron_spool_t,s0)
+ /var/spool/at(/.*)?			gen_context(system_u:object_r:user_cron_spool_t,s0)
+@@ -45,3 +46,7 @@ ifdef(`distro_suse', `
  /var/spool/fcron/systab\.orig	--	gen_context(system_u:object_r:system_cron_spool_t,s0)
  /var/spool/fcron/systab		--	gen_context(system_u:object_r:system_cron_spool_t,s0)
  /var/spool/fcron/new\.systab	--	gen_context(system_u:object_r:system_cron_spool_t,s0)
@@ -41257,7 +41316,7 @@ index 183fcf1..d923d03 100644
  daemontools_domtrans_run(svc_start_t)
  daemontools_manage_svc(svc_start_t)
 diff --git a/policy/modules/system/fstools.fc b/policy/modules/system/fstools.fc
-index a97a096..dd65c15 100644
+index a97a096..ab1e16a 100644
 --- a/policy/modules/system/fstools.fc
 +++ b/policy/modules/system/fstools.fc
 @@ -1,4 +1,3 @@
@@ -41273,6 +41332,15 @@ index a97a096..dd65c15 100644
  /sbin/parted		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
  /sbin/partprobe		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
  /sbin/partx		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+@@ -36,6 +34,8 @@
+ /sbin/swapon.*		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /sbin/tune2fs		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ 
++/lib/systemd/systemd-fsck --	gen_context(system_u:object_r:fsadm_exec_t,s0)
++
+ /usr/bin/partition_uuid	--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/bin/raw		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/bin/scsi_unique_id	--	gen_context(system_u:object_r:fsadm_exec_t,s0)
 diff --git a/policy/modules/system/fstools.te b/policy/modules/system/fstools.te
 index a442acc..949f5ff 100644
 --- a/policy/modules/system/fstools.te
@@ -41389,10 +41457,10 @@ index 1fcd657..52063bc 100644
  
  term_dontaudit_use_console(hostname_t)
 diff --git a/policy/modules/system/init.fc b/policy/modules/system/init.fc
-index 9775375..41a244a 100644
+index 9775375..299b718 100644
 --- a/policy/modules/system/init.fc
 +++ b/policy/modules/system/init.fc
-@@ -24,7 +24,20 @@ ifdef(`distro_gentoo',`
+@@ -24,7 +24,21 @@ ifdef(`distro_gentoo',`
  #
  # /sbin
  #
@@ -41403,6 +41471,7 @@ index 9775375..41a244a 100644
 +# systemd init scripts
 +#
 +/lib/systemd/[^/]*	--	gen_context(system_u:object_r:init_exec_t,s0)
++/lib/systemd/fedora[^/]* --	gen_context(system_u:object_r:initrc_exec_t,s0)
 +/lib/systemd/system-generators/[^/]*	--	gen_context(system_u:object_r:init_exec_t,s0)
 +
 +#
@@ -41413,7 +41482,7 @@ index 9775375..41a244a 100644
  
  ifdef(`distro_gentoo', `
  /sbin/rc		--	gen_context(system_u:object_r:initrc_exec_t,s0)
-@@ -44,6 +57,9 @@ ifdef(`distro_gentoo', `
+@@ -44,6 +58,9 @@ ifdef(`distro_gentoo', `
  
  /usr/sbin/apachectl	-- 	gen_context(system_u:object_r:initrc_exec_t,s0)
  /usr/sbin/open_init_pty	--	gen_context(system_u:object_r:initrc_exec_t,s0)
@@ -43962,14 +44031,15 @@ index aa2b0a6..304fbba 100644
  ')
  
 diff --git a/policy/modules/system/lvm.fc b/policy/modules/system/lvm.fc
-index 879bb1e..5ce52c0 100644
+index 879bb1e..526d11c 100644
 --- a/policy/modules/system/lvm.fc
 +++ b/policy/modules/system/lvm.fc
-@@ -28,10 +28,12 @@ ifdef(`distro_gentoo',`
+@@ -28,10 +28,13 @@ ifdef(`distro_gentoo',`
  #
  /lib/lvm-10/.*		--	gen_context(system_u:object_r:lvm_exec_t,s0)
  /lib/lvm-200/.*		--	gen_context(system_u:object_r:lvm_exec_t,s0)
 +/lib/udev/udisks-lvm-pv-export	--	gen_context(system_u:object_r:lvm_exec_t,s0)
++/lib/systemd/systemd-cryptsetup --	gen_context(system_u:object_r:lvm_exec_t,s0)
  
  #
  # /sbin
@@ -43978,7 +44048,7 @@ index 879bb1e..5ce52c0 100644
  /sbin/cryptsetup	--	gen_context(system_u:object_r:lvm_exec_t,s0)
  /sbin/dmraid		--	gen_context(system_u:object_r:lvm_exec_t,s0)
  /sbin/dmsetup		--	gen_context(system_u:object_r:lvm_exec_t,s0)
-@@ -97,5 +99,7 @@ ifdef(`distro_gentoo',`
+@@ -97,5 +100,7 @@ ifdef(`distro_gentoo',`
  /var/cache/multipathd(/.*)?	gen_context(system_u:object_r:lvm_metadata_t,s0)
  /var/lib/multipath(/.*)?	gen_context(system_u:object_r:lvm_var_lib_t,s0)
  /var/lock/lvm(/.*)?		gen_context(system_u:object_r:lvm_lock_t,s0)
@@ -46325,17 +46395,18 @@ index dfbe736..d8c6f24 100644
 +')
 diff --git a/policy/modules/system/systemd.fc b/policy/modules/system/systemd.fc
 new file mode 100644
-index 0000000..9dd333c
+index 0000000..89e90b0
 --- /dev/null
 +++ b/policy/modules/system/systemd.fc
-@@ -0,0 +1,7 @@
+@@ -0,0 +1,8 @@
 +/bin/systemd-tty-ask-password-agent			--		gen_context(system_u:object_r:systemd_passwd_agent_exec_t,s0)
 +
 +/usr/bin/systemd-gnome-ask-password-agent	--		gen_context(system_u:object_r:systemd_passwd_agent_exec_t,s0)
 +
 +/lib/systemd/systemd-tmpfiles				--		gen_context(system_u:object_r:systemd_tmpfiles_exec_t,s0)
 +
-+/dev/.systemd/ask-password-block/([0-9]+|tty[0-9]+) -p  gen_context(system_u:object_r:systemd_device_t,s0)
++/dev/\.systemd/ask-password-block/[^/]*		-p	gen_context(system_u:object_r:systemd_device_t,s0)
++
 diff --git a/policy/modules/system/systemd.if b/policy/modules/system/systemd.if
 new file mode 100644
 index 0000000..5f0352b
@@ -46436,10 +46507,10 @@ index 0000000..5f0352b
 +
 diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
 new file mode 100644
-index 0000000..17052b8
+index 0000000..75f49c3
 --- /dev/null
 +++ b/policy/modules/system/systemd.te
-@@ -0,0 +1,94 @@
+@@ -0,0 +1,96 @@
 +
 +policy_module(systemd, 1.0.0)
 +
@@ -46474,9 +46545,11 @@ index 0000000..17052b8
 +#
 +# Local policy
 +#
++allow systemd_passwd_agent_t self:capability chown;
++allow systemd_passwd_agent_t self:process { setfscreate setsockcreate signal };
 +
 +allow systemd_passwd_agent_t systemd_device_t:fifo_file manage_fifo_file_perms;
-+dev_filetrans(systemd_passwd_agent_t, systemd_device_t, { fifo_file })
++dev_filetrans(systemd_passwd_agent_t, systemd_device_t, fifo_file)
 +
 +files_read_etc_files(systemd_passwd_agent_t)
 +
@@ -46491,7 +46564,7 @@ index 0000000..17052b8
 +# Local policy
 +#
 +
-+allow systemd_tmpfiles_t self:capability { fowner chown fsetid };
++allow systemd_tmpfiles_t self:capability { dac_override fowner chown fsetid };
 +
 +allow systemd_tmpfiles_t self:unix_dgram_socket create_socket_perms;
 +

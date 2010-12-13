@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.10
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,11 @@ exit 0
 %endif
 
 %changelog
+* Mon Dec 13 2010 Dan Walsh <dwalsh@redhat.com> 3.9.9-12
+- Allow domains that transition to ping or traceroute, kill them
+- Allow user_t to conditionally transition to ping_t and traceroute_t
+- Add fixes to systemd- tools, including new labeling for systemd-fsck, systemd-cryptsetup
+
 * Mon Dec 13 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-11
 - Turn on systemd policy
 - mozilla_plugin needs to read certs in the homedir.
