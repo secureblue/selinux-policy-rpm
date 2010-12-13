@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.10
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,19 @@ exit 0
 %endif
 
 %changelog
+* Mon Dec 13 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-11
+- Turn on systemd policy
+- mozilla_plugin needs to read certs in the homedir.
+- Dontaudit leaked file descriptors from devicekit
+- Fix ircssi to use auth_use_nsswitch
+- Change to use interface without param in corenet to disable unlabelednet packets
+- Allow init to relabel sockets and fifo files in /dev
+- certmonger needs dac* capabilities to manage cert files not owned by root
+- dovecot needs fsetid to change group membership on mail
+- plymouthd removes /var/log/boot.log
+- systemd is creating symlinks in /dev
+- Change label on /etc/httpd/alias to be all cert_t
+
 * Fri Dec 10 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-10
 - Fixes for clamscan and boinc policy
 - Add boinc_project_t setpgid
