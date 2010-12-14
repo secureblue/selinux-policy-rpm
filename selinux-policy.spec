@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.10
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 14 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-13
+- Allow sandbox to run on nfs partitions, fixes for systemd_tmpfs
+- remove per sandbox domains devpts types
+- Allow dkim-milter sending signal to itself
+
 * Mon Dec 13 2010 Dan Walsh <dwalsh@redhat.com> 3.9.9-12
 - Allow domains that transition to ping or traceroute, kill them
 - Allow user_t to conditionally transition to ping_t and traceroute_t

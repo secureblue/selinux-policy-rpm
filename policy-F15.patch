@@ -5941,10 +5941,10 @@ index 0000000..15778fd
 +# No types are sandbox_exec_t
 diff --git a/policy/modules/apps/sandbox.if b/policy/modules/apps/sandbox.if
 new file mode 100644
-index 0000000..402027a
+index 0000000..0c411b4
 --- /dev/null
 +++ b/policy/modules/apps/sandbox.if
-@@ -0,0 +1,340 @@
+@@ -0,0 +1,334 @@
 +
 +## <summary>policy for sandbox</summary>
 +
@@ -6084,11 +6084,6 @@ index 0000000..402027a
 +	manage_fifo_files_pattern($1_t, $1_file_t, $1_file_t)
 +	manage_sock_files_pattern($1_t, $1_file_t, $1_file_t)
 +
-+	type $1_devpts_t;
-+	term_pty($1_devpts_t)
-+	term_create_pty($1_t, $1_devpts_t)
-+	allow $1_t $1_devpts_t:chr_file { rw_chr_file_perms setattr };
-+
 +	# window manager
 +	miscfiles_setattr_fonts_cache_dirs($1_t)
 +	allow $1_t self:capability setuid;
@@ -6100,14 +6095,13 @@ index 0000000..402027a
 +	type $1_client_tmpfs_t, sandbox_tmpfs_type;
 +	files_tmpfs_file($1_client_tmpfs_t)
 +
-+	term_search_ptys($1_t)
-+	allow $1_client_t sandbox_devpts_t:chr_file { rw_term_perms setattr };
-+	term_create_pty($1_client_t,sandbox_devpts_t)
-+
 +	manage_files_pattern($1_client_t, $1_client_tmpfs_t, $1_client_tmpfs_t)
++	manage_files_pattern($1_t, $1_client_tmpfs_t, $1_client_tmpfs_t)
 +	fs_tmpfs_filetrans($1_client_t, $1_client_tmpfs_t, file )
++	fs_tmpfs_filetrans($1_t, $1_client_tmpfs_t, file )
 +	# Pulseaudio tmpfs files with different MCS labels
 +	dontaudit $1_client_t $1_client_tmpfs_t:file { read write };
++	dontaudit $1_t $1_client_tmpfs_t:file { read write };
 +	allow sandbox_xserver_t $1_client_tmpfs_t:file { read write };
 +
 +	domtrans_pattern($1_t, xserver_exec_t, sandbox_xserver_t)
@@ -6287,10 +6281,10 @@ index 0000000..402027a
 +')
 diff --git a/policy/modules/apps/sandbox.te b/policy/modules/apps/sandbox.te
 new file mode 100644
-index 0000000..6522c1b
+index 0000000..6b46acd
 --- /dev/null
 +++ b/policy/modules/apps/sandbox.te
-@@ -0,0 +1,441 @@
+@@ -0,0 +1,448 @@
 +policy_module(sandbox,1.0.0)
 +dbus_stub()
 +attribute sandbox_domain;
@@ -6454,6 +6448,9 @@ index 0000000..6522c1b
 +allow sandbox_x_domain sandbox_xserver_t:unix_stream_socket connectto;
 +dontaudit sandbox_x_domain self:netlink_audit_socket { create_netlink_socket_perms nlmsg_relay };
 +
++allow sandbox_x_domain sandbox_devpts_t:chr_file { rw_term_perms setattr };
++term_create_pty(sandbox_x_domain,sandbox_devpts_t)
++
 +domain_dontaudit_read_all_domains_state(sandbox_x_domain)
 +
 +files_search_home(sandbox_x_domain)
@@ -6491,6 +6488,7 @@ index 0000000..6522c1b
 +
 +term_getattr_pty_fs(sandbox_x_domain)
 +term_use_ptmx(sandbox_x_domain)
++term_search_ptys(sandbox_x_domain)
 +
 +application_dontaudit_signal(sandbox_x_domain)
 +application_dontaudit_sigkill(sandbox_x_domain)
@@ -6543,6 +6541,7 @@ index 0000000..6522c1b
 +	fs_read_nfs_files(sandbox_xserver_t)
 +	fs_manage_nfs_dirs(sandbox_x_domain)
 +	fs_manage_nfs_files(sandbox_x_domain)
++	fs_exec_nfs_files(sandbox_x_domain)
 +')
 +
 +tunable_policy(`use_samba_home_dirs',`
@@ -6550,6 +6549,7 @@ index 0000000..6522c1b
 +	fs_read_cifs_files(sandbox_xserver_t)
 +	fs_manage_cifs_dirs(sandbox_x_domain)
 +	fs_manage_cifs_files(sandbox_x_domain)
++	fs_exec_cifs_files(sandbox_x_domain)
 +')
 +
 +tunable_policy(`use_fusefs_home_dirs',`
@@ -6557,6 +6557,7 @@ index 0000000..6522c1b
 +	fs_read_fusefs_files(sandbox_xserver_t)
 +	fs_manage_fusefs_dirs(sandbox_x_domain)
 +	fs_manage_fusefs_files(sandbox_x_domain)
++	fs_exec_fusefs_files(sandbox_x_domain)
 +')
 +
 +files_search_home(sandbox_x_t)
@@ -9947,7 +9948,7 @@ index 59bae6a..2e55e71 100644
 +/dev/hugepages	-d	gen_context(system_u:object_r:hugetlbfs_t,s0)
 +/dev/hugepages(/.*)?		<<none>>
 diff --git a/policy/modules/kernel/filesystem.if b/policy/modules/kernel/filesystem.if
-index dfe361a..f296623 100644
+index dfe361a..496954e 100644
 --- a/policy/modules/kernel/filesystem.if
 +++ b/policy/modules/kernel/filesystem.if
 @@ -646,11 +646,31 @@ interface(`fs_search_cgroup_dirs',`
@@ -10124,7 +10125,34 @@ index dfe361a..f296623 100644
  ##	Create, read, write, and delete dirs
  ##	on a DOS filesystem.
  ## </summary>
-@@ -1931,7 +2014,26 @@ interface(`fs_read_fusefs_symlinks',`
+@@ -1892,6 +1975,26 @@ interface(`fs_manage_fusefs_files',`
+ 
+ ########################################
+ ## <summary>
++##	Execute files on a FUSEFS filesystem.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`fs_exec_fusefs_files',`
++	gen_require(`
++		type fusefs_t;
++	')
++
++	allow $1 fusefs_t:dir list_dir_perms;
++	exec_files_pattern($1, fusefs_t, fusefs_t)
++')
++
++########################################
++## <summary>
+ ##	Do not audit attempts to create,
+ ##	read, write, and delete files
+ ##	on a FUSEFS filesystem.
+@@ -1931,7 +2034,26 @@ interface(`fs_read_fusefs_symlinks',`
  
  ########################################
  ## <summary>
@@ -10152,7 +10180,7 @@ index dfe361a..f296623 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1946,6 +2048,41 @@ interface(`fs_rw_hugetlbfs_files',`
+@@ -1946,6 +2068,41 @@ interface(`fs_rw_hugetlbfs_files',`
  
  	rw_files_pattern($1, hugetlbfs_t, hugetlbfs_t)
  ')
@@ -10194,7 +10222,7 @@ index dfe361a..f296623 100644
  
  ########################################
  ## <summary>
-@@ -1999,6 +2136,7 @@ interface(`fs_list_inotifyfs',`
+@@ -1999,6 +2156,7 @@ interface(`fs_list_inotifyfs',`
  	')
  
  	allow $1 inotifyfs_t:dir list_dir_perms;
@@ -10202,7 +10230,7 @@ index dfe361a..f296623 100644
  ')
  
  ########################################
-@@ -2331,6 +2469,7 @@ interface(`fs_read_nfs_files',`
+@@ -2331,6 +2489,7 @@ interface(`fs_read_nfs_files',`
  		type nfs_t;
  	')
  
@@ -10210,7 +10238,7 @@ index dfe361a..f296623 100644
  	allow $1 nfs_t:dir list_dir_perms;
  	read_files_pattern($1, nfs_t, nfs_t)
  ')
-@@ -2369,6 +2508,7 @@ interface(`fs_write_nfs_files',`
+@@ -2369,6 +2528,7 @@ interface(`fs_write_nfs_files',`
  		type nfs_t;
  	')
  
@@ -10218,7 +10246,7 @@ index dfe361a..f296623 100644
  	allow $1 nfs_t:dir list_dir_perms;
  	write_files_pattern($1, nfs_t, nfs_t)
  ')
-@@ -2395,6 +2535,25 @@ interface(`fs_exec_nfs_files',`
+@@ -2395,6 +2555,25 @@ interface(`fs_exec_nfs_files',`
  
  ########################################
  ## <summary>
@@ -10244,7 +10272,7 @@ index dfe361a..f296623 100644
  ##	Append files
  ##	on a NFS filesystem.
  ## </summary>
-@@ -2435,6 +2594,24 @@ interface(`fs_dontaudit_append_nfs_files',`
+@@ -2435,6 +2614,24 @@ interface(`fs_dontaudit_append_nfs_files',`
  
  ########################################
  ## <summary>
@@ -10269,7 +10297,7 @@ index dfe361a..f296623 100644
  ##	Do not audit attempts to read or
  ##	write files on a NFS filesystem.
  ## </summary>
-@@ -2449,7 +2626,7 @@ interface(`fs_dontaudit_rw_nfs_files',`
+@@ -2449,7 +2646,7 @@ interface(`fs_dontaudit_rw_nfs_files',`
  		type nfs_t;
  	')
  
@@ -10278,7 +10306,7 @@ index dfe361a..f296623 100644
  ')
  
  ########################################
-@@ -2637,6 +2814,24 @@ interface(`fs_dontaudit_read_removable_files',`
+@@ -2637,6 +2834,24 @@ interface(`fs_dontaudit_read_removable_files',`
  
  ########################################
  ## <summary>
@@ -10303,7 +10331,7 @@ index dfe361a..f296623 100644
  ##	Read removable storage symbolic links.
  ## </summary>
  ## <param name="domain">
-@@ -2653,6 +2848,25 @@ interface(`fs_read_removable_symlinks',`
+@@ -2653,6 +2868,25 @@ interface(`fs_read_removable_symlinks',`
  	read_lnk_files_pattern($1, removable_t, removable_t)
  ')
  
@@ -10329,7 +10357,7 @@ index dfe361a..f296623 100644
  ########################################
  ## <summary>
  ##	Read and write block nodes on removable filesystems.
-@@ -2779,6 +2993,7 @@ interface(`fs_manage_nfs_dirs',`
+@@ -2779,6 +3013,7 @@ interface(`fs_manage_nfs_dirs',`
  		type nfs_t;
  	')
  
@@ -10337,7 +10365,7 @@ index dfe361a..f296623 100644
  	allow $1 nfs_t:dir manage_dir_perms;
  ')
  
-@@ -2819,6 +3034,7 @@ interface(`fs_manage_nfs_files',`
+@@ -2819,6 +3054,7 @@ interface(`fs_manage_nfs_files',`
  		type nfs_t;
  	')
  
@@ -10345,7 +10373,7 @@ index dfe361a..f296623 100644
  	manage_files_pattern($1, nfs_t, nfs_t)
  ')
  
-@@ -2845,7 +3061,7 @@ interface(`fs_dontaudit_manage_nfs_files',`
+@@ -2845,7 +3081,7 @@ interface(`fs_dontaudit_manage_nfs_files',`
  #########################################
  ## <summary>
  ##	Create, read, write, and delete symbolic links
@@ -10354,7 +10382,7 @@ index dfe361a..f296623 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2859,6 +3075,7 @@ interface(`fs_manage_nfs_symlinks',`
+@@ -2859,6 +3095,7 @@ interface(`fs_manage_nfs_symlinks',`
  		type nfs_t;
  	')
  
@@ -10362,7 +10390,7 @@ index dfe361a..f296623 100644
  	manage_lnk_files_pattern($1, nfs_t, nfs_t)
  ')
  
-@@ -3989,6 +4206,42 @@ interface(`fs_dontaudit_use_tmpfs_chr_dev',`
+@@ -3989,6 +4226,42 @@ interface(`fs_dontaudit_use_tmpfs_chr_dev',`
  
  ########################################
  ## <summary>
@@ -10405,7 +10433,7 @@ index dfe361a..f296623 100644
  ##	Relabel character nodes on tmpfs filesystems.
  ## </summary>
  ## <param name="domain">
-@@ -4271,6 +4524,8 @@ interface(`fs_mount_all_fs',`
+@@ -4271,6 +4544,8 @@ interface(`fs_mount_all_fs',`
  	')
  
  	allow $1 filesystem_type:filesystem mount;
@@ -10414,7 +10442,7 @@ index dfe361a..f296623 100644
  ')
  
  ########################################
-@@ -4681,3 +4936,24 @@ interface(`fs_unconfined',`
+@@ -4681,3 +4956,24 @@ interface(`fs_unconfined',`
  
  	typeattribute $1 filesystem_unconfined_type;
  ')
@@ -24629,7 +24657,7 @@ index ed1af3c..40b5f0e 100644
 +	delete_files_pattern($1, dkim_milter_data_t, dkim_milter_data_t)
 +')
 diff --git a/policy/modules/services/milter.te b/policy/modules/services/milter.te
-index 1b6dea0..f42a489 100644
+index 1b6dea0..b90c727 100644
 --- a/policy/modules/services/milter.te
 +++ b/policy/modules/services/milter.te
 @@ -9,6 +9,13 @@ policy_module(milter, 1.2.1)
@@ -24646,7 +24674,7 @@ index 1b6dea0..f42a489 100644
  # currently-supported milters are milter-greylist, milter-regex and spamass-milter
  milter_template(greylist)
  milter_template(regex)
-@@ -20,11 +27,27 @@ milter_template(spamass)
+@@ -20,11 +27,28 @@ milter_template(spamass)
  type spamass_milter_state_t;
  files_type(spamass_milter_state_t)
  
@@ -24656,6 +24684,7 @@ index 1b6dea0..f42a489 100644
 +#
 +
 +allow dkim_milter_t self:capability { kill setgid setuid };
++allow dkim_milter_t self:process signal;
 +allow dkim_milter_t self:unix_stream_socket create_stream_socket_perms;
 +
 +read_files_pattern(dkim_milter_t, dkim_milter_private_key_t, dkim_milter_private_key_t)
@@ -24676,7 +24705,7 @@ index 1b6dea0..f42a489 100644
  #
  
  # It removes any existing socket (not owned by root) whilst running as root,
-@@ -52,8 +75,8 @@ mta_read_config(greylist_milter_t)
+@@ -52,8 +76,8 @@ mta_read_config(greylist_milter_t)
  ########################################
  #
  # milter-regex local policy
@@ -24687,7 +24716,7 @@ index 1b6dea0..f42a489 100644
  #
  
  # It removes any existing socket (not owned by root) whilst running as root
-@@ -72,8 +95,8 @@ mta_read_config(regex_milter_t)
+@@ -72,8 +96,8 @@ mta_read_config(regex_milter_t)
  ########################################
  #
  # spamass-milter local policy
@@ -46507,10 +46536,10 @@ index 0000000..5f0352b
 +
 diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
 new file mode 100644
-index 0000000..75f49c3
+index 0000000..a74c435
 --- /dev/null
 +++ b/policy/modules/system/systemd.te
-@@ -0,0 +1,96 @@
+@@ -0,0 +1,98 @@
 +
 +policy_module(systemd, 1.0.0)
 +
@@ -46577,6 +46606,7 @@ index 0000000..75f49c3
 +files_manage_all_pid_dirs(systemd_tmpfiles_t)
 +files_manage_all_locks(systemd_tmpfiles_t)
 +files_setattr_all_tmp_dirs(systemd_tmpfiles_t)
++files_unlink_all_pid_sockets(systemd_tmpfiles_t)
 +
 +files_purge_tmp(systemd_tmpfiles_t)
 +files_manage_generic_tmp_files(systemd_tmpfiles_t)
@@ -46598,6 +46628,7 @@ index 0000000..75f49c3
 +seutil_read_file_contexts(systemd_tmpfiles_t)
 +
 +logging_create_devlog_dev(systemd_tmpfiles_t)
++logging_send_syslog_msg(systemd_tmpfiles_t)
 +
 +miscfiles_delete_man_pages(systemd_tmpfiles_t)
 +miscfiles_relabel_man_pages(systemd_tmpfiles_t)
