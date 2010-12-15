@@ -20,8 +20,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.9.10
-Release: 13%{?dist}
+Version: 3.9.11
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,17 +471,21 @@ exit 0
 %endif
 
 %changelog
-* Tue Dec 14 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-13
+* Wed Dec 15 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.11-1
+- Update to upstream
+- Fix version of policy in spec file
+
+* Tue Dec 14 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-13
 - Allow sandbox to run on nfs partitions, fixes for systemd_tmpfs
 - remove per sandbox domains devpts types
 - Allow dkim-milter sending signal to itself
 
-* Mon Dec 13 2010 Dan Walsh <dwalsh@redhat.com> 3.9.9-12
+* Mon Dec 13 2010 Dan Walsh <dwalsh@redhat.com> 3.9.10-12
 - Allow domains that transition to ping or traceroute, kill them
 - Allow user_t to conditionally transition to ping_t and traceroute_t
 - Add fixes to systemd- tools, including new labeling for systemd-fsck, systemd-cryptsetup
 
-* Mon Dec 13 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-11
+* Mon Dec 13 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-11
 - Turn on systemd policy
 - mozilla_plugin needs to read certs in the homedir.
 - Dontaudit leaked file descriptors from devicekit
@@ -494,19 +498,19 @@ exit 0
 - systemd is creating symlinks in /dev
 - Change label on /etc/httpd/alias to be all cert_t
 
-* Fri Dec 10 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-10
+* Fri Dec 10 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-10
 - Fixes for clamscan and boinc policy
 - Add boinc_project_t setpgid
 - Allow alsa to create tmp files in /tmp
 
-* Tue Dec 7 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-9
+* Tue Dec 7 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-9
 - Push fixes to allow disabling of unlabeled_t packet access
 - Enable unlabelednet policy
 
-* Tue Dec 7 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-8
+* Tue Dec 7 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-8
 - Fixes for lvm to work with systemd
 
-* Mon Dec 6 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-7
+* Mon Dec 6 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-7
 - Fix the label for wicd log
 - plymouthd creates force-display-on-active-vt file
 - Allow avahi to request the kernel to load a module
@@ -518,19 +522,19 @@ exit 0
 - Fix the label for wicd log
 - Add systemd policy
 
-* Fri Dec 3 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-6
+* Fri Dec 3 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-6
 - Fix gnome_manage_data interface
 - Dontaudit sys_ptrace capability for iscsid
 - Fixes for nagios plugin policy
 
-* Thu Dec 1 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.9-5
+* Thu Dec 1 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-5
 - Fix cron to run ranged when started by init
 - Fix devicekit to use log files
 - Dontaudit use of devicekit_var_run_t for fstools
 - Allow init to setattr on logfile directories
 - Allow hald to manage files in /var/run/pm-utils/ dir which is now labeled as devicekit_var_run_t
 
-* Tue Nov 30 2010 Dan Walsh <dwalsh@redhat.com> 3.9.9-4
+* Tue Nov 30 2010 Dan Walsh <dwalsh@redhat.com> 3.9.10-4
 - Fix up handling of dnsmasq_t creating /var/run/libvirt/network
 - Turn on sshd_forward_ports boolean by default
 - Allow sysadmin to dbus chat with rpm
