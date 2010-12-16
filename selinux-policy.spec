@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.11
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec 15 2010 Dan Walsh <dwalsh@redhat.com> 3.9.11-2
+- Update selinux policy to handle new /usr/share/sandbox/start script
+
 * Wed Dec 15 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.11-1
 - Update to upstream
 - Fix version of policy in spec file
