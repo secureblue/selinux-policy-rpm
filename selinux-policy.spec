@@ -471,6 +471,17 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 21 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.12-1
+- Update to upstream
+- Fixes for systemd policy
+- Fixes for passenger policy
+- Allow staff users to run mysqld in the staff_t domain, akonadi needs this
+- Add bin_t label for /usr/share/kde4/apps/kajongg/kajongg.py
+- auth_use_nsswitch does not need avahi to read passwords,needed for resolving data
+- Dontaudit (xdm_t) gok attempting to list contents of /var/account
+- Telepathy domains need to read urand
+- Need interface to getattr all file classes in a mock library for setroubleshoot
+
 * Wed Dec 15 2010 Dan Walsh <dwalsh@redhat.com> 3.9.11-2
 - Update selinux policy to handle new /usr/share/sandbox/start script
 
