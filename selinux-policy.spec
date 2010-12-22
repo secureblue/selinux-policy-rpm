@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.12
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,13 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 21 2010 Dan Walsh <dwalsh@redhat.com> 3.9.12-2
+- New labels for ghc http content
+- nsplugin_config needs to read urand, lvm now calls setfscreate to create dev
+- pm-suspend now creates log file for append access so we remove devicekit_wri
+- Change authlogin_use_sssd to authlogin_nsswitch_use_ldap
+- Fixes for greylist_milter policy
+
 * Tue Dec 21 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.12-1
 - Update to upstream
 - Fixes for systemd policy
