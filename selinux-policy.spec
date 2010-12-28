@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.12
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -333,7 +333,7 @@ if [ $1 -eq 1 ]; then
    %loadpolicy targeted $packages
    restorecon -R /root /var/log /var/run /var/lib 2> /dev/null
 else
-   semodule -n -s targeted -r pyzor -r razor -r moilscanner mailscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal 2>/dev/null
+   semodule -n -s targeted -r moilscanner mailscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal 2>/dev/null
    %loadpolicy targeted $packages
    %relabel targeted
 fi
@@ -452,7 +452,7 @@ SELinux Reference policy mls base module.
 %saveFileContext mls
 
 %post mls 
-semodule -n -s mls -r pyzor -r razor -r mailscanner polkit ModemManager telepathysofiasip ethereal 2>/dev/null
+semodule -n -s mls -r mailscanner polkit ModemManager telepathysofiasip ethereal 2>/dev/null
 packages=`cat /usr/share/selinux/mls/modules.lst`
 %loadpolicy mls $packages
 
@@ -471,6 +471,25 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 28 2010 Dan Walsh <dwalsh@redhat.com> 3.9.12-4
+- Gnome apps list config_home_t
+- mpd creates lnk files in homedir
+- apache leaks write to mail apps on tmp files
+- /var/stockmaniac/templates_cache contains log files
+- Abrt list the connects of mount_tmp_t dirs
+- passwd agent reads files under /dev and reads utmp file
+- squid apache script connects to the squid port
+- fix name of plymouth log file
+- teamviewer is a wine app
+- allow dmesg to read system state
+- Stop labeling files under /var/lib/mock so restorecon will not go into this 
+- nsplugin needs to read network state for google talk
+
+* Thu Dec 23 2010 Dan Walsh <dwalsh@redhat.com> 3.9.12-3
+- Allow xdm and syslog to use /var/log/boot.log
+- Allow users to communicate with mozilla_plugin and kill it
+- Add labeling for ipv6 and dhcp
+
 * Tue Dec 21 2010 Dan Walsh <dwalsh@redhat.com> 3.9.12-2
 - New labels for ghc http content
 - nsplugin_config needs to read urand, lvm now calls setfscreate to create dev
