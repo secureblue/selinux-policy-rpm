@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.12
-Release: 3%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,21 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 5 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.12-5
+- Add initial policy for system-setup-keyboard which is now daemon
+- Label /var/lock/subsys/shorewall as shorewall_lock_t
+- Allow users to communicate with the gpg_agent_t
+- Dontaudit mozilla_plugin_t using the inherited terminal
+- Allow sambagui to read files in /usr
+- webalizer manages squid log files
+- Allow unconfined domains to bind ports to raw_ip_sockets
+- Allow abrt to manage rpm logs when running yum
+- Need labels for /var/run/bittlebee
+- Label .ssh under amanda
+- Remove unused genrequires for virt_domain_template
+- Allow virt_domain to use fd inherited from virtd_t
+- Allow iptables to read shorewall config
+
 * Tue Dec 28 2010 Dan Walsh <dwalsh@redhat.com> 3.9.12-4
 - Gnome apps list config_home_t
 - mpd creates lnk files in homedir
