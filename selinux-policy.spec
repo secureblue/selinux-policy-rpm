@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.12
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan 11 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.12-6
+- Add firewalld policy
+- Allow vmware_host to read samba config
+- Kernel wants to read /proc Fix duplicate grub def in cobbler
+- Chrony sends mail, executes shell, uses fifo_file and reads /proc
+- devicekitdisk getattr all file systems
+- sambd daemon writes wtmp file
+- libvirt transitions to dmidecode
+
 * Wed Jan 5 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.12-5
 - Add initial policy for system-setup-keyboard which is now daemon
 - Label /var/lock/subsys/shorewall as shorewall_lock_t
