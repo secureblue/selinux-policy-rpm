@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.12
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,17 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 14 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.12-7
+- gnomeclock executes a shell
+- Update for screen policy to handle pipe in homedir
+- Fixes for polyinstatiated homedir
+- Fixes for namespace policy and other fixes related to polyinstantiation
+- Add namespace policy
+- Allow dovecot-deliver transition to sendmail which is needed by sieve scripts
+- Fixes for init, psad policy which relate with confined users
+- Do not audit bootloader attempts to read devicekit pid files
+- Allow nagios service plugins to read /proc
+
 * Tue Jan 11 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.12-6
 - Add firewalld policy
 - Allow vmware_host to read samba config
