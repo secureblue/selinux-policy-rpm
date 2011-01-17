@@ -20,8 +20,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.9.12
-Release: 8%{?dist}
+Version: 3.9.13
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 17 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-1
+- Update to upstream
+
 * Mon Jan 17 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.12-8
 - Add oracle ports and allow apache to connect to them if the connect_db boolean is turned on
 - Add puppetmaster_use_db boolean
