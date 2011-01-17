@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.12
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,13 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 17 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.12-8
+- Add oracle ports and allow apache to connect to them if the connect_db boolean is turned on
+- Add puppetmaster_use_db boolean
+- Fixes for zarafa policy
+- Fixes for gnomeclock poliy
+- Fix systemd-tmpfiles to use auth_use_nsswitch
+
 * Fri Jan 14 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.12-7
 - gnomeclock executes a shell
 - Update for screen policy to handle pipe in homedir
