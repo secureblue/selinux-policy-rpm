@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.13
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -154,6 +154,7 @@ awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' .
 %config %{_sysconfdir}/selinux/%1/contexts/default_contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/virtual_domain_context \
 %config %{_sysconfdir}/selinux/%1/contexts/virtual_image_context \
+%config %{_sysconfdir}/selinux/%1/contexts/sepgsql_contexts \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/default_type \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/failsafe_context \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/initrc_context \
@@ -471,6 +472,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan 18 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-2
+- Add sepgsql_contexts file
+
 * Mon Jan 17 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-1
 - Update to upstream
 
