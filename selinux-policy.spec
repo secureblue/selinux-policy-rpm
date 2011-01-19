@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.13
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan 18 2011 Dan Walsh <dwalsh@redhat.com> 3.9.13-3
+- Add Dgrift policy for gnome-keyring-daemon
+
 * Tue Jan 18 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-2
 - Add sepgsql_contexts file
 
