@@ -472,8 +472,11 @@ exit 0
 %endif
 
 %changelog
-* Tue Jan 18 2011 Dan Walsh <dwalsh@redhat.com> 3.9.13-3
-- Add Dgrift policy for gnome-keyring-daemon
+* Wed Jan 19 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-3
+- NetworkManager wants to read consolekit_var_run_t
+- Allow readahead to create /dev/.systemd/readahead
+- Remove permissive domains
+- Allow newrole to run namespace_init
 
 * Tue Jan 18 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-2
 - Add sepgsql_contexts file
