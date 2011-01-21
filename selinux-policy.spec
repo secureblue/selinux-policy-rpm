@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.13
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,16 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 21 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-4
+- nslcd needs setsched and to read /usr/tmp
+- Invalid call in likewise policy ends up creating a bogus role
+- Cannon puts content into /var/lib/bjlib that cups needs to be able to write
+- Allow screen to create screen_home_t in /root
+- dirsrv sends syslog messages
+- pinentry reads stuff in .kde directory
+- Add labels for .kde directory in homedir
+- Treat irpinit, iprupdate, iprdump services with raid policy
+
 * Wed Jan 19 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-3
 - NetworkManager wants to read consolekit_var_run_t
 - Allow readahead to create /dev/.systemd/readahead
