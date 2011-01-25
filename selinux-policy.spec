@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.13
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,18 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 25 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-5
+- Allow nagios plugin to read /proc/meminfo
+- Fix for mozilla_plugin
+- Allow samba_net_t to create /etc/keytab
+- pppd_t setting up vpns needs to run unix_chkpwd, setsched its process and write wtmp_t
+- nslcd can read user credentials
+- Allow nsplugin to delete mozilla_plugin_tmpfs_t
+- abrt tries to create dir in rpm_var_lib_t
+- virt relabels fifo_files
+- sshd needs to manage content in fusefs homedir
+- mock manages link files in cache dir
+
 * Fri Jan 21 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-4
 - nslcd needs setsched and to read /usr/tmp
 - Invalid call in likewise policy ends up creating a bogus role
