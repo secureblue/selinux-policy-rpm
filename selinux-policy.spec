@@ -191,7 +191,7 @@ FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 selinuxenabled; \
 if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      fixfiles -C ${FILE_CONTEXT}.pre restore; \
-     restorecon -R /root /var/log /var/run /var/lib 2> /dev/null; \
+     restorecon -R /root /var/log /var/run 2> /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
 fi; 
 
@@ -332,7 +332,7 @@ SELinux Reference policy targeted base module.
 packages=`cat /usr/share/selinux/targeted/modules.lst`
 if [ $1 -eq 1 ]; then
    %loadpolicy targeted $packages
-   restorecon -R /root /var/log /var/run /var/lib 2> /dev/null
+   restorecon -R /root /var/log /var/run 2> /dev/null
 else
    semodule -n -s targeted -r moilscanner mailscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal 2>/dev/null
    %loadpolicy targeted $packages
@@ -389,7 +389,7 @@ semanage -S minimum -i - << __eof
 login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
 login -m  -s unconfined_u -r s0-s0:c0.c1023 root
 __eof
-restorecon -R /root /var/log /var/run /var/lib 2> /dev/null
+restorecon -R /root /var/log /var/run 2> /dev/null
 else
 %relabel minimum
 fi
@@ -458,7 +458,7 @@ packages=`cat /usr/share/selinux/mls/modules.lst`
 %loadpolicy mls $packages
 
 if [ $1 -eq 1 ]; then
-   restorecon -R /root /var/log /var/run /var/lib 2> /dev/null
+   restorecon -R /root /var/log /var/run 2> /dev/null
 else
 %relabel mls
 fi
