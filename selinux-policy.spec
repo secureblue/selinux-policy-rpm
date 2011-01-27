@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.13
-Release: 4%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,27 @@ exit 0
 %endif
 
 %changelog
+* Thu Jan 27 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-6
+- Fix xserver_dontaudit_read_xdm_pid
+- Change oracle_port_t to oracledb_port_t to prevent conflict with satellite
+- Allow dovecot_deliver_t to read/write postfix_master_t:fifo_file. 
+	* These fifo_file is passed from postfix_master_t to postfix_local_t to dovecot_deliver_t
+- Allow readahead to manage readahead pid dirs
+- Allow readahead to read all mcs levels
+- Allow mozilla_plugin_t to use nfs or samba homedirs
+
+* Wed Jan 25 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-5
+- Allow nagios plugin to read /proc/meminfo
+- Fix for mozilla_plugin
+- Allow samba_net_t to create /etc/keytab
+- pppd_t setting up vpns needs to run unix_chkpwd, setsched its process and write wtmp_t
+- nslcd can read user credentials
+- Allow nsplugin to delete mozilla_plugin_tmpfs_t
+- abrt tries to create dir in rpm_var_lib_t
+- virt relabels fifo_files
+- sshd needs to manage content in fusefs homedir
+- mock manages link files in cache dir
+
 * Fri Jan 21 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-4
 - nslcd needs setsched and to read /usr/tmp
 - Invalid call in likewise policy ends up creating a bogus role
