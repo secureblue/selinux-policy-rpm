@@ -8869,7 +8869,7 @@ index 5a07a43..e97e47f 100644
  ## </summary>
  ## <param name="domain">
 diff --git a/policy/modules/kernel/corenetwork.te.in b/policy/modules/kernel/corenetwork.te.in
-index f12e087..71e46ab 100644
+index f12e087..791a227 100644
 --- a/policy/modules/kernel/corenetwork.te.in
 +++ b/policy/modules/kernel/corenetwork.te.in
 @@ -16,6 +16,7 @@ attribute rpc_port_type;
@@ -9023,7 +9023,7 @@ index f12e087..71e46ab 100644
  network_port(printer, tcp,515,s0)
  network_port(ptal, tcp,5703,s0)
  network_port(pulseaudio, tcp,4713,s0)
-@@ -177,43 +213,49 @@ network_port(ricci, tcp,11111,s0, udp,11111,s0)
+@@ -177,25 +213,30 @@ network_port(ricci, tcp,11111,s0, udp,11111,s0)
  network_port(ricci_modcluster, tcp,16851,s0, udp,16851,s0)
  network_port(rlogind, tcp,513,s0)
  network_port(rndc, tcp,953,s0)
@@ -9054,12 +9054,11 @@ index f12e087..71e46ab 100644
  network_port(swat, tcp,901,s0)
 +network_port(sype, tcp,9911,s0, udp,9911,s0)
  network_port(syslogd, udp,514,s0)
++network_port(tcs, tcp, 30003, s0)
  network_port(telnetd, tcp,23,s0)
  network_port(tftp, udp,69,s0)
  network_port(tor, tcp, 6969, s0, tcp,9001,s0, tcp,9030,s0, tcp,9050,s0, tcp,9051,s0)
- network_port(traceroute, udp,64000-64010,s0)
- network_port(transproxy, tcp,8081,s0)
-+network_port(tscd, tcp,30003,s0)
+@@ -204,16 +245,17 @@ network_port(transproxy, tcp,8081,s0)
  network_port(ups, tcp,3493,s0)
  type utcpserver_port_t, port_type; dnl network_port(utcpserver) # no defined portcon
  network_port(uucpd, tcp,540,s0)
@@ -9125,7 +9124,7 @@ index 3b2da10..7c29e17 100644
 +#
 +/sys(/.*)?			gen_context(system_u:object_r:sysfs_t,s0)
 diff --git a/policy/modules/kernel/devices.if b/policy/modules/kernel/devices.if
-index 15a7bef..6d68113 100644
+index 15a7bef..eddb8dc 100644
 --- a/policy/modules/kernel/devices.if
 +++ b/policy/modules/kernel/devices.if
 @@ -146,8 +146,8 @@ interface(`dev_relabel_all_dev_nodes',`
@@ -9407,7 +9406,7 @@ index 15a7bef..6d68113 100644
  ##	Get the attributes of sysfs directories.
  ## </summary>
  ## <param name="domain">
-@@ -3773,6 +3935,42 @@ interface(`dev_rw_sysfs',`
+@@ -3773,6 +3935,60 @@ interface(`dev_rw_sysfs',`
  
  ########################################
  ## <summary>
@@ -9447,10 +9446,28 @@ index 15a7bef..6d68113 100644
 +
 +########################################
 +## <summary>
++##	Read and write the TPM device.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dev_rw_tpm',`
++	gen_require(`
++		type device_t, tpm_device_t;
++	')
++
++	rw_chr_files_pattern($1, device_t, tpm_device_t)
++')
++
++########################################
++## <summary>
  ##	Read from pseudo random number generator devices (e.g., /dev/urandom).
  ## </summary>
  ## <desc>
-@@ -3942,6 +4140,24 @@ interface(`dev_read_usbmon_dev',`
+@@ -3942,6 +4158,24 @@ interface(`dev_read_usbmon_dev',`
  
  ########################################
  ## <summary>
@@ -9475,7 +9492,7 @@ index 15a7bef..6d68113 100644
  ##	Mount a usbfs filesystem.
  ## </summary>
  ## <param name="domain">
-@@ -4252,11 +4468,10 @@ interface(`dev_write_video_dev',`
+@@ -4252,11 +4486,10 @@ interface(`dev_write_video_dev',`
  #
  interface(`dev_rw_vhost',`
  	gen_require(`
@@ -38454,6 +38471,234 @@ index 7038b55..4e84f23 100644
  
  type tcpd_tmp_t;
  files_tmp_file(tcpd_tmp_t)
+diff --git a/policy/modules/services/tcsd.fc b/policy/modules/services/tcsd.fc
+new file mode 100644
+index 0000000..7fdda14
+--- /dev/null
++++ b/policy/modules/services/tcsd.fc
+@@ -0,0 +1,6 @@
++/etc/rc\.d/init\.d/tcsd	--	gen_context(system_u:object_r:tcsd_initrc_exec_t,s0)
++
++/usr/sbin/tcsd		--	gen_context(system_u:object_r:tcsd_exec_t,s0)
++
++/var/lib/tpm(/.*)?		gen_context(system_u:object_r:tcsd_var_lib_t,s0)
++
+diff --git a/policy/modules/services/tcsd.if b/policy/modules/services/tcsd.if
+new file mode 100644
+index 0000000..41ebccf
+--- /dev/null
++++ b/policy/modules/services/tcsd.if
+@@ -0,0 +1,153 @@
++## <summary>policy for tcsd</summary>
++
++########################################
++## <summary>
++##	Execute a domain transition to run tcsd.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed access.
++## </summary>
++## </param>
++#
++interface(`tcsd_domtrans',`
++	gen_require(`
++		type tcsd_t, tcsd_exec_t;
++	')
++
++	domtrans_pattern($1, tcsd_exec_t, tcsd_t)
++')
++
++
++########################################
++## <summary>
++##	Execute tcsd server in the tcsd domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	The type of the process performing this action.
++##	</summary>
++## </param>
++#
++interface(`tcsd_initrc_domtrans',`
++	gen_require(`
++		type tcsd_initrc_exec_t;
++	')
++
++	init_labeled_script_domtrans($1, tcsd_initrc_exec_t)
++')
++
++########################################
++## <summary>
++##	Search tcsd lib directories.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`tcsd_search_lib',`
++	gen_require(`
++		type tcsd_var_lib_t;
++	')
++
++	allow $1 tcsd_var_lib_t:dir search_dir_perms;
++	files_search_var_lib($1)
++')
++
++########################################
++## <summary>
++##	Read tcsd lib files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`tcsd_read_lib_files',`
++	gen_require(`
++		type tcsd_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++        read_files_pattern($1, tcsd_var_lib_t, tcsd_var_lib_t)
++')
++
++########################################
++## <summary>
++##	Create, read, write, and delete
++##	tcsd lib files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`tcsd_manage_lib_files',`
++	gen_require(`
++		type tcsd_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++        manage_files_pattern($1, tcsd_var_lib_t, tcsd_var_lib_t)
++')
++
++########################################
++## <summary>
++##	Manage tcsd lib dirs files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`tcsd_manage_lib_dirs',`
++	gen_require(`
++		type tcsd_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++        manage_dirs_pattern($1, tcsd_var_lib_t, tcsd_var_lib_t)
++')
++
++
++########################################
++## <summary>
++##	All of the rules required to administrate
++##	an tcsd environment
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	Role allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`tcsd_admin',`
++	gen_require(`
++		type tcsd_t;
++		type tcsd_initrc_exec_t;
++                type tcsd_var_lib_t;
++	')
++
++	allow $1 tcsd_t:process { ptrace signal_perms };
++	ps_process_pattern($1, tcsd_t)
++
++	tcsd_initrc_domtrans($1)
++	domain_system_change_exemption($1)
++	role_transition $2 tcsd_initrc_exec_t system_r;
++	allow $2 system_r;
++
++	files_search_var_lib($1)
++	admin_pattern($1, tcsd_var_lib_t)
++
++')
+diff --git a/policy/modules/services/tcsd.te b/policy/modules/services/tcsd.te
+new file mode 100644
+index 0000000..7b74540
+--- /dev/null
++++ b/policy/modules/services/tcsd.te
+@@ -0,0 +1,51 @@
++policy_module(tcsd, 1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++type tcsd_t;
++type tcsd_exec_t;
++init_daemon_domain(tcsd_t, tcsd_exec_t)
++
++permissive tcsd_t;
++
++type tcsd_initrc_exec_t;
++init_script_file(tcsd_initrc_exec_t)
++
++type tcsd_var_lib_t;
++files_type(tcsd_var_lib_t)
++
++########################################
++#
++# tcsd local policy
++#
++
++allow tcsd_t self:capability { dac_override setuid };
++allow tcsd_t self:process { signal sigkill };
++allow tcsd_t self:tcp_socket create_stream_socket_perms;
++
++# Access /dev/tpm0.
++dev_rw_tpm(tcsd_t)
++
++manage_dirs_pattern(tcsd_t,tcsd_var_lib_t,tcsd_var_lib_t)
++manage_files_pattern(tcsd_t,tcsd_var_lib_t,tcsd_var_lib_t)
++files_var_lib_filetrans(tcsd_t,tcsd_var_lib_t,{ file dir })
++
++corenet_all_recvfrom_unlabeled(tcsd_t)
++corenet_tcp_bind_generic_node(tcsd_t)
++corenet_tcp_bind_tcs_port(tcsd_t)
++
++dev_read_urand(tcsd_t)
++
++files_read_etc_files(tcsd_t)
++files_read_usr_files(tcsd_t)
++
++auth_use_nsswitch(tcsd_t)
++
++logging_send_syslog_msg(tcsd_t)
++
++miscfiles_read_localization(tcsd_t)
++
++sysnet_dns_name_resolve(tcsd_t)
 diff --git a/policy/modules/services/telnet.if b/policy/modules/services/telnet.if
 index 58e7ec0..cf4cc85 100644
 --- a/policy/modules/services/telnet.if

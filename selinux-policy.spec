@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.13
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 1 2011 Dan Walsh <dwalsh@redhat.com> 3.9.13-8
+- Add tcsd policy
+
 * Tue Feb 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-7
 - ricci_modclusterd_t needs to bind to rpc ports 500-1023
 - Allow dbus to use setrlimit to increase resoueces
