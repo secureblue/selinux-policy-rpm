@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.13
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-7
+- ricci_modclusterd_t needs to bind to rpc ports 500-1023
+- Allow dbus to use setrlimit to increase resoueces
+- Mozilla_plugin is leaking to sandbox
+- Allow confined users  to connect to lircd over unix domain stream socket which allow to use remote control
+- Allow awstats to read squid logs
+- seunshare needs to manage tmp_t
+- apcupsd cgi scripts have a new directory
+
 * Thu Jan 27 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-6
 - Fix xserver_dontaudit_read_xdm_pid
 - Change oracle_port_t to oracledb_port_t to prevent conflict with satellite
