@@ -2196,6 +2196,21 @@ index ebf4b26..f663276 100644
  
  optional_policy(`
  	dbus_system_bus_client(vpnc_t)
+diff --git a/policy/modules/apps/awstats.te b/policy/modules/apps/awstats.te
+index 1f42250..3d36ae2 100644
+--- a/policy/modules/apps/awstats.te
++++ b/policy/modules/apps/awstats.te
+@@ -70,6 +70,10 @@ optional_policy(`
+ 	nscd_dontaudit_search_pid(awstats_t)
+ ')
+ 
++optional_policy(`
++	squid_read_log(awstats_t)
++')
++
+ ########################################
+ #
+ # awstats cgi script policy
 diff --git a/policy/modules/apps/cdrecord.te b/policy/modules/apps/cdrecord.te
 index 1403835..2e9a72c 100644
 --- a/policy/modules/apps/cdrecord.te
@@ -4697,7 +4712,7 @@ index 93ac529..aafece7 100644
  /usr/lib64/[^/]*firefox[^/]*/firefox -- gen_context(system_u:object_r:mozilla_exec_t,s0)
 +/usr/lib(64)?/xulrunner[^/]*/plugin-container		--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)
 diff --git a/policy/modules/apps/mozilla.if b/policy/modules/apps/mozilla.if
-index 9a6d67d..76caa60 100644
+index 9a6d67d..dba7755 100644
 --- a/policy/modules/apps/mozilla.if
 +++ b/policy/modules/apps/mozilla.if
 @@ -29,6 +29,8 @@ interface(`mozilla_role',`
@@ -4828,7 +4843,7 @@ index 9a6d67d..76caa60 100644
  ##	Send and receive messages from
  ##	mozilla over dbus.
  ## </summary>
-@@ -204,3 +295,22 @@ interface(`mozilla_rw_tcp_sockets',`
+@@ -204,3 +295,40 @@ interface(`mozilla_rw_tcp_sockets',`
  
  	allow $1 mozilla_t:tcp_socket rw_socket_perms;
  ')
@@ -4849,6 +4864,24 @@ index 9a6d67d..76caa60 100644
 +	')
 +
 +	allow $1 mozilla_plugin_tmpfs_t:file unlink;
++')
++
++########################################
++## <summary>
++##	Dontaudit read/write to a mozilla_plugin leaks
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`mozilla_plugin_dontaudit_leaks',`
++	gen_require(`
++		type mozilla_plugin_t;
++	')
++
++	dontaudit $1 mozilla_plugin_t:unix_stream_socket { read write };
 +')
 +
 diff --git a/policy/modules/apps/mozilla.te b/policy/modules/apps/mozilla.te
@@ -7064,10 +7097,10 @@ index 0000000..5f09eb9
 +')
 diff --git a/policy/modules/apps/sandbox.te b/policy/modules/apps/sandbox.te
 new file mode 100644
-index 0000000..5259647
+index 0000000..f29f417
 --- /dev/null
 +++ b/policy/modules/apps/sandbox.te
-@@ -0,0 +1,451 @@
+@@ -0,0 +1,452 @@
 +policy_module(sandbox,1.0.0)
 +dbus_stub()
 +attribute sandbox_domain;
@@ -7517,6 +7550,7 @@ index 0000000..5259647
 +	mozilla_dontaudit_rw_user_home_files(sandbox_x_t)
 +	mozilla_dontaudit_rw_user_home_files(sandbox_xserver_t)
 +	mozilla_dontaudit_rw_user_home_files(sandbox_x_domain)
++	mozilla_plugin_dontaudit_leaks(sandbox_x_domain)
 +')
 +
 diff --git a/policy/modules/apps/screen.fc b/policy/modules/apps/screen.fc
@@ -7629,10 +7663,10 @@ index 1dc7a85..7455c19 100644
 +	')
  ')
 diff --git a/policy/modules/apps/seunshare.te b/policy/modules/apps/seunshare.te
-index 7590165..e5ef7b3 100644
+index 7590165..63db4fd 100644
 --- a/policy/modules/apps/seunshare.te
 +++ b/policy/modules/apps/seunshare.te
-@@ -5,40 +5,45 @@ policy_module(seunshare, 1.1.0)
+@@ -5,40 +5,47 @@ policy_module(seunshare, 1.1.0)
  # Declarations
  #
  
@@ -7668,6 +7702,7 @@ index 7590165..e5ef7b3 100644
 +files_search_all(seunshare_domain)
 +files_read_etc_files(seunshare_domain)
 +files_mounton_all_poly_members(seunshare_domain)
++files_manage_generic_tmp_dirs(seunshare_domain)
  
 -auth_use_nsswitch(seunshare_t)
 +fs_manage_cgroup_dirs(seunshare_domain)
@@ -7692,6 +7727,7 @@ index 7590165..e5ef7b3 100644
  	optional_policy(`
 -		mozilla_dontaudit_manage_user_home_files(seunshare_t)
 +		mozilla_dontaudit_manage_user_home_files(seunshare_domain)
++		mozilla_plugin_dontaudit_leaks(seunshare_domain)
  	')
  ')
 +
@@ -16690,6 +16726,15 @@ index 08dfa0c..61f340d 100644
 +	userdom_read_user_home_content_files(httpd_suexec_t)
 +	userdom_read_user_home_content_files(httpd_user_script_t)
  ')
+diff --git a/policy/modules/services/apcupsd.fc b/policy/modules/services/apcupsd.fc
+index cd07b96..a87d1dd 100644
+--- a/policy/modules/services/apcupsd.fc
++++ b/policy/modules/services/apcupsd.fc
+@@ -13,3 +13,4 @@
+ /var/www/apcupsd/upsfstats\.cgi	--	gen_context(system_u:object_r:httpd_apcupsd_cgi_script_exec_t,s0)
+ /var/www/apcupsd/upsimage\.cgi	--	gen_context(system_u:object_r:httpd_apcupsd_cgi_script_exec_t,s0)
+ /var/www/apcupsd/upsstats\.cgi	--	gen_context(system_u:object_r:httpd_apcupsd_cgi_script_exec_t,s0)
++/var/www/cgi-bin/apcgui(/.*)?		gen_context(system_u:object_r:httpd_apcupsd_cgi_script_exec_t,s0)
 diff --git a/policy/modules/services/apcupsd.te b/policy/modules/services/apcupsd.te
 index d052bf0..8478eca 100644
 --- a/policy/modules/services/apcupsd.te
@@ -21077,9 +21122,18 @@ index 0d5711c..bbc1a8f 100644
 +	delete_files_pattern($1, system_dbusd_var_run_t, system_dbusd_var_run_t)
 +')
 diff --git a/policy/modules/services/dbus.te b/policy/modules/services/dbus.te
-index 98e5af6..3c13628 100644
+index 98e5af6..a7472fc 100644
 --- a/policy/modules/services/dbus.te
 +++ b/policy/modules/services/dbus.te
+@@ -52,7 +52,7 @@ ifdef(`enable_mls',`
+ 
+ # dac_override: /var/run/dbus is owned by messagebus on Debian
+ # cjp: dac_override should probably go in a distro_debian
+-allow system_dbusd_t self:capability { dac_override setgid setpcap setuid };
++allow system_dbusd_t self:capability { sys_resource dac_override setgid setpcap setuid };
+ dontaudit system_dbusd_t self:capability sys_tty_config;
+ allow system_dbusd_t self:process { getattr getsched signal_perms setpgid getcap setcap };
+ allow system_dbusd_t self:fifo_file rw_fifo_file_perms;
 @@ -74,9 +74,10 @@ files_tmp_filetrans(system_dbusd_t, system_dbusd_tmp_t, { file dir })
  
  read_files_pattern(system_dbusd_t, system_dbusd_var_lib_t, system_dbusd_var_lib_t)
@@ -34881,7 +34935,7 @@ index f7826f9..3128dd8 100644
 +	admin_pattern($1, ricci_var_run_t)
 +')
 diff --git a/policy/modules/services/ricci.te b/policy/modules/services/ricci.te
-index 33e72e8..29e7311 100644
+index 33e72e8..052a1ff 100644
 --- a/policy/modules/services/ricci.te
 +++ b/policy/modules/services/ricci.te
 @@ -7,9 +7,11 @@ policy_module(ricci, 1.7.0)
@@ -34937,6 +34991,15 @@ index 33e72e8..29e7311 100644
 +optional_policy(`
  	unconfined_use_fds(ricci_t)
  ')
+ 
+@@ -193,7 +202,7 @@ corecmd_exec_shell(ricci_modcluster_t)
+ corecmd_exec_bin(ricci_modcluster_t)
+ 
+ corenet_tcp_bind_cluster_port(ricci_modclusterd_t)
+-corenet_tcp_bind_reserved_port(ricci_modclusterd_t)
++corenet_tcp_bind_all_rpc_ports(ricci_modclusterd_t)
+ 
+ domain_read_all_domains_state(ricci_modcluster_t)
  
 @@ -241,8 +250,7 @@ optional_policy(`
  ')
@@ -50195,7 +50258,7 @@ index db75976..392d1ee 100644
 +HOME_DIR/\.gvfs(/.*)?	<<none>>
 +HOME_DIR/\.debug(/.*)?	<<none>>
 diff --git a/policy/modules/system/userdomain.if b/policy/modules/system/userdomain.if
-index 28b88de..97b04f2 100644
+index 28b88de..bc98180 100644
 --- a/policy/modules/system/userdomain.if
 +++ b/policy/modules/system/userdomain.if
 @@ -30,8 +30,9 @@ template(`userdom_base_user_template',`
@@ -50763,7 +50826,7 @@ index 28b88de..97b04f2 100644
  	')
  
  	tunable_policy(`user_ttyfile_stat',`
-@@ -574,67 +647,110 @@ template(`userdom_common_user_template',`
+@@ -574,67 +647,114 @@ template(`userdom_common_user_template',`
  	')
  
  	optional_policy(`
@@ -50872,6 +50935,10 @@ index 28b88de..97b04f2 100644
  
  	optional_policy(`
 -		locate_read_lib_files($1_t)
++		lircd_stream_connect($1_usertype)
++	')
++
++	optional_policy(`
 +		locate_read_lib_files($1_usertype)
  	')
  
@@ -50879,20 +50946,20 @@ index 28b88de..97b04f2 100644
  	optional_policy(`
 -		modutils_read_module_config($1_t)
 +		modutils_read_module_config($1_usertype)
++	')
++
++	optional_policy(`
++		mta_rw_spool($1_usertype)
++		mta_manage_queue($1_usertype)
  	')
  
  	optional_policy(`
 -		mta_rw_spool($1_t)
-+		mta_rw_spool($1_usertype)
-+		mta_manage_queue($1_usertype)
-+	')
-+
-+	optional_policy(`
 +		nsplugin_role($1_r, $1_usertype)
  	')
  
  	optional_policy(`
-@@ -650,41 +766,50 @@ template(`userdom_common_user_template',`
+@@ -650,41 +770,50 @@ template(`userdom_common_user_template',`
  
  	optional_policy(`
  		# to allow monitoring of pcmcia status
@@ -50954,7 +51021,7 @@ index 28b88de..97b04f2 100644
  ')
  
  #######################################
-@@ -712,13 +837,26 @@ template(`userdom_login_user_template', `
+@@ -712,13 +841,26 @@ template(`userdom_login_user_template', `
  
  	userdom_base_user_template($1)
  
@@ -50963,12 +51030,12 @@ index 28b88de..97b04f2 100644
 +
 +	userdom_manage_tmp_role($1_r, $1_usertype)
 +	userdom_manage_tmpfs_role($1_r, $1_usertype)
-+
-+	ifelse(`$1',`unconfined',`',`
-+		gen_tunable(allow_$1_exec_content, true)
  
 -	userdom_manage_tmp_role($1_r, $1_t)
 -	userdom_manage_tmpfs_role($1_r, $1_t)
++	ifelse(`$1',`unconfined',`',`
++		gen_tunable(allow_$1_exec_content, true)
++
 +		tunable_policy(`allow_$1_exec_content',`
 +			userdom_exec_user_tmp_files($1_usertype)
 +			userdom_exec_user_home_content_files($1_usertype)
@@ -50986,7 +51053,7 @@ index 28b88de..97b04f2 100644
  
  	userdom_change_password_template($1)
  
-@@ -736,72 +874,71 @@ template(`userdom_login_user_template', `
+@@ -736,72 +878,71 @@ template(`userdom_login_user_template', `
  
  	allow $1_t self:context contains;
  
@@ -51053,49 +51120,49 @@ index 28b88de..97b04f2 100644
 -	miscfiles_exec_tetex_data($1_t)
 +	miscfiles_read_tetex_data($1_usertype)
 +	miscfiles_exec_tetex_data($1_usertype)
++
++	seutil_read_config($1_usertype)
  
 -	seutil_read_config($1_t)
-+	seutil_read_config($1_usertype)
++	optional_policy(`
++		cups_read_config($1_usertype)
++		cups_stream_connect($1_usertype)
++		cups_stream_connect_ptal($1_usertype)
++	')
  
  	optional_policy(`
 -		cups_read_config($1_t)
 -		cups_stream_connect($1_t)
 -		cups_stream_connect_ptal($1_t)
-+		cups_read_config($1_usertype)
-+		cups_stream_connect($1_usertype)
-+		cups_stream_connect_ptal($1_usertype)
- 	')
- 
- 	optional_policy(`
--		kerberos_use($1_t)
 +		kerberos_use($1_usertype)
 +		kerberos_connect_524($1_usertype)
  	')
  
  	optional_policy(`
--		mta_dontaudit_read_spool_symlinks($1_t)
+-		kerberos_use($1_t)
 +		mta_dontaudit_read_spool_symlinks($1_usertype)
  	')
  
  	optional_policy(`
--		quota_dontaudit_getattr_db($1_t)
+-		mta_dontaudit_read_spool_symlinks($1_t)
 +		quota_dontaudit_getattr_db($1_usertype)
+ 	')
+ 
+ 	optional_policy(`
+-		quota_dontaudit_getattr_db($1_t)
++		rpm_read_db($1_usertype)
++		rpm_dontaudit_manage_db($1_usertype)
++		rpm_read_cache($1_usertype)
  	')
  
  	optional_policy(`
 -		rpm_read_db($1_t)
 -		rpm_dontaudit_manage_db($1_t)
-+		rpm_read_db($1_usertype)
-+		rpm_dontaudit_manage_db($1_usertype)
-+		rpm_read_cache($1_usertype)
-+	')
-+
-+	optional_policy(`
 +		oddjob_run_mkhomedir($1_t, $1_r)
  	')
  ')
  
-@@ -833,6 +970,9 @@ template(`userdom_restricted_user_template',`
+@@ -833,6 +974,9 @@ template(`userdom_restricted_user_template',`
  	typeattribute $1_t unpriv_userdomain;
  	domain_interactive_fd($1_t)
  
@@ -51105,7 +51172,7 @@ index 28b88de..97b04f2 100644
  	##############################
  	#
  	# Local policy
-@@ -874,45 +1014,107 @@ template(`userdom_restricted_xwindows_user_template',`
+@@ -874,45 +1018,107 @@ template(`userdom_restricted_xwindows_user_template',`
  	#
  
  	auth_role($1_r, $1_t)
@@ -51224,7 +51291,7 @@ index 28b88de..97b04f2 100644
  	')
  ')
  
-@@ -947,7 +1149,7 @@ template(`userdom_unpriv_user_template', `
+@@ -947,7 +1153,7 @@ template(`userdom_unpriv_user_template', `
  	#
  
  	# Inherit rules for ordinary users.
@@ -51233,7 +51300,7 @@ index 28b88de..97b04f2 100644
  	userdom_common_user_template($1)
  
  	##############################
-@@ -956,54 +1158,77 @@ template(`userdom_unpriv_user_template', `
+@@ -956,54 +1162,77 @@ template(`userdom_unpriv_user_template', `
  	#
  
  	# port access is audited even if dac would not have allowed it, so dontaudit it here
@@ -51314,20 +51381,20 @@ index 28b88de..97b04f2 100644
 +
 +	optional_policy(`
 +		java_role_template($1, $1_r, $1_t)
-+	')
-+
-+	optional_policy(`
-+		mono_role_template($1, $1_r, $1_t)
  	')
  
 -	# Run pppd in pppd_t by default for user
  	optional_policy(`
 -		ppp_run_cond($1_t,$1_r)
-+		mount_run_fusermount($1_t, $1_r)
++		mono_role_template($1, $1_r, $1_t)
  	')
  
  	optional_policy(`
 -		setroubleshoot_stream_connect($1_t)
++		mount_run_fusermount($1_t, $1_r)
++	')
++
++	optional_policy(`
 +		wine_role_template($1, $1_r, $1_t)
 +	')
 +
@@ -51341,7 +51408,7 @@ index 28b88de..97b04f2 100644
  	')
  ')
  
-@@ -1039,7 +1264,7 @@ template(`userdom_unpriv_user_template', `
+@@ -1039,7 +1268,7 @@ template(`userdom_unpriv_user_template', `
  template(`userdom_admin_user_template',`
  	gen_require(`
  		attribute admindomain;
@@ -51350,7 +51417,7 @@ index 28b88de..97b04f2 100644
  	')
  
  	##############################
-@@ -1074,6 +1299,9 @@ template(`userdom_admin_user_template',`
+@@ -1074,6 +1303,9 @@ template(`userdom_admin_user_template',`
  	# Skip authentication when pam_rootok is specified.
  	allow $1_t self:passwd rootok;
  
@@ -51360,7 +51427,7 @@ index 28b88de..97b04f2 100644
  	kernel_read_software_raid_state($1_t)
  	kernel_getattr_core_if($1_t)
  	kernel_getattr_message_if($1_t)
-@@ -1088,6 +1316,7 @@ template(`userdom_admin_user_template',`
+@@ -1088,6 +1320,7 @@ template(`userdom_admin_user_template',`
  	kernel_sigstop_unlabeled($1_t)
  	kernel_signull_unlabeled($1_t)
  	kernel_sigchld_unlabeled($1_t)
@@ -51368,7 +51435,7 @@ index 28b88de..97b04f2 100644
  
  	corenet_tcp_bind_generic_port($1_t)
  	# allow setting up tunnels
-@@ -1119,10 +1348,13 @@ template(`userdom_admin_user_template',`
+@@ -1119,10 +1352,13 @@ template(`userdom_admin_user_template',`
  	domain_sigchld_all_domains($1_t)
  	# for lsof
  	domain_getattr_all_sockets($1_t)
@@ -51382,7 +51449,7 @@ index 28b88de..97b04f2 100644
  	fs_set_all_quotas($1_t)
  	fs_exec_noxattr($1_t)
  
-@@ -1142,6 +1374,7 @@ template(`userdom_admin_user_template',`
+@@ -1142,6 +1378,7 @@ template(`userdom_admin_user_template',`
  	logging_send_syslog_msg($1_t)
  
  	modutils_domtrans_insmod($1_t)
@@ -51390,7 +51457,7 @@ index 28b88de..97b04f2 100644
  
  	# The following rule is temporary until such time that a complete
  	# policy management infrastructure is in place so that an administrator
-@@ -1210,6 +1443,8 @@ template(`userdom_security_admin_template',`
+@@ -1210,6 +1447,8 @@ template(`userdom_security_admin_template',`
  	dev_relabel_all_dev_nodes($1)
  
  	files_create_boot_flag($1)
@@ -51399,7 +51466,7 @@ index 28b88de..97b04f2 100644
  
  	# Necessary for managing /boot/efi
  	fs_manage_dos_files($1)
-@@ -1237,6 +1472,7 @@ template(`userdom_security_admin_template',`
+@@ -1237,6 +1476,7 @@ template(`userdom_security_admin_template',`
  	seutil_run_checkpolicy($1,$2)
  	seutil_run_loadpolicy($1,$2)
  	seutil_run_semanage($1,$2)
@@ -51407,7 +51474,7 @@ index 28b88de..97b04f2 100644
  	seutil_run_setfiles($1, $2)
  
  	optional_policy(`
-@@ -1279,11 +1515,37 @@ template(`userdom_security_admin_template',`
+@@ -1279,11 +1519,37 @@ template(`userdom_security_admin_template',`
  interface(`userdom_user_home_content',`
  	gen_require(`
  		type user_home_t;
@@ -51445,7 +51512,7 @@ index 28b88de..97b04f2 100644
  	ubac_constrained($1)
  ')
  
-@@ -1395,6 +1657,7 @@ interface(`userdom_search_user_home_dirs',`
+@@ -1395,6 +1661,7 @@ interface(`userdom_search_user_home_dirs',`
  	')
  
  	allow $1 user_home_dir_t:dir search_dir_perms;
@@ -51453,7 +51520,7 @@ index 28b88de..97b04f2 100644
  	files_search_home($1)
  ')
  
-@@ -1441,6 +1704,14 @@ interface(`userdom_list_user_home_dirs',`
+@@ -1441,6 +1708,14 @@ interface(`userdom_list_user_home_dirs',`
  
  	allow $1 user_home_dir_t:dir list_dir_perms;
  	files_search_home($1)
@@ -51468,7 +51535,7 @@ index 28b88de..97b04f2 100644
  ')
  
  ########################################
-@@ -1456,9 +1727,11 @@ interface(`userdom_list_user_home_dirs',`
+@@ -1456,9 +1731,11 @@ interface(`userdom_list_user_home_dirs',`
  interface(`userdom_dontaudit_list_user_home_dirs',`
  	gen_require(`
  		type user_home_dir_t;
@@ -51480,34 +51547,57 @@ index 28b88de..97b04f2 100644
  ')
  
  ########################################
-@@ -1515,6 +1788,42 @@ interface(`userdom_relabelto_user_home_dirs',`
+@@ -1515,10 +1792,10 @@ interface(`userdom_relabelto_user_home_dirs',`
  	allow $1 user_home_dir_t:dir relabelto;
  ')
  
 +
-+########################################
-+## <summary>
+ ########################################
+ ## <summary>
+-##	Create directories in the home dir root with
+-##	the user home directory type.
 +##	Relabel to user home files.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -1526,35 +1803,71 @@ interface(`userdom_relabelto_user_home_dirs',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`userdom_home_filetrans_user_home_dir',`
 +interface(`userdom_relabelto_user_home_files',`
-+	gen_require(`
+ 	gen_require(`
+-		type user_home_dir_t;
 +		type user_home_t;
-+	')
-+
+ 	')
+ 
+-	files_home_filetrans($1, user_home_dir_t, dir)
 +	allow $1 user_home_t:file relabelto;
-+')
-+########################################
-+## <summary>
+ ')
+-
+ ########################################
+ ## <summary>
+-##	Do a domain transition to the specified
+-##	domain when executing a program in the
+-##	user home directory.
 +##	Relabel user home files.
-+## </summary>
+ ## </summary>
+-## <desc>
+-##	<p>
+-##	Do a domain transition to the specified
+-##	domain when executing a program in the
+-##	user home directory.
+-##	</p>
+-##	<p>
+-##	No interprocess communication (signals, pipes,
+-##	etc.) is provided by this interface since
+-##	the domains are not owned by this module.
+-##	</p>
+-## </desc>
+-## <param name="source_domain">
 +## <param name="domain">
-+##	<summary>
+ ##	<summary>
+-##	Domain allowed to transition.
 +##	Domain allowed access.
 +##	</summary>
 +## </param>
@@ -51520,10 +51610,50 @@ index 28b88de..97b04f2 100644
 +	allow $1 user_home_t:file relabel_file_perms;
 +')
 +
- ########################################
- ## <summary>
- ##	Create directories in the home dir root with
-@@ -1589,6 +1898,8 @@ interface(`userdom_dontaudit_search_user_home_content',`
++########################################
++## <summary>
++##	Create directories in the home dir root with
++##	the user home directory type.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`userdom_home_filetrans_user_home_dir',`
++	gen_require(`
++		type user_home_dir_t;
++	')
++
++	files_home_filetrans($1, user_home_dir_t, dir)
++')
++
++########################################
++## <summary>
++##	Do a domain transition to the specified
++##	domain when executing a program in the
++##	user home directory.
++## </summary>
++## <desc>
++##	<p>
++##	Do a domain transition to the specified
++##	domain when executing a program in the
++##	user home directory.
++##	</p>
++##	<p>
++##	No interprocess communication (signals, pipes,
++##	etc.) is provided by this interface since
++##	the domains are not owned by this module.
++##	</p>
++## </desc>
++## <param name="source_domain">
++##	<summary>
++##	Domain allowed to transition.
+ ##	</summary>
+ ## </param>
+ ## <param name="target_domain">
+@@ -1589,6 +1902,8 @@ interface(`userdom_dontaudit_search_user_home_content',`
  	')
  
  	dontaudit $1 user_home_t:dir search_dir_perms;
@@ -51532,7 +51662,7 @@ index 28b88de..97b04f2 100644
  ')
  
  ########################################
-@@ -1603,10 +1914,12 @@ interface(`userdom_dontaudit_search_user_home_content',`
+@@ -1603,10 +1918,12 @@ interface(`userdom_dontaudit_search_user_home_content',`
  #
  interface(`userdom_list_user_home_content',`
  	gen_require(`
@@ -51547,7 +51677,7 @@ index 28b88de..97b04f2 100644
  ')
  
  ########################################
-@@ -1649,6 +1962,25 @@ interface(`userdom_delete_user_home_content_dirs',`
+@@ -1649,6 +1966,25 @@ interface(`userdom_delete_user_home_content_dirs',`
  
  ########################################
  ## <summary>
@@ -51573,7 +51703,7 @@ index 28b88de..97b04f2 100644
  ##	Do not audit attempts to set the
  ##	attributes of user home files.
  ## </summary>
-@@ -1700,12 +2032,32 @@ interface(`userdom_read_user_home_content_files',`
+@@ -1700,12 +2036,32 @@ interface(`userdom_read_user_home_content_files',`
  		type user_home_dir_t, user_home_t;
  	')
  
@@ -51606,7 +51736,7 @@ index 28b88de..97b04f2 100644
  ##	Do not audit attempts to read user home files.
  ## </summary>
  ## <param name="domain">
-@@ -1716,11 +2068,14 @@ interface(`userdom_read_user_home_content_files',`
+@@ -1716,11 +2072,14 @@ interface(`userdom_read_user_home_content_files',`
  #
  interface(`userdom_dontaudit_read_user_home_content_files',`
  	gen_require(`
@@ -51624,7 +51754,7 @@ index 28b88de..97b04f2 100644
  ')
  
  ########################################
-@@ -1810,8 +2165,7 @@ interface(`userdom_read_user_home_content_symlinks',`
+@@ -1810,8 +2169,7 @@ interface(`userdom_read_user_home_content_symlinks',`
  		type user_home_dir_t, user_home_t;
  	')
  
@@ -51634,7 +51764,7 @@ index 28b88de..97b04f2 100644
  ')
  
  ########################################
-@@ -1827,20 +2181,14 @@ interface(`userdom_read_user_home_content_symlinks',`
+@@ -1827,20 +2185,14 @@ interface(`userdom_read_user_home_content_symlinks',`
  #
  interface(`userdom_exec_user_home_content_files',`
  	gen_require(`
@@ -51659,7 +51789,7 @@ index 28b88de..97b04f2 100644
  
  ########################################
  ## <summary>
-@@ -2182,7 +2530,7 @@ interface(`userdom_dontaudit_read_user_tmp_files',`
+@@ -2182,7 +2534,7 @@ interface(`userdom_dontaudit_read_user_tmp_files',`
  		type user_tmp_t;
  	')
  
@@ -51668,7 +51798,7 @@ index 28b88de..97b04f2 100644
  ')
  
  ########################################
-@@ -2435,13 +2783,14 @@ interface(`userdom_read_user_tmpfs_files',`
+@@ -2435,13 +2787,14 @@ interface(`userdom_read_user_tmpfs_files',`
  	')
  
  	read_files_pattern($1, user_tmpfs_t, user_tmpfs_t)
@@ -51684,7 +51814,7 @@ index 28b88de..97b04f2 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2462,26 +2811,6 @@ interface(`userdom_rw_user_tmpfs_files',`
+@@ -2462,26 +2815,6 @@ interface(`userdom_rw_user_tmpfs_files',`
  
  ########################################
  ## <summary>
@@ -51711,7 +51841,7 @@ index 28b88de..97b04f2 100644
  ##	Get the attributes of a user domain tty.
  ## </summary>
  ## <param name="domain">
-@@ -2815,7 +3144,7 @@ interface(`userdom_entry_spec_domtrans_unpriv_users',`
+@@ -2815,7 +3148,7 @@ interface(`userdom_entry_spec_domtrans_unpriv_users',`
  
  	domain_entry_file_spec_domtrans($1, unpriv_userdomain)
  	allow unpriv_userdomain $1:fd use;
@@ -51720,7 +51850,7 @@ index 28b88de..97b04f2 100644
  	allow unpriv_userdomain $1:process sigchld;
  ')
  
-@@ -2831,11 +3160,13 @@ interface(`userdom_entry_spec_domtrans_unpriv_users',`
+@@ -2831,11 +3164,13 @@ interface(`userdom_entry_spec_domtrans_unpriv_users',`
  #
  interface(`userdom_search_user_home_content',`
  	gen_require(`
@@ -51736,7 +51866,7 @@ index 28b88de..97b04f2 100644
  ')
  
  ########################################
-@@ -2917,7 +3248,7 @@ interface(`userdom_dontaudit_use_user_ptys',`
+@@ -2917,7 +3252,7 @@ interface(`userdom_dontaudit_use_user_ptys',`
  		type user_devpts_t;
  	')
  
@@ -51745,7 +51875,7 @@ index 28b88de..97b04f2 100644
  ')
  
  ########################################
-@@ -2972,7 +3303,45 @@ interface(`userdom_write_user_tmp_files',`
+@@ -2972,7 +3307,45 @@ interface(`userdom_write_user_tmp_files',`
  		type user_tmp_t;
  	')
  
@@ -51792,7 +51922,7 @@ index 28b88de..97b04f2 100644
  ')
  
  ########################################
-@@ -3009,6 +3378,7 @@ interface(`userdom_read_all_users_state',`
+@@ -3009,6 +3382,7 @@ interface(`userdom_read_all_users_state',`
  	')
  
  	read_files_pattern($1, userdomain, userdomain)
@@ -51800,7 +51930,7 @@ index 28b88de..97b04f2 100644
  	kernel_search_proc($1)
  ')
  
-@@ -3139,3 +3509,1058 @@ interface(`userdom_dbus_send_all_users',`
+@@ -3139,3 +3513,1058 @@ interface(`userdom_dbus_send_all_users',`
  
  	allow $1 userdomain:dbus send_msg;
  ')
