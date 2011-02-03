@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.13
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,24 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 3 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-9
+- syslog_t needs syslog capability
+- dirsrv needs to be able to create /var/lib/snmp
+- Fix labeling for dirsrv
+- Fix for dirsrv policy missing manage_dirs_pattern
+- corosync needs to delete clvm_tmpfs_t files
+- qdiskd needs to list hugetlbfs
+- Move setsched to sandbox_x_domain, so firefox can run without network access
+- Allow hddtemp to read removable devices
+- Adding syslog and read_policy permissions to policy
+	* syslog
+		Allow unconfined, sysadm_t, secadm_t, logadm_t
+	* read_policy
+		allow unconfined, sysadm_t, secadm_t, staff_t on Targeted
+		allow sysadm_t (optionally), secadm_t on MLS
+- mdadm application will write into /sys/.../uevent whenever arrays are
+assembled or disassembled.
+
 * Tue Feb 1 2011 Dan Walsh <dwalsh@redhat.com> 3.9.13-8
 - Add tcsd policy
 
