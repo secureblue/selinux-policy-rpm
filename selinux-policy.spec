@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.13
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 8 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-10
+- New labeling for postfmulti #675654
+- dontaudit xdm_t listing noxattr file systems
+- dovecot-auth needs to be able to connect to mysqld via the network as well as locally
+- shutdown is passed stdout to a xdm_log_t file
+- smartd creates a fixed disk device
+- dovecot_etc_t contains a lnk_file that domains need to read
+- mount needs to be able to read etc_runtim_t:lnk_file since in rawhide this is a link created at boot
+
 * Thu Feb 3 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-9
 - syslog_t needs syslog capability
 - dirsrv needs to be able to create /var/lib/snmp
