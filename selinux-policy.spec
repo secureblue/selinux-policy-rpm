@@ -476,6 +476,7 @@ exit 0
 - Update to ref policy
 - cgred needs chown capability
 - Add /dev/crash crash_dev_t
+- systemd-readahead wants to use fanotify which means readahead_t needs sys_admin capability
 
 * Tue Feb 8 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-10
 - New labeling for postfmulti #675654
