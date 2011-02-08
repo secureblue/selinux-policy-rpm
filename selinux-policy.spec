@@ -20,8 +20,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.9.13
-Release: 10%{?dist}
+Version: 3.9.14
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 8 2011 Dan Walsh <dwalsh@redhat.com> 3.9.14-1
+- Update to ref policy
+- cgred needs chown capability
+- Add /dev/crash crash_dev_t
+
 * Tue Feb 8 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-10
 - New labeling for postfmulti #675654
 - dontaudit xdm_t listing noxattr file systems
