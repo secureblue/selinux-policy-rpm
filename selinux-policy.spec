@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.15
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,19 @@ exit 0
 %endif
 
 %changelog
+* Mon Feb 21 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.15-2
+- Allow usbhid-ups to read hardware state information
+- systemd-tmpfiles has moved
+- Allo cgroup to sys_tty_config
+- For some reason prelink is attempting to read gconf settings
+- Add allow_daemons_use_tcp_wrapper boolean
+- Add label for ~/.cache/wocky to make telepathy work in enforcing mode
+- Add label for char devices /dev/dasd*
+- Fix for apache_role
+- Allow amavis to talk to nslcd
+- allow all sandbox to read selinux poilcy config files
+- Allow cluster domains to use the system bus and send each other dbus messages
+
 * Wed Feb 16 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.15-1
 - Update to upstream
 
