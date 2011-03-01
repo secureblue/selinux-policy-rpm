@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.15
-Release: 2%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,19 @@ exit 0
 %endif
 
 %changelog
+* Tue Mar 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.15-5
+- gpg_t needs to talk to gnome-keyring
+- nscd wants to read /usr/tmp->/var/tmp to generate randomziation in unixchkpwd
+- enforce MCS labeling on nodes
+- Allow arpwatch to read meminfo
+- Allow gnomeclock to send itself signals
+- init relabels /dev/.udev files on boot
+- gkeyringd has to transition back to staff_t when it runs commands in bin_t or shell_exec_t
+- nautilus checks access on /media directory before mounting usb sticks, dontaudit access_check on mnt_t
+- dnsmasq can run as a dbus service, needs acquire service
+- mysql_admin should  be allowed to connect to mysql service
+- virt creates monitor sockets in the users home dir
+
 * Mon Feb 21 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.15-2
 - Allow usbhid-ups to read hardware state information
 - systemd-tmpfiles has moved
