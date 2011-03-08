@@ -20,8 +20,8 @@
 %define CHECKPOLICYVER 2.0.21-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.9.15
-Release: 5%{?dist}
+Version: 3.9.16
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,19 @@ exit 0
 %endif
 
 %changelog
+* Tue Mar 8 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-1
+- Update to upstream
+- Fixes for telepathy
+- Add port defition for ssdp port
+- add policy for /bin/systemd-notify from Dan
+- Mount command requires users read mount_var_run_t
+- colord needs to read konject_uevent_socket
+- User domains connect to the gkeyring socket
+- Add colord policy and allow user_t and staff_t to dbus chat with it
+- Add lvm_exec_t label for kpartx
+- Dontaudit reading the mail_spool_t link from sandbox -X
+- systemd is creating sockets in avahi_var_run and system_dbusd_var_run
+
 * Tue Mar 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.15-5
 - gpg_t needs to talk to gnome-keyring
 - nscd wants to read /usr/tmp->/var/tmp to generate randomziation in unixchkpwd
