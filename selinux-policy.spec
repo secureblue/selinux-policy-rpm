@@ -382,7 +382,7 @@ SELinux Reference policy minimum base module.
 %saveFileContext minimum
 
 %post minimum
-packages="execmem.pp.bz2 unconfined.pp.bz2 unconfineduser.pp.bz2"
+packages="execmem.pp.bz2 unconfined.pp.bz2 unconfineduser.pp.bz2 application.pp.bz2 userdomain.pp.bz2 authlogin.pp.bz2 logging.pp.bz2 selinuxutil.pp.bz2 init.pp.bz2 systemd.pp.bz2 sysnetwork.pp.bz2 miscfiles.pp.bz2 libraries.pp.bz2 modutils.pp.bz2 sysadm.pp.bz2 locallogin.pp.bz2 dbus.pp.bz2 rpm.pp.bz2 mount.pp.bz2 fstools.pp.bz2 usermanage.pp.bz2 mta.pp.bz2"
 %loadpolicy minimum $packages
 if [ $1 -eq 1 ]; then
 semanage -S minimum -i - << __eof
