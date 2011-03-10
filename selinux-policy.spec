@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,13 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 10 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-2
+- Add policykit fixes from Tim Waugh
+- dontaudit sandbox domains sandbox_file_t:dir mounton
+- Add new dontaudit rules for sysadm_dbusd_t
+- Change label for /var/run/faillock
+	* other fixes which relate with this change
+
 * Tue Mar 8 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-1
 - Update to upstream
 - Fixes for telepathy
