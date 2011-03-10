@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,13 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 10 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-3
+- mozilla_plugin_tmp_t needs to be treated as user tmp files
+- More dontaudits of writes from readahead
+- Dontaudit readahead_t file_type:dir write, to cover up kernel bug
+- systemd_tmpfiles needs to relabel faillog directory as well as the file
+- Allow hostname and consoletype to r/w inherited initrc_tmp_t files handline hostname >> /tmp/myhost
+
 * Thu Mar 10 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-2
 - Add policykit fixes from Tim Waugh
 - dontaudit sandbox domains sandbox_file_t:dir mounton
