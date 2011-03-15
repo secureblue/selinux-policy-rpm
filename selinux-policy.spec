@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,18 @@ exit 0
 %endif
 
 %changelog
+* Tue Mar 15 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-4
+- Initial policy for matahari
+- Add dev_read_watchdog
+- Allow clamd to connect clamd port
+- Add support for kcmdatetimehelper
+- Allow shutdown to setrlimit and sys_nice
+- Allow systemd_passwd to talk to /dev/log before udev or syslog is running
+- Purge chr_file and blk files on /tmp
+- Fixes for pads
+- Fixes for piranha-pulse
+- gpg_t needs to be able to encyprt anything owned by the user
+
 * Thu Mar 10 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-3
 - mozilla_plugin_tmp_t needs to be treated as user tmp files
 - More dontaudits of writes from readahead
