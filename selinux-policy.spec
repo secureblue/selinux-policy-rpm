@@ -473,6 +473,7 @@ exit 0
 
 %changelog
 * Thu Mar 17 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-5
+- Fix multiple specification for boot.log
 - devicekit leaks file descriptors to setfiles_t
 - Change all all_nodes to generic_node and all_if to generic_if
 - Should not use deprecated interface
