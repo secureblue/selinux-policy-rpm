@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,22 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 17 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-5
+- devicekit leaks file descriptors to setfiles_t
+- Change all all_nodes to generic_node and all_if to generic_if
+- Should not use deprecated interface
+- Switch from using all_nodes to generic_node and from all_if to generic_if
+- Add support for xfce4-notifyd
+- Fix file context to show several labels as SystemHigh
+- seunshare needs to be able to mounton nfs/cifs/fusefs homedirs
+- Add etc_runtime_t label for /etc/securetty
+- Fixes to allow xdm_t to start gkeyringd_USERTYPE_t directly
+- login.krb needs to be able to write user_tmp_t
+- dirsrv needs to bind to port 7390 for dogtag
+- Fix a bug in gpg policy
+- gpg sends audit messages
+- Allow qpid to manage matahari files
+
 * Tue Mar 15 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-4
 - Initial policy for matahari
 - Add dev_read_watchdog
