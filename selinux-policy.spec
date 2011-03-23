@@ -21,11 +21,11 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-F15.patch
+patch: policy-F16.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -472,6 +472,11 @@ exit 0
 %endif
 
 %changelog
+* Wed Mar 23 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-6
+- Remove some unconfined domains
+- Remove permissive domains
+- Add policy-term.patch from Dan 
+
 * Thu Mar 17 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-5
 - Fix multiple specification for boot.log
 - devicekit leaks file descriptors to setfiles_t
