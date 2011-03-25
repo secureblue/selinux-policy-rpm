@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,22 @@ exit 0
 %endif
 
 %changelog
+* Fri Mar 25 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-7
+- Allow $1_sudo_t and $1_su_t open access to user terminals
+- Allow initrc_t to use generic terminals
+- Make Makefile/Rules.modular run sepolgen-ifgen during build to check if files for bugs
+-systemd is going to be useing /run and /run/lock for early bootup files.
+- Fix some comments in rlogin.if
+- Add policy for KDE backlighthelper
+- sssd needs to read ~/.k5login in nfs, cifs or fusefs file systems
+- sssd wants to read .k5login file in users homedir
+- setroubleshoot reads executables to see if they have TEXTREL
+- Add /var/spool/audit support for new version of audit
+- Remove kerberos_connect_524() interface calling
+- Combine kerberos_master_port_t and kerberos_port_t
+- systemd has setup /dev/kmsg as stderr for apps it executes
+- Need these access so that init can impersonate sockets on unix_dgram_socket
+
 * Wed Mar 23 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-6
 - Remove some unconfined domains
 - Remove permissive domains
