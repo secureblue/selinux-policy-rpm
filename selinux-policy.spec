@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 7%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -50,6 +50,7 @@ Source22: users-mls
 Source23: users-targeted
 Source24: users-olpc
 Source25: users-minimum
+Source26: file_contexts.subs
 
 Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -125,6 +126,7 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 install -m0644 selinux_config/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
+install -m0644 selinux_config/file_contexts.subs %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files \
 install -m0644 selinux_config/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
 install -m0644 selinux_config/customizable_types %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
 bzip2 %{buildroot}/%{_usr}/share/selinux/%1/*.pp \
@@ -163,6 +165,7 @@ awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' .
 %dir %{_sysconfdir}/selinux/%1/contexts/files \
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
 %config %{_sysconfdir}/selinux/%1/contexts/files/media \
 %dir %{_sysconfdir}/selinux/%1/contexts/users \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/root \
@@ -207,7 +210,7 @@ Based off of reference policy: Checked out revision  2.20091117
 
 %install
 mkdir selinux_config
-for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE9} %{SOURCE10} %{SOURCE11} %{SOURCE12} %{SOURCE13} %{SOURCE14} %{SOURCE15} %{SOURCE16} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE21} %{SOURCE22} %{SOURCE23} %{SOURCE24} %{SOURCE25};do
+for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE9} %{SOURCE10} %{SOURCE11} %{SOURCE12} %{SOURCE13} %{SOURCE14} %{SOURCE15} %{SOURCE16} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE21} %{SOURCE22} %{SOURCE23} %{SOURCE24} %{SOURCE25} %{SOURCE26};do
  cp $i selinux_config
 done
 tar zxvf selinux_config/config.tgz
@@ -472,6 +475,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-10
+- Add file_contexts.subs to handle /run and /run/lock
+- Add other fixes relating to /run changes from F15 policy
+
 * Fri Mar 25 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-7
 - Allow $1_sudo_t and $1_su_t open access to user terminals
 - Allow initrc_t to use generic terminals
