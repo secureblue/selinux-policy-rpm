@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,16 @@ exit 0
 %endif
 
 %changelog
+* Mon Apr 4 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-12
+- Add /var/run/lock /var/lock definition to file_contexts.subs
+- nslcd_t is looking for kerberos cc files
+- SSH_USE_STRONG_RNG is 1 which requires /dev/random
+- Fix auth_rw_faillog definition
+- Allow sysadm_t to set attributes on fixed disks
+- allow user domains to execute lsof and look at application sockets
+- prelink_cron job calls telinit -u if init is rewritten
+- Fixes to run qemu_t from staff_t
+
 * Mon Apr 4 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-11
 - Fix label for /var/run/udev to udev_var_run_t
 - Mock needs to be able to read network state
