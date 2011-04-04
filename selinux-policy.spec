@@ -14,10 +14,10 @@
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
-%define POLICYVER 24
-%define libsepolver 2.0.41-1
-%define POLICYCOREUTILSVER 2.0.78-1
-%define CHECKPOLICYVER 2.0.21-1
+%define POLICYVER 25
+%define libsepolver 2.0.42-3
+%define POLICYCOREUTILSVER 2.0.85-28
+%define CHECKPOLICYVER 2.0.23-4
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
@@ -96,11 +96,6 @@ SELinux policy documentation package
 %defattr(-,root,root,-)
 %doc %{_usr}/share/doc/%{name}-%{version}
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
-
-#%check
-#if /usr/sbin/selinuxenabled; then
-#/usr/bin/sepolgen-ifgen -i %{buildroot}%{_usr}/share/selinux/devel/include -o /dev/null 
-#fi
 
 %define makeCmds() \
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 bare \
