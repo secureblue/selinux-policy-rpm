@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -475,6 +475,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Apr 4 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-11
+- Fix label for /var/run/udev to udev_var_run_t
+- Mock needs to be able to read network state
+
 * Fri Apr 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-10
 - Add file_contexts.subs to handle /run and /run/lock
 - Add other fixes relating to /run changes from F15 policy
