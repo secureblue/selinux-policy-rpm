@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 5 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-13
+- Fix typo
+
 * Mon Apr 4 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-12
 - Add /var/run/lock /var/lock definition to file_contexts.subs
 - nslcd_t is looking for kerberos cc files
