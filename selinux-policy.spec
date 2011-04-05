@@ -50,7 +50,7 @@ Source22: users-mls
 Source23: users-targeted
 Source24: users-olpc
 Source25: users-minimum
-Source26: file_contexts.subs
+Source26: file_contexts.subs_dist
 
 Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -120,8 +120,9 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/seusers \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
 install -m0644 selinux_config/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
-install -m0644 selinux_config/file_contexts.subs %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files \
+install -m0644 selinux_config/file_contexts.subs_dist %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files \
 install -m0644 selinux_config/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
 install -m0644 selinux_config/customizable_types %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
 bzip2 %{buildroot}/%{_usr}/share/selinux/%1/*.pp \
@@ -160,7 +161,8 @@ awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' .
 %dir %{_sysconfdir}/selinux/%1/contexts/files \
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
-%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
+%ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
+%config %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs_dist \
 %config %{_sysconfdir}/selinux/%1/contexts/files/media \
 %dir %{_sysconfdir}/selinux/%1/contexts/users \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/root \
