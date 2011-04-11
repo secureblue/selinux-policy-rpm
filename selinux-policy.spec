@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,21 @@ exit 0
 %endif
 
 %changelog
+* Mon Apr 11 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-14
+- Add Dan's patch to remove 64 bit variants
+- Allow colord to use unix_dgram_socket 
+- Allow apps that search pids to read /var/run if it is a lnk_file 
+- iscsid_t creates its own directory 
+- Allow init to list var_lock_t dir 
+- apm needs to verify user accounts auth_use_nsswitch
+- Add labeling for systemd unit files
+- Allow gnomeclok to enable ntpd service using systemctl - systemd_systemctl_t domain was added
+- Add label for matahari-broker.pid file
+- We want to remove untrustedmcsprocess from ability to read /proc/pid
+- Fixes for matahari policy
+- Allow system_tmpfiles_t to delete user_home_t files in the /tmp dir
+- Allow sshd to transition to sysadm_t if ssh_sysadm_login is turned on
+
 * Tue Apr 5 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-13
 - Fix typo
 
