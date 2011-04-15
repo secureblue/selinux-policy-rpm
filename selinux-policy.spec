@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,12 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 15 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-15
+- xdm_t needs getsession for switch user 
+- Every app that used to exec init is now execing systemdctl 
+- Allow squid to manage krb5_host_rcache_t files 
+- Allow foghorn to connect to agentx port - Fixes for colord policy
+
 * Mon Apr 11 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-14
 - Add Dan's patch to remove 64 bit variants
 - Allow colord to use unix_dgram_socket 
