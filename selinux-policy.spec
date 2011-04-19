@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 15.1%{?dist}
+Release: 16.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -474,8 +474,16 @@ exit 0
 %endif
 
 %changelog
-* Fri Apr 15 2011 Dan Walsh <dwalsh@redhat.com> 3.9.16-15.1
+* Tue Apr 19 2011 Dan Walsh <dwalsh@redhat.com> 3.9.16-16.1
 - Add filename transitions
+
+* Tue Apr 19 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-16
+- Fixes for zarafa policy
+- Add support for AEOLUS project
+- Change labeling of fping6
+- Allow plymountd to send signals to init
+- Allow initrc_t domain to manage abrt pid files
+- Virt_admin should be allowed to manage images and processes
 
 * Fri Apr 15 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-15
 - xdm_t needs getsession for switch user 
