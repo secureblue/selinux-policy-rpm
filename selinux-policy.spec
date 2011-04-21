@@ -15,7 +15,7 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 26
-%define libsepolver 2.0.43-2
+%define libsepolver 2.0.44-2
 %define POLICYCOREUTILSVER 2.0.85-28
 %define CHECKPOLICYVER 2.0.24-1
 Summary: SELinux policy configuration
