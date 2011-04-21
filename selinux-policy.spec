@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,27 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 21 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-17
+- Add support for ABRT retrace server
+- Allow user_t and staff_t access to generic scsi to handle locally plugged in scanners
+- Allow telepath_msn_t to read /proc/PARENT/cmdline
+- ftpd needs kill capability
+- Allow telepath_msn_t to connect to sip port
+- keyring daemon does not work on nfs homedirs
+- Allow $1_sudo_t to read default SELinux context
+- Add label for tgtd sock file in /var/run/
+- Add apache_exec_rotatelogs interface
+- allow all zaraha domains to signal themselves, server writes to /tmp
+- Allow syslog to read the process state
+- Add label for /usr/lib/chromium-browser/chrome
+- Remove the telepathy transition from unconfined_t
+- Dontaudit sandbox domains trying to mounton sandbox_file_t, this is caused by fuse mounts
+- Allow initrc_t domain to manage abrt pid files
+- Add support for AEOLUS project
+- Virt_admin should be allowed to manage images and processes
+- Allow plymountd to send signals to init
+- Change labeling of fping6
+
 * Tue Apr 19 2011 Dan Walsh <dwalsh@redhat.com> 3.9.16-16.1
 - Add filename transitions
 
