@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,13 @@ exit 0
 %endif
 
 %changelog
+* Wed Apr 27 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-18
+- Allow init_t getcap and setcap
+- Allow namespace_init_t to use nsswitch
+- aisexec will execute corosync
+- colord tries to read files off noxattr file systems
+- Allow init_t getcap and setcap
+
 * Thu Apr 21 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-17
 - Add support for ABRT retrace server
 - Allow user_t and staff_t access to generic scsi to handle locally plugged in scanners
