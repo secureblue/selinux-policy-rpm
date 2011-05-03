@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 18%{?dist}
+Release: 19%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,14 @@ exit 0
 %endif
 
 %changelog
+* Tue May 3 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-19
+- Forard port changes from F15 for telepathy
+- NetworkManager should be allowed to use /dev/rfkill
+- Fix dontaudit messages to say Domain to not audit
+- Allow telepathy domains to read/write gnome_cache files
+- Allow telepathy domains to call getpw
+- Fixes for colord and vnstatd policy
+
 * Wed Apr 27 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-18
 - Allow init_t getcap and setcap
 - Allow namespace_init_t to use nsswitch
