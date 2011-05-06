@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 19%{?dist}
+Release: 20%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,14 @@ exit 0
 %endif
 
 %changelog
+* Thu May 5 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-20
+- Fix label for /usr/share/munin/plugins/munin_* plugins
+- Add support for zarafa-indexer
+- Fix boolean description
+- Allow colord to getattr on /proc/scsi/scsi
+- Add label for /lib/upstart/init
+- Colord needs to list /mnt
+
 * Tue May 3 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-19
 - Forard port changes from F15 for telepathy
 - NetworkManager should be allowed to use /dev/rfkill
