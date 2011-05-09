@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 20%{?dist}
+Release: 21%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,12 @@ exit 0
 %endif
 
 %changelog
+* Mon May 9 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-21
+- Dontaudit sys_module for ifconfig
+- Make telepathy and gkeyringd daemon working with confined users
+- colord wants to read files in users homedir
+- Remote login should be creating user_tmp_t not its own tmp files
+
 * Thu May 5 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-20
 - Fix label for /usr/share/munin/plugins/munin_* plugins
 - Add support for zarafa-indexer
