@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 21%{?dist}
+Release: 22%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,15 @@ exit 0
 %endif
 
 %changelog
+* Thu May 17 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-22
+- Allow logrotate to execute systemctl
+- Allow nsplugin_t to getattr on gpmctl
+- Fix dev_getattr_all_chr_files() interface
+- Allow shorewall to use inherited terms
+- Allow userhelper to getattr all chr_file devices
+- sandbox domains should be able to getattr and dontaudit search of sysctl_kernel_t
+- Fix labeling for ABRT Retrace Server
+
 * Mon May 9 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-21
 - Dontaudit sys_module for ifconfig
 - Make telepathy and gkeyringd daemon working with confined users
