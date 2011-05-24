@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 22%{?dist}
+Release: 23%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,10 @@ exit 0
 %endif
 
 %changelog
+* Tue May 24 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-23
+- Lot of fixes
+	* http://git.fedorahosted.org/git/?p=selinux-policy.git;a=log
+
 * Thu May 17 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-22
 - Allow logrotate to execute systemctl
 - Allow nsplugin_t to getattr on gpmctl
