@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 23%{?dist}
+Release: 24%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,9 @@ exit 0
 %endif
 
 %changelog
+* Thu May 26 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-24
+- Add rhev policy module to modules-targeted.conf
+
 * Tue May 24 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-23
 - Lot of fixes
 	* http://git.fedorahosted.org/git/?p=selinux-policy.git;a=log
