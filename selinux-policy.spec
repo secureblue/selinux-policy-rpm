@@ -472,7 +472,7 @@ exit 0
 %endif
 
 %changelog
-* Jun 2 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-25
+* Thu Jun 2 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-25
 - Fixes for sanlock policy
 - Fixes for colord policy
 - Other fixes
