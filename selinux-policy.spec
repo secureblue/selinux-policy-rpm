@@ -18,7 +18,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 25.1%{?dist}
+Release: 26.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -432,8 +432,17 @@ exit 0
 %endif
 
 %changelog
-* Thu Jun 2 2011 Dan Walsh <dwalsh@redhat.com> 3.9.16-25.1
+* Tue Jun 7 2011 Dan Walsh <dwalsh@redhat.com> 3.9.16-26.1
 - Add policy.26 to the payload
+
+* Tue Jun 7 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-26
+- Add mailscanner policy from dgrift
+- Allow chrome to optionally be transitioned to
+- Zabbix needs these rules when starting the zabbix_server_mysql
+- Implement a type for freedesktop openicc standard (~/.local/share/icc)
+- Allow system_dbusd_t to read inherited icc_data_home_t files.
+- Allow colord_t to read icc_data_home_t content. #706975
+- Label stuff under /usr/lib/debug as if it was labeled under /
 
 * Thu Jun 2 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-25
 - Fixes for sanlock policy
