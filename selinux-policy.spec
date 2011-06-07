@@ -8,20 +8,17 @@
 %if %{?BUILD_MINIMUM:0}%{!?BUILD_MINIMUM:1}
 %define BUILD_MINIMUM 1
 %endif
-%if %{?BUILD_OLPC:0}%{!?BUILD_OLPC:1}
-%define BUILD_OLPC 0
-%endif
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 26
 %define libsepolver 2.0.44-2
-%define POLICYCOREUTILSVER 2.0.85-28
+%define POLICYCOREUTILSVER 2.0.86-10
 %define CHECKPOLICYVER 2.0.26-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 25%{?dist}
+Release: 25.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -33,10 +30,6 @@ Source4: setrans-targeted.conf
 Source5: modules-mls.conf
 Source6: booleans-mls.conf
 Source8: setrans-mls.conf
-Source9: modules-olpc.conf
-Source10: booleans-olpc.conf
-Source11: setrans-olpc.conf
-Source12: securetty_types-olpc
 Source13: policygentool
 Source14: securetty_types-targeted
 Source15: securetty_types-mls
@@ -48,7 +41,6 @@ Source20: customizable_types
 Source21: config.tgz
 Source22: users-mls
 Source23: users-targeted
-Source24: users-olpc
 Source25: users-minimum
 Source26: file_contexts.subs_dist
 
@@ -56,8 +48,8 @@ Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-python >= %{POLICYCOREUTILSVER} bzip2 
-Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.14-3
-Requires(post): /usr/bin/bunzip2 /bin/mktemp /bin/awk
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.46-4
+Requires(post): /usr/bin/bunzip2 /bin/mktemp /bin/awk /usr/bin/md5sum
 Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
 Obsoletes: selinux-policy-devel <= %{version}-%{release}
 Provides: selinux-policy-devel = %{version}-%{release}
@@ -109,9 +101,8 @@ make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOL
 make validate UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 modules \
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 install \
 make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} POLY=%4 MLS_CATS=1024 MCS_CATS=1024 install-appconfig \
-#%{__cp} *.pp %{buildroot}/%{_usr}/share/selinux/%1/ \
 %{__mkdir} -p %{buildroot}/%{_sysconfdir}/selinux/%1/policy \
-%{__mkdir} -p %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active \
+%{__mkdir} -p %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules \
 %{__mkdir} -p %{buildroot}/%{_sysconfdir}/selinux/%1/contexts/files \
 touch %{buildroot}/%{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
 touch %{buildroot}/%{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
@@ -125,14 +116,18 @@ install -m0644 selinux_config/securetty_types-%1 %{buildroot}%{_sysconfdir}/seli
 install -m0644 selinux_config/file_contexts.subs_dist %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files \
 install -m0644 selinux_config/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
 install -m0644 selinux_config/customizable_types %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
-bzip2 %{buildroot}/%{_usr}/share/selinux/%1/*.pp \
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' ./policy/modules.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules.lst
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' ./policy/modules.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules.lst \
+bzip2 -c %{buildroot}/%{_usr}/share/selinux/%1/base.pp.bz2  > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/base.pp \
+for i in %{buildroot}/%{_usr}/share/selinux/%1/*.pp; do bzip2 -c $i > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/$i; done \
+rm -f %{buildroot}/%{_usr}/share/selinux/%1/*pp*  \
+semodule -n -B -p %{buildroot}; \
+/usr/bin/md5sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} > %{buildroot}%{_sysconfdir}/selinux/%1/policy/.policymd5 \
+rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts 
 %nil
 
 %define fileList() \
 %defattr(-,root,root) \
 %dir %{_usr}/share/selinux/%1 \
-%{_usr}/share/selinux/%1/*.pp.bz2 \
 %{_usr}/share/selinux/%1/modules.lst \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
@@ -141,9 +136,12 @@ awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' .
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
 %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
+%config(noreplace) %dir %{_sysconfdir}/selinux/%1/modules/active/* \
+%config %dir %{_sysconfdir}/selinux/%1/modules/active/modules/* \
 #%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
-%ghost %{_sysconfdir}/selinux/%1/policy/policy.* \
+%config(noreplace) %{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
+%{_sysconfdir}/selinux/%1/policy/.policymd5 \
 %dir %{_sysconfdir}/selinux/%1/contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/customizable_types \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/securetty_types \
@@ -180,11 +178,6 @@ if [ -s /etc/selinux/config ]; then \
      fi \
 fi
 
-%define loadpolicy() \
-( cd /usr/share/selinux/%1; \
-semodule -b base.pp.bz2 -i %2 -s %1; \
-); \
-
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
 FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
@@ -207,7 +200,7 @@ Based off of reference policy: Checked out revision  2.20091117
 
 %install
 mkdir selinux_config
-for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE9} %{SOURCE10} %{SOURCE11} %{SOURCE12} %{SOURCE13} %{SOURCE14} %{SOURCE15} %{SOURCE16} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE21} %{SOURCE22} %{SOURCE23} %{SOURCE24} %{SOURCE25} %{SOURCE26};do
+for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE13} %{SOURCE14} %{SOURCE15} %{SOURCE16} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE21} %{SOURCE22} %{SOURCE23} %{SOURCE25} %{SOURCE26};do
  cp $i selinux_config
 done
 tar zxvf selinux_config/config.tgz
@@ -243,13 +236,6 @@ make clean
 # Build mls policy
 %makeCmds mls mls n y deny
 %installCmds mls mls n y deny
-%endif
-
-%if %{BUILD_OLPC}
-# Build olpc policy
-# Commented out because only olpc ref policy currently builds
-%makeCmds olpc mcs n y allow
-%installCmds olpc mcs n y allow
 %endif
 
 make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} POLY=y MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
@@ -329,14 +315,21 @@ SELinux Reference policy targeted base module.
 %saveFileContext targeted
 
 %post targeted
-packages=`cat /usr/share/selinux/targeted/modules.lst`
-if [ $1 -eq 1 ]; then
-   %loadpolicy targeted $packages
-   restorecon -R /root /var/log /var/run 2> /dev/null
+md5=`md5sum /etc/selinux/targeted/policy/policy.%{POLICYVER}`
+checkmd5=`cat /etc/selinux/targeted/policy/policy.%{POLICYVER}.md5sum`
+if [ "$md5" != "$checkmd5" ] ; then
+   if [ $1 -ne 1 ]; then
+      	 semodule -n -s targeted -r moilscanner mailscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal 2>/dev/null
+   fi
+   semodule -B -s targeted
 else
-   semodule -n -s targeted -r moilscanner mailscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal 2>/dev/null
-   %loadpolicy targeted $packages
-   %relabel targeted
+   [ "${SELINUXTYPE}" == "targeted" ] && [ selinuxenabled ] && load_policy
+fi
+
+if [ $1 -eq 1 ]; then
+      restorecon -R /root /var/log /var/run 2> /dev/null
+else
+      %relabel targeted
 fi
 exit 0
 
@@ -383,7 +376,7 @@ SELinux Reference policy minimum base module.
 
 %post minimum
 packages="execmem.pp.bz2 unconfined.pp.bz2 unconfineduser.pp.bz2 application.pp.bz2 userdomain.pp.bz2 authlogin.pp.bz2 logging.pp.bz2 selinuxutil.pp.bz2 init.pp.bz2 systemd.pp.bz2 sysnetwork.pp.bz2 miscfiles.pp.bz2 libraries.pp.bz2 modutils.pp.bz2 sysadm.pp.bz2 locallogin.pp.bz2 dbus.pp.bz2 rpm.pp.bz2 mount.pp.bz2 fstools.pp.bz2 usermanage.pp.bz2 mta.pp.bz2"
-%loadpolicy minimum $packages
+semodule -B -s minimum
 if [ $1 -eq 1 ]; then
 semanage -S minimum -i - << __eof
 login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
@@ -399,38 +392,6 @@ exit 0
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %fileList minimum
-%endif
-
-%if %{BUILD_OLPC}
-%package olpc 
-Summary: SELinux olpc base policy
-Group: System Environment/Base
-Provides: selinux-policy-base = %{version}-%{release}
-Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
-Requires(pre): coreutils
-Requires(pre): selinux-policy = %{version}-%{release}
-Requires: selinux-policy = %{version}-%{release}
-Conflicts:  seedit
-
-%description olpc 
-SELinux Reference policy olpc base module.
-
-%pre olpc 
-%saveFileContext olpc
-
-%post olpc 
-packages=`cat /usr/share/selinux/olpc/modules.lst`
-%loadpolicy olpc $packages
-
-if [ $1 -ne 1 ]; then
-%relabel olpc
-fi
-exit 0
-
-%files olpc
-%defattr(-,root,root,-)
-%fileList olpc
-
 %endif
 
 %if %{BUILD_MLS}
@@ -454,13 +415,12 @@ SELinux Reference policy mls base module.
 
 %post mls 
 semodule -n -s mls -r mailscanner polkit ModemManager telepathysofiasip ethereal 2>/dev/null
-packages=`cat /usr/share/selinux/mls/modules.lst`
-%loadpolicy mls $packages
+semodule -B -s mls
 
 if [ $1 -eq 1 ]; then
    restorecon -R /root /var/log /var/run 2> /dev/null
 else
-%relabel mls
+   %relabel mls
 fi
 exit 0
 
@@ -472,6 +432,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 2 2011 Dan Walsh <dwalsh@redhat.com> 3.9.16-25.1
+- Add policy.26 to the payload
+
 * Thu Jun 2 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-25
 - Fixes for sanlock policy
 - Fixes for colord policy
