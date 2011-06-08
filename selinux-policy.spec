@@ -18,7 +18,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 26.1%{?dist}
+Release: 28.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -432,8 +432,15 @@ exit 0
 %endif
 
 %changelog
-* Tue Jun 7 2011 Dan Walsh <dwalsh@redhat.com> 3.9.16-26.1
+* Wed Jun 8 2011 Dan Walsh <dwalsh@redhat.com> 3.9.16-28.1
 - Add policy.26 to the payload
+
+* Wed Jun 8 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-27
+- Fixes for zabbix
+- init script needs to be able to manage sanlock_var_run_...
+- Allow sandlock and wdmd to create /var/run directories... 
+- mixclip.so has been compiled correctly
+- Fix passenger policy module name
 
 * Tue Jun 7 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-26
 - Add mailscanner policy from dgrift
