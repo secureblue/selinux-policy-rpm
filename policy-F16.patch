@@ -1020,20 +1020,23 @@ index 3c7b1e8..1e155f5 100644
 +
 +/var/run/epylog\.pid		gen_context(system_u:object_r:logwatch_var_run_t,s0)
 diff --git a/policy/modules/admin/logwatch.te b/policy/modules/admin/logwatch.te
-index 75ce30f..0e77aea 100644
+index 75ce30f..da32c90 100644
 --- a/policy/modules/admin/logwatch.te
 +++ b/policy/modules/admin/logwatch.te
-@@ -19,6 +19,9 @@ files_lock_file(logwatch_lock_t)
+@@ -19,6 +19,12 @@ files_lock_file(logwatch_lock_t)
  type logwatch_tmp_t;
  files_tmp_file(logwatch_tmp_t)
  
 +type logwatch_var_run_t;
 +files_pid_file(logwatch_var_run_t)
 +
++mta_base_mail_template(logwatch)
++role system_r types logwatch_mail_t;
++
  ########################################
  #
  # Local policy
-@@ -39,6 +42,9 @@ manage_dirs_pattern(logwatch_t, logwatch_tmp_t, logwatch_tmp_t)
+@@ -39,6 +45,9 @@ manage_dirs_pattern(logwatch_t, logwatch_tmp_t, logwatch_tmp_t)
  manage_files_pattern(logwatch_t, logwatch_tmp_t, logwatch_tmp_t)
  files_tmp_filetrans(logwatch_t, logwatch_tmp_t, { file dir })
  
@@ -1043,7 +1046,7 @@ index 75ce30f..0e77aea 100644
  kernel_read_fs_sysctls(logwatch_t)
  kernel_read_kernel_sysctls(logwatch_t)
  kernel_read_system_state(logwatch_t)
-@@ -58,6 +64,7 @@ files_list_var(logwatch_t)
+@@ -58,6 +67,7 @@ files_list_var(logwatch_t)
  files_read_var_symlinks(logwatch_t)
  files_read_etc_files(logwatch_t)
  files_read_etc_runtime_files(logwatch_t)
@@ -1051,7 +1054,7 @@ index 75ce30f..0e77aea 100644
  files_read_usr_files(logwatch_t)
  files_search_spool(logwatch_t)
  files_search_mnt(logwatch_t)
-@@ -70,6 +77,8 @@ fs_getattr_all_fs(logwatch_t)
+@@ -70,6 +80,8 @@ fs_getattr_all_fs(logwatch_t)
  fs_dontaudit_list_auto_mountpoints(logwatch_t)
  fs_list_inotifyfs(logwatch_t)
  
@@ -1060,23 +1063,15 @@ index 75ce30f..0e77aea 100644
  term_dontaudit_getattr_pty_dirs(logwatch_t)
  term_dontaudit_list_ptys(logwatch_t)
  
-@@ -92,11 +101,21 @@ sysnet_dns_name_resolve(logwatch_t)
+@@ -92,11 +104,14 @@ sysnet_dns_name_resolve(logwatch_t)
  sysnet_exec_ifconfig(logwatch_t)
  
  userdom_dontaudit_search_user_home_dirs(logwatch_t)
--
--mta_send_mail(logwatch_t)
 +userdom_dontaudit_list_admin_dir(logwatch_t)
-+
+ 
+-mta_send_mail(logwatch_t)
 +#mta_send_mail(logwatch_t)
-+mta_base_mail_template(logwatch)
 +mta_sendmail_domtrans(logwatch_t, logwatch_mail_t)
-+role system_r types logwatch_mail_t;
-+logging_read_all_logs(logwatch_mail_t)
-+manage_files_pattern(logwatch_mail_t, logwatch_tmp_t, logwatch_tmp_t)
-+allow logwatch_mail_t self:capability { dac_read_search dac_override };
-+mta_read_home(logwatch_mail_t)
-+dev_read_rand(logwatch_mail_t)
  
  ifdef(`distro_redhat',`
  	files_search_all(logwatch_t)
@@ -1084,6 +1079,29 @@ index 75ce30f..0e77aea 100644
  	files_getattr_all_file_type_fs(logwatch_t)
  ')
  
+@@ -145,3 +160,22 @@ optional_policy(`
+ 	samba_read_log(logwatch_t)
+ 	samba_read_share_files(logwatch_t)
+ ')
++
++########################################
++#
++# Logwatch mail Local policy
++#
++
++allow logwatch_mail_t self:capability { dac_read_search dac_override };
++
++manage_files_pattern(logwatch_mail_t, logwatch_tmp_t, logwatch_tmp_t)
++
++dev_read_rand(logwatch_mail_t)
++
++logging_read_all_logs(logwatch_mail_t)
++
++mta_read_home(logwatch_mail_t)
++
++optional_policy(`
++	cron_dontaudit_use_system_job_fds(logwatch_mail_t)
++')
 diff --git a/policy/modules/admin/mcelog.fc b/policy/modules/admin/mcelog.fc
 index 56c43c0..de535e4 100644
 --- a/policy/modules/admin/mcelog.fc
@@ -18557,7 +18575,7 @@ index be4de58..cce681a 100644
  ########################################
  #
 diff --git a/policy/modules/roles/staff.te b/policy/modules/roles/staff.te
-index 2be17d2..4f2f20d 100644
+index 2be17d2..0889146 100644
 --- a/policy/modules/roles/staff.te
 +++ b/policy/modules/roles/staff.te
 @@ -8,12 +8,53 @@ policy_module(staff, 2.2.0)
@@ -18623,7 +18641,7 @@ index 2be17d2..4f2f20d 100644
 +')
 +
 +optional_policy(`
-+	chrome_role(staff_r, staff_t)
++	chrome_role(staff_r, staff_usertype)
 +')
 +
 +optional_policy(`
@@ -20457,7 +20475,7 @@ index 0000000..3be35bb
 +gen_user(unconfined_u, user, unconfined_r system_r, s0, s0 - mls_systemhigh, mcs_allcats)
 +
 diff --git a/policy/modules/roles/unprivuser.te b/policy/modules/roles/unprivuser.te
-index e5bfdd4..17b57ba 100644
+index e5bfdd4..5e6a385 100644
 --- a/policy/modules/roles/unprivuser.te
 +++ b/policy/modules/roles/unprivuser.te
 @@ -12,15 +12,78 @@ role user_r;
@@ -20486,7 +20504,7 @@ index e5bfdd4..17b57ba 100644
 +')
 +
 +optional_policy(`
-+	chrome_role(user_r, user_t)
++	chrome_role(user_r, user_usertype)
 +')
 +
 +optional_policy(`
@@ -27777,7 +27795,7 @@ index 2eefc08..6030f34 100644
 +
 +/var/log/mcelog.*		--	gen_context(system_u:object_r:cron_log_t,s0)
 diff --git a/policy/modules/services/cron.if b/policy/modules/services/cron.if
-index 35241ed..3a54286 100644
+index 35241ed..7edcadb 100644
 --- a/policy/modules/services/cron.if
 +++ b/policy/modules/services/cron.if
 @@ -12,6 +12,11 @@
@@ -28042,7 +28060,34 @@ index 35241ed..3a54286 100644
  	manage_files_pattern($1, crond_var_run_t, crond_var_run_t)
  ')
  
-@@ -536,7 +585,7 @@ interface(`cron_write_system_job_pipes',`
+@@ -504,6 +553,26 @@ interface(`cron_anacron_domtrans_system_job',`
+ 
+ ########################################
+ ## <summary>
++##	Do not audit attempts to inherit
++##	and use a file descriptor
++##	from system cron jobs.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`cron_dontaudit_use_system_job_fds',`
++	gen_require(`
++		type system_cronjob_t;
++	')
++
++	dontaudit $1 system_cronjob_t:fd use;
++')
++
++########################################
++## <summary>
+ ##	Inherit and use a file descriptor
+ ##	from system cron jobs.
+ ## </summary>
+@@ -536,7 +605,7 @@ interface(`cron_write_system_job_pipes',`
  		type system_cronjob_t;
  	')
  
@@ -28051,7 +28096,7 @@ index 35241ed..3a54286 100644
  ')
  
  ########################################
-@@ -554,7 +603,7 @@ interface(`cron_rw_system_job_pipes',`
+@@ -554,7 +623,7 @@ interface(`cron_rw_system_job_pipes',`
  		type system_cronjob_t;
  	')
  
@@ -28060,7 +28105,7 @@ index 35241ed..3a54286 100644
  ')
  
  ########################################
-@@ -587,11 +636,14 @@ interface(`cron_rw_system_job_stream_sockets',`
+@@ -587,11 +656,14 @@ interface(`cron_rw_system_job_stream_sockets',`
  #
  interface(`cron_read_system_job_tmp_files',`
  	gen_require(`
@@ -28076,7 +28121,7 @@ index 35241ed..3a54286 100644
  ')
  
  ########################################
-@@ -627,7 +679,47 @@ interface(`cron_dontaudit_append_system_job_tmp_files',`
+@@ -627,7 +699,47 @@ interface(`cron_dontaudit_append_system_job_tmp_files',`
  interface(`cron_dontaudit_write_system_job_tmp_files',`
  	gen_require(`
  		type system_cronjob_tmp_t;
@@ -40165,11 +40210,11 @@ index 0000000..9ef0492
 +')
 diff --git a/policy/modules/services/passenger.te b/policy/modules/services/passenger.te
 new file mode 100644
-index 0000000..2ecf5f4
+index 0000000..d2cc57b
 --- /dev/null
 +++ b/policy/modules/services/passenger.te
 @@ -0,0 +1,74 @@
-+policy_module(passanger, 1.0.0)
++policy_module(passenger, 1.0.0)
 +
 +########################################
 +#
@@ -40196,7 +40241,7 @@ index 0000000..2ecf5f4
 +
 +########################################
 +#
-+# passanger local policy
++# passenger local policy
 +#
 +
 +allow passenger_t self:capability { chown dac_override fsetid fowner kill setuid setgid sys_nice };
@@ -47294,10 +47339,10 @@ index 0000000..19d7347
 +/usr/sbin/sanlock		--	gen_context(system_u:object_r:sanlock_exec_t,s0)
 diff --git a/policy/modules/services/sanlock.if b/policy/modules/services/sanlock.if
 new file mode 100644
-index 0000000..6c62862
+index 0000000..486d53d
 --- /dev/null
 +++ b/policy/modules/services/sanlock.if
-@@ -0,0 +1,91 @@
+@@ -0,0 +1,110 @@
 +
 +## <summary>policy for sanlock</summary>
 +
@@ -47338,6 +47383,44 @@ index 0000000..6c62862
 +	init_labeled_script_domtrans($1, sanlock_initrc_exec_t)
 +')
 +
++######################################
++## <summary>
++##	Create, read, write, and delete sanlock PID files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`sanlock_manage_pid_files',`
++	gen_require(`
++		type sanlock_var_run_t;
++	')
++
++	files_search_pids($1)
++	manage_files_pattern($1, sanlock_var_run_t, sanlock_var_run_t)
++')
++
++########################################
++## <summary>
++##      Connect to sanlock over an unix stream socket.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`sanlock_stream_connect',`
++        gen_require(`
++                type sanlock_t, sanlock_var_run_t;
++        ')
++
++        files_search_pids($1)
++        stream_connect_pattern($1, sanlock_var_run_t, sanlock_var_run_t, sanlock_t)
++')
++
 +########################################
 +## <summary>
 +##	All of the rules required to administrate
@@ -47370,31 +47453,12 @@ index 0000000..6c62862
 +	allow $2 system_r;
 +
 +')
-+
-+########################################
-+## <summary>
-+##      Connect to sanlock over an unix stream socket.
-+## </summary>
-+## <param name="domain">
-+##      <summary>
-+##      Domain allowed access.
-+##      </summary>
-+## </param>
-+#
-+interface(`sanlock_stream_connect',`
-+        gen_require(`
-+                type sanlock_t, sanlock_var_run_t;
-+        ')
-+
-+        files_search_pids($1)
-+        stream_connect_pattern($1, sanlock_var_run_t, sanlock_var_run_t, sanlock_t)
-+')
 diff --git a/policy/modules/services/sanlock.te b/policy/modules/services/sanlock.te
 new file mode 100644
-index 0000000..030a8cd
+index 0000000..f7cfc54
 --- /dev/null
 +++ b/policy/modules/services/sanlock.te
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,55 @@
 +policy_module(sanlock,1.0.0)
 +
 +########################################
@@ -47427,6 +47491,7 @@ index 0000000..030a8cd
 +manage_dirs_pattern(sanlock_t, sanlock_var_run_t, sanlock_var_run_t)
 +manage_files_pattern(sanlock_t, sanlock_var_run_t, sanlock_var_run_t)
 +manage_sock_files_pattern(sanlock_t, sanlock_var_run_t, sanlock_var_run_t)
++files_pid_filetrans(sanlock_t, sanlock_var_run_t, { file dir sock_file })
 +
 +domain_use_interactive_fds(sanlock_t)
 +
@@ -52315,10 +52380,10 @@ index 0000000..51831f9
 +')
 diff --git a/policy/modules/services/wdmd.te b/policy/modules/services/wdmd.te
 new file mode 100644
-index 0000000..9017079
+index 0000000..b9d6149
 --- /dev/null
 +++ b/policy/modules/services/wdmd.te
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,53 @@
 +policy_module(wdmd,1.0.0)
 +
 +########################################
@@ -52351,6 +52416,7 @@ index 0000000..9017079
 +manage_dirs_pattern(wdmd_t, wdmd_var_run_t, wdmd_var_run_t)
 +manage_files_pattern(wdmd_t, wdmd_var_run_t, wdmd_var_run_t)
 +manage_sock_files_pattern(wdmd_t, wdmd_var_run_t, wdmd_var_run_t)
++files_pid_filetrans(wdmd_t, wdmd_var_run_t, { file dir sock_file })
 +
 +dev_write_watchdog(wdmd_t)
 +
@@ -54776,10 +54842,10 @@ index d77e631..4776863 100644
  #
  interface(`zabbix_append_log',`
 diff --git a/policy/modules/services/zabbix.te b/policy/modules/services/zabbix.te
-index c26ecf5..49c7c50 100644
+index c26ecf5..ad41551 100644
 --- a/policy/modules/services/zabbix.te
 +++ b/policy/modules/services/zabbix.te
-@@ -25,12 +25,13 @@ files_pid_file(zabbix_var_run_t)
+@@ -25,12 +25,14 @@ files_pid_file(zabbix_var_run_t)
  # zabbix local policy
  #
  
@@ -54787,6 +54853,7 @@ index c26ecf5..49c7c50 100644
 -allow zabbix_t self:fifo_file rw_file_perms;
 +allow zabbix_t self:capability { dac_read_search dac_override setuid setgid };
 +allow zabbix_t self:process setsched;
++allow zabbix_t self:sem create_sem_perms;
 +allow zabbix_t self:fifo_file rw_fifo_file_perms;
  allow zabbix_t self:unix_stream_socket create_stream_socket_perms;
  
@@ -54796,7 +54863,7 @@ index c26ecf5..49c7c50 100644
  manage_files_pattern(zabbix_t, zabbix_log_t, zabbix_log_t)
  logging_log_filetrans(zabbix_t, zabbix_log_t, file)
  
-@@ -39,6 +40,8 @@ manage_dirs_pattern(zabbix_t, zabbix_var_run_t, zabbix_var_run_t)
+@@ -39,8 +41,12 @@ manage_dirs_pattern(zabbix_t, zabbix_var_run_t, zabbix_var_run_t)
  manage_files_pattern(zabbix_t, zabbix_var_run_t, zabbix_var_run_t)
  files_pid_filetrans(zabbix_t, zabbix_var_run_t, { dir file })
  
@@ -54804,7 +54871,11 @@ index c26ecf5..49c7c50 100644
 +
  files_read_etc_files(zabbix_t)
  
++auth_use_nsswitch(zabbix_t)
++
  miscfiles_read_localization(zabbix_t)
+ 
+ optional_policy(`
 diff --git a/policy/modules/services/zarafa.fc b/policy/modules/services/zarafa.fc
 new file mode 100644
 index 0000000..28cd477
@@ -57142,7 +57213,7 @@ index cc83689..48662f1 100644
 +')
 +
 diff --git a/policy/modules/system/init.te b/policy/modules/system/init.te
-index ea29513..52e944d 100644
+index ea29513..8a85193 100644
 --- a/policy/modules/system/init.te
 +++ b/policy/modules/system/init.te
 @@ -16,6 +16,34 @@ gen_require(`
@@ -57969,7 +58040,18 @@ index ea29513..52e944d 100644
  ')
  
  optional_policy(`
-@@ -849,3 +1209,42 @@ optional_policy(`
+@@ -839,6 +1199,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	sanlock_manage_pid_files(initrc_t)
++')
++
++optional_policy(`
+ 	# Set device ownerships/modes.
+ 	xserver_setattr_console_pipes(initrc_t)
+ 
+@@ -849,3 +1213,42 @@ optional_policy(`
  optional_policy(`
  	zebra_read_config(initrc_t)
  ')
@@ -58614,7 +58696,7 @@ index 1d1c399..b8f623a 100644
 +	tgtd_manage_semaphores(iscsid_t)
  ')
 diff --git a/policy/modules/system/libraries.fc b/policy/modules/system/libraries.fc
-index 9df8c4d..4ea7422 100644
+index 9df8c4d..98b8d89 100644
 --- a/policy/modules/system/libraries.fc
 +++ b/policy/modules/system/libraries.fc
 @@ -37,17 +37,12 @@ ifdef(`distro_redhat',`
@@ -58916,7 +58998,7 @@ index 9df8c4d..4ea7422 100644
  ') dnl end distro_redhat
  
  #
-@@ -316,17 +301,153 @@ HOME_DIR/.mozilla/plugins/nprhapengine\.so.* --	gen_context(system_u:object_r:te
+@@ -316,17 +301,152 @@ HOME_DIR/.mozilla/plugins/nprhapengine\.so.* --	gen_context(system_u:object_r:te
  #
  /var/cache/ldconfig(/.*)?			gen_context(system_u:object_r:ldconfig_cache_t,s0)
  
@@ -59048,7 +59130,6 @@ index 9df8c4d..4ea7422 100644
 +
 +/usr/lib/python.*/site-packages/pymedia/muxer\.so --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 +/usr/local/games/darwinia/lib/libSDL.*\.so.* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
-+/usr/lib/ocp-.*/mixclip\.so		     --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 +
 +/usr/lib/octagaplayer/libapplication\.so		     --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 +/opt/AutoScan/usr/lib/libvte\.so.*			     --	gen_context(system_u:object_r:textrel_shlib_t,s0)

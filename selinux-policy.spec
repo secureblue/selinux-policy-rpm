@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 26%{?dist}
+Release: 27%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,13 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 8 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-27
+- Fixes for zabbix
+- init script needs to be able to manage sanlock_var_run_...
+- Allow sandlock and wdmd to create /var/run directories... 
+- mixclip.so has been compiled correctly
+- Fix passenger policy module name
+
 * Tue Jun 7 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-26
 - Add mailscanner policy from dgrift
 - Allow chrome to optionally be transitioned to
