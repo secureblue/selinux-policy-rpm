@@ -21,7 +21,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 27%{?dist}
+Release: 28%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -334,7 +334,7 @@ if [ $1 -eq 1 ]; then
    %loadpolicy targeted $packages
    restorecon -R /root /var/log /var/run 2> /dev/null
 else
-   semodule -n -s targeted -r moilscanner mailscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal 2>/dev/null
+   semodule -n -s targeted -r moilscanner mailscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger 2>/dev/null
    %loadpolicy targeted $packages
    %relabel targeted
 fi
