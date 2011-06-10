@@ -30,7 +30,6 @@ Source4: setrans-targeted.conf
 Source5: modules-mls.conf
 Source6: booleans-mls.conf
 Source8: setrans-mls.conf
-Source13: policygentool
 Source14: securetty_types-targeted
 Source15: securetty_types-mls
 Source16: modules-minimum.conf
@@ -71,7 +70,6 @@ SELinux Base package
 %ghost %{_sysconfdir}/sysconfig/selinux
 %{_usr}/share/selinux/devel/include/*
 %{_usr}/share/selinux/devel/Makefile
-%{_usr}/share/selinux/devel/policygentool
 %{_usr}/share/selinux/devel/example.*
 %{_usr}/share/selinux/devel/policy.*
 
@@ -116,12 +114,13 @@ install -m0644 selinux_config/securetty_types-%1 %{buildroot}%{_sysconfdir}/seli
 install -m0644 selinux_config/file_contexts.subs_dist %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files \
 install -m0644 selinux_config/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
 install -m0644 selinux_config/customizable_types %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp.bz2 ", $1 }' ./policy/modules.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules.lst \
-bzip2 -c %{buildroot}/%{_usr}/share/selinux/%1/base.pp.bz2  > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/base.pp \
-for i in %{buildroot}/%{_usr}/share/selinux/%1/*.pp; do bzip2 -c $i > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/$i; done \
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp ", $1 }' ./policy/modules.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules.lst \
+bzip2 -c %{buildroot}/%{_usr}/share/selinux/%1/base.pp  > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/base.pp \
+rm -f %{buildroot}/%{_usr}/share/selinux/%1/base.pp  \
+for i in %{buildroot}/%{_usr}/share/selinux/%1/*.pp; do bzip2 -c $i > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/`basename $i`; done \
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/*pp*  \
-semodule -n -B -p %{buildroot}; \
-/usr/bin/md5sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} > %{buildroot}%{_sysconfdir}/selinux/%1/policy/.policymd5 \
+semodule -s %1 -n -B -p %{buildroot}; \
+/usr/bin/md5sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policymd5 \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts 
 %nil
 
@@ -136,12 +135,12 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
 %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
-%config(noreplace) %dir %{_sysconfdir}/selinux/%1/modules/active/* \
-%config %dir %{_sysconfdir}/selinux/%1/modules/active/modules/* \
+%dir %{_sysconfdir}/selinux/%1/modules/active/* \
+%{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
 #%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
 %config(noreplace) %{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
-%{_sysconfdir}/selinux/%1/policy/.policymd5 \
+%{_sysconfdir}/selinux/%1/.policymd5 \
 %dir %{_sysconfdir}/selinux/%1/contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/customizable_types \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/securetty_types \
@@ -176,7 +175,7 @@ if [ -s /etc/selinux/config ]; then \
      if [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT} ]; then \
         [ -f ${FILE_CONTEXT}.pre ] || cp -f ${FILE_CONTEXT} ${FILE_CONTEXT}.pre; \
      fi \
-fi
+fi;
 
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
@@ -187,6 +186,24 @@ if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      restorecon -R /root /var/log /var/run 2> /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
 fi; 
+
+%define postInstall() \
+. %{_sysconfdir}/selinux/config; \
+md5=`md5sum /etc/selinux/%2/policy/policy.%{POLICYVER} | cut -d ' ' -f 1`; \
+checkmd5=`cat /etc/selinux/%2/.policymd5`; \
+if [ "$md5" != "$checkmd5" ] ; then \
+   if [ %1 -ne 1 ]; then \
+      	 semodule -n -s %2 -r moilscanner mailscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger 2>/dev/null; \
+   fi \
+   semodule -B -s %2; \
+else \
+   [ "${SELINUXTYPE}" == "%2" ] && [ selinuxenabled ] && load_policy; \
+fi; \
+if [ %1 -eq 1 ]; then \
+   restorecon -R /root /var/log /var/run 2> /dev/null; \
+else \
+%relabel %2 \
+fi;
 
 %description
 SELinux Reference Policy - modular.
@@ -200,7 +217,7 @@ Based off of reference policy: Checked out revision  2.20091117
 
 %install
 mkdir selinux_config
-for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE13} %{SOURCE14} %{SOURCE15} %{SOURCE16} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE21} %{SOURCE22} %{SOURCE23} %{SOURCE25} %{SOURCE26};do
+for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE14} %{SOURCE15} %{SOURCE16} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE21} %{SOURCE22} %{SOURCE23} %{SOURCE25} %{SOURCE26};do
  cp $i selinux_config
 done
 tar zxvf selinux_config/config.tgz
@@ -242,7 +259,6 @@ make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITR
 mkdir %{buildroot}%{_usr}/share/selinux/devel/
 mkdir %{buildroot}%{_usr}/share/selinux/packages/
 mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
-install -m 755 selinux_config/policygentool %{buildroot}%{_usr}/share/selinux/devel/
 install -m 644 selinux_config/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
 install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
 install -m 644 doc/policy.* %{buildroot}%{_usr}/share/selinux/devel/
@@ -315,22 +331,7 @@ SELinux Reference policy targeted base module.
 %saveFileContext targeted
 
 %post targeted
-md5=`md5sum /etc/selinux/targeted/policy/policy.%{POLICYVER}`
-checkmd5=`cat /etc/selinux/targeted/policy/policy.%{POLICYVER}.md5sum`
-if [ "$md5" != "$checkmd5" ] ; then
-   if [ $1 -ne 1 ]; then
-      	 semodule -n -s targeted -r moilscanner mailscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal 2>/dev/null
-   fi
-   semodule -B -s targeted
-else
-   [ "${SELINUXTYPE}" == "targeted" ] && [ selinuxenabled ] && load_policy
-fi
-
-if [ $1 -eq 1 ]; then
-      restorecon -R /root /var/log /var/run 2> /dev/null
-else
-      %relabel targeted
-fi
+%postInstall $1 targeted
 exit 0
 
 %triggerpostun targeted -- selinux-policy-targeted < 3.2.5-9.fc9
@@ -373,17 +374,35 @@ SELinux Reference policy minimum base module.
 
 %pre minimum
 %saveFileContext minimum
+if [ $1 -ne 1 ]; then
+   semodule -s minimum -l 2>/dev/null | awk '{ print $1 }' > /usr/share/selinux/minimum/instmodules.lst
+fi
 
 %post minimum
-packages="execmem.pp.bz2 unconfined.pp.bz2 unconfineduser.pp.bz2 application.pp.bz2 userdomain.pp.bz2 authlogin.pp.bz2 logging.pp.bz2 selinuxutil.pp.bz2 init.pp.bz2 systemd.pp.bz2 sysnetwork.pp.bz2 miscfiles.pp.bz2 libraries.pp.bz2 modutils.pp.bz2 sysadm.pp.bz2 locallogin.pp.bz2 dbus.pp.bz2 rpm.pp.bz2 mount.pp.bz2 fstools.pp.bz2 usermanage.pp.bz2 mta.pp.bz2"
-semodule -B -s minimum
+allpackages=`cat /usr/share/selinux/minimum/modules.lst`
 if [ $1 -eq 1 ]; then
+packages="clock.pp execmem.pp unconfined.pp unconfineduser.pp application.pp userdomain.pp authlogin.pp logging.pp selinuxutil.pp init.pp systemd.pp sysnetwork.pp miscfiles.pp libraries.pp modutils.pp sysadm.pp locallogin.pp dbus.pp rpm.pp mount.pp fstools.pp usermanage.pp mta.pp"
+for p in $allpackages; do 
+    touch /etc/selinux/minimum/modules/active/modules/$p.disabled
+done
+for p in $packages; do 
+    rm -f /etc/selinux/minimum/modules/active/modules/$p.disabled
+done
 semanage -S minimum -i - << __eof
 login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
 login -m  -s unconfined_u -r s0-s0:c0.c1023 root
 __eof
 restorecon -R /root /var/log /var/run 2> /dev/null
+semodule -B -s minimum
 else
+instpackages=`cat /usr/share/selinux/minimum/instmodules.lst`
+for p in $allpackages; do 
+    touch /etc/selinux/minimum/modules/active/modules/$p.disabled
+done
+for p in $instpackages; do 
+    rm -f /etc/selinux/minimum/modules/active/modules/$p.pp.disabled
+done
+semodule -B -s minimum
 %relabel minimum
 fi
 exit 0
@@ -414,15 +433,7 @@ SELinux Reference policy mls base module.
 %saveFileContext mls
 
 %post mls 
-semodule -n -s mls -r mailscanner polkit ModemManager telepathysofiasip ethereal 2>/dev/null
-semodule -B -s mls
-
-if [ $1 -eq 1 ]; then
-   restorecon -R /root /var/log /var/run 2> /dev/null
-else
-   %relabel mls
-fi
-exit 0
+%postInstall $1 mls
 
 %files mls
 %defattr(-,root,root,-)
@@ -434,6 +445,8 @@ exit 0
 %changelog
 * Wed Jun 8 2011 Dan Walsh <dwalsh@redhat.com> 3.9.16-28.1
 - Add policy.26 to the payload
+- Remove olpc stuff
+- Remove policygentool
 
 * Wed Jun 8 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-27
 - Fixes for zabbix
