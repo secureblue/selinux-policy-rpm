@@ -18,7 +18,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 28.1%{?dist}
+Release: 29%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -443,6 +443,18 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jun 16 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-29
+- Add dspam policy
+- Add lldpad policy
+- dovecot auth wants to search statfs #713555
+- Allow systemd passwd apps to read init fifo_file
+- Allow prelink to use inherited terminals
+- Run cherokee in the httpd_t domain
+- Allow mcs constraints on node connections
+- Implement pyicqt policy
+- Fixes for zarafa policy
+- Allow cobblerd to send syslog messages
+
 * Wed Jun 8 2011 Dan Walsh <dwalsh@redhat.com> 3.9.16-28.1
 - Add policy.26 to the payload
 - Remove olpc stuff
