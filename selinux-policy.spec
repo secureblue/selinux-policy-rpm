@@ -1,4 +1,3 @@
-
 %define distro redhat
 %define polyinstatiate n
 %define monolithic n
@@ -18,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 29%{?dist}
+Release: 29.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -107,8 +106,6 @@ touch %{buildroot}/%{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/booleans \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/seusers \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
-touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
-touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
 install -m0644 selinux_config/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
 install -m0644 selinux_config/file_contexts.subs_dist %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files \
@@ -130,16 +127,24 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts
 %{_usr}/share/selinux/%1/modules.lst \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
-%ghost %{_sysconfdir}/selinux/%1/seusers \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/seusers \
 %dir %{_sysconfdir}/selinux/%1/modules \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
-%attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
-%dir %{_sysconfdir}/selinux/%1/modules/active/* \
-%{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
+%dir %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
+%dir %{_sysconfdir}/selinux/%1/modules/active/modules \
+%config(noreplace) %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/policy.kern \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/commit_num \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/base.pp \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts* \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/seusers.final \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/netfilter_contexts \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/homedir_template \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
 #%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
-%config(noreplace) %{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 %{_sysconfdir}/selinux/%1/.policymd5 \
 %dir %{_sysconfdir}/selinux/%1/contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/customizable_types \
@@ -156,10 +161,10 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/removable_context \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/userhelper_context \
 %dir %{_sysconfdir}/selinux/%1/contexts/files \
-%ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
-%ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
-%ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
-%config %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs_dist \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs_dist \
 %config %{_sysconfdir}/selinux/%1/contexts/files/media \
 %dir %{_sysconfdir}/selinux/%1/contexts/users \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/root \
@@ -189,11 +194,12 @@ fi;
 
 %define postInstall() \
 . %{_sysconfdir}/selinux/config; \
-md5=`md5sum /etc/selinux/%2/policy/policy.%{POLICYVER} | cut -d ' ' -f 1`; \
+rm -f /etc/selinux/%2/modules/active/policy.kern.rpmnew; \
+md5=`md5sum /etc/selinux/%2/modules/active/policy.kern | cut -d ' ' -f 1`; \
 checkmd5=`cat /etc/selinux/%2/.policymd5`; \
 if [ "$md5" != "$checkmd5" ] ; then \
    if [ %1 -ne 1 ]; then \
-      	 semodule -n -s %2 -r moilscanner mailscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger 2>/dev/null; \
+      	 semodule -n -s %2 -r moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger 2>/dev/null; \
    fi \
    semodule -B -s %2; \
 else \
@@ -443,6 +449,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jun 16 2011 Dan Walsh <dwalsh@redhat.com> 3.9.16-29.1
+- Fix spec file to not report Verify errors
+
 * Thu Jun 16 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-29
 - Add dspam policy
 - Add lldpad policy
