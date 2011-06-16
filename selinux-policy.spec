@@ -13,7 +13,7 @@
 %endif
 %define POLICYVER 26
 %define libsepolver 2.0.44-2
-%define POLICYCOREUTILSVER 2.0.86-10
+%define POLICYCOREUTILSVER 2.0.86-12
 %define CHECKPOLICYVER 2.0.26-1
 Summary: SELinux policy configuration
 Name: selinux-policy
@@ -47,7 +47,7 @@ Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-python >= %{POLICYCOREUTILSVER} bzip2 
-Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.46-4
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.46-6
 Requires(post): /usr/bin/bunzip2 /bin/mktemp /bin/awk /usr/bin/md5sum
 Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
 Obsoletes: selinux-policy-devel <= %{version}-%{release}
