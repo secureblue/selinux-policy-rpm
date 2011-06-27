@@ -16,8 +16,8 @@
 %define CHECKPOLICYVER 2.0.26-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.9.16
-Release: 30%{?dist}
+Version: 3.10.0
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -199,7 +199,7 @@ md5=`md5sum /etc/selinux/%2/modules/active/policy.kern | cut -d ' ' -f 1`; \
 checkmd5=`cat /etc/selinux/%2/.policymd5`; \
 if [ "$md5" != "$checkmd5" ] ; then \
    if [ %1 -ne 1 ]; then \
-      	 semodule -n -s %2 -r moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger 2>/dev/null; \
+      	 semodule -n -s %2 -r moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
    fi \
    semodule -B -s %2; \
 else \
@@ -449,6 +449,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jun 27 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-1
+- Update to upstream
+
 * Mon Jun 27 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-30
 - More fixes
   * http://git.fedorahosted.org/git/?p=selinux-policy.git
