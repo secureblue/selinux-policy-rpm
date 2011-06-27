@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.9.16
-Release: 29.1%{?dist}
+Release: 30%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -449,6 +449,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jun 27 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-30
+- More fixes
+  * http://git.fedorahosted.org/git/?p=selinux-policy.git
+
 * Thu Jun 16 2011 Dan Walsh <dwalsh@redhat.com> 3.9.16-29.1
 - Fix spec file to not report Verify errors
 
