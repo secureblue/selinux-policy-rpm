@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -449,6 +449,12 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jun 30 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-2
+- Change usbmuxd_t to dontaudit attempts to read chr_file
+- Add mysld_safe_exec_t for libra domains to be able to start private mysql domains
+- Allow pppd to search /var/lock dir
+- Add rhsmcertd policy
+
 * Mon Jun 27 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-1
 - Update to upstream
 
