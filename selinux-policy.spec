@@ -111,12 +111,11 @@ install -m0644 selinux_config/securetty_types-%1 %{buildroot}%{_sysconfdir}/seli
 install -m0644 selinux_config/file_contexts.subs_dist %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files \
 install -m0644 selinux_config/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
 install -m0644 selinux_config/customizable_types %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp ", $1 }' ./policy/modules.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules.lst \
 bzip2 -c %{buildroot}/%{_usr}/share/selinux/%1/base.pp  > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/base.pp \
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/base.pp  \
 for i in %{buildroot}/%{_usr}/share/selinux/%1/*.pp; do bzip2 -c $i > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/`basename $i`; done \
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/*pp*  \
-semodule -s %1 -n -B -p %{buildroot}; \
+/usr/sbin/semodule -s %1 -n -B -p %{buildroot}; \
 /usr/bin/md5sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policymd5 \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts 
 %nil
@@ -124,7 +123,6 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts
 %define fileList() \
 %defattr(-,root,root) \
 %dir %{_usr}/share/selinux/%1 \
-%{_usr}/share/selinux/%1/modules.lst \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/seusers \
@@ -185,10 +183,10 @@ fi;
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
 FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
-selinuxenabled; \
+/usr/sbin/selinuxenabled; \
 if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
-     fixfiles -C ${FILE_CONTEXT}.pre restore; \
-     restorecon -R /root /var/log /var/run 2> /dev/null; \
+     /sbin/fixfiles -C ${FILE_CONTEXT}.pre restore; \
+     /sbin/restorecon -R /root /var/log /var/run 2> /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
 fi; 
 
@@ -199,14 +197,14 @@ md5=`md5sum /etc/selinux/%2/modules/active/policy.kern | cut -d ' ' -f 1`; \
 checkmd5=`cat /etc/selinux/%2/.policymd5`; \
 if [ "$md5" != "$checkmd5" ] ; then \
    if [ %1 -ne 1 ]; then \
-      	 semodule -n -s %2 -r moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
+	/usr/sbin/semodule -n -s %2 -r moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
    fi \
-   semodule -B -s %2; \
+   /usr/sbin/semodule -B -s %2; \
 else \
    [ "${SELINUXTYPE}" == "%2" ] && [ selinuxenabled ] && load_policy; \
 fi; \
 if [ %1 -eq 1 ]; then \
-   restorecon -R /root /var/log /var/run 2> /dev/null; \
+   /sbin/restorecon -R /root /var/log /var/run 2> /dev/null; \
 else \
 %relabel %2 \
 fi;
@@ -253,6 +251,7 @@ make clean
 # Commented out because only minimum ref policy currently builds
 %makeCmds minimum mcs n y allow
 %installCmds minimum mcs n y allow
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp ", $1 }' ./policy/modules.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules.lst
 %endif
 
 %if %{BUILD_MLS}
@@ -344,18 +343,18 @@ exit 0
 . /etc/selinux/config
 [ "${SELINUXTYPE}" != "targeted" ] && exit 0
 setsebool -P use_nfs_home_dirs=1
-semanage user -l | grep -s unconfined_u > /dev/null
+/usr/sbin/semanage user -l | grep -s unconfined_u > /dev/null
 if [ $? -eq 0 ]; then
-   semanage user -m -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u
+   /usr/sbin/semanage user -m -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u
 else
-   semanage user -a -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u
+   /usr/sbin/semanage user -a -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u
 fi
-seuser=`semanage login -l | grep __default__ | awk '{ print $2 }'`
-[ "$seuser" != "unconfined_u" ]  && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 __default__
-seuser=`semanage login -l | grep root | awk '{ print $2 }'`
-[ "$seuser" = "system_u" ] && semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 root
+seuser=`/usr/sbin/semanage login -l | grep __default__ | awk '{ print $2 }'`
+[ "$seuser" != "unconfined_u" ]  && /usr/sbin/semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 __default__
+seuser=`/usr/sbin/semanage login -l | grep root | awk '{ print $2 }'`
+[ "$seuser" = "system_u" ] && /usr/sbin/semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 root
 restorecon -R /root /etc/selinux/targeted 2> /dev/null
-semodule -r qmail 2> /dev/null
+/usr/sbin/semodule -r qmail 2> /dev/null
 exit 0
 
 %files targeted
@@ -381,7 +380,7 @@ SELinux Reference policy minimum base module.
 %pre minimum
 %saveFileContext minimum
 if [ $1 -ne 1 ]; then
-   semodule -s minimum -l 2>/dev/null | awk '{ print $1 }' > /usr/share/selinux/minimum/instmodules.lst
+   /usr/sbin/semodule -s minimum -l 2>/dev/null | awk '{ print $1 }' > /usr/share/selinux/minimum/instmodules.lst
 fi
 
 %post minimum
@@ -394,12 +393,12 @@ done
 for p in $packages; do 
     rm -f /etc/selinux/minimum/modules/active/modules/$p.disabled
 done
-semanage -S minimum -i - << __eof
+/usr/sbin/semanage -S minimum -i - << __eof
 login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
 login -m  -s unconfined_u -r s0-s0:c0.c1023 root
 __eof
-restorecon -R /root /var/log /var/run 2> /dev/null
-semodule -B -s minimum
+/sbin/restorecon -R /root /var/log /var/run 2> /dev/null
+/usr/sbin/semodule -B -s minimum
 else
 instpackages=`cat /usr/share/selinux/minimum/instmodules.lst`
 for p in $allpackages; do 
@@ -408,7 +407,7 @@ done
 for p in $instpackages; do 
     rm -f /etc/selinux/minimum/modules/active/modules/$p.pp.disabled
 done
-semodule -B -s minimum
+/usr/sbin/semodule -B -s minimum
 %relabel minimum
 fi
 exit 0
@@ -417,6 +416,7 @@ exit 0
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %fileList minimum
+%{_usr}/share/selinux/%1/modules.lst
 %endif
 
 %if %{BUILD_MLS}
