@@ -209,6 +209,9 @@ else \
 %relabel %2 \
 fi;
 
+%define modulesList() \
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp ", $1 }' ./policy/modules.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules.lst \
+
 %description
 SELinux Reference Policy - modular.
 Based off of reference policy: Checked out revision  2.20091117
@@ -251,7 +254,7 @@ make clean
 # Commented out because only minimum ref policy currently builds
 %makeCmds minimum mcs n y allow
 %installCmds minimum mcs n y allow
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp ", $1 }' ./policy/modules.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules.lst
+%modulesList minimum
 %endif
 
 %if %{BUILD_MLS}
@@ -416,7 +419,7 @@ exit 0
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %fileList minimum
-%{_usr}/share/selinux/%1/modules.lst
+%{_usr}/share/selinux/minimum/modules.lst
 %endif
 
 %if %{BUILD_MLS}
