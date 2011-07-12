@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -449,6 +449,19 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jul 12 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-3
+- A lot of users are running yum -y update while in /root which is causing ldconfig to list the contents, adding dontaudit
+- Allow colord to interact with the users through the tmpfs file system
+- Since we changed the label on deferred, we need to allow postfix_qmgr_t to be able to create maildrop_t files
+- Add label for /var/log/mcelog
+- Allow asterisk to read /dev/random if it uses TLS
+- Allow colord to read ini files which are labeled as bin_t
+- Allow dirsrvadmin sys_resource and setrlimit to use ulimit
+- Systemd needs to be able to create sock_files for every label in /var/run directory, cupsd being the first.  
+- Also lists /var and /var/spool directories
+- Add openl2tpd to l2tpd policy
+- qpidd is reading the sysfs file
+
 * Thu Jun 30 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-2
 - Change usbmuxd_t to dontaudit attempts to read chr_file
 - Add mysld_safe_exec_t for libra domains to be able to start private mysql domains
