@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -452,6 +452,12 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jul 14 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-4
+- Allow setsched for virsh
+- Systemd needs to impersonate cups, which means it needs to create tcp_sockets in cups_t domain, as well as manage spool directories
+- iptables: the various /sbin/ip6?tables.* are now symlinks for
+/sbin/xtables-multi
+
 * Tue Jul 12 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-3
 - A lot of users are running yum -y update while in /root which is causing ldconfig to list the contents, adding dontaudit
 - Allow colord to interact with the users through the tmpfs file system
