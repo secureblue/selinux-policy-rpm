@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -209,6 +209,9 @@ else \
 %relabel %2 \
 fi;
 
+%define modulesList() \
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp ", $1 }' ./policy/modules.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules.lst \
+
 %description
 SELinux Reference Policy - modular.
 Based off of reference policy: Checked out revision  2.20091117
@@ -251,7 +254,7 @@ make clean
 # Commented out because only minimum ref policy currently builds
 %makeCmds minimum mcs n y allow
 %installCmds minimum mcs n y allow
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp ", $1 }' ./policy/modules.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules.lst
+%modulesList minimum
 %endif
 
 %if %{BUILD_MLS}
@@ -416,7 +419,7 @@ exit 0
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %fileList minimum
-%{_usr}/share/selinux/%1/modules.lst
+%{_usr}/share/selinux/minimum/modules.lst
 %endif
 
 %if %{BUILD_MLS}
@@ -449,6 +452,12 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jul 14 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-4
+- Allow setsched for virsh
+- Systemd needs to impersonate cups, which means it needs to create tcp_sockets in cups_t domain, as well as manage spool directories
+- iptables: the various /sbin/ip6?tables.* are now symlinks for
+/sbin/xtables-multi
+
 * Tue Jul 12 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-3
 - A lot of users are running yum -y update while in /root which is causing ldconfig to list the contents, adding dontaudit
 - Allow colord to interact with the users through the tmpfs file system
