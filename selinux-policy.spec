@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -452,6 +452,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jul 18 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-5
+- Initial systemd_logind policy
+- Add policy for systemd_logger and additional proivs for systemd_logind
+- More fixes for systemd policies
+
 * Thu Jul 14 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-4
 - Allow setsched for virsh
 - Systemd needs to impersonate cups, which means it needs to create tcp_sockets in cups_t domain, as well as manage spool directories
