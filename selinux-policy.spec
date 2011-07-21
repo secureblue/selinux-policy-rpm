@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -452,6 +452,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jul 21 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-7
+- systemd fixes
+
 * Tue Jul 19 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-6
 - Add initial policy for abrt_dump_oops_t
 - xtables-multi wants to getattr of the proc fs
