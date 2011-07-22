@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 5%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -452,6 +452,25 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jul 22 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-8
+- Fix oracledb_port definition
+- Allow mount to mounton the selinux file system
+- Allow users to list /var directories
+
+* Thu Jul 21 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-7
+- systemd fixes
+
+* Tue Jul 19 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-6
+- Add initial policy for abrt_dump_oops_t
+- xtables-multi wants to getattr of the proc fs
+- Smoltclient is connecting to abrt
+- Dontaudit leaked file descriptors to postdrop
+- Allow abrt_dump_oops to look at kernel sysctls
+- Abrt_dump_oops_t reads kernel ring buffer
+- Allow mysqld to request the kernel to load modules
+- systemd-login needs fowner
+- Allow postfix_cleanup_t to searh maildrop
+
 * Mon Jul 18 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-5
 - Initial systemd_logind policy
 - Add policy for systemd_logger and additional proivs for systemd_logind
