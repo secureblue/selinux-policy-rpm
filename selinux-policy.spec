@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -452,6 +452,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jul 22 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-8
+- Fix oracledb_port definition
+- Allow mount to mounton the selinux file system
+- Allow users to list /var directories
+
 * Thu Jul 21 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-7
 - systemd fixes
 
