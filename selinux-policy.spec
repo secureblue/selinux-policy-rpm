@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -452,6 +452,14 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jul 26 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-10
+- Allow rcsmcertd to perform DNS name resolution
+- Add dirsrvadmin_unconfined_script_t domain type for 389-ds admin scripts
+- Allow tmux to run as screen
+- New policy for collectd
+- Allow gkeyring_t to interact with all user apps
+- Add rules to allow firstboot to run on machines with the unconfined.pp module removed
+
 * Sat Jul 23 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-9
 - Allow systemd_logind to send dbus messages with users
 - allow accountsd to read wtmp file
