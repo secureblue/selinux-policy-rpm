@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -452,6 +452,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jul 29 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-11
+- More fixes of rules which cause an explosion in rules by Dan Walsh
+
 * Tue Jul 26 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-10
 - Allow rcsmcertd to perform DNS name resolution
 - Add dirsrvadmin_unconfined_script_t domain type for 389-ds admin scripts
