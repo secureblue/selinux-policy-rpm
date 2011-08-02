@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 11%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -452,6 +452,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Aug 2 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-13
+- Add abrt_domain attribute
+- Allow corosync to manage cluster lib files
+- Allow corosync to connect to the system DBUS
+
+* Mon Aug 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-12
+- Add sblim, uuidd policies
+- Allow kernel_t dyntrasition to init_t
+
 * Fri Jul 29 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-11
 - More fixes of rules which cause an explosion in rules by Dan Walsh
 
