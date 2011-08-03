@@ -11890,7 +11890,7 @@ index 4f3b542..5a41e58 100644
  	corenet_udp_recvfrom_labeled($1, $2)
  	corenet_raw_recvfrom_labeled($1, $2)
 diff --git a/policy/modules/kernel/corenetwork.te.in b/policy/modules/kernel/corenetwork.te.in
-index 99b71cb..fd75b96 100644
+index 99b71cb..41d17b9 100644
 --- a/policy/modules/kernel/corenetwork.te.in
 +++ b/policy/modules/kernel/corenetwork.te.in
 @@ -11,11 +11,14 @@ attribute netif_type;
@@ -11941,7 +11941,7 @@ index 99b71cb..fd75b96 100644
  #
 +# port_t is the default type of INET port numbers.
 +#
-+type unreserved_port_t, unreserved_port_type;
++type unreserved_port_t, port_type, unreserved_port_type;
 +
 +#
  # reserved_port_t is the type of INET port numbers below 1024.
@@ -20084,7 +20084,7 @@ index 0b827c5..e03a970 100644
 +    read_lnk_files_pattern($1, abrt_retrace_cache_t, abrt_retrace_cache_t)
 +')
 diff --git a/policy/modules/services/abrt.te b/policy/modules/services/abrt.te
-index 30861ec..5f4db0c 100644
+index 30861ec..d141931 100644
 --- a/policy/modules/services/abrt.te
 +++ b/policy/modules/services/abrt.te
 @@ -5,7 +5,17 @@ policy_module(abrt, 1.2.0)
@@ -20314,7 +20314,7 @@ index 30861ec..5f4db0c 100644
  	userdom_dontaudit_read_user_home_content_files(abrt_helper_t)
  	userdom_dontaudit_read_user_tmp_files(abrt_helper_t)
  	dev_dontaudit_read_all_blk_files(abrt_helper_t)
-@@ -224,4 +287,124 @@ ifdef(`hide_broken_symptoms', `
+@@ -224,4 +287,126 @@ ifdef(`hide_broken_symptoms', `
  	dev_dontaudit_write_all_chr_files(abrt_helper_t)
  	dev_dontaudit_write_all_blk_files(abrt_helper_t)
  	fs_dontaudit_rw_anon_inodefs_files(abrt_helper_t)
@@ -20332,7 +20332,7 @@ index 30861ec..5f4db0c 100644
 +	allow abrt_t self:capability sys_resource;
 +	allow abrt_t domain:file write;
 +	allow abrt_t domain:process setrlimit;
- ')
++')
 +
 +#######################################
 +#
@@ -20367,7 +20367,7 @@ index 30861ec..5f4db0c 100644
 +	rpm_manage_pid_files(abrt_retrace_coredump_t)
 +	rpm_read_db(abrt_retrace_coredump_t)
 +	rpm_signull(abrt_retrace_coredump_t)
-+')
+ ')
 +
 +#######################################
 +#
@@ -20424,6 +20424,8 @@ index 30861ec..5f4db0c 100644
 +kernel_read_ring_buffer(abrt_dump_oops_t)
 +
 +domain_use_interactive_fds(abrt_dump_oops_t)
++
++fs_list_inotifyfs(abrt_dump_oops_t)
 +
 +logging_read_generic_logs(abrt_dump_oops_t)
 +
@@ -24864,6 +24866,190 @@ index c3e3f79..3e78d4e 100644
  	pcscd_stream_connect(certmonger_t)
  ')
 +
+diff --git a/policy/modules/services/cfengine.fc b/policy/modules/services/cfengine.fc
+new file mode 100644
+index 0000000..4ec83df
+--- /dev/null
++++ b/policy/modules/services/cfengine.fc
+@@ -0,0 +1,10 @@
++
++/usr/sbin/cf-serverd		--	gen_context(system_u:object_r:cfengine_serverd_exec_t,s0)
++/usr/sbin/cf-execd		--	gen_context(system_u:object_r:cfengine_execd_exec_t,s0)
++/usr/sbin/cf-monitord		--	gen_context(system_u:object_r:cfengine_monitord_exec_t,s0)
++
++/etc/rc\.d/init\.d/cf-serverd	--	gen_context(system_u:object_r:cfengine_initrc_exec_t,s0)
++/etc/rc\.d/init\.d/cf-monitord	--	gen_context(system_u:object_r:cfengine_initrc_exec_t,s0)
++/etc/rc\.d/init\.d/cf-execd	--	gen_context(system_u:object_r:cfengine_initrc_exec_t,s0)
++
++/var/cfengine(/.*)?			gen_context(system_u:object_r:cfengine_var_lib_t,s0)
+diff --git a/policy/modules/services/cfengine.if b/policy/modules/services/cfengine.if
+new file mode 100644
+index 0000000..12fe9ce
+--- /dev/null
++++ b/policy/modules/services/cfengine.if
+@@ -0,0 +1,23 @@
++
++## <summary>policy for cfengine</summary>
++
++
++########################################
++## <summary>
++##	Transition to cfengine.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`cfengine_domtrans_server',`
++	gen_require(`
++		type cfengine_server_t, cfengine_server_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	domtrans_pattern($1, cfengine_server_exec_t, cfengine_server_t)
++')
++
+diff --git a/policy/modules/services/cfengine.te b/policy/modules/services/cfengine.te
+new file mode 100644
+index 0000000..db2ac2d
+--- /dev/null
++++ b/policy/modules/services/cfengine.te
+@@ -0,0 +1,133 @@
++policy_module(cfengine, 1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++type cfengine_serverd_t;
++type cfengine_serverd_exec_t;
++init_daemon_domain(cfengine_serverd_t, cfengine_serverd_exec_t)
++
++permissive cfengine_serverd_t;
++
++type cfengine_initrc_exec_t;
++init_script_file(cfengine_initrc_exec_t)
++
++type cfengine_var_lib_t;
++files_type(cfengine_var_lib_t)
++
++type cfengine_execd_t;
++type cfengine_execd_exec_t;
++init_daemon_domain(cfengine_execd_t, cfengine_execd_exec_t)
++
++permissive cfengine_execd_t;
++
++type cfengine_monitord_t;
++type cfengine_monitord_exec_t;
++init_daemon_domain(cfengine_monitord_t, cfengine_monitord_exec_t)
++
++permissive cfengine_monitord_t;
++
++########################################
++#
++# cfengine-server local policy
++#
++allow cfengine_serverd_t self:capability { chown kill setgid setuid sys_chroot };
++allow cfengine_serverd_t self:process { fork setfscreate signal };
++
++allow cfengine_serverd_t self:fifo_file rw_fifo_file_perms;
++allow cfengine_serverd_t self:unix_stream_socket create_stream_socket_perms;
++
++manage_dirs_pattern(cfengine_serverd_t, cfengine_var_lib_t, cfengine_var_lib_t)
++manage_files_pattern(cfengine_serverd_t, cfengine_var_lib_t, cfengine_var_lib_t)
++manage_lnk_files_pattern(cfengine_serverd_t, cfengine_var_lib_t, cfengine_var_lib_t)
++files_var_lib_filetrans(cfengine_serverd_t, cfengine_var_lib_t, { dir file })
++
++kernel_read_system_state(cfengine_serverd_t)
++
++corecmd_exec_bin(cfengine_serverd_t)
++corecmd_exec_shell(cfengine_serverd_t)
++
++dev_read_urand(cfengine_serverd_t)
++dev_read_sysfs(cfengine_serverd_t)
++
++domain_use_interactive_fds(cfengine_serverd_t)
++
++files_read_etc_files(cfengine_serverd_t)
++
++auth_use_nsswitch(cfengine_serverd_t)
++
++logging_send_syslog_msg(cfengine_serverd_t)
++
++miscfiles_read_localization(cfengine_serverd_t)
++
++sysnet_dns_name_resolve(cfengine_serverd_t)
++sysnet_domtrans_ifconfig(cfengine_serverd_t)
++
++########################################
++#
++# cfengine_exec local policy
++#
++allow cfengine_execd_t self:capability { chown kill setgid setuid sys_chroot };
++allow cfengine_execd_t self:process { fork setfscreate signal };
++
++allow cfengine_execd_t self:fifo_file rw_fifo_file_perms;
++allow cfengine_execd_t self:unix_stream_socket create_stream_socket_perms;
++
++manage_dirs_pattern(cfengine_execd_t, cfengine_var_lib_t, cfengine_var_lib_t)
++manage_files_pattern(cfengine_execd_t, cfengine_var_lib_t, cfengine_var_lib_t)
++manage_lnk_files_pattern(cfengine_execd_t, cfengine_var_lib_t, cfengine_var_lib_t)
++
++domain_use_interactive_fds(cfengine_execd_t)
++
++files_read_etc_files(cfengine_execd_t)
++
++kernel_read_system_state(cfengine_execd_t)
++
++corecmd_exec_bin(cfengine_execd_t)
++corecmd_exec_shell(cfengine_execd_t)
++
++dev_read_urand(cfengine_execd_t)
++dev_read_sysfs(cfengine_execd_t)
++
++auth_use_nsswitch(cfengine_execd_t)
++
++logging_send_syslog_msg(cfengine_execd_t)
++
++miscfiles_read_localization(cfengine_execd_t)
++
++sysnet_dns_name_resolve(cfengine_execd_t)
++sysnet_domtrans_ifconfig(cfengine_execd_t)
++
++########################################
++#
++# cfengine_monitord local policy
++#
++allow cfengine_monitord_t self:capability { chown kill setgid setuid sys_chroot };
++allow cfengine_monitord_t self:process { fork setfscreate signal };
++
++allow cfengine_monitord_t self:fifo_file rw_fifo_file_perms;
++allow cfengine_monitord_t self:unix_stream_socket create_stream_socket_perms;
++
++manage_dirs_pattern(cfengine_monitord_t, cfengine_var_lib_t, cfengine_var_lib_t)
++manage_files_pattern(cfengine_monitord_t, cfengine_var_lib_t, cfengine_var_lib_t)
++manage_lnk_files_pattern(cfengine_monitord_t, cfengine_var_lib_t, cfengine_var_lib_t)
++
++corecmd_exec_bin(cfengine_monitord_t)
++
++dev_read_sysfs(cfengine_monitord_t)
++dev_read_urand(cfengine_monitord_t)
++
++domain_use_interactive_fds(cfengine_monitord_t)
++
++files_read_etc_files(cfengine_monitord_t)
++
++auth_use_nsswitch(cfengine_monitord_t)
++
++logging_send_syslog_msg(cfengine_monitord_t)
++
++miscfiles_read_localization(cfengine_monitord_t)
++
++sysnet_dns_name_resolve(cfengine_monitord_t)
++sysnet_domtrans_ifconfig(cfengine_monitord_t)
 diff --git a/policy/modules/services/cgroup.if b/policy/modules/services/cgroup.if
 index 33facaf..e5cbcef 100644
 --- a/policy/modules/services/cgroup.if
@@ -36129,10 +36315,10 @@ index 0000000..83a4348
 +/var/run/lldpad\.pid		--	gen_context(system_u:object_r:lldpad_var_run_t,s0)
 diff --git a/policy/modules/services/lldpad.if b/policy/modules/services/lldpad.if
 new file mode 100644
-index 0000000..e2cda9b
+index 0000000..9d1bac3
 --- /dev/null
 +++ b/policy/modules/services/lldpad.if
-@@ -0,0 +1,197 @@
+@@ -0,0 +1,198 @@
 +
 +## <summary>policy for lldpad</summary>
 +
@@ -36287,6 +36473,7 @@ index 0000000..e2cda9b
 +        ')
 +
 +        allow $1 lldpad_t:unix_dgram_socket sendto;
++		allow lldpad_t $1:unix_dgram_socket sendto;
 +')
 +
 +########################################
@@ -41071,7 +41258,7 @@ index ceafba6..9eb6967 100644
 +	udev_read_db(pcscd_t)
 +')
 diff --git a/policy/modules/services/pegasus.te b/policy/modules/services/pegasus.te
-index 3185114..514e127 100644
+index 3185114..6f2f1d4 100644
 --- a/policy/modules/services/pegasus.te
 +++ b/policy/modules/services/pegasus.te
 @@ -16,7 +16,7 @@ type pegasus_tmp_t;
@@ -41097,11 +41284,11 @@ index 3185114..514e127 100644
  
  allow pegasus_t pegasus_conf_t:dir rw_dir_perms;
 -allow pegasus_t pegasus_conf_t:file { read_file_perms link unlink };
-+allow pegasus_t pegasus_conf_t:file { read_file_perms link delete_file_perms };
++allow pegasus_t pegasus_conf_t:file { read_file_perms link delete_file_perms rename_file_perms };
  allow pegasus_t pegasus_conf_t:lnk_file read_lnk_file_perms;
  
  manage_dirs_pattern(pegasus_t, pegasus_data_t, pegasus_data_t)
-@@ -56,15 +56,18 @@ manage_dirs_pattern(pegasus_t, pegasus_tmp_t, pegasus_tmp_t)
+@@ -56,15 +56,19 @@ manage_dirs_pattern(pegasus_t, pegasus_tmp_t, pegasus_tmp_t)
  manage_files_pattern(pegasus_t, pegasus_tmp_t, pegasus_tmp_t)
  files_tmp_filetrans(pegasus_t, pegasus_tmp_t, { file dir })
  
@@ -41112,6 +41299,7 @@ index 3185114..514e127 100644
 -files_pid_filetrans(pegasus_t, pegasus_var_run_t, file)
 +files_pid_filetrans(pegasus_t, pegasus_var_run_t, { file dir })
  
++kernel_read_network_state(pegasus_t)
  kernel_read_kernel_sysctls(pegasus_t)
  kernel_read_fs_sysctls(pegasus_t)
  kernel_read_system_state(pegasus_t)
@@ -41122,7 +41310,7 @@ index 3185114..514e127 100644
  
  corenet_all_recvfrom_unlabeled(pegasus_t)
  corenet_all_recvfrom_netlabel(pegasus_t)
-@@ -95,17 +98,14 @@ files_getattr_all_dirs(pegasus_t)
+@@ -95,17 +99,14 @@ files_getattr_all_dirs(pegasus_t)
  
  auth_use_nsswitch(pegasus_t)
  auth_domtrans_chk_passwd(pegasus_t)
@@ -41142,18 +41330,22 @@ index 3185114..514e127 100644
  init_rw_utmp(pegasus_t)
  init_stream_connect_script(pegasus_t)
  
-@@ -114,17 +114,28 @@ logging_send_syslog_msg(pegasus_t)
+@@ -114,17 +115,35 @@ logging_send_syslog_msg(pegasus_t)
  
  miscfiles_read_localization(pegasus_t)
  
 -sysnet_read_config(pegasus_t)
- sysnet_domtrans_ifconfig(pegasus_t)
+-sysnet_domtrans_ifconfig(pegasus_t)
  
  userdom_dontaudit_use_unpriv_user_fds(pegasus_t)
  userdom_dontaudit_search_user_home_dirs(pegasus_t)
  
  optional_policy(`
 +	hostname_exec(pegasus_t)
++')
++
++optional_policy(`
++	lldpad_dgram_send(pegasus_t)
 +')
 +
 +optional_policy(`
@@ -41165,6 +41357,10 @@ index 3185114..514e127 100644
 +')
 +
 +optional_policy(`
++	sysnet_domtrans_ifconfig(pegasus_t)
++')
++
++optional_policy(`
 +	ssh_exec(pegasus_t)
 +')
 +
@@ -41172,13 +41368,14 @@ index 3185114..514e127 100644
  	seutil_sigchld_newrole(pegasus_t)
  	seutil_dontaudit_read_config(pegasus_t)
  ')
-@@ -136,3 +147,13 @@ optional_policy(`
+@@ -136,3 +155,14 @@ optional_policy(`
  optional_policy(`
  	unconfined_signull(pegasus_t)
  ')
 +
 +optional_policy(`
 +	virt_domtrans(pegasus_t)
++	virt_stream_connect(pegasus_t)
 +	virt_manage_config(pegasus_t)
 +')
 +
@@ -49179,10 +49376,10 @@ index 0000000..8aef188
 +
 diff --git a/policy/modules/services/sblim.te b/policy/modules/services/sblim.te
 new file mode 100644
-index 0000000..3ced316
+index 0000000..74080f1
 --- /dev/null
 +++ b/policy/modules/services/sblim.te
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,106 @@
 +policy_module(sblim, 1.0.0)
 +
 +########################################
@@ -49237,11 +49434,20 @@ index 0000000..3ced316
 +userdom_signull_unpriv_users(sblim_gatherd_t)
 +
 +optional_policy(`
++	locallogin_signull(sblim_gatherd_t)
++')
++
++optional_policy(`
++	rpc_search_nfs_state_data(sblim_gatherd_t)
++')
++
++optional_policy(`
 +    sysnet_dns_name_resolve(sblim_gatherd_t)
 +')
 +
 +optional_policy(`
 +	virt_stream_connect(sblim_gatherd_t)
++	virt_getattr_exec(sblim_gatherd_t)
 +')
 +
 +optional_policy(`
@@ -52569,10 +52775,10 @@ index 0000000..5a2fd4c
 +')
 diff --git a/policy/modules/services/uuidd.te b/policy/modules/services/uuidd.te
 new file mode 100644
-index 0000000..1adb81a
+index 0000000..7826086
 --- /dev/null
 +++ b/policy/modules/services/uuidd.te
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,48 @@
 +policy_module(uuidd, 1.0.0)
 +
 +########################################
@@ -52599,11 +52805,12 @@ index 0000000..1adb81a
 +#
 +# uuidd local policy
 +#
-+allow uuidd_t self:capability { kill setuid };
++allow uuidd_t self:capability { setuid };
 +allow uuidd_t self:process { signal };
 +
 +allow uuidd_t self:fifo_file rw_fifo_file_perms;
 +allow uuidd_t self:unix_stream_socket create_stream_socket_perms;
++allow uuidd_t self:udp_socket create_socket_perms;
 +
 +manage_dirs_pattern(uuidd_t, uuidd_var_lib_t, uuidd_var_lib_t)
 +manage_files_pattern(uuidd_t, uuidd_var_lib_t, uuidd_var_lib_t)
@@ -52612,11 +52819,14 @@ index 0000000..1adb81a
 +manage_files_pattern(uuidd_t, uuidd_var_run_t, uuidd_var_run_t)
 +manage_sock_files_pattern(uuidd_t, uuidd_var_run_t, uuidd_var_run_t)
 +
++dev_read_urand(uuidd_t)
++
 +domain_use_interactive_fds(uuidd_t)
 +
 +files_read_etc_files(uuidd_t)
 +
 +miscfiles_read_localization(uuidd_t)
++
 diff --git a/policy/modules/services/varnishd.te b/policy/modules/services/varnishd.te
 index f9310f3..064171e 100644
 --- a/policy/modules/services/varnishd.te
@@ -52960,7 +53170,7 @@ index 2124b6a..55b5012 100644
 +/var/lib/oz(/.*)?					gen_context(system_u:object_r:virt_var_lib_t,s0)
 +/var/lib/oz/isos(/.*)?				gen_context(system_u:object_r:virt_content_t,s0)
 diff --git a/policy/modules/services/virt.if b/policy/modules/services/virt.if
-index 7c5d8d8..4feaf88 100644
+index 7c5d8d8..d83a9a2 100644
 --- a/policy/modules/services/virt.if
 +++ b/policy/modules/services/virt.if
 @@ -13,39 +13,44 @@
@@ -53035,7 +53245,30 @@ index 7c5d8d8..4feaf88 100644
  	optional_policy(`
  		xserver_rw_shm($1_t)
  	')
-@@ -101,9 +94,9 @@ interface(`virt_image',`
+@@ -96,14 +89,32 @@ interface(`virt_image',`
+ 	dev_node($1)
+ ')
+ 
++#######################################
++## <summary>
++##  Getattr on virt executable.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed to transition.
++##  </summary>
++## </param>
++#
++interface(`virt_getattr_exec',`
++    gen_require(`
++        type virtd_exec_t;
++    ')
++
++	allow $1 virtd_exec_t:file getattr;
++')
++
+ ########################################
+ ## <summary>
  ##	Execute a domain transition to run virt.
  ## </summary>
  ## <param name="domain">
@@ -53047,7 +53280,7 @@ index 7c5d8d8..4feaf88 100644
  ## </param>
  #
  interface(`virt_domtrans',`
-@@ -164,13 +157,13 @@ interface(`virt_attach_tun_iface',`
+@@ -164,13 +175,13 @@ interface(`virt_attach_tun_iface',`
  #
  interface(`virt_read_config',`
  	gen_require(`
@@ -53063,7 +53296,7 @@ index 7c5d8d8..4feaf88 100644
  ')
  
  ########################################
-@@ -185,13 +178,13 @@ interface(`virt_read_config',`
+@@ -185,13 +196,13 @@ interface(`virt_read_config',`
  #
  interface(`virt_manage_config',`
  	gen_require(`
@@ -53079,7 +53312,7 @@ index 7c5d8d8..4feaf88 100644
  ')
  
  ########################################
-@@ -231,6 +224,24 @@ interface(`virt_read_content',`
+@@ -231,6 +242,24 @@ interface(`virt_read_content',`
  
  ########################################
  ## <summary>
@@ -53104,7 +53337,7 @@ index 7c5d8d8..4feaf88 100644
  ##	Read virt PID files.
  ## </summary>
  ## <param name="domain">
-@@ -269,6 +280,36 @@ interface(`virt_manage_pid_files',`
+@@ -269,6 +298,36 @@ interface(`virt_manage_pid_files',`
  
  ########################################
  ## <summary>
@@ -53141,7 +53374,7 @@ index 7c5d8d8..4feaf88 100644
  ##	Search virt lib directories.
  ## </summary>
  ## <param name="domain">
-@@ -308,6 +349,24 @@ interface(`virt_read_lib_files',`
+@@ -308,6 +367,24 @@ interface(`virt_read_lib_files',`
  
  ########################################
  ## <summary>
@@ -53166,7 +53399,7 @@ index 7c5d8d8..4feaf88 100644
  ##	Create, read, write, and delete
  ##	virt lib files.
  ## </summary>
-@@ -352,9 +411,9 @@ interface(`virt_read_log',`
+@@ -352,9 +429,9 @@ interface(`virt_read_log',`
  ##	virt log files.
  ## </summary>
  ## <param name="domain">
@@ -53178,7 +53411,7 @@ index 7c5d8d8..4feaf88 100644
  ## </param>
  #
  interface(`virt_append_log',`
-@@ -424,6 +483,24 @@ interface(`virt_read_images',`
+@@ -424,6 +501,24 @@ interface(`virt_read_images',`
  
  ########################################
  ## <summary>
@@ -53203,7 +53436,7 @@ index 7c5d8d8..4feaf88 100644
  ##	Create, read, write, and delete
  ##	svirt cache files.
  ## </summary>
-@@ -433,15 +510,15 @@ interface(`virt_read_images',`
+@@ -433,15 +528,15 @@ interface(`virt_read_images',`
  ##	</summary>
  ## </param>
  #
@@ -53224,7 +53457,7 @@ index 7c5d8d8..4feaf88 100644
  ')
  
  ########################################
-@@ -500,11 +577,16 @@ interface(`virt_manage_images',`
+@@ -500,11 +595,16 @@ interface(`virt_manage_images',`
  interface(`virt_admin',`
  	gen_require(`
  		type virtd_t, virtd_initrc_exec_t;
@@ -53241,7 +53474,7 @@ index 7c5d8d8..4feaf88 100644
  	init_labeled_script_domtrans($1, virtd_initrc_exec_t)
  	domain_system_change_exemption($1)
  	role_transition $2 virtd_initrc_exec_t system_r;
-@@ -515,4 +597,188 @@ interface(`virt_admin',`
+@@ -515,4 +615,188 @@ interface(`virt_admin',`
  	virt_manage_lib_files($1)
  
  	virt_manage_log($1)
@@ -57029,7 +57262,7 @@ index 21ae664..3e448dd 100644
 +    manage_dirs_pattern($1, zarafa_var_lib_t, zarafa_var_lib_t)
 +')
 diff --git a/policy/modules/services/zarafa.te b/policy/modules/services/zarafa.te
-index 9fb4747..42a6067 100644
+index 9fb4747..16b2616 100644
 --- a/policy/modules/services/zarafa.te
 +++ b/policy/modules/services/zarafa.te
 @@ -18,6 +18,10 @@ files_config_file(zarafa_etc_t)
@@ -57052,7 +57285,7 @@ index 9fb4747..42a6067 100644
  ########################################
  #
  # zarafa-deliver local policy
-@@ -57,6 +63,19 @@ corenet_tcp_sendrecv_all_ports(zarafa_gateway_t)
+@@ -57,6 +63,21 @@ corenet_tcp_sendrecv_all_ports(zarafa_gateway_t)
  corenet_tcp_bind_generic_node(zarafa_gateway_t)
  corenet_tcp_bind_pop_port(zarafa_gateway_t)
  
@@ -57060,6 +57293,8 @@ index 9fb4747..42a6067 100644
 +#
 +# zarafa-indexer local policy
 +#
++
++allow zarafa_indexer_t self:capability chown;
 +
 +manage_dirs_pattern(zarafa_indexer_t, zarafa_indexer_tmp_t, zarafa_indexer_tmp_t)
 +manage_files_pattern(zarafa_indexer_t, zarafa_indexer_tmp_t, zarafa_indexer_tmp_t)
@@ -57072,10 +57307,14 @@ index 9fb4747..42a6067 100644
  #######################################
  #
  # zarafa-ical local policy
-@@ -138,6 +157,32 @@ corenet_tcp_connect_smtp_port(zarafa_spooler_t)
+@@ -136,6 +157,34 @@ corenet_tcp_sendrecv_generic_node(zarafa_spooler_t)
+ corenet_tcp_sendrecv_all_ports(zarafa_spooler_t)
+ corenet_tcp_connect_smtp_port(zarafa_spooler_t)
  
- ########################################
- #
++dev_read_rand(zarafa_spooler_t)
++
++########################################
++#
 +# zarafa_gateway local policy
 +#
 +
@@ -57100,12 +57339,10 @@ index 9fb4747..42a6067 100644
 +
 +allow zarafa_monitor_t self:capability chown;
 +
-+########################################
-+#
- # zarafa domains local policy
+ ########################################
  #
- 
-@@ -156,6 +201,4 @@ kernel_read_system_state(zarafa_domain)
+ # zarafa domains local policy
+@@ -156,6 +205,4 @@ kernel_read_system_state(zarafa_domain)
  
  files_read_etc_files(zarafa_domain)
  

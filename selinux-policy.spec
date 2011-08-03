@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -452,6 +452,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Aug 3 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-14
+- Add cfengine policy
+
 * Tue Aug 2 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-13
 - Add abrt_domain attribute
 - Allow corosync to manage cluster lib files
@@ -462,6 +465,7 @@ SELinux Reference policy mls base module.
 - Allow kernel_t dyntrasition to init_t
 
 * Fri Jul 29 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-11
+- init_t need setexec
 - More fixes of rules which cause an explosion in rules by Dan Walsh
 
 * Tue Jul 26 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-10
