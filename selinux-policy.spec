@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 14%{?dist}
+Release: 16%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -452,6 +452,14 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Aug 4 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-16
+- fetchmail can use kerberos
+- ksmtuned reads in shell programs
+- gnome_systemctl_t reads the process state of ntp
+- dnsmasq_t asks the kernel to load multiple kernel modules
+- Add rules for domains executing systemctl
+- Bogus text within fc file
+
 * Wed Aug 3 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-14
 - Add cfengine policy
 
