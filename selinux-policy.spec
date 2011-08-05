@@ -17,12 +17,11 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 14.1%{?dist}
+Release: 16%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-F16.patch
-patch1: my.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -105,19 +104,23 @@ make UNK_PERMS=%5 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOL
 touch %{buildroot}/%{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
 touch %{buildroot}/%{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/booleans \
-touch %{buildroot}%{_sysconfdir}/selinux/%1/seusers \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
 install -m0644 selinux_config/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
 install -m0644 selinux_config/file_contexts.subs_dist %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files \
 install -m0644 selinux_config/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
 install -m0644 selinux_config/customizable_types %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/seusers \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/file_contexts.local \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/nodes.local \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/users_extra.local \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/users.local \
 bzip2 -c %{buildroot}/%{_usr}/share/selinux/%1/base.pp  > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/base.pp \
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/base.pp  \
 for i in %{buildroot}/%{_usr}/share/selinux/%1/*.pp; do bzip2 -c $i > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/`basename $i`; done \
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/*pp*  \
 /usr/sbin/semodule -s %1 -n -B -p %{buildroot}; \
-/usr/bin/md5sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policymd5 \
+/usr/bin/md5sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policymd5; \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts 
 %nil
 
@@ -132,16 +135,19 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
 %dir %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
 %dir %{_sysconfdir}/selinux/%1/modules/active/modules \
-%config(noreplace) %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/policy.kern \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/commit_num \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/base.pp \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts* \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts.homedirs \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts.template \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/seusers.final \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/netfilter_contexts \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/homedir_template \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
-#%verify(not md5 size mtime) %attr(600,root,root) %config(noreplace) %{_sysconfdir}/selinux/%1/modules/active/seusers \
+%ghost %{_sysconfdir}/selinux/%1/modules/active/*.local \
+%ghost %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 %{_sysconfdir}/selinux/%1/.policymd5 \
@@ -162,6 +168,7 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts
 %dir %{_sysconfdir}/selinux/%1/contexts/files \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
+%verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs_dist \
 %config %{_sysconfdir}/selinux/%1/contexts/files/media \
@@ -172,15 +179,6 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/user_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u 
 
-%define saveFileContext() \
-if [ -s /etc/selinux/config ]; then \
-     . %{_sysconfdir}/selinux/config; \
-     FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
-     if [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT} ]; then \
-        [ -f ${FILE_CONTEXT}.pre ] || cp -f ${FILE_CONTEXT} ${FILE_CONTEXT}.pre; \
-     fi \
-fi;
-
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
 FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
@@ -189,14 +187,29 @@ if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      /sbin/fixfiles -C ${FILE_CONTEXT}.pre restore; \
      /sbin/restorecon -R /root /var/log /var/run 2> /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
-fi; 
+fi;
+
+%define preInstall() \
+if [ -s /etc/selinux/config ]; then \
+     . %{_sysconfdir}/selinux/config; \
+     FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
+     if [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT} ]; then \
+        [ -f ${FILE_CONTEXT}.pre ] || cp -f ${FILE_CONTEXT} ${FILE_CONTEXT}.pre; \
+     fi; \
+     touch /etc/selinux/%1/.rebuild; \
+     if [ -e /etc/selinux/%1/.policymd5 ]; then \
+        md5=`md5sum /etc/selinux/%1/modules/active/policy.kern | cut -d ' ' -f 1`; \
+	checkmd5=`cat /etc/selinux/%1/.policymd5`; \
+	if [ "$md5" == "$checkmd5" ] ; then \
+		rm /etc/selinux/%1/.rebuild; \
+	fi; \
+   fi; \
+fi;
 
 %define postInstall() \
 . %{_sysconfdir}/selinux/config; \
-rm -f /etc/selinux/%2/modules/active/policy.kern.rpmnew; \
-md5=`md5sum /etc/selinux/%2/modules/active/policy.kern | cut -d ' ' -f 1`; \
-checkmd5=`cat /etc/selinux/%2/.policymd5`; \
-if [ "$md5" != "$checkmd5" ] ; then \
+if [ -e /etc/selinux/%2/.rebuild ]; then \
+   rm /etc/selinux/%2/.rebuild; \
    if [ %1 -ne 1 ]; then \
 	/usr/sbin/semodule -n -s %2 -r moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
    fi \
@@ -222,7 +235,6 @@ Based off of reference policy: Checked out revision  2.20091117
 %prep 
 %setup -n serefpolicy-%{version} -q
 %patch -p1
-%patch1 -p1
 
 %install
 mkdir selinux_config
@@ -338,7 +350,7 @@ Conflicts:  389-ds-base < 1.2.7, 389-admin < 1.1.12
 SELinux Reference policy targeted base module.
 
 %pre targeted
-%saveFileContext targeted
+%preInstall targeted
 
 %post targeted
 %postInstall $1 targeted
@@ -383,7 +395,7 @@ Conflicts:  seedit
 SELinux Reference policy minimum base module.
 
 %pre minimum
-%saveFileContext minimum
+%preInstall minimum
 if [ $1 -ne 1 ]; then
    /usr/sbin/semodule -s minimum -l 2>/dev/null | awk '{ print $1 }' > /usr/share/selinux/minimum/instmodules.lst
 fi
@@ -441,7 +453,7 @@ Conflicts:  seedit
 SELinux Reference policy mls base module.
 
 %pre mls 
-%saveFileContext mls
+%preInstall mls
 
 %post mls 
 %postInstall $1 mls
@@ -454,6 +466,14 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Aug 4 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-16
+- fetchmail can use kerberos
+- ksmtuned reads in shell programs
+- gnome_systemctl_t reads the process state of ntp
+- dnsmasq_t asks the kernel to load multiple kernel modules
+- Add rules for domains executing systemctl
+- Bogus text within fc file
+
 * Wed Aug 3 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-14
 - Add cfengine policy
 
