@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Aug 10 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-17
+- livecd fixes
+- spec file fixes 
+
 * Thu Aug 4 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-16
 - fetchmail can use kerberos
 - ksmtuned reads in shell programs
