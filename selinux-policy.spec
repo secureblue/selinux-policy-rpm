@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Aug 11 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-18
+- Turn on allow_domain_fd_use boolean on F16
+- Allow syslog to manage all log files
+- Add use_fusefs_home_dirs boolean for chrome
+- Make vdagent working with confined users
+- Add abrt_handle_event_t domain for ABRT event scripts
+- Labeled /usr/sbin/rhnreg_ks as rpm_exec_t and added changes related to this change
+- Allow httpd_git_script_t to read passwd data
+- Allow openvpn to set its process priority when the nice parameter is used
+
 * Wed Aug 10 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-17
 - livecd fixes
 - spec file fixes 
