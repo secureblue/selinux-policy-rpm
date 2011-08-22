@@ -190,7 +190,7 @@ if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
 fi;
 
 %define preInstall() \
-if [ -s /etc/selinux/config ]; then \
+if [ $1 -ne 1 ] && [ -s /etc/selinux/config ]; then \
      . %{_sysconfdir}/selinux/config; \
      FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
      if [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT} ]; then \
