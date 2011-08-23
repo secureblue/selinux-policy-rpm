@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 19%{?dist}
+Release: 20%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Aug 23 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-20
+- Make users_extra and seusers.final into config(noreplace) so semanage users and login does not get overwritten
+
 * Tue Aug 23 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-19
 - Add policy for sa-update being run out of cron jobs
 - Add create perms to postgresql_manage_db
