@@ -141,9 +141,9 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts.homedirs \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts.template \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/seusers.final \
+%config(noreplace) %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/seusers.final \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/netfilter_contexts \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
+%config(noreplace) %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/homedir_template \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.local \
