@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 18%{?dist}
+Release: 19%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Aug 23 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-19
+- Add policy for sa-update being run out of cron jobs
+- Add create perms to postgresql_manage_db
+- ntpd using a gps has to be able to read/write generic tty_device_t
+- If you disable unconfined and unconfineduser, rpm needs more privs to manage /dev
+- fix spec file
+- Remove qemu_domtrans_unconfined() interface
+- Make passenger working together with puppet
+- Add init_dontaudit_rw_stream_socket interface
+- Fixes for wordpress
+
 * Thu Aug 11 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-18
 - Turn on allow_domain_fd_use boolean on F16
 - Allow syslog to manage all log files
