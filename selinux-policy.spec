@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 20%{?dist}
+Release: 21%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Aug 24 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-21
+- Allow insmod_t to use fds leaked from devicekit
+- dontaudit getattr between insmod_t and init_t unix_stream_sockets
+- Change sysctl unit file interfaces to use systemctl
+- Add support for chronyd unit file
+- Allow mozilla_plugin to read gnome_usr_config
+- Add policy for new gpsd
+- Allow cups to create kerberos rhost cache files
+- Add authlogin_filetrans_named_content, to unconfined_t to make sure shadow and other log files get labeled correctly
+
 * Tue Aug 23 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-20
 - Make users_extra and seusers.final into config(noreplace) so semanage users and login does not get overwritten
 
