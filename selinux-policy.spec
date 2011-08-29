@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 21%{?dist}
+Release: 22%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Aug 29 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-22
+- Allow Postfix to deliver to Dovecot LMTP socket
+- Ignore bogus sys_module for lldpad
+- Allow chrony and gpsd to send dgrams, gpsd needs to write to the real time clock
+- systemd_logind_t sets the attributes on usb devices
+- Allow hddtemp_t to read etc_t files
+- Add permissivedomains module
+- Move all permissive domains calls to permissivedomain.te
+- Allow pegasis to send kill signals to other UIDs
+
 * Wed Aug 24 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-21
 - Allow insmod_t to use fds leaked from devicekit
 - dontaudit getattr between insmod_t and init_t unix_stream_sockets
