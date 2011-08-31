@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 23%{?dist}
+Release: 24%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,14 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Aug 31 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-24
+- pki needs another port
+- Add more labels for cluster scripts
+- Fix label on nfs-utils scripts directories
+- Fixes for cluster
+- Allow gatherd to read /dev/rand and /dev/urand
+- abrt leaks fifo files
+
 * Tue Aug 30 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-23
 - Add glance policy
 - Allow mdadm setsched
