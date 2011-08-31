@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 22%{?dist}
+Release: 23%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,14 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Aug 30 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-23
+- Add glance policy
+- Allow mdadm setsched
+- /var/run/initramfs should not be relabeled with a restorecon run
+- memcache can be setup to override sys_resource
+- Allow httpd_t to read tetex data
+- Allow systemd_tmpfiles to delete kernel modules left in /tmp directory.
+
 * Mon Aug 29 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-22
 - Allow Postfix to deliver to Dovecot LMTP socket
 - Ignore bogus sys_module for lldpad
