@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 24%{?dist}
+Release: 25%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,26 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Sep 6 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-25
+- Add exim_exec_t label for /usr/sbin/exim_tidydb
+- Call init_dontaudit_rw_stream_socket() interface in mta policy
+- sssd need to search /var/cache/krb5rcache directory
+- Allow corosync to relabel own tmp files
+- Allow zarafa domains to send system log messages
+- Allow ssh to do tunneling
+- Allow initrc scripts to sendto init_t unix_stream_socket
+- Changes to make sure dmsmasq and virt directories are labeled correctly
+- Changes needed to allow sysadm_t to manage systemd unit files
+- init is passing file descriptors to dbus and on to system daemons
+- Allow sulogin additional access Reported by dgrift and Jeremy Miller
+- Steve Grubb believes that wireshark does not need this access
+- Fix /var/run/initramfs to stop restorecon from looking at
+- pki needs another port
+- Add more labels for cluster scripts
+- Allow apps that manage cgroup_files to manage cgroup link files
+- Fix label on nfs-utils scripts directories
+- Allow gatherd to read /dev/rand and /dev/urand
+
 * Wed Aug 31 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-24
 - pki needs another port
 - Add more labels for cluster scripts
