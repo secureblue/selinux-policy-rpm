@@ -466,7 +466,7 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-+* Fri Sep 9 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-26
+* Fri Sep 9 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-26
 - removing unconfined_notrans_t no longer necessary
 - Clean up handling of secure_mode_insmod and secure_mode_policyload
 - Remove unconfined_mount_t
