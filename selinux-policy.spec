@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 25%{?dist}
+Release: 26%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
++* Fri Sep 9 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-26
+- removing unconfined_notrans_t no longer necessary
+- Clean up handling of secure_mode_insmod and secure_mode_policyload
+- Remove unconfined_mount_t
+
 * Tue Sep 6 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-25
 - Add exim_exec_t label for /usr/sbin/exim_tidydb
 - Call init_dontaudit_rw_stream_socket() interface in mta policy
