@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 27%{?dist}
+Release: 28%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Sep 13 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-28
+- Allow systemd-tmpfiles to set the correct labels on /var/run, /tmp and other files
+- We want any file type that is created in /tmp by a process running as initrc_t to be labeled initrc_tmp_t
+
 * Tue Sep 13 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-27
 -  Allow collectd to read hardware state information
 - Add loop_control_device_t
