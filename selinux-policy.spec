@@ -129,7 +129,7 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts
 %dir %{_usr}/share/selinux/%1 \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/seusers \
+%config(noreplace) %verify(not mtime) %{_sysconfdir}/selinux/%1/seusers \
 %dir %{_sysconfdir}/selinux/%1/modules \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
 %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
