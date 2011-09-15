@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 26%{?dist}
+Release: 28%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,26 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Sep 13 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-28
+- Allow systemd-tmpfiles to set the correct labels on /var/run, /tmp and other files
+- We want any file type that is created in /tmp by a process running as initrc_t to be labeled initrc_tmp_t
+
+* Tue Sep 13 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-27
+-  Allow collectd to read hardware state information
+- Add loop_control_device_t
+- Allow mdadm to request kernel to load module
+- Allow domains that start other domains via systemctl to search unit dir
+- systemd_tmpfiles, needs to list any file systems mounted on /tmp
+- No one can explain why radius is listing the contents of /tmp, so we will dontaudit
+- If I can manage etc_runtime files, I should be able to read the links
+- Dontaudit hostname writing to mock library chr_files
+- Have gdm_t setup labeling correctly in users home dir
+- Label content unde /var/run/user/NAME/dconf as config_home_t
+- Allow sa-update to execute shell
+- Make ssh-keygen working with fips_enabled
+- Make mock work for staff_t user
+- Tighten security on mock_t
+
 * Fri Sep 9 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-26
 - removing unconfined_notrans_t no longer necessary
 - Clean up handling of secure_mode_insmod and secure_mode_policyload
