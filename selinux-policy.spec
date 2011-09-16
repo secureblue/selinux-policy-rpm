@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 28%{?dist}
+Release: 29%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Sep 16 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-29
+- Allow sanlock to manage virt lib files
+- Add virt_use_sanlock booelan
+- ksmtuned is trying to resolve uids
+- Make sure .gvfs is labeled user_home_t in the users home directory
+- Sanlock sends kill signals and needs the kill capability
+- Allow mockbuild to work on nfs homedirs
+- Fix kerberos_manage_host_rcache() interface
+- Allow exim to read system state
+
 * Tue Sep 13 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-28
 - Allow systemd-tmpfiles to set the correct labels on /var/run, /tmp and other files
 - We want any file type that is created in /tmp by a process running as initrc_t to be labeled initrc_tmp_t
