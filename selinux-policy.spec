@@ -13,11 +13,11 @@
 %define POLICYVER 26
 %define libsepolver 2.0.44-2
 %define POLICYCOREUTILSVER 2.0.86-12
-%define CHECKPOLICYVER 2.0.26-1
+%define CHECKPOLICYVER 2.1.5-2
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 29%{?dist}
+Release: 31%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -466,6 +466,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Sep 20 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-31
+- Needs to require a new version of checkpolicy
+- Interface fixes
+
 * Fri Sep 16 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-29
 - Allow sanlock to manage virt lib files
 - Add virt_use_sanlock booelan
