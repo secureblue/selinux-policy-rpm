@@ -17,11 +17,12 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 31%{?dist}
+Release: 31.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-F16.patch
+patch1: ephemeral.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -235,6 +236,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %prep 
 %setup -n serefpolicy-%{version} -q
 %patch -p1
+%patch1 -p1
 
 %install
 mkdir selinux_config
@@ -466,6 +468,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Sep 20 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-31.1
+- Add definition for ephemeral ports
+- Define user_tty_device_t as a customizable_type
+
 * Tue Sep 20 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-31
 - Needs to require a new version of checkpolicy
 - Interface fixes
