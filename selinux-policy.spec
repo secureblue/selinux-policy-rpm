@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 31.1%{?dist}
+Release: 33%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -468,6 +468,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Sep 23 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-33
+- Change screen to use screen_domain attribute and allow screen_domains to read all process domain state
+- Add SELinux support for ssh pre-auth net process in F17
+- Add logging_syslogd_can_sendmail boolean
+
 * Wed Sep 20 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-31.1
 - Add definition for ephemeral ports
 - Define user_tty_device_t as a customizable_type
