@@ -236,7 +236,6 @@ Based off of reference policy: Checked out revision  2.20091117
 %prep 
 %setup -n serefpolicy-%{version} -q
 %patch -p1
-%patch1 -p1
 
 %install
 mkdir selinux_config
