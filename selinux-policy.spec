@@ -22,7 +22,7 @@ License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-F16.patch
-patch1: ephemeral.patch
+#patch1: ephemeral.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
