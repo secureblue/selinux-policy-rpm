@@ -17,12 +17,12 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 31.1%{?dist}
+Release: 34%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-F16.patch
-patch1: ephemeral.patch
+#patch1: ephemeral.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -236,7 +236,6 @@ Based off of reference policy: Checked out revision  2.20091117
 %prep 
 %setup -n serefpolicy-%{version} -q
 %patch -p1
-%patch1 -p1
 
 %install
 mkdir selinux_config
@@ -468,6 +467,23 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Sep 26 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-34
+- Make mta_role() active
+- Allow asterisk to connect to jabber client port
+- Allow procmail to read utmp
+- Add NIS support for systemd_logind_t
+- Allow systemd_logind_t to manage /run/user/$USER/dconf dir which is labeled as config_home_t
+- Fix systemd_manage_unit_dirs() interface
+- Allow ssh_t to manage directories passed into it
+- init needs to be able to create and delete unit file directories
+- Fix typo in apache_exec_sys_script
+- Add ability for logrotate to transition to awstat domain
+
+* Fri Sep 23 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-33
+- Change screen to use screen_domain attribute and allow screen_domains to read all process domain state
+- Add SELinux support for ssh pre-auth net process in F17
+- Add logging_syslogd_can_sendmail boolean
+
 * Wed Sep 20 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-31.1
 - Add definition for ephemeral ports
 - Define user_tty_device_t as a customizable_type
