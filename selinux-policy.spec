@@ -17,12 +17,13 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 34%{?dist}
+Release: 34.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-F16.patch
-#patch1: ephemeral.patch
+patch1: ephemeral.patch
+patch2: unconfined_permissive.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -236,6 +237,8 @@ Based off of reference policy: Checked out revision  2.20091117
 %prep 
 %setup -n serefpolicy-%{version} -q
 %patch -p1
+%patch1 -p1
+%patch2 -p1
 
 %install
 mkdir selinux_config
@@ -467,6 +470,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Sep 26 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.1
+- Change unconfined_domains to permissive for Rawhide
+- Add definition for the ephemeral_ports
+
 * Mon Sep 26 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-34
 - Make mta_role() active
 - Allow asterisk to connect to jabber client port
