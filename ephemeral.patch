@@ -1,8 +1,112 @@
+diff --git a/policy/modules/apps/mozilla.te b/policy/modules/apps/mozilla.te
+index 68929b9..3370160 100644
+--- a/policy/modules/apps/mozilla.te
++++ b/policy/modules/apps/mozilla.te
+@@ -116,6 +116,7 @@ corenet_tcp_sendrecv_http_cache_port(mozilla_t)
+ corenet_tcp_sendrecv_squid_port(mozilla_t)
+ corenet_tcp_connect_flash_port(mozilla_t)
+ corenet_tcp_sendrecv_ftp_port(mozilla_t)
++corenet_tcp_connect_ephemeral_ports(mozilla_t)
+ corenet_tcp_sendrecv_ipp_port(mozilla_t)
+ corenet_tcp_connect_http_port(mozilla_t)
+ corenet_tcp_connect_http_cache_port(mozilla_t)
+diff --git a/policy/modules/apps/sandbox.te b/policy/modules/apps/sandbox.te
+index 31c02d2..f61ee10 100644
+--- a/policy/modules/apps/sandbox.te
++++ b/policy/modules/apps/sandbox.te
+@@ -382,6 +382,7 @@ corenet_tcp_connect_http_cache_port(sandbox_web_type)
+ corenet_tcp_connect_squid_port(sandbox_web_type)
+ corenet_tcp_connect_flash_port(sandbox_web_type)
+ corenet_tcp_connect_ftp_port(sandbox_web_type)
++corenet_tcp_connect_ephemeral_ports(sandbox_web_type)
+ corenet_tcp_connect_ipp_port(sandbox_web_type)
+ corenet_tcp_connect_streaming_port(sandbox_web_type)
+ corenet_tcp_connect_pulseaudio_port(sandbox_web_type)
+diff --git a/policy/modules/kernel/corenetwork.if.in b/policy/modules/kernel/corenetwork.if.in
+index 5a41e58..54e4c81 100644
+--- a/policy/modules/kernel/corenetwork.if.in
++++ b/policy/modules/kernel/corenetwork.if.in
+@@ -2269,6 +2269,42 @@ interface(`corenet_udp_bind_all_unreserved_ports',`
+ 
+ ########################################
+ ## <summary>
++##	Bind TCP sockets to all ports > 32768.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`corenet_tcp_bind_all_ephemeral_ports',`
++	gen_require(`
++		attribute ephemeral_port_type;
++	')
++
++	allow $1 ephemeral_port_type:tcp_socket name_bind;
++')
++
++########################################
++## <summary>
++##	Bind UDP sockets to all ports > 32768.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`corenet_udp_bind_all_ephemeral_ports',`
++	gen_require(`
++		attribute ephemeral_port_type;
++	')
++
++	allow $1 ephemeral_port_type:udp_socket name_bind;
++')
++
++########################################
++## <summary>
+ ##	Connect DCCP sockets to reserved ports.
+ ## </summary>
+ ## <param name="domain">
+@@ -2341,6 +2377,24 @@ interface(`corenet_tcp_connect_all_unreserved_ports',`
+ 
+ ########################################
+ ## <summary>
++##	Connect TCP sockets to all ports > 32768.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`corenet_tcp_connect_all_ephemeral_ports',`
++	gen_require(`
++		attribute ephemeral_port_type;
++	')
++
++	allow $1 ephemeral_port_type:tcp_socket name_connect;
++')
++
++########################################
++## <summary>
+ ##	Do not audit attempts to connect DCCP sockets
+ ##	all reserved ports.
+ ## </summary>
 diff --git a/policy/modules/kernel/corenetwork.te.in b/policy/modules/kernel/corenetwork.te.in
-index 3b5de31..dfd5b61 100644
+index 5287f7a..f65fb75 100644
 --- a/policy/modules/kernel/corenetwork.te.in
 +++ b/policy/modules/kernel/corenetwork.te.in
-@@ -66,11 +66,17 @@ type port_t, port_type;
+@@ -14,6 +14,7 @@ attribute port_type;
+ attribute defined_port_type;
+ attribute reserved_port_type;
+ attribute unreserved_port_type;
++attribute ephemeral_port_type;
+ attribute rpc_port_type;
+ attribute server_packet_type;
+ 
+@@ -66,11 +67,17 @@ type port_t, port_type;
  sid port gen_context(system_u:object_r:port_t,s0)
  
  #
@@ -15,13 +119,13 @@ index 3b5de31..dfd5b61 100644
 +# ephemeral_port_t is the default type of ephemeral port numbers.
 +# cat /proc/sys/net/ipv4/ip_local_port_range 
 +#
-+type ephemeral_port_t, port_type;
++type ephemeral_port_t, port_type, ephemeral_port_type;
 +
 +#
  # reserved_port_t is the type of INET port numbers below 1024.
  #
  type reserved_port_t, port_type, reserved_port_type;
-@@ -292,9 +298,12 @@ portcon tcp 512-1023 gen_context(system_u:object_r:hi_reserved_port_t, s0)
+@@ -293,9 +300,12 @@ portcon tcp 512-1023 gen_context(system_u:object_r:hi_reserved_port_t, s0)
  portcon udp 512-1023 gen_context(system_u:object_r:hi_reserved_port_t, s0)
  portcon tcp 1-511 gen_context(system_u:object_r:reserved_port_t, s0)
  portcon udp 1-511 gen_context(system_u:object_r:reserved_port_t, s0)
@@ -37,3 +141,105 @@ index 3b5de31..dfd5b61 100644
  ########################################
  #
  # Network nodes
+diff --git a/policy/modules/kernel/corenetwork.te.m4 b/policy/modules/kernel/corenetwork.te.m4
+index 49f27ca..e8acd10 100644
+--- a/policy/modules/kernel/corenetwork.te.m4
++++ b/policy/modules/kernel/corenetwork.te.m4
+@@ -81,7 +81,13 @@ declare_nodes($1_node_t,shift($*))
+ define(`declare_ports',`dnl
+ ifelse(eval(range_start($3) < 1024),1,`typeattribute $1 reserved_port_type;
+ ifelse(eval(range_start($3) >= 512),1,`typeattribute $1 rpc_port_type;',`dnl')
+-',`typeattribute $1 unreserved_port_type;')
++',`
++ifelse(eval(range_start($3) < 32768),1,`typeattribute $1 unreserved_port_type;',`
++      ifelse(eval(range_start($3) > 61001),1,`typeattribute $1 unreserved_port_type;',`
++         typeattribute $1 ephemeral_port_type;
++      ')
++   ')
++')
+ portcon $2 $3 gen_context(system_u:object_r:$1,$4)
+ ifelse(`$5',`',`',`declare_ports($1,shiftn(4,$*))')dnl
+ ')
+diff --git a/policy/modules/services/apache.te b/policy/modules/services/apache.te
+index 8596b90..9f37c11 100644
+--- a/policy/modules/services/apache.te
++++ b/policy/modules/services/apache.te
+@@ -137,6 +137,14 @@ gen_tunable(httpd_enable_ftp_server, false)
+ 
+ ## <desc>
+ ##	<p>
++##	Allow httpd to act as a FTP client
++##	connecting to the ftp port and ephemeral ports
++##	</p>
++## </desc>
++gen_tunable(httpd_can_connect_ftp, false)
++
++## <desc>
++##	<p>
+ ##	Allow httpd to read home directories
+ ##	</p>
+ ## </desc>
+@@ -583,6 +591,7 @@ tunable_policy(`httpd_can_network_relay',`
+ 	corenet_sendrecv_http_client_packets(httpd_t)
+ 	corenet_sendrecv_http_cache_client_packets(httpd_t)
+ 	corenet_sendrecv_squid_client_packets(httpd_t)
++	corenet_tcp_connect_ephermeral_ports(httpd_t)
+ ')
+ 
+ tunable_policy(`httpd_execmem',`
+@@ -621,8 +630,14 @@ tunable_policy(`httpd_enable_cgi && httpd_unified && httpd_builtin_scripting',`
+ 	manage_lnk_files_pattern(httpd_t, httpdcontent, httpdcontent)
+ ')
+ 
++tunable_policy(`httpd_can_network_connect_ftp',`
++	corenet_tcp_connect_ftp_port(httpd_t)
++	corenet_tcp_connect_ephemeral_ports(httpd_t)
++')
++
+ tunable_policy(`httpd_enable_ftp_server',`
+ 	corenet_tcp_bind_ftp_port(httpd_t)
++	corenet_tcp_bind_ephemeral_ports(httpd_t)
+ ')
+ 
+ tunable_policy(`httpd_tmp_exec && httpd_builtin_scripting',`
+diff --git a/policy/modules/services/cobbler.te b/policy/modules/services/cobbler.te
+index 2607914..cb33e76 100644
+--- a/policy/modules/services/cobbler.te
++++ b/policy/modules/services/cobbler.te
+@@ -110,6 +110,7 @@ corenet_tcp_sendrecv_generic_port(cobblerd_t)
+ corenet_tcp_sendrecv_cobbler_port(cobblerd_t)
+ # sync and rsync to ftp and http are permitted by default, for any other media use cobbler_can_network_connect.
+ corenet_tcp_connect_ftp_port(cobblerd_t)
++corenet_tcp_connect_ephemeral_ports(ftpd_t)
+ corenet_tcp_sendrecv_ftp_port(cobblerd_t)
+ corenet_sendrecv_ftp_client_packets(cobblerd_t)
+ corenet_tcp_connect_http_port(cobblerd_t)
+diff --git a/policy/modules/services/ftp.te b/policy/modules/services/ftp.te
+index 9a1355e..f807210 100644
+--- a/policy/modules/services/ftp.te
++++ b/policy/modules/services/ftp.te
+@@ -218,9 +218,8 @@ corenet_tcp_bind_generic_node(ftpd_t)
+ corenet_tcp_bind_ftp_port(ftpd_t)
+ corenet_tcp_bind_ftp_data_port(ftpd_t)
+ corenet_tcp_bind_generic_port(ftpd_t)
+-corenet_tcp_bind_all_unreserved_ports(ftpd_t)
+-corenet_dontaudit_tcp_bind_all_ports(ftpd_t)
+-corenet_tcp_connect_all_ports(ftpd_t)
++corenet_tcp_bind_all_ephemeral_ports(ftpd_t)
++corenet_tcp_connect_all_ephemeral_ports(ftpd_t)
+ corenet_sendrecv_ftp_server_packets(ftpd_t)
+ 
+ domain_use_interactive_fds(ftpd_t)
+diff --git a/policy/modules/services/mock.te b/policy/modules/services/mock.te
+index 1b9893a..a8eaa4d 100644
+--- a/policy/modules/services/mock.te
++++ b/policy/modules/services/mock.te
+@@ -87,7 +87,7 @@ corecmd_dontaudit_exec_all_executables(mock_t)
+ 
+ corenet_tcp_connect_http_port(mock_t)
+ corenet_tcp_connect_ftp_port(mock_t)
+-corenet_tcp_connect_all_unreserved_ports(mock_t)
++corenet_tcp_connect_ephemeral_ports(mock_t)
+ 
+ dev_read_urand(mock_t)
+ dev_read_sysfs(mock_t)
