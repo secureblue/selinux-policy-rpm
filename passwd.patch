@@ -1,0 +1,203 @@
+diff --git a/policy/modules/system/authlogin.fc b/policy/modules/system/authlogin.fc
+index 59742f4..51ca568 100644
+--- a/policy/modules/system/authlogin.fc
++++ b/policy/modules/system/authlogin.fc
+@@ -7,6 +7,7 @@
+ /etc/passwd\.lock	--	gen_context(system_u:object_r:shadow_t,s0)
+ /etc/passwd\.adjunct.*	--	gen_context(system_u:object_r:shadow_t,s0)
+ /etc/shadow.*		--	gen_context(system_u:object_r:shadow_t,s0)
++/etc/passwd.*		--	gen_context(system_u:object_r:passwd_file_t,s0)
+ 
+ /sbin/pam_console_apply	 --	gen_context(system_u:object_r:pam_console_exec_t,s0)
+ /sbin/pam_timestamp_check --	gen_context(system_u:object_r:pam_exec_t,s0)
+diff --git a/policy/modules/system/authlogin.if b/policy/modules/system/authlogin.if
+index f05a80f..c15deb5 100644
+--- a/policy/modules/system/authlogin.if
++++ b/policy/modules/system/authlogin.if
+@@ -558,7 +558,6 @@ interface(`auth_domtrans_upd_passwd',`
+ 
+ 	domtrans_pattern($1, updpwd_exec_t, updpwd_t)
+ 	auth_dontaudit_read_shadow($1)
+-
+ ')
+ 
+ ########################################
+@@ -755,6 +754,10 @@ interface(`auth_manage_shadow',`
+ 
+ 	allow $1 shadow_t:file manage_file_perms;
+ 	typeattribute $1 can_read_shadow_passwords, can_write_shadow_passwords;
++	files_var_filetrans($1, shadow_t, file, "shadow")
++	files_var_filetrans($1, shadow_t, file, "shadow-")
++	files_etc_filetrans($1, shadow_t, file, ".pwd.lock")
++	files_etc_filetrans($1, shadow_t, file, "gshadow")
+ ')
+ 
+ #######################################
+@@ -895,6 +898,9 @@ interface(`auth_manage_faillog',`
+ 	files_search_pids($1)
+ 	allow $1 faillog_t:dir manage_dir_perms;
+ 	allow $1 faillog_t:file manage_file_perms;
++	logging_log_named_filetrans($1, faillog_t, file, "tallylog")
++	logging_log_named_filetrans($1, faillog_t, file, "faillog")
++	logging_log_named_filetrans($1, faillog_t, file, "btmp")
+ ')
+ 
+ #######################################
+@@ -1735,6 +1741,7 @@ interface(`auth_manage_login_records',`
+ 
+ 	logging_rw_generic_log_dirs($1)
+ 	allow $1 wtmp_t:file manage_file_perms;
++	logging_log_named_filetrans($1, wtmp_t, file, "wtmp")
+ ')
+ 
+ ########################################
+@@ -1810,19 +1817,115 @@ interface(`auth_unconfined',`
+ interface(`authlogin_filetrans_named_content',`
+ 	gen_require(`
+ 		type shadow_t;
++		type passwd_file_t;
+ 		type faillog_t;
+ 		type wtmp_t;
+ 	')
+ 
++	files_etc_filetrans($1, passwd_file_t, file, "passwd")
+ 	files_etc_filetrans($1, shadow_t, file, "shadow")
+ 	files_etc_filetrans($1, shadow_t, file, "shadow-")
+ 	files_etc_filetrans($1, shadow_t, file, ".pwd.lock")
+ 	files_etc_filetrans($1, shadow_t, file, "gshadow")
+-	files_var_filetrans($1, shadow_t, file, "shadow")
+-	files_var_filetrans($1, shadow_t, file, "shadow-")
+ 	logging_log_named_filetrans($1, faillog_t, file, "tallylog")
+ 	logging_log_named_filetrans($1, faillog_t, file, "faillog")
+ 	logging_log_named_filetrans($1, faillog_t, file, "btmp")
+ 	files_pid_filetrans($1, faillog_t, file, "faillog")
+ 	logging_log_named_filetrans($1, wtmp_t, file, "wtmp")
+ ')
++
++########################################
++## <summary>
++##	Get the attributes of the passwd passwords file.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`auth_getattr_passwd',`
++	gen_require(`
++		type passwd_file_t;
++	')
++
++	files_search_etc($1)
++	allow $1 passwd_file_t:file getattr;
++')
++
++########################################
++## <summary>
++##	Do not audit attempts to get the attributes
++##	of the passwd passwords file.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`auth_dontaudit_getattr_passwd',`
++	gen_require(`
++		type passwd_file_t;
++	')
++
++	dontaudit $1 passwd_file_t:file getattr;
++')
++
++########################################
++## <summary>
++##	Read the passwd passwords file (/etc/passwd)
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`auth_read_passwd',`
++	gen_require(`
++		type passwd_file_t;
++	')
++
++	allow $1 passwd_file_t:file read_file_perms;
++')
++
++########################################
++## <summary>
++##	Do not audit attempts to read the passwd
++##	password file (/etc/passwd).
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`auth_dontaudit_read_passwd',`
++	gen_require(`
++		type passwd_file_t;
++	')
++
++	dontaudit $1 passwd_file_t:file read_file_perms;
++')
++
++########################################
++## <summary>
++##	Create, read, write, and delete the passwd
++##	password file.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`auth_manage_passwd',`
++	gen_require(`
++		type passwd_file_t;
++	')
++
++	files_rw_etc_dirs($1)
++	allow $1 passwd_file_t:file manage_file_perms;
++	files_etc_filetrans($1, passwd_file_t, file, "passwd")
++')
+diff --git a/policy/modules/system/authlogin.te b/policy/modules/system/authlogin.te
+index a53db2b..16e2e63 100644
+--- a/policy/modules/system/authlogin.te
++++ b/policy/modules/system/authlogin.te
+@@ -71,6 +71,9 @@ neverallow ~can_read_shadow_passwords shadow_t:file read;
+ neverallow ~can_write_shadow_passwords shadow_t:file { create write };
+ neverallow ~can_relabelto_shadow_passwords shadow_t:file relabelto;
+ 
++type passwd_file_t;
++files_type(passwd_file_t)
++
+ type updpwd_t;
+ type updpwd_exec_t;
+ domain_type(updpwd_t)
+@@ -350,6 +353,7 @@ kernel_read_system_state(updpwd_t)
+ dev_read_urand(updpwd_t)
+ 
+ files_manage_etc_files(updpwd_t)
++auth_manage_passwd(updpwd_t)
+ 
+ term_dontaudit_use_console(updpwd_t)
+ term_dontaudit_use_unallocated_ttys(updpwd_t)
+@@ -422,6 +426,9 @@ optional_policy(`
+ 	')
+ ')
+ 
++
++auth_read_passwd(nsswitch_domain)
++
+ # read /etc/nsswitch.conf
+ files_read_etc_files(nsswitch_domain)
+ 

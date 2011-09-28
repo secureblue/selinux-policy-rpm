@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 34.1%{?dist}
+Release: 34.2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -25,6 +25,7 @@ patch: policy-F16.patch
 patch1: ephemeral.patch
 patch2: unconfined_permissive.patch
 patch3: grub.patch
+patch4: passwd.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -241,6 +242,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 
 %install
 mkdir selinux_config
@@ -472,6 +474,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Sep 26 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.2
+- Add label for /etc/passwd
+
 * Mon Sep 26 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.1
 - Change unconfined_domains to permissive for Rawhide
 - Add definition for the ephemeral_ports
