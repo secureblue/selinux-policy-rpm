@@ -17,15 +17,13 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 34.2%{?dist}
+Release: 34.3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-F16.patch
-patch1: ephemeral.patch
-patch2: unconfined_permissive.patch
-patch3: grub.patch
-patch4: passwd.patch
+patch1: unconfined_permissive.patch
+patch2: passwd.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -241,8 +239,6 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch -p1
 %patch1 -p1
 %patch2 -p1
-%patch3 -p1
-%patch4 -p1
 
 %install
 mkdir selinux_config
@@ -474,6 +470,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Sep 29 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-34.3
+- Add support for Clustered Samba commands
+- Allow ricci_modrpm_t to send log msgs
+- move permissive virt_qmf_t from virt.te to permissivedomains.te
+- Allow ssh_t to use kernel keyrings
+- Add policy for libvirt-qmf and more fixes for linux containers
+- Initial Polipo
+- Sanlock needs to run ranged in order to kill svirt processes
+- Allow smbcontrol to stream connect to ctdbd
+
 * Mon Sep 26 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.2
 - Add label for /etc/passwd
 
