@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 34.3%{?dist}
+Release: 34.5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Sep 29 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.4
+- Fixes caused by the labeling of /etc/passwd
+
 * Thu Sep 29 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-34.3
 - Add support for Clustered Samba commands
 - Allow ricci_modrpm_t to send log msgs
