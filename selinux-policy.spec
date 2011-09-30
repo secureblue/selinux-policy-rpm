@@ -17,13 +17,14 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 34.5%{?dist}
+Release: 34.6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-F16.patch
 patch1: unconfined_permissive.patch
 patch2: passwd.patch
+patch3: thumb.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -470,8 +471,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Thu Sep 29 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.4
+* Fri Sep 29 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.4
 - Fixes caused by the labeling of /etc/passwd
+- Add thumb.patch to transition unconfined_t to thumb_t for Rawhide
 
 * Thu Sep 29 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-34.3
 - Add support for Clustered Samba commands
