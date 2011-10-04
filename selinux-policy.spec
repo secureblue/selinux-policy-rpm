@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 36%{?dist}
+Release: 36.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Oct 3 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-36.1
+- Fix missing patch from F16
+
 * Mon Oct 3 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-36
 - Allow logrotate setuid and setgid since logrotate is supposed to do it
 - Fixes for thumb policy by grift
