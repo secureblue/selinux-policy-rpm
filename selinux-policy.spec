@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 34.6%{?dist}
+Release: 36%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -214,7 +214,7 @@ fi;
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
    if [ %1 -ne 1 ]; then \
-	/usr/sbin/semodule -n -s %2 -r moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
+	/usr/sbin/semodule -n -s %2 -r java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
    fi \
    /usr/sbin/semodule -B -s %2; \
 else \
@@ -240,6 +240,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 
 %install
 mkdir selinux_config
@@ -471,6 +472,27 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Oct 3 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-36
+- Allow logrotate setuid and setgid since logrotate is supposed to do it
+- Fixes for thumb policy by grift
+- Add new nfsd ports
+- Added fix to allow confined apps to execmod on chrome
+- Add labeling for additional vdsm directories
+- Allow Exim and Dovecot SASL
+- Add label for /var/run/nmbd
+- Add fixes to make virsh and xen working together
+- Colord executes ls
+- /var/spool/cron  is now labeled as user_cron_spool_t
+
+* Mon Oct 3 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-35
+- Stop complaining about leaked file descriptors during install
+
+* Fri Sep 29 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.7
+- Remove java and mono module and merge into execmem
+
+* Fri Sep 29 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.6
+- Fixes for thumb policy and passwd_file_t
+
 * Fri Sep 29 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.4
 - Fixes caused by the labeling of /etc/passwd
 - Add thumb.patch to transition unconfined_t to thumb_t for Rawhide
