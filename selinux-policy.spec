@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 36.1%{?dist}
+Release: 37%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -25,6 +25,10 @@ patch: policy-F16.patch
 patch1: unconfined_permissive.patch
 patch2: passwd.patch
 patch3: thumb.patch
+patch4: execmem.patch
+patch5: userdomain.patch
+patch6: apache.patch
+patch7: ptrace.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -241,6 +245,10 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1 -b .execmem
+%patch5 -p1 -b .userdomain
+%patch6 -p1 -b .apache
+#%patch7 -p1 -b .ptrace
 
 %install
 mkdir selinux_config
@@ -472,6 +480,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Oct 5 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-37
+- Allow nmbd to manage sock file in /var/run/nmbd
+- ricci_modservice send syslog msgs
+- Stop transitioning from unconfined_t to ldconfig_t, but make sure /etc/ld.so.cache is labeled correctly
+- Allow systemd_logind_t to manage /run/USER/dconf/user
+
+* Tue Oct 3 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-36.2
+- Make allow_ptrace remove all ptrace
+
 * Tue Oct 3 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-36.1
 - Fix missing patch from F16
 
