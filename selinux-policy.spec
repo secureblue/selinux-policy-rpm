@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 37%{?dist}
+Release: 38%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -480,6 +480,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Oct 5 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-38
+- Allow virsh to read xenstored pid file
+- Backport corenetwork fixes from upstream
+- Do not audit attempts by thumb to search config_home_t dirs (~/.config)
+- label ~/.cache/telepathy/logger telepathy_logger_cache_home_t
+- allow thumb to read generic data home files (mime.type)
+
 * Wed Oct 5 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-37
 - Allow nmbd to manage sock file in /var/run/nmbd
 - ricci_modservice send syslog msgs
