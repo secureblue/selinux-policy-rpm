@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index b8486a0..72a53cc 100644
+index b8486a0..eadfda5 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -61,6 +61,7 @@ SEMODULE ?= $(tc_usrsbindir)/semodule
@@ -19,6 +19,15 @@ index b8486a0..72a53cc 100644
  net_contexts := $(builddir)net_contexts
  
  all_layers := $(shell find $(wildcard $(moddir)/*) -maxdepth 0 -type d)
+@@ -406,7 +407,7 @@ $(moddir)/kernel/corenetwork.if: $(moddir)/kernel/corenetwork.te.in $(moddir)/ke
+ 	@echo "#" >> $@
+ 	$(verbose) cat $@.in >> $@
+ 	$(verbose) $(GREP) "^[[:blank:]]*network_(interface|node|port|packet)(_controlled)?\(.*\)" $< \
+-		| $(M4) -D self_contained_policy $(M4PARAM) $@.m4 - \
++		| $(M4) -D self_contained_policy $(M4PARAM) $(m4divert) $@.m4 $(m4undivert) - \
+ 		| $(SED) -e 's/dollarsone/\$$1/g' -e 's/dollarszero/\$$0/g' >> $@
+ 
+ $(moddir)/kernel/corenetwork.te: $(moddir)/kernel/corenetwork.te.m4 $(moddir)/kernel/corenetwork.te.in
 diff --git a/Rules.modular b/Rules.modular
 index 168a14f..c2bf491 100644
 --- a/Rules.modular
@@ -4944,10 +4953,10 @@ index 00a19e3..9f6139c 100644
 +/usr/libexec/gnome-system-monitor-mechanism 	--      gen_context(system_u:object_r:gnomesystemmm_exec_t,s0)
 +/usr/libexec/kde(3|4)/ksysguardprocesslist_helper	--		gen_context(system_u:object_r:gnomesystemmm_exec_t,s0)
 diff --git a/policy/modules/apps/gnome.if b/policy/modules/apps/gnome.if
-index f5afe78..9a0377f 100644
+index f5afe78..89acd12 100644
 --- a/policy/modules/apps/gnome.if
 +++ b/policy/modules/apps/gnome.if
-@@ -1,44 +1,768 @@
+@@ -1,44 +1,786 @@
  ## <summary>GNU network object model environment (GNOME)</summary>
  
 -############################################################
@@ -5395,23 +5404,41 @@ index f5afe78..9a0377f 100644
 +
 +#######################################
 +## <summary>
-+##      Manage gconf data home files
++##	Read generic data home files.
 +## </summary>
 +## <param name="domain">
-+##      <summary>
-+##      Domain allowed access.
-+##      </summary>
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`gnome_read_generic_data_home_files',`
++	gen_require(`
++		type data_home_t, gconf_home_t;
++	')
++
++	read_files_pattern($1, { gconf_home_t data_home_t }, data_home_t)
++')
++
++#######################################
++## <summary>
++##	Manage gconf data home files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
 +## </param>
 +#
 +interface(`gnome_manage_data',`
-+        gen_require(`
-+                type data_home_t;
-+				type gconf_home_t;
-+        ')
++	gen_require(`
++		type data_home_t;
++		type gconf_home_t;
++	')
 +
 +		allow $1 gconf_home_t:dir search_dir_perms;
 +		manage_dirs_pattern($1, data_home_t, data_home_t)
-+        manage_files_pattern($1, data_home_t, data_home_t)
++		manage_files_pattern($1, data_home_t, data_home_t)
 +		manage_lnk_files_pattern($1, data_home_t, data_home_t)
 +')
 +
@@ -5734,7 +5761,7 @@ index f5afe78..9a0377f 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -46,37 +770,60 @@ interface(`gnome_role',`
+@@ -46,37 +788,60 @@ interface(`gnome_role',`
  ##	</summary>
  ## </param>
  #
@@ -5806,7 +5833,7 @@ index f5afe78..9a0377f 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -84,37 +831,38 @@ template(`gnome_read_gconf_config',`
+@@ -84,37 +849,38 @@ template(`gnome_read_gconf_config',`
  ##	</summary>
  ## </param>
  #
@@ -5856,7 +5883,7 @@ index f5afe78..9a0377f 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -122,17 +870,17 @@ interface(`gnome_stream_connect_gconf',`
+@@ -122,17 +888,17 @@ interface(`gnome_stream_connect_gconf',`
  ##	</summary>
  ## </param>
  #
@@ -5878,7 +5905,7 @@ index f5afe78..9a0377f 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -140,51 +888,335 @@ interface(`gnome_domtrans_gconfd',`
+@@ -140,51 +906,335 @@ interface(`gnome_domtrans_gconfd',`
  ##	</summary>
  ## </param>
  #
@@ -10685,17 +10712,16 @@ index 7590165..7e6f53c 100644
 +	fs_mounton_fusefs(seunshare_domain)
 +')
 diff --git a/policy/modules/apps/telepathy.fc b/policy/modules/apps/telepathy.fc
-index b07ee19..5d12aa3 100644
+index b07ee19..a275bd6 100644
 --- a/policy/modules/apps/telepathy.fc
 +++ b/policy/modules/apps/telepathy.fc
-@@ -1,8 +1,12 @@
+@@ -1,8 +1,11 @@
  HOME_DIR/\.cache/\.mc_connections	--	gen_context(system_u:object_r:telepathy_mission_control_cache_home_t, s0)
 -HOME_DIR/\.cache/telepathy/logger/sqlite-data-journal -- gen_context(system_u:object_r:telepathy_logger_cache_home_t,s0)
 +HOME_DIR/\.cache/telepathy(/.*)?	gen_context(system_u:object_r:telepathy_cache_home_t, s0)
-+HOME_DIR/\.cache/telepathy/logger/sqlite-data-journal	--	gen_context(system_u:object_r:telepathy_logger_cache_home_t,s0)
++HOME_DIR/\.cache/telepathy/logger(/.*)?	gen_context(system_u:object_r:telepathy_logger_cache_home_t,s0)
  HOME_DIR/\.cache/telepathy/gabble(/.*)?		gen_context(system_u:object_r:telepathy_gabble_cache_home_t, s0)
  HOME_DIR/\.cache/wocky(/.*)?			gen_context(system_u:object_r:telepathy_gabble_cache_home_t, s0)
-+HOME_DIR/\.cache/gabble(/.*)?			gen_context(system_u:object_r:telepathy_gabble_cache_home_t, s0)
  HOME_DIR/\.mission-control(/.*)?		gen_context(system_u:object_r:telepathy_mission_control_home_t, s0)
 +HOME_DIR/\.local/share/telepathy(/.*)?	gen_context(system_u:object_r:telepathy_data_home_t,s0)
 +HOME_DIR/\.local/share/telepathy/mission-control(/.*)?		gen_context(system_u:object_r:telepathy_mission_control_data_home_t, s0)
@@ -10895,7 +10921,7 @@ index 3cfb128..d49274d 100644
 +	gnome_data_filetrans($1, telepathy_data_home_t, dir, "telepathy")
 +')
 diff --git a/policy/modules/apps/telepathy.te b/policy/modules/apps/telepathy.te
-index 2533ea0..58f8728 100644
+index 2533ea0..b4888b3 100644
 --- a/policy/modules/apps/telepathy.te
 +++ b/policy/modules/apps/telepathy.te
 @@ -26,12 +26,18 @@ attribute telepathy_executable;
@@ -10927,22 +10953,23 @@ index 2533ea0..58f8728 100644
  type telepathy_mission_control_cache_home_t;
  userdom_user_home_content(telepathy_mission_control_cache_home_t)
  
-@@ -67,6 +76,14 @@ manage_dirs_pattern(telepathy_gabble_t, telepathy_gabble_tmp_t, telepathy_gabble
+@@ -67,6 +76,15 @@ manage_dirs_pattern(telepathy_gabble_t, telepathy_gabble_tmp_t, telepathy_gabble
  manage_sock_files_pattern(telepathy_gabble_t, telepathy_gabble_tmp_t, telepathy_gabble_tmp_t)
  files_tmp_filetrans(telepathy_gabble_t, telepathy_gabble_tmp_t, { dir sock_file })
  
-+# ~/.cache/gabble/caps-cache.db-journal
++# ~/.cache/telepathy/gabble/caps-cache.db-journal
 +optional_policy(`
-+	manage_dirs_pattern(telepathy_gabble_t, { telepathy_cache_home_t telepathy_gabble_cache_home_t } , { telepathy_cache_home_t telepathy_gabble_cache_home_t })
++	manage_dirs_pattern(telepathy_gabble_t, telepathy_gabble_cache_home_t, telepathy_gabble_cache_home_t)
 +	manage_files_pattern(telepathy_gabble_t, telepathy_gabble_cache_home_t, telepathy_gabble_cache_home_t)
-+	filetrans_pattern(telepathy_gabble_t, telepathy_cache_home_t, telepathy_gabble_cache_home_t, { dir file })
-+	gnome_cache_filetrans(telepathy_gabble_t, telepathy_cache_home_t, dir)
++	filetrans_pattern(telepathy_gabble_t, telepathy_cache_home_t, telepathy_gabble_cache_home_t, dir)
++	# ~/.cache/wocky
++	gnome_cache_filetrans(telepathy_gabble_t, telepathy_gabble_cache_home_t, dir)
 +')
 +
  corenet_all_recvfrom_netlabel(telepathy_gabble_t)
  corenet_all_recvfrom_unlabeled(telepathy_gabble_t)
  corenet_tcp_sendrecv_generic_if(telepathy_gabble_t)
-@@ -112,6 +129,10 @@ optional_policy(`
+@@ -112,6 +130,10 @@ optional_policy(`
  	dbus_system_bus_client(telepathy_gabble_t)
  ')
  
@@ -10953,14 +10980,13 @@ index 2533ea0..58f8728 100644
  #######################################
  #
  # Telepathy Idle local policy.
-@@ -147,10 +168,14 @@ tunable_policy(`telepathy_tcp_connect_generic_network_ports',`
+@@ -147,10 +169,13 @@ tunable_policy(`telepathy_tcp_connect_generic_network_ports',`
  
  allow telepathy_logger_t self:unix_stream_socket create_socket_perms;
  
-+manage_dirs_pattern(telepathy_logger_t, { telepathy_cache_home_t telepathy_logger_cache_home_t }, { telepathy_cache_home_t telepathy_logger_cache_home_t })
++manage_dirs_pattern(telepathy_logger_t, telepathy_logger_cache_home_t, telepathy_logger_cache_home_t)
  manage_files_pattern(telepathy_logger_t, telepathy_logger_cache_home_t, telepathy_logger_cache_home_t)
-+filetrans_pattern(telepathy_logger_t, telepathy_cache_home_t, telepathy_logger_cache_home_t, { dir file })
-+gnome_cache_filetrans(telepathy_logger_t, telepathy_cache_home_t, dir)
++filetrans_pattern(telepathy_logger_t, telepathy_cache_home_t, telepathy_logger_cache_home_t, dir)
  
  manage_dirs_pattern(telepathy_logger_t, telepathy_logger_data_home_t, telepathy_logger_data_home_t)
  manage_files_pattern(telepathy_logger_t, telepathy_logger_data_home_t, telepathy_logger_data_home_t)
@@ -11033,7 +11059,14 @@ index 2533ea0..58f8728 100644
  	dbus_system_bus_client(telepathy_msn_t)
  
  	optional_policy(`
-@@ -365,10 +418,9 @@ dev_read_urand(telepathy_domain)
+@@ -361,14 +414,16 @@ allow telepathy_domain self:fifo_file rw_fifo_file_perms;
+ allow telepathy_domain self:tcp_socket create_socket_perms;
+ allow telepathy_domain self:udp_socket create_socket_perms;
+ 
++manage_dirs_pattern(telepathy_domain, telepathy_cache_home_t, telepathy_cache_home_t)
++gnome_cache_filetrans(telepathy_domain, telepathy_cache_home_t, dir, "telepathy")
++
+ dev_read_urand(telepathy_domain)
  
  kernel_read_system_state(telepathy_domain)
  
@@ -11045,7 +11078,7 @@ index 2533ea0..58f8728 100644
  miscfiles_read_localization(telepathy_domain)
  
  optional_policy(`
-@@ -376,5 +428,23 @@ optional_policy(`
+@@ -376,5 +431,23 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -11166,10 +11199,10 @@ index 0000000..b78aa77
 +
 diff --git a/policy/modules/apps/thumb.te b/policy/modules/apps/thumb.te
 new file mode 100644
-index 0000000..fc5b449
+index 0000000..cc502a0
 --- /dev/null
 +++ b/policy/modules/apps/thumb.te
-@@ -0,0 +1,123 @@
+@@ -0,0 +1,73 @@
 +policy_module(thumb, 1.0.0)
 +
 +########################################
@@ -11182,15 +11215,6 @@ index 0000000..fc5b449
 +application_domain(thumb_t, thumb_exec_t)
 +ubac_constrained(thumb_t)
 +
-+role system_r types thumb_t; # why is system_r needed
-+
-+# this is for liborc: ~/orcexec.*
-+# these should normally go to /tmp but it goes to ~ if not executable in /tmp
-+# there is also a bug in liborc where it does to ~ by default
-+# no longer needed orc fix available
-+# type thumb_home_t;
-+#userdom_user_home_content(thumb_home_t)
-+
 +type thumb_tmp_t;
 +files_tmp_file(thumb_tmp_t)
 +ubac_constrained(thumb_tmp_t)
@@ -11200,42 +11224,24 @@ index 0000000..fc5b449
 +# thumb local policy
 +#
 +
-+# execmem is for totem-video-thumbnailer
 +allow thumb_t self:process { setsched signal setrlimit execmem };
-+
 +allow thumb_t self:fifo_file manage_fifo_file_perms;
 +allow thumb_t self:unix_stream_socket create_stream_socket_perms;
-+
-+# please reproduce this, because i cannot
-+# manage_dirs_pattern(thumb_t, thumb_home_t, thumb_home_t)
-+# userdom_user_home_dir_filetrans(thumb_t, thumb_home_t, dir)
-+
-+# for totem-video-thumbnailer
 +allow thumb_t self:netlink_route_socket r_netlink_socket_perms;
 +allow thumb_t self:udp_socket create_socket_perms;
 +allow thumb_t self:tcp_socket create_socket_perms;
 +
-+# gst-plugin-scanner/liborc, ~/orcexec.*
-+# no longer need fix in latest orc package
-+# exec_files_pattern(thumb_t, thumb_home_t, thumb_home_t)
-+# manage_files_pattern(thumb_t, thumb_home_t, thumb_home_t)
-+# userdom_user_home_dir_filetrans(thumb_t, thumb_home_t, file)
-+
 +manage_files_pattern(thumb_t, thumb_tmp_t, thumb_tmp_t)
 +manage_dirs_pattern(thumb_t, thumb_tmp_t, thumb_tmp_t)
 +exec_files_pattern(thumb_t, thumb_tmp_t, thumb_tmp_t)
-+# please reproduce this, because it cannot
-+# userdom_user_tmp_filetrans(thumb_t, thumb_tmp_t, file)
 +files_tmp_filetrans(thumb_t, thumb_tmp_t, { file dir })
 +
 +kernel_read_system_state(thumb_t)
 +
 +domain_use_interactive_fds(thumb_t)
 +
-+# /usr/libexec/gstreamer.*/gst-plugin-scanner
 +corecmd_exec_bin(thumb_t)
 +
-+# gst-plugin-scanner
 +dev_read_sysfs(thumb_t)
 +
 +domain_use_interactive_fds(thumb_t)
@@ -11246,51 +11252,28 @@ index 0000000..fc5b449
 +miscfiles_read_fonts(thumb_t)
 +miscfiles_read_localization(thumb_t)
 +
-+# totem-video-thumbnailer
 +sysnet_read_config(thumb_t)
 +
-+# read files to be thumbed
 +userdom_read_user_tmp_files(thumb_t)
 +userdom_read_user_home_content_files(thumb_t)
-+# .gnome_desktop_thumbnail.* is created by something in the user domain.
-+# probably libgnome.
 +userdom_write_user_tmp_files(thumb_t)
 +
 +userdom_use_inherited_user_ptys(thumb_t)
 +
-+# optional_policy(`
-+#	gnome_read_gconf_home_files(thumb_t)
-+#	gnome_read_gstreamer_home_content(thumb_t)
-+# ')
-+
-+# please reproduce this, because i cannot
-+# optional_policy(`
-+#	gnome_read_gconf_home_files(thumb_t)
-+# ')
-+
-+# these two are inherited
-+# should probably create and call xserver_ra_inherited_xdm_home_files()
 +xserver_read_xdm_home_files(thumb_t)
 +xserver_append_xdm_home_files(thumb_t)
-+# seems to not be needed
 +xserver_dontaudit_read_xdm_pid(thumb_t)
-+# this is required for totem-video-thumbnailer
-+# although thumb does not need to write xserver_tmp_t sock_files
-+# we probably want a xserver_connect to support but unix stream socket
-+# connections as well tcp connections
-+# allow thumb_t xserver_port_t:tcp_socket name_connect;
 +xserver_stream_connect(thumb_t)
 +
 +optional_policy(`
-+	# This seems not strictly needed
 +	dbus_dontaudit_stream_connect_session_bus(thumb_t)
++	dbus_dontaudit_chat_session_bus(thumb_t)
 +')
 +
 +optional_policy(`
-+	# this seems to work
-+	# thumb_t tries to search data_home_t, config_home_t and gconf_home_t
++	# .config
 +	gnome_dontaudit_search_config(thumb_t)
-+	# totem-video-thumbnailer
++	gnome_read_generic_data_home_files(thumb_t)
 +	gnome_manage_gstreamer_home_files(thumb_t)
 +') 
 diff --git a/policy/modules/apps/tvtime.te b/policy/modules/apps/tvtime.te
@@ -13563,25 +13546,40 @@ index 99b71cb..17d942f 100644
 +allow corenet_unconfined_type port_type:{ dccp_socket tcp_socket udp_socket rawip_socket } name_bind;
 +allow corenet_unconfined_type node_type:{ dccp_socket tcp_socket udp_socket rawip_socket } node_bind;
 diff --git a/policy/modules/kernel/corenetwork.te.m4 b/policy/modules/kernel/corenetwork.te.m4
-index 35fed4f..e0c8f51 100644
+index 35fed4f..51ad69a 100644
 --- a/policy/modules/kernel/corenetwork.te.m4
 +++ b/policy/modules/kernel/corenetwork.te.m4
-@@ -81,7 +81,13 @@ declare_nodes($1_node_t,shift($*))
- define(`declare_ports',`dnl
- ifelse(eval(range_start($3) < 1024),1,`typeattribute $1 reserved_port_type;
- ifelse(eval(range_start($3) >= 512),1,`typeattribute $1 rpc_port_type;',`dnl')
--',`dnl')
-+',`
-+ifelse(eval(range_start($3) < 32768),1,`typeattribute $1 unreserved_port_type;',`
-+      ifelse(eval(range_start($3) > 61001),1,`typeattribute $1 unreserved_port_type;',`
-+         typeattribute $1 ephemeral_port_type;
-+      ')
-+   ')
-+')
- portcon $2 $3 gen_context(system_u:object_r:$1,$4)
- ifelse(`$5',`',`',`declare_ports($1,shiftn(4,$*))')dnl
+@@ -77,23 +77,37 @@ type $1_node_t alias node_$1_t, node_type;
+ declare_nodes($1_node_t,shift($*))
  ')
-@@ -90,7 +96,7 @@ ifelse(`$5',`',`',`declare_ports($1,shiftn(4,$*))')dnl
+ 
+-# bindresvport in glibc starts searching for reserved ports at 512
+-define(`declare_ports',`dnl
+-ifelse(eval(range_start($3) < 1024),1,`typeattribute $1 reserved_port_type;
+-ifelse(eval(range_start($3) >= 512),1,`typeattribute $1 rpc_port_type;',`dnl')
+-',`dnl')
++define(`declare_portcons',`dnl
+ portcon $2 $3 gen_context(system_u:object_r:$1,$4)
+-ifelse(`$5',`',`',`declare_ports($1,shiftn(4,$*))')dnl
++ifelse(`$5',`',`',`declare_portcons($1,shiftn(4,$*))')dnl
++')
++
++define(`add_port_attribute',`dnl
++ifelse(eval(range_start($2) < 1024),1,`typeattribute $1 reserved_port_type;',`typeattribute $1 unreserved_port_type;')
++')
++
++define(`add_ephemeral_attribute',`dnl
++ifelse(eval(range_start($3) >= 32768 && range_start($3) < 61001),1,`typeattribute $1 ephemeral_port_type;
++',`ifelse(`$5',`',`',`add_ephemeral_attribute($1,shiftn(4,$*))')')dnl
++')
++
++# bindresvport in glibc starts searching for reserved ports at 512
++define(`add_rpc_attribute',`dnl
++ifelse(eval(range_start($3) >= 512 && range_start($3) < 1024),1,`typeattribute $1 rpc_port_type;
++',`ifelse(`$5',`',`',`add_rpc_attribute($1,shiftn(4,$*))')')dnl
+ ')
+ 
+ #
  # network_port(port_name,protocol portnum mls_sensitivity [,protocol portnum mls_sensitivity[,...]])
  #
  define(`network_port',`
@@ -13589,7 +13587,14 @@ index 35fed4f..e0c8f51 100644
 +type $1_port_t, port_type, defined_port_type;
  type $1_client_packet_t, packet_type, client_packet_type;
  type $1_server_packet_t, packet_type, server_packet_type;
- declare_ports($1_port_t,shift($*))dnl
+-declare_ports($1_port_t,shift($*))dnl
++ifelse(`$2',`',`',`add_port_attribute($1_port_t,$3)')dnl
++ifelse(`$2',`',`',`add_rpc_attribute($1_port_t,shift($*))')dnl
++ifelse(`$2',`',`',`add_ephemeral_attribute($1_port_t,shift($*))')dnl
++ifelse(`$2',`',`',`declare_portcons($1_port_t,shift($*))')dnl
+ ')
+ 
+ #
 diff --git a/policy/modules/kernel/devices.fc b/policy/modules/kernel/devices.fc
 index 6cf8784..935a96c 100644
 --- a/policy/modules/kernel/devices.fc
@@ -15075,10 +15080,45 @@ index 08f01e7..1c2562c 100644
 +allow devices_unconfined_type device_node:{ blk_file chr_file lnk_file } *;
  allow devices_unconfined_type mtrr_device_t:file *;
 diff --git a/policy/modules/kernel/domain.if b/policy/modules/kernel/domain.if
-index 6a1e4d1..cf3d50b 100644
+index 6a1e4d1..3ded83e 100644
 --- a/policy/modules/kernel/domain.if
 +++ b/policy/modules/kernel/domain.if
-@@ -631,7 +631,7 @@ interface(`domain_read_all_domains_state',`
+@@ -75,34 +75,6 @@ interface(`domain_base_type',`
+ interface(`domain_type',`
+ 	# start with basic domain
+ 	domain_base_type($1)
+-
+-	ifdef(`distro_redhat',`
+-		optional_policy(`
+-			unconfined_use_fds($1)
+-		')
+-	')
+-
+-	# send init a sigchld and signull
+-	optional_policy(`
+-		init_sigchld($1)
+-		init_signull($1)
+-	')
+-
+-	# these seem questionable:
+-
+-	optional_policy(`
+-		rpm_use_fds($1)
+-		rpm_read_pipes($1)
+-	')
+-
+-	optional_policy(`
+-		selinux_dontaudit_getattr_fs($1)
+-		selinux_dontaudit_read_fs($1)
+-	')
+-
+-	optional_policy(`
+-		seutil_dontaudit_read_config($1)
+-	')
+ ')
+ 
+ ########################################
+@@ -631,7 +603,7 @@ interface(`domain_read_all_domains_state',`
  
  ########################################
  ## <summary>
@@ -15087,7 +15127,7 @@ index 6a1e4d1..cf3d50b 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -655,7 +655,7 @@ interface(`domain_getattr_all_domains',`
+@@ -655,7 +627,7 @@ interface(`domain_getattr_all_domains',`
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -15096,7 +15136,7 @@ index 6a1e4d1..cf3d50b 100644
  ##	</summary>
  ## </param>
  #
-@@ -1530,4 +1530,29 @@ interface(`domain_unconfined',`
+@@ -1530,4 +1502,29 @@ interface(`domain_unconfined',`
  	typeattribute $1 can_change_object_identity;
  	typeattribute $1 set_curr_context;
  	typeattribute $1 process_uncond_exempt;
@@ -15127,7 +15167,7 @@ index 6a1e4d1..cf3d50b 100644
 +	dontaudit $1 domain:socket_class_set { read write };
  ')
 diff --git a/policy/modules/kernel/domain.te b/policy/modules/kernel/domain.te
-index fae1ab1..00e20f7 100644
+index fae1ab1..db2a183 100644
 --- a/policy/modules/kernel/domain.te
 +++ b/policy/modules/kernel/domain.te
 @@ -4,6 +4,21 @@ policy_module(domain, 1.9.1)
@@ -15220,7 +15260,7 @@ index fae1ab1..00e20f7 100644
  # Act upon any other process.
  allow unconfined_domain_type domain:process ~{ transition dyntransition execmem execstack execheap };
  
-@@ -160,3 +197,91 @@ allow unconfined_domain_type domain:key *;
+@@ -160,3 +197,118 @@ allow unconfined_domain_type domain:key *;
  
  # receive from all domains over labeled networking
  domain_all_recvfrom_all_domains(unconfined_domain_type)
@@ -15312,6 +15352,33 @@ index fae1ab1..00e20f7 100644
 +# broken kernel
 +dontaudit can_change_object_identity can_change_object_identity:key link;
 +
++ifdef(`distro_redhat',`
++	optional_policy(`
++		unconfined_use_fds(domain)
++	')
++')
++
++# send init a sigchld and signull
++optional_policy(`
++	init_sigchld(domain)
++	init_signull(domain)
++')
++
++# these seem questionable:
++
++optional_policy(`
++	rpm_use_fds(domain)
++	rpm_read_pipes(domain)
++')
++
++optional_policy(`
++	selinux_dontaudit_getattr_fs(domain)
++	selinux_dontaudit_read_fs(domain)
++')
++
++optional_policy(`
++	seutil_dontaudit_read_config(domain)
++')
 diff --git a/policy/modules/kernel/files.fc b/policy/modules/kernel/files.fc
 index c19518a..12e8e9c 100644
 --- a/policy/modules/kernel/files.fc
@@ -31557,7 +31624,7 @@ index 81eba14..d0ab56c 100644
  /usr/bin/dbus-daemon(-1)? --	gen_context(system_u:object_r:dbusd_exec_t,s0)
  /usr/libexec/dbus-daemon-launch-helper -- gen_context(system_u:object_r:dbusd_exec_t,s0)
 diff --git a/policy/modules/services/dbus.if b/policy/modules/services/dbus.if
-index 1a1becd..0ca1861 100644
+index 1a1becd..843d5fd 100644
 --- a/policy/modules/services/dbus.if
 +++ b/policy/modules/services/dbus.if
 @@ -41,9 +41,9 @@ interface(`dbus_stub',`
@@ -31676,11 +31743,11 @@ index 1a1becd..0ca1861 100644
 -
 -	seutil_read_config($1_dbusd_t)
 -	seutil_read_default_contexts($1_dbusd_t)
- 
+-
 -	term_use_all_terms($1_dbusd_t)
 -
 -	userdom_read_user_home_content_files($1_dbusd_t)
--
+ 
 -	ifdef(`hide_broken_symptoms', `
 -		dontaudit $3 $1_dbusd_t:netlink_selinux_socket { read write };
 -	')
@@ -31848,7 +31915,7 @@ index 1a1becd..0ca1861 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -491,10 +433,31 @@ interface(`dbus_dontaudit_system_bus_rw_tcp_sockets',`
+@@ -491,10 +433,51 @@ interface(`dbus_dontaudit_system_bus_rw_tcp_sockets',`
  ##	</summary>
  ## </param>
  #
@@ -31882,6 +31949,26 @@ index 1a1becd..0ca1861 100644
 +	')
 +
 +	dontaudit $1 session_bus_type:unix_stream_socket connectto;
++')
++
++########################################
++## <summary>
++##	Do not audit attempts to send dbus
++##	messages to session bus types.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`dbus_dontaudit_chat_session_bus',`
++	gen_require(`
++		attribute session_bus_type;
++		class dbus send_msg;
++	')
++
++	dontaudit $1 session_bus_type:dbus send_msg;
  ')
 diff --git a/policy/modules/services/dbus.te b/policy/modules/services/dbus.te
 index 1bff6ee..9540fee 100644
@@ -37457,10 +37544,10 @@ index 671d8fd..25c7ab8 100644
 +	dontaudit gnomeclock_t $1:dbus send_msg;
 +')
 diff --git a/policy/modules/services/gnomeclock.te b/policy/modules/services/gnomeclock.te
-index 4fde46b..86ba356 100644
+index 4fde46b..95d52e4 100644
 --- a/policy/modules/services/gnomeclock.te
 +++ b/policy/modules/services/gnomeclock.te
-@@ -15,18 +15,23 @@ dbus_system_domain(gnomeclock_t, gnomeclock_exec_t)
+@@ -15,18 +15,25 @@ dbus_system_domain(gnomeclock_t, gnomeclock_exec_t)
  #
  
  allow gnomeclock_t self:capability { sys_nice sys_time sys_ptrace };
@@ -37479,15 +37566,16 @@ index 4fde46b..86ba356 100644
 +files_read_etc_runtime_files(gnomeclock_t)
  files_read_usr_files(gnomeclock_t)
  
--auth_use_nsswitch(gnomeclock_t)
 +fs_getattr_xattr_fs(gnomeclock_t)
++
+ auth_use_nsswitch(gnomeclock_t)
  
 -clock_domtrans(gnomeclock_t)
-+auth_use_nsswitch(gnomeclock_t)
++init_stream_send(gnomeclock_t)
  
  miscfiles_read_localization(gnomeclock_t)
  miscfiles_manage_localization(gnomeclock_t)
-@@ -35,10 +40,33 @@ miscfiles_etc_filetrans_localization(gnomeclock_t)
+@@ -35,10 +42,33 @@ miscfiles_etc_filetrans_localization(gnomeclock_t)
  userdom_read_all_users_state(gnomeclock_t)
  
  optional_policy(`
@@ -59192,7 +59280,7 @@ index 7c5d8d8..d711fd5 100644
 +')
 +
 diff --git a/policy/modules/services/virt.te b/policy/modules/services/virt.te
-index 3eca020..52df08a 100644
+index 3eca020..812f226 100644
 --- a/policy/modules/services/virt.te
 +++ b/policy/modules/services/virt.te
 @@ -5,56 +5,74 @@ policy_module(virt, 1.4.0)
@@ -59736,7 +59824,7 @@ index 3eca020..52df08a 100644
  logging_send_syslog_msg(virt_domain)
  
  miscfiles_read_localization(virt_domain)
-@@ -457,8 +635,319 @@ optional_policy(`
+@@ -457,8 +635,320 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -59817,6 +59905,7 @@ index 3eca020..52df08a 100644
 +	xen_manage_image_dirs(virsh_t)
 +	xen_append_log(virsh_t)
 +	xen_domtrans(virsh_t)
++	xen_read_pid_files_xenstored(virsh_t)
 +	xen_stream_connect(virsh_t)
 +	xen_stream_connect_xenstore(virsh_t)
 +')
@@ -76509,10 +76598,37 @@ index a865da7..a5ed06e 100644
  ')
  
 diff --git a/policy/modules/system/xen.if b/policy/modules/system/xen.if
-index 77d41b6..4aa96c6 100644
+index 77d41b6..7ccb440 100644
 --- a/policy/modules/system/xen.if
 +++ b/policy/modules/system/xen.if
-@@ -87,6 +87,26 @@ interface(`xen_read_image_files',`
+@@ -55,6 +55,26 @@ interface(`xen_dontaudit_use_fds',`
+ 	dontaudit $1 xend_t:fd use;
+ ')
+ 
++#######################################
++## <summary>
++##  Read xend pid files.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`xen_read_pid_files_xenstored',`
++    gen_require(`
++        type xenstored_var_run_t;
++    ')
++
++    files_search_pids($1)
++
++    read_files_pattern($1, xenstored_var_run_t, xenstored_var_run_t)
++')
++
+ ########################################
+ ## <summary>
+ ##	Read xend image files.
+@@ -87,6 +107,26 @@ interface(`xen_read_image_files',`
  ## 	</summary>
  ## </param>
  #
@@ -76539,7 +76655,7 @@ index 77d41b6..4aa96c6 100644
  interface(`xen_rw_image_files',`
  	gen_require(`
  		type xen_image_t, xend_var_lib_t;
-@@ -213,8 +233,9 @@ interface(`xen_stream_connect',`
+@@ -213,8 +253,9 @@ interface(`xen_stream_connect',`
  interface(`xen_domtrans_xm',`
  	gen_require(`
  		type xm_t, xm_exec_t;
@@ -76550,7 +76666,7 @@ index 77d41b6..4aa96c6 100644
  	domtrans_pattern($1, xm_exec_t, xm_t)
  ')
  
-@@ -230,7 +251,7 @@ interface(`xen_domtrans_xm',`
+@@ -230,7 +271,7 @@ interface(`xen_domtrans_xm',`
  #
  interface(`xen_stream_connect_xm',`
  	gen_require(`

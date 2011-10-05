@@ -246,7 +246,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1 -b .execmem
-%patch5 -p1 -b .userdomain
+#%patch5 -p1 -b .userdomain
 %patch6 -p1 -b .apache
 #%patch7 -p1 -b .ptrace
 
