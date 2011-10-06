@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 38%{?dist}
+Release: 38.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -246,7 +246,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1 -b .execmem
-#%patch5 -p1 -b .userdomain
+%patch5 -p1 -b .userdomain
 %patch6 -p1 -b .apache
 #%patch7 -p1 -b .ptrace
 
@@ -480,6 +480,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Oct 6 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-38.1
+- Shrink size of policy through use of attributes for userdomain and apache
+
 * Wed Oct 5 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-38
 - Allow virsh to read xenstored pid file
 - Backport corenetwork fixes from upstream
