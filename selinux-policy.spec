@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 38.1%{?dist}
+Release: 39%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -248,7 +248,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch4 -p1 -b .execmem
 %patch5 -p1 -b .userdomain
 %patch6 -p1 -b .apache
-#%patch7 -p1 -b .ptrace
+%patch7 -p1 -b .ptrace
 
 %install
 mkdir selinux_config
@@ -480,6 +480,24 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Oct 10 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-39
+- Fixes for bootloader policy
+- $1_gkeyringd_t needs to read $HOME/%USER/.local/share/keystore
+- Allow nsplugin to read /usr/share/config
+- Allow sa-update to update rules
+- Add use_fusefs_home_dirs for chroot ssh option
+- Fixes for grub2
+- Update systemd_exec_systemctl() interface
+- Allow gpg to read the mail spool
+- More fixes for sa-update running out of cron job
+- Allow ipsec_mgmt_t to read hardware state information
+- Allow pptp_t to connect to unreserved_port_t
+- Dontaudit getattr on initctl in /dev from chfn
+- Dontaudit getattr on kernel_core from chfn
+- Add systemd_list_unit_dirs to systemd_exec_systemctl call
+- Fixes for collectd policy
+- CHange sysadm_t to create content as user_tmp_t under /tmp
+
 * Thu Oct 6 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-38.1
 - Shrink size of policy through use of attributes for userdomain and apache
 
