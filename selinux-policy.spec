@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 38.1%{?dist}
+Release: 39.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -29,6 +29,7 @@ patch4: execmem.patch
 patch5: userdomain.patch
 patch6: apache.patch
 patch7: ptrace.patch
+patch8: dontaudit.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -218,7 +219,7 @@ fi;
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
    if [ %1 -ne 1 ]; then \
-	/usr/sbin/semodule -n -s %2 -r java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
+	/usr/sbin/semodule -n -s %2 -r hotplug howl java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
    fi \
    /usr/sbin/semodule -B -s %2; \
 else \
@@ -248,7 +249,8 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch4 -p1 -b .execmem
 %patch5 -p1 -b .userdomain
 %patch6 -p1 -b .apache
-#%patch7 -p1 -b .ptrace
+%patch7 -p1 -b .ptrace
+%patch8 -p1 -b .dontaudit
 
 %install
 mkdir selinux_config
@@ -480,6 +482,31 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Oct 11 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-39.1
+- Remove allow_ptrace and replace it with deny_ptrace, which will remove all 
+ptrace from the system
+- Remove 2000 dontaudit rules between confined domains on transition
+and replace with single
+dontaudit domain domain:process { noatsecure siginh rlimitinh } ;
+
+* Mon Oct 10 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-39
+- Fixes for bootloader policy
+- $1_gkeyringd_t needs to read $HOME/%USER/.local/share/keystore
+- Allow nsplugin to read /usr/share/config
+- Allow sa-update to update rules
+- Add use_fusefs_home_dirs for chroot ssh option
+- Fixes for grub2
+- Update systemd_exec_systemctl() interface
+- Allow gpg to read the mail spool
+- More fixes for sa-update running out of cron job
+- Allow ipsec_mgmt_t to read hardware state information
+- Allow pptp_t to connect to unreserved_port_t
+- Dontaudit getattr on initctl in /dev from chfn
+- Dontaudit getattr on kernel_core from chfn
+- Add systemd_list_unit_dirs to systemd_exec_systemctl call
+- Fixes for collectd policy
+- CHange sysadm_t to create content as user_tmp_t under /tmp
+
 * Thu Oct 6 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-38.1
 - Shrink size of policy through use of attributes for userdomain and apache
 
@@ -495,9 +522,6 @@ SELinux Reference policy mls base module.
 - ricci_modservice send syslog msgs
 - Stop transitioning from unconfined_t to ldconfig_t, but make sure /etc/ld.so.cache is labeled correctly
 - Allow systemd_logind_t to manage /run/USER/dconf/user
-
-* Tue Oct 3 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-36.2
-- Make allow_ptrace remove all ptrace
 
 * Tue Oct 3 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-36.1
 - Fix missing patch from F16
