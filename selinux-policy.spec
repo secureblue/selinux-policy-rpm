@@ -29,7 +29,6 @@ patch4: execmem.patch
 patch5: userdomain.patch
 patch6: apache.patch
 patch7: ptrace.patch
-patch8: dontaudit.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -250,7 +249,6 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch5 -p1 -b .userdomain
 %patch6 -p1 -b .apache
 %patch7 -p1 -b .ptrace
-%patch8 -p1 -b .dontaudit
 
 %install
 mkdir selinux_config
