@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 39.1%{?dist}
+Release: 39.2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -136,27 +136,27 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts
 %dir %{_usr}/share/selinux/%1 \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
-%config(noreplace) %verify(not mtime) %{_sysconfdir}/selinux/%1/seusers \
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/seusers \
 %dir %{_sysconfdir}/selinux/%1/modules \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/semanage.read.LOCK \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
 %dir %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
 %dir %{_sysconfdir}/selinux/%1/modules/active/modules \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/policy.kern \
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/commit_num \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/base.pp \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts.homedirs \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts.template \
-%config(noreplace) %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/seusers.final \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/netfilter_contexts \
-%config(noreplace) %verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/homedir_template \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/policy.kern \
+%verify(not md5 size md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/commit_num \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/base.pp \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts.homedirs \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts.template \
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/seusers.final \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/netfilter_contexts \
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/homedir_template \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.local \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
 %{_sysconfdir}/selinux/%1/.policymd5 \
 %dir %{_sysconfdir}/selinux/%1/contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/customizable_types \
@@ -173,11 +173,11 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/removable_context \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/userhelper_context \
 %dir %{_sysconfdir}/selinux/%1/contexts/files \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
-%verify(not mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs_dist \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs_dist \
 %config %{_sysconfdir}/selinux/%1/contexts/files/media \
 %dir %{_sysconfdir}/selinux/%1/contexts/users \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/root \
@@ -480,6 +480,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Oct 12 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-39.2
+- Don't check md5 size or mtime on certain config files
+
 * Tue Oct 11 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-39.1
 - Remove allow_ptrace and replace it with deny_ptrace, which will remove all 
 ptrace from the system
