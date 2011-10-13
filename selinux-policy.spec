@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 39.2%{?dist}
+Release: 39.3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -218,7 +218,7 @@ fi;
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
    if [ %1 -ne 1 ]; then \
-	/usr/sbin/semodule -n -s %2 -r hotplug howl java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
+	/usr/sbin/semodule -n -s %2 -r hal hotplug howl java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
    fi \
    /usr/sbin/semodule -B -s %2; \
 else \
@@ -480,6 +480,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Oct 13 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-39.3
+- Move dontaudit sys_ptrace line from permissive.te to domain.te
+- Remove policy for hal, it no longer exists
+
 * Wed Oct 12 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-39.2
 - Don't check md5 size or mtime on certain config files
 
