@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 39.3%{?dist}
+Release: 40%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -480,6 +480,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Oct 14 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-40
+- Dontaudit access checks for all executables, gnome-shell is doing access(EXEC, X_OK)
+- Make corosync to be able to relabelto cluster lib fies
+- Allow samba domains to search /var/run/nmbd
+- Allow dirsrv to use pam
+- Allow thumb to call getuid
+- chrome less likely to get mmap_zero bug so removing dontaudit
+- gimp help-browser has built in javascript
+- Best guess is that devices named /dev/bsr4096 should be labeled as cpu_device_t
+- Re-write glance policy
+
 * Thu Oct 13 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-39.3
 - Move dontaudit sys_ptrace line from permissive.te to domain.te
 - Remove policy for hal, it no longer exists
