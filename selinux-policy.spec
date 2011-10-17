@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 40%{?dist}
+Release: 40.2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -29,6 +29,7 @@ patch4: execmem.patch
 patch5: userdomain.patch
 patch6: apache.patch
 patch7: ptrace.patch
+patch8: default_trans.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -243,12 +244,13 @@ Based off of reference policy: Checked out revision  2.20091117
 %setup -n serefpolicy-%{version} -q
 %patch -p1
 %patch1 -p1
-%patch2 -p1
+%patch2 -p1 -b .passwd
 %patch3 -p1
 %patch4 -p1 -b .execmem
 %patch5 -p1 -b .userdomain
 %patch6 -p1 -b .apache
 %patch7 -p1 -b .ptrace
+%patch8 -p1 -b .default_trans
 
 %install
 mkdir selinux_config
@@ -480,6 +482,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Oct 17 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-40.2
+- Add passwd_file_t for /etc/ptmptmp
+
 * Fri Oct 14 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-40
 - Dontaudit access checks for all executables, gnome-shell is doing access(EXEC, X_OK)
 - Make corosync to be able to relabelto cluster lib fies
