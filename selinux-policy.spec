@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 40.2%{?dist}
+Release: 41%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -482,6 +482,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Oct 18 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-41
+- Allow svirt_lxc_domain to chr_file and blk_file devices if they are in the domain
+- Allow init process to setrlimit on itself
+- Take away transition rules for users executing ssh-keygen
+- Allow setroubleshoot_fixit_t to read /dev/urand
+- Allow sshd to relbale tunnel sockets
+- Allow fail2ban domtrans to shorewall in the same way as with iptables
+- Add support for lnk files in the /var/lib/sssd directory
+- Allow system mail to connect to courier-authdaemon over an unix stream socket
+
 * Mon Oct 17 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-40.2
 - Add passwd_file_t for /etc/ptmptmp
 
