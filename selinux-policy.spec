@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 41%{?dist}
+Release: 43%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -482,6 +482,12 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Oct 19 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-43
+- Add policies for nova openstack
+
+* Mon Oct 18 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-42
+- Add fixes for nova-stack policy
+
 * Mon Oct 18 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-41
 - Allow svirt_lxc_domain to chr_file and blk_file devices if they are in the domain
 - Allow init process to setrlimit on itself
