@@ -250,7 +250,6 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch5 -p1 -b .userdomain
 %patch6 -p1 -b .apache
 %patch7 -p1 -b .ptrace
-%patch8 -p1 -b .default_trans
 
 %install
 mkdir selinux_config
