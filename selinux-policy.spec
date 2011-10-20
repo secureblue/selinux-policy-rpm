@@ -484,9 +484,7 @@ SELinux Reference policy mls base module.
 %changelog
 * Thu Oct 20 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-45
 - Remove tzdata policy
-- Remove ada domain
-
-* Thu Oct 20 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-44
+- Remove ada policy
 - Add labeling for udev
 - Add cloudform policy
 - Fixes for bootloader policy
