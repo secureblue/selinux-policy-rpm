@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 43%{?dist}
+Release: 45%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -482,6 +482,12 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Oct 20 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-45
+- Remove tzdata policy
+- Add labeling for udev
+- Add cloudform policy
+- Fixes for bootloader policy
+
 * Wed Oct 19 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-43
 - Add policies for nova openstack
 
