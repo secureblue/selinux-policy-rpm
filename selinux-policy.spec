@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 43%{?dist}
+Release: 45%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -219,7 +219,7 @@ fi;
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
    if [ %1 -ne 1 ]; then \
-	/usr/sbin/semodule -n -s %2 -r tzdata hal hotplug howl java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
+	/usr/sbin/semodule -n -s %2 -r ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
    fi \
    /usr/sbin/semodule -B -s %2; \
 else \
@@ -250,7 +250,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch5 -p1 -b .userdomain
 %patch6 -p1 -b .apache
 %patch7 -p1 -b .ptrace
-#%patch8 -p1 -b .default_trans
+%patch8 -p1 -b .default_trans
 
 %install
 mkdir selinux_config
@@ -482,6 +482,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Oct 20 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-45
+- Remove tzdata policy
+- Remove ada domain
+
+* Thu Oct 20 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-44
+- Add labeling for udev
+- Add cloudform policy
+- Fixes for bootloader policy
+
 * Wed Oct 19 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-43
 - Add policies for nova openstack
 
