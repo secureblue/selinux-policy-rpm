@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 45%{?dist}
+Release: 45.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -482,9 +482,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Oct 20 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-45.1
+- Remove ada policy
+
 * Thu Oct 20 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-45
 - Remove tzdata policy
-- Remove ada policy
 - Add labeling for udev
 - Add cloudform policy
 - Fixes for bootloader policy
