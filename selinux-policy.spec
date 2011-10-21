@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 45.1%{?dist}
+Release: 46%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -176,8 +176,8 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts
 %dir %{_sysconfdir}/selinux/%1/contexts/files \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local \
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local \
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs_dist \
 %config %{_sysconfdir}/selinux/%1/contexts/files/media \
 %dir %{_sysconfdir}/selinux/%1/contexts/users \
@@ -481,6 +481,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Oct 20 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-46
+- Policy update should not modify local contexts
+
 * Thu Oct 20 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-45.1
 - Remove ada policy
 
