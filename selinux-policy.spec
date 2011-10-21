@@ -29,7 +29,6 @@ patch4: execmem.patch
 patch5: userdomain.patch
 patch6: apache.patch
 patch7: ptrace.patch
-patch8: default_trans.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
