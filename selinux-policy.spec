@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 46%{?dist}
+Release: 46.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -481,7 +481,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Fri Oct 20 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-46
+* Thu Oct 21 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-46.1
+- Turn on mock_t and thumb_t for unconfined domains
+
+* Fri Oct 21 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-46
 - Policy update should not modify local contexts
 
 * Thu Oct 20 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-45.1
