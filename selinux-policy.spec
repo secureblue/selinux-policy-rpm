@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 46.1%{?dist}
+Release: 47%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -480,6 +480,12 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Oct 24 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-47
+- Fixes for cloudform policies which need to connect to random ports
+- Make sure if an admin creates modules content it creates them with the correct label
+- Add port 8953 as a dns port used by unbound
+- Fix file name transition for alsa and confined users
+
 * Thu Oct 21 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-46.1
 - Turn on mock_t and thumb_t for unconfined domains
 
