@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 48%{?dist}
+Release: 49%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -480,6 +480,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Oct 25 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-49
+- Change bootstrap name to nacl
+- Chrome still needs execmem
+- Missing role for chrome_sandbox_bootstrap
+- Add boolean to remove execmem and execstack from virtual machines
+- Dontaudit xdm_t doing an access_check on etc_t directories
+
 * Mon Oct 24 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-48
 - Allow named to connect to dirsrv by default
 - add ldapmap1_0 as a krb5_host_rcache_t file
