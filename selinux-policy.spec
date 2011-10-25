@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 47.1%{?dist}
+Release: 48%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -480,6 +480,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Oct 24 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-48
+- Allow named to connect to dirsrv by default
+- add ldapmap1_0 as a krb5_host_rcache_t file
+- Google chrome developers asked me to add bootstrap policy for nacl stuff
+- Allow rhev_agentd_t to getattr on mountpoints
+- Postfix_smtpd_t needs access to milters and cleanup seems to read/write postfix_smtpd_t unix_stream_sockets
+
 * Mon Oct 24 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-47
 - Fixes for cloudform policies which need to connect to random ports
 - Make sure if an admin creates modules content it creates them with the correct label

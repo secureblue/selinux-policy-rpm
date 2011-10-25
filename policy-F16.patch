@@ -4642,13 +4642,16 @@ index 46ea44f..f7183ef 100644
  # Handle nfs home dirs
 diff --git a/policy/modules/apps/chrome.fc b/policy/modules/apps/chrome.fc
 new file mode 100644
-index 0000000..1f468aa
+index 0000000..4401c36
 --- /dev/null
 +++ b/policy/modules/apps/chrome.fc
-@@ -0,0 +1,3 @@
+@@ -0,0 +1,6 @@
 + /opt/google/chrome/chrome-sandbox	--	gen_context(system_u:object_r:chrome_sandbox_exec_t,s0)
 +
 +/usr/lib/chromium-browser/chrome-sandbox	--	gen_context(system_u:object_r:chrome_sandbox_exec_t,s0)
++
++/opt/google/chrome/nacl_helper_bootstrap	--	gen_context(system_u:object_r:chrome_sandbox_bootstrap_exec_t,s0)
++/usr/lib/chromium-browser/nacl_helper_bootstrap	--	gen_context(system_u:object_r:chrome_sandbox_bootstrap_exec_t,s0)
 diff --git a/policy/modules/apps/chrome.if b/policy/modules/apps/chrome.if
 new file mode 100644
 index 0000000..bacc639
@@ -4784,10 +4787,10 @@ index 0000000..bacc639
 +')
 diff --git a/policy/modules/apps/chrome.te b/policy/modules/apps/chrome.te
 new file mode 100644
-index 0000000..df2b2a9
+index 0000000..e4b3381
 --- /dev/null
 +++ b/policy/modules/apps/chrome.te
-@@ -0,0 +1,125 @@
+@@ -0,0 +1,152 @@
 +policy_module(chrome,1.0.0)
 +
 +########################################
@@ -4807,6 +4810,13 @@ index 0000000..df2b2a9
 +files_tmpfs_file(chrome_sandbox_tmpfs_t)
 +ubac_constrained(chrome_sandbox_tmpfs_t)
 +
++type chrome_sandbox_bootstrap_t;
++type chrome_sandbox_bootstrap_exec_t;
++application_domain(chrome_sandbox_bootstrap_t, chrome_sandbox_bootstrap_exec_t)
++role system_r types chrome_sandbox_bootstrap_t;
++
++permissive chrome_sandbox_bootstrap_t;
++
 +########################################
 +#
 +# chrome_sandbox local policy
@@ -4819,6 +4829,7 @@ index 0000000..df2b2a9
 +allow chrome_sandbox_t self:unix_dgram_socket { create_socket_perms sendto };
 +allow chrome_sandbox_t self:shm create_shm_perms;
 +allow chrome_sandbox_t self:netlink_route_socket r_netlink_socket_perms;
++dontaudit chrome_sandbox_t self:memprotect mmap_zero;
 +
 +manage_dirs_pattern(chrome_sandbox_t, chrome_sandbox_tmp_t, chrome_sandbox_tmp_t)
 +manage_files_pattern(chrome_sandbox_t, chrome_sandbox_tmp_t, chrome_sandbox_tmp_t)
@@ -4913,6 +4924,25 @@ index 0000000..df2b2a9
 +optional_policy(`
 +	sandbox_use_ptys(chrome_sandbox_t)
 +')
++
++
++########################################
++#
++# chrome_sandbox_bootstrap local policy
++#
++
++allow chrome_sandbox_bootstrap_t self:fifo_file manage_fifo_file_perms;
++allow chrome_sandbox_bootstrap_t self:unix_stream_socket create_stream_socket_perms;
++domain_use_interactive_fds(chrome_sandbox_bootstrap_t)
++allow chrome_sandbox_t chrome_sandbox_bootstrap_t:process share;
++
++dontaudit chrome_sandbox_bootstrap_t self:memprotect mmap_zero;
++
++domtrans_pattern(chrome_sandbox_t, chrome_sandbox_bootstrap_exec_t, chrome_sandbox_bootstrap_t)
++
++files_read_etc_files(chrome_sandbox_bootstrap_t)
++
++miscfiles_read_localization(chrome_sandbox_bootstrap_t)
 diff --git a/policy/modules/apps/cpufreqselector.te b/policy/modules/apps/cpufreqselector.te
 index 37475dd..7db4a01 100644
 --- a/policy/modules/apps/cpufreqselector.te
@@ -23022,7 +23052,7 @@ index 1bd5812..0d7d8d1 100644
 +/var/cache/retrace-server(/.*)?						gen_context(system_u:object_r:abrt_retrace_cache_t,s0)
 +/var/spool/retrace-server(/.*)?						gen_context(system_u:object_r:abrt_retrace_spool_t,s0)
 diff --git a/policy/modules/services/abrt.if b/policy/modules/services/abrt.if
-index 0b827c5..46e3aa9 100644
+index 0b827c5..6b739e6 100644
 --- a/policy/modules/services/abrt.if
 +++ b/policy/modules/services/abrt.if
 @@ -71,6 +71,7 @@ interface(`abrt_read_state',`
@@ -23043,7 +23073,7 @@ index 0b827c5..46e3aa9 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -169,7 +169,45 @@ interface(`abrt_run_helper',`
+@@ -169,12 +169,51 @@ interface(`abrt_run_helper',`
  ##	</summary>
  ## </param>
  #
@@ -23090,7 +23120,13 @@ index 0b827c5..46e3aa9 100644
  	gen_require(`
  		type abrt_var_cache_t;
  	')
-@@ -253,6 +291,24 @@ interface(`abrt_manage_pid_files',`
+ 
+ 	manage_files_pattern($1, abrt_var_cache_t, abrt_var_cache_t)
++	manage_dirs_pattern($1, abrt_var_cache_t, abrt_var_cache_t)
+ ')
+ 
+ ####################################
+@@ -253,6 +292,24 @@ interface(`abrt_manage_pid_files',`
  	manage_files_pattern($1, abrt_var_run_t, abrt_var_run_t)
  ')
  
@@ -23115,7 +23151,7 @@ index 0b827c5..46e3aa9 100644
  #####################################
  ## <summary>
  ##	All of the rules required to administrate
-@@ -286,18 +342,116 @@ interface(`abrt_admin',`
+@@ -286,18 +343,116 @@ interface(`abrt_admin',`
  	role_transition $2 abrt_initrc_exec_t system_r;
  	allow $2 system_r;
  
@@ -26497,7 +26533,7 @@ index 44a1e3d..7802b7b 100644
 +	named_systemctl($1)
  ')
 diff --git a/policy/modules/services/bind.te b/policy/modules/services/bind.te
-index 4deca04..8d81308 100644
+index 4deca04..fc86505 100644
 --- a/policy/modules/services/bind.te
 +++ b/policy/modules/services/bind.te
 @@ -6,16 +6,24 @@ policy_module(bind, 1.11.0)
@@ -26571,7 +26607,18 @@ index 4deca04..8d81308 100644
  tunable_policy(`named_write_master_zones',`
  	manage_dirs_pattern(named_t, named_zone_t, named_zone_t)
  	manage_files_pattern(named_t, named_zone_t, named_zone_t)
-@@ -198,18 +214,18 @@ allow ndc_t self:process { fork signal_perms };
+@@ -154,6 +170,10 @@ tunable_policy(`named_write_master_zones',`
+ ')
+ 
+ optional_policy(`
++	dirsrv_stream_connect(named_t)
++')
++
++optional_policy(`
+ 	init_dbus_chat_script(named_t)
+ 
+ 	sysnet_dbus_chat_dhcpc(named_t)
+@@ -198,18 +218,18 @@ allow ndc_t self:process { fork signal_perms };
  allow ndc_t self:fifo_file rw_fifo_file_perms;
  allow ndc_t self:unix_stream_socket { connect create_stream_socket_perms };
  allow ndc_t self:tcp_socket create_socket_perms;
@@ -26593,7 +26640,7 @@ index 4deca04..8d81308 100644
  kernel_read_kernel_sysctls(ndc_t)
  
  corenet_all_recvfrom_unlabeled(ndc_t)
-@@ -228,6 +244,8 @@ files_search_pids(ndc_t)
+@@ -228,6 +248,8 @@ files_search_pids(ndc_t)
  
  fs_getattr_xattr_fs(ndc_t)
  
@@ -26602,7 +26649,7 @@ index 4deca04..8d81308 100644
  init_use_fds(ndc_t)
  init_use_script_ptys(ndc_t)
  
-@@ -235,24 +253,13 @@ logging_send_syslog_msg(ndc_t)
+@@ -235,24 +257,13 @@ logging_send_syslog_msg(ndc_t)
  
  miscfiles_read_localization(ndc_t)
  
@@ -40010,7 +40057,7 @@ index da2127e..a666df2 100644
 +
 +sysnet_read_config(jabberd_domain)
 diff --git a/policy/modules/services/kerberos.fc b/policy/modules/services/kerberos.fc
-index 3525d24..e065744 100644
+index 3525d24..033de90 100644
 --- a/policy/modules/services/kerberos.fc
 +++ b/policy/modules/services/kerberos.fc
 @@ -8,7 +8,7 @@ HOME_DIR/\.k5login		--	gen_context(system_u:object_r:krb5_home_t,s0)
@@ -40022,7 +40069,7 @@ index 3525d24..e065744 100644
  /etc/rc\.d/init\.d/kprop	--	gen_context(system_u:object_r:kerberos_initrc_exec_t,s0)
  /etc/rc\.d/init\.d/krb524d	--	gen_context(system_u:object_r:kerberos_initrc_exec_t,s0)
  /etc/rc\.d/init\.d/krb5kdc	--	gen_context(system_u:object_r:kerberos_initrc_exec_t,s0)
-@@ -30,4 +30,7 @@ HOME_DIR/\.k5login		--	gen_context(system_u:object_r:krb5_home_t,s0)
+@@ -30,4 +30,8 @@ HOME_DIR/\.k5login		--	gen_context(system_u:object_r:krb5_home_t,s0)
  /var/log/krb5kdc\.log			gen_context(system_u:object_r:krb5kdc_log_t,s0)
  /var/log/kadmin(d)?\.log		gen_context(system_u:object_r:kadmind_log_t,s0)
  
@@ -40030,8 +40077,9 @@ index 3525d24..e065744 100644
 +
  /var/tmp/host_0			-- 	gen_context(system_u:object_r:krb5_host_rcache_t,s0)
 +/var/tmp/HTTP_23		-- 	gen_context(system_u:object_r:krb5_host_rcache_t,s0)
++/var/tmp/ldapmap1_0		-- 	gen_context(system_u:object_r:krb5_host_rcache_t,s0)
 diff --git a/policy/modules/services/kerberos.if b/policy/modules/services/kerberos.if
-index 604f67b..e515121 100644
+index 604f67b..1b608a7 100644
 --- a/policy/modules/services/kerberos.if
 +++ b/policy/modules/services/kerberos.if
 @@ -26,9 +26,9 @@
@@ -40162,7 +40210,7 @@ index 604f67b..e515121 100644
  	')
  
  	allow $1 kadmind_t:process { ptrace signal_perms };
-@@ -378,3 +375,108 @@ interface(`kerberos_admin',`
+@@ -378,3 +375,109 @@ interface(`kerberos_admin',`
  
  	admin_pattern($1, krb5kdc_var_run_t)
  ')
@@ -40270,6 +40318,7 @@ index 604f67b..e515121 100644
 +
 +	kerberos_tmp_filetrans_host_rcache($1, "host_0")
 +	kerberos_tmp_filetrans_host_rcache($1, "HTTP_23")
++	kerberos_tmp_filetrans_host_rcache($1, "ldapmap1_0")
 +')
 diff --git a/policy/modules/services/kerberos.te b/policy/modules/services/kerberos.te
 index 8edc29b..92dde2c 100644
@@ -49319,7 +49368,7 @@ index 46bee12..c22af86 100644
 +	role $2 types postfix_postdrop_t;
 +')
 diff --git a/policy/modules/services/postfix.te b/policy/modules/services/postfix.te
-index a32c4b3..318ef45 100644
+index a32c4b3..3a59bac 100644
 --- a/policy/modules/services/postfix.te
 +++ b/policy/modules/services/postfix.te
 @@ -5,6 +5,14 @@ policy_module(postfix, 1.12.1)
@@ -49466,7 +49515,14 @@ index a32c4b3..318ef45 100644
  manage_dirs_pattern(postfix_bounce_t, postfix_spool_bounce_t, postfix_spool_bounce_t)
  manage_files_pattern(postfix_bounce_t, postfix_spool_bounce_t, postfix_spool_bounce_t)
  manage_lnk_files_pattern(postfix_bounce_t, postfix_spool_bounce_t, postfix_spool_bounce_t)
-@@ -249,6 +274,10 @@ manage_files_pattern(postfix_cleanup_t, postfix_spool_t, postfix_spool_t)
+@@ -243,12 +268,17 @@ stream_connect_pattern(postfix_cleanup_t, postfix_private_t, postfix_private_t,
+ 
+ rw_fifo_files_pattern(postfix_cleanup_t, postfix_public_t, postfix_public_t)
+ write_sock_files_pattern(postfix_cleanup_t, postfix_public_t, postfix_public_t)
++allow postfix_cleanup_t postfix_smtpd_t:unix_stream_socket rw_socket_perms;
+ 
+ manage_dirs_pattern(postfix_cleanup_t, postfix_spool_t, postfix_spool_t)
+ manage_files_pattern(postfix_cleanup_t, postfix_spool_t, postfix_spool_t)
  manage_lnk_files_pattern(postfix_cleanup_t, postfix_spool_t, postfix_spool_t)
  files_spool_filetrans(postfix_cleanup_t, postfix_spool_t, dir)
  
@@ -49477,7 +49533,7 @@ index a32c4b3..318ef45 100644
  allow postfix_cleanup_t postfix_spool_bounce_t:dir list_dir_perms;
  
  corecmd_exec_bin(postfix_cleanup_t)
-@@ -264,8 +293,8 @@ optional_policy(`
+@@ -264,8 +294,8 @@ optional_policy(`
  # Postfix local local policy
  #
  
@@ -49487,7 +49543,7 @@ index a32c4b3..318ef45 100644
  
  # connect to master process
  stream_connect_pattern(postfix_local_t, postfix_public_t, postfix_public_t, postfix_master_t)
-@@ -273,6 +302,8 @@ stream_connect_pattern(postfix_local_t, postfix_public_t, postfix_public_t, post
+@@ -273,6 +303,8 @@ stream_connect_pattern(postfix_local_t, postfix_public_t, postfix_public_t, post
  # for .forward - maybe we need a new type for it?
  rw_sock_files_pattern(postfix_local_t, postfix_private_t, postfix_private_t)
  
@@ -49496,7 +49552,7 @@ index a32c4b3..318ef45 100644
  allow postfix_local_t postfix_spool_t:file rw_file_perms;
  
  corecmd_exec_shell(postfix_local_t)
-@@ -286,10 +317,15 @@ mta_read_aliases(postfix_local_t)
+@@ -286,10 +318,15 @@ mta_read_aliases(postfix_local_t)
  mta_delete_spool(postfix_local_t)
  # For reading spamassasin
  mta_read_config(postfix_local_t)
@@ -49515,7 +49571,7 @@ index a32c4b3..318ef45 100644
  
  optional_policy(`
  	clamav_search_lib(postfix_local_t)
-@@ -297,6 +333,10 @@ optional_policy(`
+@@ -297,6 +334,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -49526,7 +49582,7 @@ index a32c4b3..318ef45 100644
  #	for postalias
  	mailman_manage_data_files(postfix_local_t)
  	mailman_append_log(postfix_local_t)
-@@ -304,9 +344,22 @@ optional_policy(`
+@@ -304,9 +345,22 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -49549,7 +49605,7 @@ index a32c4b3..318ef45 100644
  ########################################
  #
  # Postfix map local policy
-@@ -372,6 +425,7 @@ optional_policy(`
+@@ -372,6 +426,7 @@ optional_policy(`
  # Postfix pickup local policy
  #
  
@@ -49557,7 +49613,7 @@ index a32c4b3..318ef45 100644
  allow postfix_pickup_t self:tcp_socket create_socket_perms;
  
  stream_connect_pattern(postfix_pickup_t, postfix_private_t, postfix_private_t, postfix_master_t)
-@@ -379,19 +433,26 @@ stream_connect_pattern(postfix_pickup_t, postfix_private_t, postfix_private_t, p
+@@ -379,19 +434,26 @@ stream_connect_pattern(postfix_pickup_t, postfix_private_t, postfix_private_t, p
  rw_fifo_files_pattern(postfix_pickup_t, postfix_public_t, postfix_public_t)
  rw_sock_files_pattern(postfix_pickup_t, postfix_public_t, postfix_public_t)
  
@@ -49585,7 +49641,7 @@ index a32c4b3..318ef45 100644
  
  write_sock_files_pattern(postfix_pipe_t, postfix_private_t, postfix_private_t)
  
-@@ -401,6 +462,8 @@ rw_files_pattern(postfix_pipe_t, postfix_spool_t, postfix_spool_t)
+@@ -401,6 +463,8 @@ rw_files_pattern(postfix_pipe_t, postfix_spool_t, postfix_spool_t)
  
  domtrans_pattern(postfix_pipe_t, postfix_postdrop_exec_t, postfix_postdrop_t)
  
@@ -49594,7 +49650,7 @@ index a32c4b3..318ef45 100644
  optional_policy(`
  	dovecot_domtrans_deliver(postfix_pipe_t)
  ')
-@@ -420,6 +483,7 @@ optional_policy(`
+@@ -420,6 +484,7 @@ optional_policy(`
  
  optional_policy(`
  	spamassassin_domtrans_client(postfix_pipe_t)
@@ -49602,7 +49658,7 @@ index a32c4b3..318ef45 100644
  ')
  
  optional_policy(`
-@@ -436,11 +500,17 @@ allow postfix_postdrop_t self:capability sys_resource;
+@@ -436,11 +501,17 @@ allow postfix_postdrop_t self:capability sys_resource;
  allow postfix_postdrop_t self:tcp_socket create;
  allow postfix_postdrop_t self:udp_socket create_socket_perms;
  
@@ -49620,7 +49676,7 @@ index a32c4b3..318ef45 100644
  corenet_udp_sendrecv_generic_if(postfix_postdrop_t)
  corenet_udp_sendrecv_generic_node(postfix_postdrop_t)
  
-@@ -487,8 +557,8 @@ write_fifo_files_pattern(postfix_postqueue_t, postfix_public_t, postfix_public_t
+@@ -487,8 +558,8 @@ write_fifo_files_pattern(postfix_postqueue_t, postfix_public_t, postfix_public_t
  domtrans_pattern(postfix_postqueue_t, postfix_showq_exec_t, postfix_showq_t)
  
  # to write the mailq output, it really should not need read access!
@@ -49631,7 +49687,7 @@ index a32c4b3..318ef45 100644
  
  init_sigchld_script(postfix_postqueue_t)
  init_use_script_fds(postfix_postqueue_t)
-@@ -507,6 +577,8 @@ optional_policy(`
+@@ -507,6 +578,8 @@ optional_policy(`
  # Postfix qmgr local policy
  #
  
@@ -49640,7 +49696,7 @@ index a32c4b3..318ef45 100644
  stream_connect_pattern(postfix_qmgr_t, { postfix_private_t postfix_public_t }, { postfix_private_t postfix_public_t }, postfix_master_t)
  
  rw_fifo_files_pattern(postfix_qmgr_t, postfix_public_t, postfix_public_t)
-@@ -519,7 +591,11 @@ files_spool_filetrans(postfix_qmgr_t, postfix_spool_t, dir)
+@@ -519,7 +592,11 @@ files_spool_filetrans(postfix_qmgr_t, postfix_spool_t, dir)
  
  allow postfix_qmgr_t postfix_spool_bounce_t:dir list_dir_perms;
  allow postfix_qmgr_t postfix_spool_bounce_t:file read_file_perms;
@@ -49653,7 +49709,7 @@ index a32c4b3..318ef45 100644
  
  corecmd_exec_bin(postfix_qmgr_t)
  
-@@ -539,7 +615,9 @@ postfix_list_spool(postfix_showq_t)
+@@ -539,7 +616,9 @@ postfix_list_spool(postfix_showq_t)
  
  allow postfix_showq_t postfix_spool_maildrop_t:dir list_dir_perms;
  allow postfix_showq_t postfix_spool_maildrop_t:file read_file_perms;
@@ -49664,7 +49720,7 @@ index a32c4b3..318ef45 100644
  
  # to write the mailq output, it really should not need read access!
  term_use_all_ptys(postfix_showq_t)
-@@ -565,6 +643,14 @@ optional_policy(`
+@@ -565,6 +644,14 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -49679,7 +49735,7 @@ index a32c4b3..318ef45 100644
  	milter_stream_connect_all(postfix_smtp_t)
  ')
  
-@@ -588,10 +674,16 @@ corecmd_exec_bin(postfix_smtpd_t)
+@@ -588,10 +675,16 @@ corecmd_exec_bin(postfix_smtpd_t)
  
  # for OpenSSL certificates
  files_read_usr_files(postfix_smtpd_t)
@@ -49696,7 +49752,18 @@ index a32c4b3..318ef45 100644
  ')
  
  optional_policy(`
-@@ -611,8 +703,8 @@ optional_policy(`
+@@ -599,6 +692,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	milter_stream_connect_all(postfix_smtpd_t)
++')
++
++optional_policy(`
+ 	postgrey_stream_connect(postfix_smtpd_t)
+ ')
+ 
+@@ -611,8 +708,8 @@ optional_policy(`
  # Postfix virtual local policy
  #
  
@@ -49706,7 +49773,7 @@ index a32c4b3..318ef45 100644
  
  allow postfix_virtual_t postfix_spool_t:file rw_file_perms;
  
-@@ -630,3 +722,8 @@ mta_delete_spool(postfix_virtual_t)
+@@ -630,3 +727,8 @@ mta_delete_spool(postfix_virtual_t)
  # For reading spamassasin
  mta_read_config(postfix_virtual_t)
  mta_manage_spool(postfix_virtual_t)
@@ -53413,10 +53480,10 @@ index 0000000..bf11e25
 +')
 diff --git a/policy/modules/services/rhev.te b/policy/modules/services/rhev.te
 new file mode 100644
-index 0000000..23ba402
+index 0000000..1ec5e7c
 --- /dev/null
 +++ b/policy/modules/services/rhev.te
-@@ -0,0 +1,82 @@
+@@ -0,0 +1,83 @@
 +policy_module(rhev,1.0)
 +
 +########################################
@@ -53466,6 +53533,7 @@ index 0000000..23ba402
 +
 +term_use_virtio_console(rhev_agentd_t)
 +
++files_getattr_all_mountpoints(rhev_agentd_t)
 +files_read_usr_files(rhev_agentd_t)
 +
 +auth_use_nsswitch(rhev_agentd_t)
