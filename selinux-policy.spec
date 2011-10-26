@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 49%{?dist}
+Release: 50%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -480,6 +480,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Oct 25 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-50
+- Allow policykit to talk to the systemd via dbus
+- Move chrome_sandbox_nacl_t to permissive domains
+- Additional rules for chrome_sandbox_nacl
+
 * Tue Oct 25 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-49
 - Change bootstrap name to nacl
 - Chrome still needs execmem
