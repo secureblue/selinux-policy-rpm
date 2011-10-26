@@ -1,0 +1,89 @@
+diff -up serefpolicy-3.10.0/policy/modules/apps/qemu.te.qemu serefpolicy-3.10.0/policy/modules/apps/qemu.te
+--- serefpolicy-3.10.0/policy/modules/apps/qemu.te.qemu	2011-10-26 10:41:20.413408329 -0400
++++ serefpolicy-3.10.0/policy/modules/apps/qemu.te	2011-10-26 10:41:21.207408907 -0400
+@@ -40,9 +40,7 @@ gen_tunable(qemu_use_nfs, true)
+ ## </desc>
+ gen_tunable(qemu_use_usb, true)
+ 
+-type qemu_exec_t;
+ virt_domain_template(qemu)
+-application_domain(qemu_t, qemu_exec_t)
+ role system_r types qemu_t;
+ 
+ ########################################
+diff -up serefpolicy-3.10.0/policy/modules/services/virt.if.qemu serefpolicy-3.10.0/policy/modules/services/virt.if
+--- serefpolicy-3.10.0/policy/modules/services/virt.if.qemu	2011-10-26 10:41:21.180408888 -0400
++++ serefpolicy-3.10.0/policy/modules/services/virt.if	2011-10-26 10:41:21.208408908 -0400
+@@ -16,10 +16,11 @@ template(`virt_domain_template',`
+ 		attribute virt_image_type, virt_domain;
+ 		attribute virt_tmpfs_type;
+ 		attribute virt_ptynode;
++		type qemu_exec_t;
+ 	')
+ 
+ 	type $1_t, virt_domain;
+-	domain_type($1_t)
++	application_domain($1_t, qemu_exec_t)
+ 	domain_user_exemption_target($1_t)
+ 	mls_rangetrans_target($1_t)
+ 	mcs_untrusted_proc($1_t)
+@@ -848,3 +849,21 @@ template(`virt_lxc_domain_template',`
+ 	role system_r types $1_t;
+ ')
+ 
++########################################
++## <summary>
++##	Execute a qemu_exec_t in the callers domain
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed access.
++## </summary>
++## </param>
++#
++interface(`virt_exec_qemu',`
++	gen_require(`
++		type qemu_exec_t;
++	')
++
++	can_exec($1, qemu_exec_t)
++')
++
+diff -up serefpolicy-3.10.0/policy/modules/services/virt.te.qemu serefpolicy-3.10.0/policy/modules/services/virt.te
+--- serefpolicy-3.10.0/policy/modules/services/virt.te.qemu	2011-10-26 10:41:21.181408889 -0400
++++ serefpolicy-3.10.0/policy/modules/services/virt.te	2011-10-26 10:42:00.351437032 -0400
+@@ -78,6 +78,8 @@ attribute virt_domain;
+ attribute virt_image_type;
+ attribute virt_tmpfs_type;
+ 
++type qemu_exec_t;
++
+ type virt_cache_t alias svirt_cache_t;
+ files_type(virt_cache_t)
+ 
+@@ -279,6 +281,8 @@ allow virtd_t virt_domain:process { geta
+ allow virt_domain virtd_t:fd use;
+ dontaudit virt_domain virtd_t:unix_stream_socket { read write };
+ 
++can_exec(virt_domain, qemu_exec_t)
++
+ allow virtd_t qemu_var_run_t:file relabel_file_perms;
+ manage_dirs_pattern(virtd_t, qemu_var_run_t, qemu_var_run_t)
+ manage_files_pattern(virtd_t, qemu_var_run_t, qemu_var_run_t)
+@@ -514,16 +518,6 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
+-	qemu_domtrans(virtd_t)
+-	qemu_read_state(virtd_t)
+-	qemu_signal(virtd_t)
+-	qemu_kill(virtd_t)
+-	qemu_setsched(virtd_t)
+-	qemu_entry_type(virt_domain)
+-	qemu_exec(virt_domain)
+-')
+-
+-optional_policy(`
+ 	sanlock_stream_connect(virtd_t)
+ ')
+ 

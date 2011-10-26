@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 50%{?dist}
+Release: 50.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -29,6 +29,7 @@ patch4: execmem.patch
 patch5: userdomain.patch
 patch6: apache.patch
 patch7: ptrace.patch
+patch8: qemu.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -218,7 +219,7 @@ fi;
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
    if [ %1 -ne 1 ]; then \
-	/usr/sbin/semodule -n -s %2 -r ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
+	/usr/sbin/semodule -n -s %2 -r ada qemu tzdata hal hotplug howl java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
    fi \
    /usr/sbin/semodule -B -s %2; \
 else \
@@ -249,6 +250,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch5 -p1 -b .userdomain
 %patch6 -p1 -b .apache
 %patch7 -p1 -b .ptrace
+%patch8 -p1 -b .qemu
 
 %install
 mkdir selinux_config
@@ -480,7 +482,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Wed Oct 25 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-50
+* Wed Oct 26 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-50.1
+- Remove qemu.pp, everything should use svirt_t or stay in its current domain	
+
+* Wed Oct 26 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-50
 - Allow policykit to talk to the systemd via dbus
 - Move chrome_sandbox_nacl_t to permissive domains
 - Additional rules for chrome_sandbox_nacl
