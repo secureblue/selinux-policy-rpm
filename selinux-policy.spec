@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 50.1%{?dist}
+Release: 50.2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -219,8 +219,9 @@ fi;
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
    if [ %1 -ne 1 ]; then \
-	/usr/sbin/semodule -n -s %2 -r ada qemu tzdata hal hotplug howl java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
+	/usr/sbin/semodule -n -s %2 -r ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
    fi \
+   rm -f  /etc/selinux/%2/modules/active/modules/qemu.pp \
    /usr/sbin/semodule -B -s %2; \
 else \
    [ "${SELINUXTYPE}" == "%2" ] && [ selinuxenabled ] && load_policy; \
@@ -482,6 +483,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Oct 27 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-50.2
+- Remove qemu.pp again without causing a crash
+
 * Wed Oct 26 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-50.1
 - Remove qemu.pp, everything should use svirt_t or stay in its current domain	
 
