@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 51%{?dist}
+Release: 52%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -483,6 +483,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Oct 27 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-52
+- Check in fixed for Chrome nacl support
+
 * Thu Oct 27 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-51
 -  Begin removing qemu_t domain, we really no longer need this domain.  
 - systemd_passwd needs dac_overide to communicate with users TTY's
