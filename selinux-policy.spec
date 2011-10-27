@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 50.2%{?dist}
+Release: 51%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -483,6 +483,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Oct 27 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-51
+-  Begin removing qemu_t domain, we really no longer need this domain.  
+- systemd_passwd needs dac_overide to communicate with users TTY's
+- Allow svirt_lxc domains to send kill signals within their container
+
 * Thu Oct 27 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-50.2
 - Remove qemu.pp again without causing a crash
 
