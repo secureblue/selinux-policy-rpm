@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 52%{?dist}
+Release: 53%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -483,6 +483,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Nov 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-53
+- Make nvidia* to be labeled correctly
+- Fix abrt_manage_cache() interface
+- Make filetrans rules optional so base policy will build
+- Dontaudit chkpwd_t access to inherited TTYS
+- Make sure postfix content gets created with the correct label
+- Allow gnomeclock to read cgroup
+- Fixes for cloudform policy
+
 * Thu Oct 27 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-52
 - Check in fixed for Chrome nacl support
 
