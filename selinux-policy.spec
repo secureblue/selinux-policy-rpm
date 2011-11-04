@@ -485,6 +485,7 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+<<<<<<< HEAD
 * Fri Nov 4 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-54
 - MCS fixes
 - quota fixes
@@ -492,6 +493,13 @@ SELinux Reference policy mls base module.
 * Thu Nov 4 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-53.1
 - Remove transitions to consoletype
 
+||||||| merged common ancestors
+=======
+* Fri Nov 4 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-54
+- MCS fixes
+- quota fixes
+
+>>>>>>> 76b2f513a3b64cbd70fb9183587a6e2e5e56dbaa
 * Tue Nov 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-53
 - Make nvidia* to be labeled correctly
 - Fix abrt_manage_cache() interface
