@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 53%{?dist}
+Release: 54%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -30,6 +30,7 @@ patch5: userdomain.patch
 patch6: apache.patch
 patch7: ptrace.patch
 patch8: qemu.patch
+patch9: consoletype.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -252,6 +253,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch6 -p1 -b .apache
 %patch7 -p1 -b .ptrace
 %patch8 -p1 -b .qemu
+%patch9 -p1 -b .consoletype
 
 %install
 mkdir selinux_config
@@ -483,6 +485,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Nov 4 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-54
+- MCS fixes
+- quota fixes
+
+* Thu Nov 4 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-53.1
+- Remove transitions to consoletype
+
 * Tue Nov 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-53
 - Make nvidia* to be labeled correctly
 - Fix abrt_manage_cache() interface
