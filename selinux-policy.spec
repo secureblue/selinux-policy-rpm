@@ -26,7 +26,6 @@ patch1: unconfined_permissive.patch
 patch2: passwd.patch
 patch3: thumb.patch
 patch4: execmem.patch
-patch5: userdomain.patch
 patch6: apache.patch
 patch7: ptrace.patch
 patch8: qemu.patch
@@ -249,7 +248,6 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch2 -p1 -b .passwd
 %patch3 -p1
 %patch4 -p1 -b .execmem
-%patch5 -p1 -b .userdomain
 %patch6 -p1 -b .apache
 %patch7 -p1 -b .ptrace
 %patch8 -p1 -b .qemu
