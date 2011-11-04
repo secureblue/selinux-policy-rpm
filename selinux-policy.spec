@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 53%{?dist}
+Release: 54%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -483,6 +483,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Nov 4 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-54
+- MCS fixes
+- quota fixes
+
 * Tue Nov 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-53
 - Make nvidia* to be labeled correctly
 - Fix abrt_manage_cache() interface
