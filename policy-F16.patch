@@ -211,10 +211,10 @@ index 4705ab6..262b5ba 100644
 +gen_tunable(allow_console_login,false)
 +
 diff --git a/policy/mcs b/policy/mcs
-index df8e0fa..6568d96 100644
+index df8e0fa..92b6177 100644
 --- a/policy/mcs
 +++ b/policy/mcs
-@@ -69,16 +69,28 @@ gen_levels(1,mcs_num_cats)
+@@ -69,16 +69,32 @@ gen_levels(1,mcs_num_cats)
  #  - /proc/pid operations are not constrained.
  
  mlsconstrain file { read ioctl lock execute execute_no_trans }
@@ -237,17 +237,21 @@ index df8e0fa..6568d96 100644
 +	(( h1 dom h2 ) or ( t1 == mcswriteall ) or
 +	 (( t1 != mcsuntrustedproc ) and (t2 == domain)));
 +
-+mlsconstrain { lnk_file chr_file blk_file sock_file fifo_file } { getattr read ioctl }
++mlsconstrain fifo_file { open }
++    (( h1 dom h2 ) or ( t1 == mcsreadall ) or
++     (( t1 != mcsuntrustedproc ) and ( t2 == domain )));
++
++mlsconstrain { lnk_file chr_file blk_file sock_file } { getattr read ioctl }
 +    (( h1 dom h2 ) or ( t1 == mcsreadall ) or
 +     (( t1 != mcsuntrustedproc ) and (t2 == domain)));
 +
-+mlsconstrain { lnk_file chr_file blk_file sock_file fifo_file } { write setattr }
++mlsconstrain { lnk_file chr_file blk_file sock_file } { write setattr }
 +    (( h1 dom h2 ) or ( t1 == mcswriteall ) or
 +     (( t1 != mcsuntrustedproc ) and (t2 == domain)));
  
  # New filesystem object labels must be dominated by the relabeling subject
  # clearance, also the objects are single-level.
-@@ -101,6 +113,9 @@ mlsconstrain process { ptrace }
+@@ -101,6 +117,9 @@ mlsconstrain process { ptrace }
  mlsconstrain process { sigkill sigstop }
  	(( h1 dom h2 ) or ( t1 == mcskillall ));
  
@@ -257,7 +261,7 @@ index df8e0fa..6568d96 100644
  #
  # MCS policy for SELinux-enabled databases
  #
-@@ -144,4 +159,21 @@ mlsconstrain db_language { drop getattr setattr relabelfrom execute }
+@@ -144,4 +163,21 @@ mlsconstrain db_language { drop getattr setattr relabelfrom execute }
  mlsconstrain db_blob { drop getattr setattr relabelfrom read write import export }
  	( h1 dom h2 );
  
@@ -4847,10 +4851,10 @@ index 0000000..1553356
 +')
 diff --git a/policy/modules/apps/chrome.te b/policy/modules/apps/chrome.te
 new file mode 100644
-index 0000000..859eb9f
+index 0000000..28cfa1d
 --- /dev/null
 +++ b/policy/modules/apps/chrome.te
-@@ -0,0 +1,177 @@
+@@ -0,0 +1,178 @@
 +policy_module(chrome,1.0.0)
 +
 +########################################
@@ -5017,6 +5021,7 @@ index 0000000..859eb9f
 +kernel_read_system_state(chrome_sandbox_nacl_t)
 +
 +dev_read_urand(chrome_sandbox_nacl_t)
++dev_read_sysfs(chrome_sandbox_nacl_t)
 +
 +files_read_etc_files(chrome_sandbox_nacl_t)
 +
@@ -9517,7 +9522,7 @@ index 0000000..4428be4
 +
 diff --git a/policy/modules/apps/openoffice.if b/policy/modules/apps/openoffice.if
 new file mode 100644
-index 0000000..d1d471e
+index 0000000..0578e7c
 --- /dev/null
 +++ b/policy/modules/apps/openoffice.if
 @@ -0,0 +1,124 @@
@@ -9590,7 +9595,7 @@ index 0000000..d1d471e
 +	userdom_unpriv_usertype($1, $1_openoffice_t)
 +	userdom_exec_user_home_content_files($1_openoffice_t)
 +
-+	allow $1_openoffice_t self:process { getsched sigkill execheap execmem execstack };
++	allow $1_openoffice_t self:process { getsched sigkill execmem execstack };
 +
 +	allow $3 $1_openoffice_t:process { getattr ptrace signal_perms noatsecure siginh rlimitinh };
 +	allow $1_openoffice_t $3:tcp_socket { read write };
@@ -10483,10 +10488,10 @@ index 0000000..809784d
 +')
 diff --git a/policy/modules/apps/sandbox.te b/policy/modules/apps/sandbox.te
 new file mode 100644
-index 0000000..e9d2bc3
+index 0000000..5e75113
 --- /dev/null
 +++ b/policy/modules/apps/sandbox.te
-@@ -0,0 +1,484 @@
+@@ -0,0 +1,488 @@
 +policy_module(sandbox,1.0.0)
 +dbus_stub()
 +attribute sandbox_domain;
@@ -10840,6 +10845,8 @@ index 0000000..e9d2bc3
 +#
 +typeattribute sandbox_web_client_t sandbox_web_type;
 +
++auth_use_nsswitch(sandbox_web_client_t)
++
 +allow sandbox_web_type self:capability { setuid setgid };
 +allow sandbox_web_type self:netlink_audit_socket nlmsg_relay;
 +dontaudit sandbox_web_type self:process setrlimit;
@@ -10964,6 +10971,8 @@ index 0000000..e9d2bc3
 +corenet_udp_sendrecv_all_ports(sandbox_net_client_t)
 +corenet_tcp_connect_all_ports(sandbox_net_client_t)
 +corenet_sendrecv_all_client_packets(sandbox_net_client_t)
++
++auth_use_nsswitch(sandbox_net_client_t)
 +
 +optional_policy(`
 +	mozilla_dontaudit_rw_user_home_files(sandbox_x_t)
@@ -14450,7 +14459,7 @@ index 6cf8784..12bd6fc 100644
 +#
 +/sys(/.*)?			gen_context(system_u:object_r:sysfs_t,s0)
 diff --git a/policy/modules/kernel/devices.if b/policy/modules/kernel/devices.if
-index f820f3b..c2a334f 100644
+index f820f3b..39b1056 100644
 --- a/policy/modules/kernel/devices.if
 +++ b/policy/modules/kernel/devices.if
 @@ -146,14 +146,33 @@ interface(`dev_relabel_all_dev_nodes',`
@@ -15051,7 +15060,32 @@ index f820f3b..c2a334f 100644
  ##	Getattr generic the USB devices.
  ## </summary>
  ## <param name="domain">
-@@ -4495,6 +4805,24 @@ interface(`dev_rw_vhost',`
+@@ -4103,6 +4413,24 @@ interface(`dev_setattr_generic_usb_dev',`
+ 	setattr_chr_files_pattern($1, device_t, usb_device_t)
+ ')
+ 
++######################################
++## <summary>
++##  Allow relabeling (to and from) of generic usb device
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed to relabel.
++##  </summary>
++## </param>
++#
++interface(`dev_relabel_generic_usb_dev',`
++    gen_require(`
++        type usb_device_t;
++    ')
++
++    relabel_dirs_pattern($1, usb_device_t, usb_device_t)
++')
++
+ ########################################
+ ## <summary>
+ ##	Read generic the USB devices.
+@@ -4495,6 +4823,24 @@ interface(`dev_rw_vhost',`
  
  ########################################
  ## <summary>
@@ -15076,7 +15110,7 @@ index f820f3b..c2a334f 100644
  ##	Read and write VMWare devices.
  ## </summary>
  ## <param name="domain">
-@@ -4695,6 +5023,26 @@ interface(`dev_rw_xserver_misc',`
+@@ -4695,6 +5041,26 @@ interface(`dev_rw_xserver_misc',`
  
  ########################################
  ## <summary>
@@ -15103,7 +15137,7 @@ index f820f3b..c2a334f 100644
  ##	Read and write to the zero device (/dev/zero).
  ## </summary>
  ## <param name="domain">
-@@ -4784,3 +5132,812 @@ interface(`dev_unconfined',`
+@@ -4784,3 +5150,812 @@ interface(`dev_unconfined',`
  
  	typeattribute $1 devices_unconfined_type;
  ')
@@ -43735,22 +43769,24 @@ index 7f68872..e4ac35e 100644
 +    xserver_dontaudit_read_xdm_pid(mpd_t)
 +')
 diff --git a/policy/modules/services/mta.fc b/policy/modules/services/mta.fc
-index 256166a..6321a93 100644
+index 256166a..2320c87 100644
 --- a/policy/modules/services/mta.fc
 +++ b/policy/modules/services/mta.fc
-@@ -1,4 +1,5 @@
+@@ -1,4 +1,6 @@
 -HOME_DIR/\.forward	--	gen_context(system_u:object_r:mail_forward_t,s0)
 +HOME_DIR/\.forward[^/]*	--	gen_context(system_u:object_r:mail_home_t,s0)
 +HOME_DIR/dead.letter	--	gen_context(system_u:object_r:mail_home_t,s0)
++HOME_DIR/.mailrc	--	gen_context(system_u:object_r:mail_home_t,s0)
  
  /bin/mail(x)?		--	gen_context(system_u:object_r:sendmail_exec_t,s0)
  
-@@ -11,20 +12,24 @@ ifdef(`distro_redhat',`
+@@ -11,20 +13,25 @@ ifdef(`distro_redhat',`
  /etc/postfix/aliases.*		gen_context(system_u:object_r:etc_aliases_t,s0)
  ')
  
-+/root/\.forward	--	gen_context(system_u:object_r:mail_home_t,s0)
++/root/\.forward		--	gen_context(system_u:object_r:mail_home_t,s0)
 +/root/dead.letter	--	gen_context(system_u:object_r:mail_home_t,s0)
++/root/.mailrc		--	gen_context(system_u:object_r:mail_home_t,s0)
 +
  /usr/bin/esmtp			-- gen_context(system_u:object_r:sendmail_exec_t,s0)
  
@@ -43776,7 +43812,7 @@ index 256166a..6321a93 100644
 +/var/spool/mqueue\.in(/.*)?	gen_context(system_u:object_r:mqueue_spool_t,s0)
  /var/spool/mail(/.*)?		gen_context(system_u:object_r:mail_spool_t,s0)
 diff --git a/policy/modules/services/mta.if b/policy/modules/services/mta.if
-index 343cee3..e261101 100644
+index 343cee3..e5519fd 100644
 --- a/policy/modules/services/mta.if
 +++ b/policy/modules/services/mta.if
 @@ -37,9 +37,9 @@ interface(`mta_stub',`
@@ -44106,7 +44142,7 @@ index 343cee3..e261101 100644
  ##	Read sendmail binary.
  ## </summary>
  ## <param name="domain">
-@@ -899,3 +1015,112 @@ interface(`mta_rw_user_mail_stream_sockets',`
+@@ -899,3 +1015,114 @@ interface(`mta_rw_user_mail_stream_sockets',`
  
  	allow $1 user_mail_domain:unix_stream_socket rw_socket_perms;
  ')
@@ -44175,6 +44211,7 @@ index 343cee3..e261101 100644
 +	')
 +
 +	userdom_admin_home_dir_filetrans($1, mail_home_t, file, "dead.letter")
++	userdom_admin_home_dir_filetrans($1, mail_home_t, file, ".mailrc")
 +	userdom_admin_home_dir_filetrans($1, mail_home_t, file, ".forward")
 +')
 +
@@ -44193,6 +44230,7 @@ index 343cee3..e261101 100644
 +		type mail_home_t;
 +	')
 +
++	userdom_user_home_dir_filetrans($1, mail_home_t, file, ".mailrc")
 +	userdom_user_home_dir_filetrans($1, mail_home_t, file, "dead.letter")
 +	userdom_user_home_dir_filetrans($1, mail_home_t, file, ".forward")
 +')
@@ -61526,7 +61564,7 @@ index 7c5d8d8..fc6beb9 100644
 +')
 +
 diff --git a/policy/modules/services/virt.te b/policy/modules/services/virt.te
-index 3eca020..f9a032d 100644
+index 3eca020..54e53fb 100644
 --- a/policy/modules/services/virt.te
 +++ b/policy/modules/services/virt.te
 @@ -5,56 +5,81 @@ policy_module(virt, 1.4.0)
@@ -61857,7 +61895,7 @@ index 3eca020..f9a032d 100644
  kernel_request_load_module(virtd_t)
  kernel_search_debugfs(virtd_t)
  
-@@ -239,22 +346,31 @@ corenet_tcp_connect_soundd_port(virtd_t)
+@@ -239,22 +346,33 @@ corenet_tcp_connect_soundd_port(virtd_t)
  corenet_rw_tun_tap_dev(virtd_t)
  
  dev_rw_sysfs(virtd_t)
@@ -61867,6 +61905,8 @@ index 3eca020..f9a032d 100644
  dev_getattr_all_chr_files(virtd_t)
  dev_rw_mtrr(virtd_t)
 +dev_rw_vhost(virtd_t)
++dev_setattr_generic_usb_dev(virtd_t)
++dev_relabel_generic_usb_dev(virtd_t)
  
  # Init script handling
  domain_use_interactive_fds(virtd_t)
@@ -61890,7 +61930,7 @@ index 3eca020..f9a032d 100644
  
  fs_list_auto_mountpoints(virtd_t)
  fs_getattr_xattr_fs(virtd_t)
-@@ -262,6 +378,18 @@ fs_rw_anon_inodefs_files(virtd_t)
+@@ -262,6 +380,18 @@ fs_rw_anon_inodefs_files(virtd_t)
  fs_list_inotifyfs(virtd_t)
  fs_manage_cgroup_dirs(virtd_t)
  fs_rw_cgroup_files(virtd_t)
@@ -61909,7 +61949,7 @@ index 3eca020..f9a032d 100644
  
  mcs_process_set_categories(virtd_t)
  
-@@ -285,16 +413,30 @@ modutils_read_module_config(virtd_t)
+@@ -285,16 +415,30 @@ modutils_read_module_config(virtd_t)
  modutils_manage_module_config(virtd_t)
  
  logging_send_syslog_msg(virtd_t)
@@ -61940,7 +61980,7 @@ index 3eca020..f9a032d 100644
  
  tunable_policy(`virt_use_nfs',`
  	fs_manage_nfs_dirs(virtd_t)
-@@ -313,6 +455,10 @@ optional_policy(`
+@@ -313,6 +457,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -61951,7 +61991,7 @@ index 3eca020..f9a032d 100644
  	dbus_system_bus_client(virtd_t)
  
  	optional_policy(`
-@@ -329,16 +475,23 @@ optional_policy(`
+@@ -329,16 +477,23 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -61975,7 +62015,7 @@ index 3eca020..f9a032d 100644
  
  	# Manages /etc/sysconfig/system-config-firewall
  	iptables_manage_config(virtd_t)
-@@ -360,11 +513,11 @@ optional_policy(`
+@@ -360,11 +515,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -61992,7 +62032,7 @@ index 3eca020..f9a032d 100644
  ')
  
  optional_policy(`
-@@ -394,20 +547,36 @@ optional_policy(`
+@@ -394,20 +549,36 @@ optional_policy(`
  # virtual domains common policy
  #
  
@@ -62032,7 +62072,7 @@ index 3eca020..f9a032d 100644
  corecmd_exec_bin(virt_domain)
  corecmd_exec_shell(virt_domain)
  
-@@ -418,10 +587,11 @@ corenet_tcp_sendrecv_generic_node(virt_domain)
+@@ -418,10 +589,11 @@ corenet_tcp_sendrecv_generic_node(virt_domain)
  corenet_tcp_sendrecv_all_ports(virt_domain)
  corenet_tcp_bind_generic_node(virt_domain)
  corenet_tcp_bind_vnc_port(virt_domain)
@@ -62045,7 +62085,7 @@ index 3eca020..f9a032d 100644
  dev_read_rand(virt_domain)
  dev_read_sound(virt_domain)
  dev_read_urand(virt_domain)
-@@ -429,10 +599,12 @@ dev_write_sound(virt_domain)
+@@ -429,10 +601,12 @@ dev_write_sound(virt_domain)
  dev_rw_ksm(virt_domain)
  dev_rw_kvm(virt_domain)
  dev_rw_qemu(virt_domain)
@@ -62058,7 +62098,7 @@ index 3eca020..f9a032d 100644
  files_read_usr_files(virt_domain)
  files_read_var_files(virt_domain)
  files_search_all(virt_domain)
-@@ -440,25 +612,367 @@ files_search_all(virt_domain)
+@@ -440,25 +614,367 @@ files_search_all(virt_domain)
  fs_getattr_tmpfs(virt_domain)
  fs_rw_anon_inodefs_files(virt_domain)
  fs_rw_tmpfs_files(virt_domain)
@@ -66055,7 +66095,7 @@ index 73554ec..6a25dd6 100644
 +	logging_log_named_filetrans($1, wtmp_t, file, "wtmp")
 +')
 diff --git a/policy/modules/system/authlogin.te b/policy/modules/system/authlogin.te
-index b7a5f00..2c39af1 100644
+index b7a5f00..7edafde 100644
 --- a/policy/modules/system/authlogin.te
 +++ b/policy/modules/system/authlogin.te
 @@ -5,9 +5,25 @@ policy_module(authlogin, 2.2.1)
@@ -66084,7 +66124,15 @@ index b7a5f00..2c39af1 100644
  
  type auth_cache_t;
  logging_log_file(auth_cache_t)
-@@ -100,6 +116,8 @@ dev_read_urand(chkpwd_t)
+@@ -21,6 +37,7 @@ role system_r types chkpwd_t;
+ 
+ type faillog_t;
+ logging_log_file(faillog_t)
++mls_trusted_object(faillog_t)
+ 
+ type lastlog_t;
+ logging_log_file(lastlog_t)
+@@ -100,6 +117,8 @@ dev_read_urand(chkpwd_t)
  files_read_etc_files(chkpwd_t)
  # for nscd
  files_dontaudit_search_var(chkpwd_t)
@@ -66093,7 +66141,7 @@ index b7a5f00..2c39af1 100644
  
  fs_dontaudit_getattr_xattr_fs(chkpwd_t)
  
-@@ -118,7 +136,7 @@ miscfiles_read_localization(chkpwd_t)
+@@ -118,7 +137,7 @@ miscfiles_read_localization(chkpwd_t)
  seutil_read_config(chkpwd_t)
  seutil_dontaudit_use_newrole_fds(chkpwd_t)
  
@@ -66102,7 +66150,7 @@ index b7a5f00..2c39af1 100644
  
  ifdef(`distro_ubuntu',`
  	optional_policy(`
-@@ -343,7 +361,7 @@ logging_send_syslog_msg(updpwd_t)
+@@ -343,7 +362,7 @@ logging_send_syslog_msg(updpwd_t)
  
  miscfiles_read_localization(updpwd_t)
  
@@ -66111,7 +66159,7 @@ index b7a5f00..2c39af1 100644
  
  ifdef(`distro_ubuntu',`
  	optional_policy(`
-@@ -371,13 +389,15 @@ term_dontaudit_use_all_ttys(utempter_t)
+@@ -371,13 +390,15 @@ term_dontaudit_use_all_ttys(utempter_t)
  term_dontaudit_use_all_ptys(utempter_t)
  term_dontaudit_use_ptmx(utempter_t)
  
@@ -66128,7 +66176,7 @@ index b7a5f00..2c39af1 100644
  # Allow utemper to write to /tmp/.xses-*
  userdom_write_user_tmp_files(utempter_t)
  
-@@ -388,10 +408,71 @@ ifdef(`distro_ubuntu',`
+@@ -388,10 +409,71 @@ ifdef(`distro_ubuntu',`
  ')
  
  optional_policy(`
@@ -66353,7 +66401,7 @@ index a97a096..ab1e16a 100644
  /usr/bin/raw		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
  /usr/bin/scsi_unique_id	--	gen_context(system_u:object_r:fsadm_exec_t,s0)
 diff --git a/policy/modules/system/fstools.te b/policy/modules/system/fstools.te
-index c28da1c..38390f5 100644
+index c28da1c..10bc43c 100644
 --- a/policy/modules/system/fstools.te
 +++ b/policy/modules/system/fstools.te
 @@ -44,6 +44,8 @@ can_exec(fsadm_t, fsadm_exec_t)
@@ -66374,7 +66422,7 @@ index c28da1c..38390f5 100644
  # Write to /etc/mtab.
  files_manage_etc_runtime_files(fsadm_t)
  files_etc_filetrans_etc_runtime(fsadm_t, file)
-@@ -120,6 +124,9 @@ fs_list_auto_mountpoints(fsadm_t)
+@@ -120,11 +124,16 @@ fs_list_auto_mountpoints(fsadm_t)
  fs_search_tmpfs(fsadm_t)
  fs_getattr_tmpfs_dirs(fsadm_t)
  fs_read_tmpfs_symlinks(fsadm_t)
@@ -66384,7 +66432,14 @@ index c28da1c..38390f5 100644
  # Recreate /mnt/cdrom.
  files_manage_mnt_dirs(fsadm_t)
  # for tune2fs
-@@ -133,10 +140,12 @@ storage_raw_write_fixed_disk(fsadm_t)
+ files_search_all(fsadm_t)
+ 
++mcs_file_read_all(fsadm_t)
++
+ mls_file_read_all_levels(fsadm_t)
+ mls_file_write_all_levels(fsadm_t)
+ 
+@@ -133,10 +142,12 @@ storage_raw_write_fixed_disk(fsadm_t)
  storage_raw_read_removable_device(fsadm_t)
  storage_raw_write_removable_device(fsadm_t)
  storage_read_scsi_generic(fsadm_t)
@@ -66397,7 +66452,7 @@ index c28da1c..38390f5 100644
  init_use_fds(fsadm_t)
  init_use_script_ptys(fsadm_t)
  init_dontaudit_getattr_initctl(fsadm_t)
-@@ -147,7 +156,7 @@ miscfiles_read_localization(fsadm_t)
+@@ -147,7 +158,7 @@ miscfiles_read_localization(fsadm_t)
  
  seutil_read_config(fsadm_t)
  
@@ -66406,7 +66461,7 @@ index c28da1c..38390f5 100644
  
  ifdef(`distro_redhat',`
  	optional_policy(`
-@@ -166,6 +175,11 @@ optional_policy(`
+@@ -166,6 +177,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -66418,7 +66473,7 @@ index c28da1c..38390f5 100644
  	hal_dontaudit_write_log(fsadm_t)
  ')
  
-@@ -192,6 +206,10 @@ optional_policy(`
+@@ -192,6 +208,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -67508,7 +67563,7 @@ index 94fd8dd..b5e5c70 100644
 +	read_fifo_files_pattern($1, init_var_run_t, init_var_run_t)
 +')
 diff --git a/policy/modules/system/init.te b/policy/modules/system/init.te
-index 29a9565..cbf2f02 100644
+index 29a9565..7752aa1 100644
 --- a/policy/modules/system/init.te
 +++ b/policy/modules/system/init.te
 @@ -16,6 +16,34 @@ gen_require(`
@@ -67614,7 +67669,8 @@ index 29a9565..cbf2f02 100644
  corecmd_exec_chroot(init_t)
  corecmd_exec_bin(init_t)
  
- dev_read_sysfs(init_t)
+-dev_read_sysfs(init_t)
++dev_rw_sysfs(init_t)
 +dev_read_urand(init_t)
  # Early devtmpfs
  dev_rw_generic_chr_files(init_t)

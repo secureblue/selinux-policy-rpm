@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 54%{?dist}
+Release: 55%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -219,7 +219,7 @@ fi;
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
    if [ %1 -ne 1 ]; then \
-	/usr/sbin/semodule -n -s %2 -r ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
+	/usr/sbin/semodule -n -s %2 -r execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
    fi \
    rm -f  /etc/selinux/%2/modules/active/modules/qemu.pp \
    /usr/sbin/semodule -B -s %2; \
@@ -483,7 +483,21 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Fri Nov 4 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-54
+* Mon Nov 7 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-55
+- Add more MCS fixes to make sandbox working
+- Make faillog MLS trusted to make sudo_$1_t working
+- Allow sandbox_web_client_t to read passwd_file_t
+- Add .mailrc file context
+- Remove execheap from openoffice domain
+- Allow chrome_sandbox_nacl_t to read cpu_info
+- Allow virtd to relabel generic usb which is need if USB device
+- Fixes for virt.if interfaces to consider chr_file as image file type
+
+* Fri Nov 5 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-54.1
+- Remove Open Office policy
+- Remove execmem policy
+
+* Fri Nov 5 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-54
 - MCS fixes
 - quota fixes
 
