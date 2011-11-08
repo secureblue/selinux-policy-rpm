@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 55.1%{?dist}
+Release: 55.2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -484,6 +484,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Nov 8 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-55.2
+- Remove allow_execmem boolean and replace with deny_execmem boolean
+
 * Tue Nov 8 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-55.1
 - Turn back on allow_execmem boolean
 
