@@ -30,6 +30,7 @@ patch6: apache.patch
 patch7: ptrace.patch
 patch8: qemu.patch
 patch9: consoletype.patch
+patch10: denyexecmem.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -222,10 +223,9 @@ if [ -e /etc/selinux/%2/.rebuild ]; then \
 	/usr/sbin/semodule -n -s %2 -r execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
    fi \
    rm -f  /etc/selinux/%2/modules/active/modules/qemu.pp \
-   /usr/sbin/semodule -B -s %2; \
-else \
-   [ "${SELINUXTYPE}" == "%2" ] && [ selinuxenabled ] && load_policy; \
+   /usr/sbin/semodule -B -n -s %2; \
 fi; \
+[ "${SELINUXTYPE}" == "%2" ] && [ selinuxenabled ] && load_policy; \
 if [ %1 -eq 1 ]; then \
    /sbin/restorecon -R /root /var/log /var/run 2> /dev/null; \
 else \
@@ -252,6 +252,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch7 -p1 -b .ptrace
 %patch8 -p1 -b .qemu
 %patch9 -p1 -b .consoletype
+%patch10 -p1 -b .denyexecmem
 
 %install
 mkdir selinux_config
