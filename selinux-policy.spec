@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 55%{?dist}
+Release: 55.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -483,6 +483,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Nov 8 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-55.1
+- Turn back on allow_execmem boolean
+
 * Mon Nov 7 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-55
 - Add more MCS fixes to make sandbox working
 - Make faillog MLS trusted to make sudo_$1_t working
