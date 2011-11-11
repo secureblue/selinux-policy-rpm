@@ -17,20 +17,13 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 55.2%{?dist}
+Release: 56%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-F16.patch
 patch1: unconfined_permissive.patch
-patch2: passwd.patch
-patch3: thumb.patch
-patch4: execmem.patch
-patch6: apache.patch
-patch7: ptrace.patch
-patch8: qemu.patch
-patch9: consoletype.patch
-patch10: denyexecmem.patch
+patch2: thumb.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -245,14 +238,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %setup -n serefpolicy-%{version} -q
 %patch -p1
 %patch1 -p1 -b .unconfined
-%patch2 -p1 -b .passwd
-%patch3 -p1
-%patch4 -p1 -b .execmem
-%patch6 -p1 -b .apache
-%patch7 -p1 -b .ptrace
-%patch8 -p1 -b .qemu
-%patch9 -p1 -b .consoletype
-%patch10 -p1 -b .denyexecmem
+%patch2 -p1 -b .thumb
 
 %install
 mkdir selinux_config
@@ -484,6 +470,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Nov 10 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-56
+- Merge patches back into git repository.
+
 * Tue Nov 8 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-55.2
 - Remove allow_execmem boolean and replace with deny_execmem boolean
 
