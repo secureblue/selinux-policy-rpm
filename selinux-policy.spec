@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 56%{?dist}
+Release: 57%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Nov 11 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-57
+- Pulseaudio changes
+- Merge patches 
+
 * Thu Nov 10 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-56
 - Merge patches back into git repository.
 
