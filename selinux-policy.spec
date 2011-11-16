@@ -24,6 +24,7 @@ Source: serefpolicy-%{version}.tgz
 patch: policy-F16.patch
 patch1: unconfined_permissive.patch
 patch2: thumb.patch
+patch3: execmem.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -239,6 +240,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch -p1
 %patch1 -p1 -b .unconfined
 %patch2 -p1 -b .thumb
+%patch3 -p1 -b .execmem
 
 %install
 mkdir selinux_config
