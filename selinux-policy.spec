@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 57%{?dist}
+Release: 58%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,24 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Nov 16 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-58
+- Add ssh_dontaudit_search_home_dir
+- Changes to allow namespace_init_t to work
+- Add interface to allow exec of mongod, add port definition for mongod port, 27017
+- Label .kde/share/apps/networkmanagement/certificates/ as home_cert_t
+- Allow spamd and clamd to steam connect to each other
+- Add policy label for passwd.OLD
+- More fixes for postfix and postfix maildro
+- Add ftp support for mozilla plugins
+- Useradd now needs to manage policy since it calls libsemanage
+- Fix devicekit_manage_log_files() interface
+- Allow colord to execute ifconfig
+- Allow accountsd to read /sys
+- Allow mysqld-safe to execute shell
+- Allow openct to stream connect to pcscd
+- Add label for /var/run/nm-dns-dnsmasq\.conf
+- Allow networkmanager to chat with virtd_t
+
 * Fri Nov 11 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-57
 - Pulseaudio changes
 - Merge patches 
