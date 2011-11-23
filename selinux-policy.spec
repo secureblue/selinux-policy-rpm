@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 58%{?dist}
+Release: 59%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Nov 23 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-59
+- Allow mcelog_t to create dir and file in /var/run and label it correctly
+- Allow dbus to manage fusefs
+- Mount needs to read process state when mounting gluster file systems
+- Allow collectd-web to read collectd lib files
+- Allow daemons and system processes started by init to read/write the unix_stream_socket passed in from as stdin/stdout/stderr
+- Allow colord to get the attributes of tmpfs filesystem
+- Add sanlock_use_nfs and sanlock_use_samba booleans
+- Add bin_t label for /usr/lib/virtualbox/VBoxManage
+
 * Wed Nov 16 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-58
 - Add ssh_dontaudit_search_home_dir
 - Changes to allow namespace_init_t to work
