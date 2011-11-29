@@ -24,7 +24,6 @@ Source: serefpolicy-%{version}.tgz
 patch: policy-F16.patch
 patch1: unconfined_permissive.patch
 patch2: thumb.patch
-patch3: execmem.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -216,7 +215,7 @@ if [ -e /etc/selinux/%2/.rebuild ]; then \
    if [ %1 -ne 1 ]; then \
 	/usr/sbin/semodule -n -s %2 -r execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
    fi \
-   rm -f  /etc/selinux/%2/modules/active/modules/qemu.pp \
+   rm -f  /etc/selinux/%2/modules/active/modules/qemu.pp /etc/selinux/%2/modules/active/modules/nsplugin.pp \
    /usr/sbin/semodule -B -n -s %2; \
 fi; \
 [ "${SELINUXTYPE}" == "%2" ] && [ selinuxenabled ] && load_policy; \
@@ -240,7 +239,6 @@ Based off of reference policy: Checked out revision  2.20091117
 %patch -p1
 %patch1 -p1 -b .unconfined
 %patch2 -p1 -b .thumb
-%patch3 -p1 -b .execmem
 
 %install
 mkdir selinux_config
