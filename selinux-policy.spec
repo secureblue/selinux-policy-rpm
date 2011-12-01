@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 63%{?dist}
+Release: 64%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Dec 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-64
+- Use fs_use_xattr for squashf
+-  Fix procs_type interface
+- Dovecot has a new fifo_file /var/run/dovecot/stats-mail
+- Dovecot has a new fifo_file /var/run/stats-mail
+- Colord does not need to connect to network
+- Allow system_cronjob to dbus chat with NetworkManager
+- Puppet manages content, want to make sure it labels everything correctly
+
 * Tue Nov 29 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-63
 - Change port 9050 to tor_socks_port_t and then allow openvpn to connect to it
 - Allow all postfix domains to use the fifo_file
