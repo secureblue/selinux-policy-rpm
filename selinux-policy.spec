@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 64%{?dist}
+Release: 65%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -238,7 +238,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %setup -n serefpolicy-%{version} -q
 %patch -p1
 %patch1 -p1 -b .unconfined
-%patch2 -p1 -b .thumb
+#%patch2 -p1 -b .thumb
 
 %install
 mkdir selinux_config
@@ -470,6 +470,22 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Dec 6 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-65
+- Fixes related to  /bin, /sbin
+- Allow abrt to getattr on blk files
+- Add type for rhev-agent log file
+- Fix labeling for /dev/dmfm
+- Dontaudit wicd leaking
+- Allow systemd_logind_t to look at process info of apps that exchange dbus messages with it
+- Label /etc/locale.conf correctly
+- Allow user_mail_t to read /dev/random
+- Allow postfix-smtpd to read MIMEDefang
+- Add label for /var/log/suphp.log
+- Allow swat_t to connect and read/write nmbd_t sock_file
+- Allow systemd-tmpfiles to setattr for /run/user/gdm/dconf
+- Allow systemd-tmpfiles to change user identity in object contexts
+- More fixes for rhev_agentd_t consolehelper policy
+
 * Thu Dec 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-64
 - Use fs_use_xattr for squashf
 -  Fix procs_type interface
