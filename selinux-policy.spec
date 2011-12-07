@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 65%{?dist}
+Release: 66%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Dec 7 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-66
+- Fixes for xguest package
+
 * Tue Dec 6 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-65
 - Fixes related to  /bin, /sbin
 - Allow abrt to getattr on blk files
