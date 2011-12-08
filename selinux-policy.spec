@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 66%{?dist}
+Release: 67%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Dec 8 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-67
+- Allow mozilla_plugin_t to manage mozilla_home_t
+- Allow ssh derived domain to execute ssh-keygen in the ssh_keygen_t domain
+- Add label for tumblerd
+
 * Wed Dec 7 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-66
 - Fixes for xguest package
 
