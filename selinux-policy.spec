@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 67%{?dist}
+Release: 68%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Dec 13 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-68
+- Allow abrt  to request the kernel to load a module
+- Make sure mozilla content is labeled correctly
+- Allow tgtd to read system state
+- More fixes for boinc
+  * allow to resolve dns name
+  * re-write boinc policy to use boinc_domain attribute
+- Allow munin services plugins to use NSCD services
+
 * Thu Dec 8 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-67
 - Allow mozilla_plugin_t to manage mozilla_home_t
 - Allow ssh derived domain to execute ssh-keygen in the ssh_keygen_t domain
