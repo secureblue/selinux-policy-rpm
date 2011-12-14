@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 68%{?dist}
+Release: 69%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -470,6 +470,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Dec 14 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-69
+- Add label for /var/lib/iscan/interpreter
+- Dont audit writes to leaked file descriptors or redirected output for nacl
+- NetworkManager needs to write to /sys/class/net/ib*/mode
+
 * Tue Dec 13 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-68
 - Allow abrt  to request the kernel to load a module
 - Make sure mozilla content is labeled correctly
