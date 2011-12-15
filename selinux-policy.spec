@@ -17,13 +17,14 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 68%{?dist}
+Release: 68.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-F16.patch
 patch1: unconfined_permissive.patch
 patch2: thumb.patch
+patch3: default_trans.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -238,7 +239,8 @@ Based off of reference policy: Checked out revision  2.20091117
 %setup -n serefpolicy-%{version} -q
 %patch -p1
 %patch1 -p1 -b .unconfined
-#%patch2 -p1 -b .thumb
+%patch2 -p1 -b .thumb
+#%patch3 -p1 -b .trans
 
 %install
 mkdir selinux_config
