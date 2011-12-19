@@ -14788,7 +14788,7 @@ index 35fed4f..51ad69a 100644
  
  #
 diff --git a/policy/modules/kernel/devices.fc b/policy/modules/kernel/devices.fc
-index 6cf8784..26c13f2 100644
+index 6cf8784..2354089 100644
 --- a/policy/modules/kernel/devices.fc
 +++ b/policy/modules/kernel/devices.fc
 @@ -15,12 +15,14 @@
@@ -14842,7 +14842,7 @@ index 6cf8784..26c13f2 100644
  ifdef(`distro_redhat',`
  # originally from named.fc
  /var/named/chroot/dev	-d	gen_context(system_u:object_r:device_t,s0)
-@@ -196,3 +200,13 @@ ifdef(`distro_redhat',`
+@@ -196,3 +200,14 @@ ifdef(`distro_redhat',`
  /var/named/chroot/dev/random -c	gen_context(system_u:object_r:random_device_t,s0)
  /var/named/chroot/dev/zero -c	gen_context(system_u:object_r:zero_device_t,s0)
  ')
@@ -14851,6 +14851,7 @@ index 6cf8784..26c13f2 100644
 +# /sys
 +#
 +/sys(/.*)?			gen_context(system_u:object_r:sysfs_t,s0)
++/sys/devices/system/cpu/online	gen_context(system_u:object_r:cpu_online_t,s0)
 +
 +/usr/lib/udev/devices(/.*)?		gen_context(system_u:object_r:device_t,s0)
 +/usr/lib/udev/devices/lp.*	-c	gen_context(system_u:object_r:printer_device_t,s0)
@@ -16355,7 +16356,7 @@ index f820f3b..cc3f02e 100644
 +	filetrans_pattern($1, device_t, xserver_misc_device_t, chr_file, "card9")
 +')
 diff --git a/policy/modules/kernel/devices.te b/policy/modules/kernel/devices.te
-index 08f01e7..112bebb 100644
+index 08f01e7..8f727be 100644
 --- a/policy/modules/kernel/devices.te
 +++ b/policy/modules/kernel/devices.te
 @@ -108,6 +108,7 @@ dev_node(ksm_device_t)
@@ -16384,8 +16385,8 @@ index 08f01e7..112bebb 100644
  genfscon sysfs / gen_context(system_u:object_r:sysfs_t,s0)
  
 +type cpu_online_t;
-+allow cpu_online_t sysfs_t:filesystem associate;
-+genfscon sysfs /devices/system/cpu/online gen_context(system_u:object_r:cpu_online_t,s0)
++files_type(cpu_online_t)
++dev_associate_sysfs(cpu_online_t)
 +
  #
  # Type for /dev/tpm
@@ -19513,6 +19514,14 @@ index f125dc2..f5e522e 100644
  
  ########################################
  #
+diff --git a/policy/modules/kernel/kernel.fc b/policy/modules/kernel/kernel.fc
+index 7be4ddf..f7021a0 100644
+--- a/policy/modules/kernel/kernel.fc
++++ b/policy/modules/kernel/kernel.fc
+@@ -1 +1,2 @@
+-# This module currently does not have any file contexts.
++
++/sys/class/net/ib.* 		gen_context(system_u:object_r:sysctl_net_t,s0)
 diff --git a/policy/modules/kernel/kernel.if b/policy/modules/kernel/kernel.if
 index 6346378..34c6897 100644
 --- a/policy/modules/kernel/kernel.if
@@ -25816,10 +25825,10 @@ index 6480167..2ad693a 100644
 +	filetrans_pattern($1, { httpd_user_content_t httpd_user_script_exec_t }, httpd_user_htaccess_t, file, ".htaccess")
  ')
 diff --git a/policy/modules/services/apache.te b/policy/modules/services/apache.te
-index 3136c6a..2ef8fef 100644
+index 3136c6a..6b7400b 100644
 --- a/policy/modules/services/apache.te
 +++ b/policy/modules/services/apache.te
-@@ -18,136 +18,211 @@ policy_module(apache, 2.2.1)
+@@ -18,136 +18,218 @@ policy_module(apache, 2.2.1)
  # Declarations
  #
  
@@ -25985,6 +25994,13 @@ index 3136c6a..2ef8fef 100644
 +gen_tunable(httpd_can_connect_ftp, false)
 +
 +## <desc>
++##  <p>
++##  Allow httpd to connect to the ldap port 
++##  </p>
++## </desc>
++gen_tunable(httpd_can_connect_ldap, false)
++
++## <desc>
 +##	<p>
 +##	Allow httpd to read home directories
 +##	</p>
@@ -26087,7 +26103,7 @@ index 3136c6a..2ef8fef 100644
  attribute httpd_script_exec_type;
  attribute httpd_user_script_exec_type;
  
-@@ -166,7 +241,7 @@ files_type(httpd_cache_t)
+@@ -166,7 +248,7 @@ files_type(httpd_cache_t)
  
  # httpd_config_t is the type given to the configuration files
  type httpd_config_t;
@@ -26096,7 +26112,7 @@ index 3136c6a..2ef8fef 100644
  
  type httpd_helper_t;
  type httpd_helper_exec_t;
-@@ -177,6 +252,9 @@ role system_r types httpd_helper_t;
+@@ -177,6 +259,9 @@ role system_r types httpd_helper_t;
  type httpd_initrc_exec_t;
  init_script_file(httpd_initrc_exec_t)
  
@@ -26106,7 +26122,7 @@ index 3136c6a..2ef8fef 100644
  type httpd_lock_t;
  files_lock_file(httpd_lock_t)
  
-@@ -216,7 +294,21 @@ files_tmp_file(httpd_suexec_tmp_t)
+@@ -216,7 +301,21 @@ files_tmp_file(httpd_suexec_tmp_t)
  
  # setup the system domain for system CGI scripts
  apache_content_template(sys)
@@ -26129,7 +26145,7 @@ index 3136c6a..2ef8fef 100644
  
  type httpd_tmp_t;
  files_tmp_file(httpd_tmp_t)
-@@ -226,6 +318,10 @@ files_tmpfs_file(httpd_tmpfs_t)
+@@ -226,6 +325,10 @@ files_tmpfs_file(httpd_tmpfs_t)
  
  apache_content_template(user)
  ubac_constrained(httpd_user_script_t)
@@ -26140,7 +26156,7 @@ index 3136c6a..2ef8fef 100644
  userdom_user_home_content(httpd_user_content_t)
  userdom_user_home_content(httpd_user_htaccess_t)
  userdom_user_home_content(httpd_user_script_exec_t)
-@@ -233,6 +329,7 @@ userdom_user_home_content(httpd_user_ra_content_t)
+@@ -233,6 +336,7 @@ userdom_user_home_content(httpd_user_ra_content_t)
  userdom_user_home_content(httpd_user_rw_content_t)
  typeattribute httpd_user_script_t httpd_script_domains;
  typealias httpd_user_content_t alias { httpd_staff_content_t httpd_sysadm_content_t };
@@ -26148,7 +26164,7 @@ index 3136c6a..2ef8fef 100644
  typealias httpd_user_content_t alias { httpd_auditadm_content_t httpd_secadm_content_t };
  typealias httpd_user_content_t alias { httpd_staff_script_ro_t httpd_sysadm_script_ro_t };
  typealias httpd_user_content_t alias { httpd_auditadm_script_ro_t httpd_secadm_script_ro_t };
-@@ -254,14 +351,23 @@ files_type(httpd_var_lib_t)
+@@ -254,14 +358,23 @@ files_type(httpd_var_lib_t)
  type httpd_var_run_t;
  files_pid_file(httpd_var_run_t)
  
@@ -26172,7 +26188,7 @@ index 3136c6a..2ef8fef 100644
  ########################################
  #
  # Apache server local policy
-@@ -281,11 +387,13 @@ allow httpd_t self:unix_dgram_socket { create_socket_perms sendto };
+@@ -281,11 +394,13 @@ allow httpd_t self:unix_dgram_socket { create_socket_perms sendto };
  allow httpd_t self:unix_stream_socket { create_stream_socket_perms connectto };
  allow httpd_t self:tcp_socket create_stream_socket_perms;
  allow httpd_t self:udp_socket create_socket_perms;
@@ -26186,7 +26202,7 @@ index 3136c6a..2ef8fef 100644
  
  # Allow the httpd_t to read the web servers config files
  allow httpd_t httpd_config_t:dir list_dir_perms;
-@@ -329,8 +437,9 @@ allow httpd_t httpd_sys_script_t:unix_stream_socket connectto;
+@@ -329,8 +444,9 @@ allow httpd_t httpd_sys_script_t:unix_stream_socket connectto;
  
  manage_dirs_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
  manage_files_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
@@ -26197,7 +26213,7 @@ index 3136c6a..2ef8fef 100644
  
  manage_dirs_pattern(httpd_t, httpd_tmpfs_t, httpd_tmpfs_t)
  manage_files_pattern(httpd_t, httpd_tmpfs_t, httpd_tmpfs_t)
-@@ -355,6 +464,9 @@ manage_lnk_files_pattern(httpd_t, squirrelmail_spool_t, squirrelmail_spool_t)
+@@ -355,6 +471,9 @@ manage_lnk_files_pattern(httpd_t, squirrelmail_spool_t, squirrelmail_spool_t)
  kernel_read_kernel_sysctls(httpd_t)
  # for modules that want to access /proc/meminfo
  kernel_read_system_state(httpd_t)
@@ -26207,7 +26223,7 @@ index 3136c6a..2ef8fef 100644
  
  corenet_all_recvfrom_unlabeled(httpd_t)
  corenet_all_recvfrom_netlabel(httpd_t)
-@@ -365,11 +477,15 @@ corenet_udp_sendrecv_generic_node(httpd_t)
+@@ -365,11 +484,15 @@ corenet_udp_sendrecv_generic_node(httpd_t)
  corenet_tcp_sendrecv_all_ports(httpd_t)
  corenet_udp_sendrecv_all_ports(httpd_t)
  corenet_tcp_bind_generic_node(httpd_t)
@@ -26224,7 +26240,7 @@ index 3136c6a..2ef8fef 100644
  
  dev_read_sysfs(httpd_t)
  dev_read_rand(httpd_t)
-@@ -378,12 +494,12 @@ dev_rw_crypto(httpd_t)
+@@ -378,12 +501,12 @@ dev_rw_crypto(httpd_t)
  
  fs_getattr_all_fs(httpd_t)
  fs_search_auto_mountpoints(httpd_t)
@@ -26240,7 +26256,7 @@ index 3136c6a..2ef8fef 100644
  
  domain_use_interactive_fds(httpd_t)
  
-@@ -391,6 +507,7 @@ files_dontaudit_getattr_all_pids(httpd_t)
+@@ -391,6 +514,7 @@ files_dontaudit_getattr_all_pids(httpd_t)
  files_read_usr_files(httpd_t)
  files_list_mnt(httpd_t)
  files_search_spool(httpd_t)
@@ -26248,7 +26264,7 @@ index 3136c6a..2ef8fef 100644
  files_read_var_lib_files(httpd_t)
  files_search_home(httpd_t)
  files_getattr_home_dir(httpd_t)
-@@ -402,48 +519,101 @@ files_read_etc_files(httpd_t)
+@@ -402,48 +526,101 @@ files_read_etc_files(httpd_t)
  files_read_var_lib_symlinks(httpd_t)
  
  fs_search_auto_mountpoints(httpd_sys_script_t)
@@ -26352,7 +26368,7 @@ index 3136c6a..2ef8fef 100644
  ')
  
  tunable_policy(`httpd_enable_cgi && httpd_use_nfs',`
-@@ -456,25 +626,47 @@ tunable_policy(`httpd_enable_cgi && httpd_use_cifs',`
+@@ -456,25 +633,51 @@ tunable_policy(`httpd_enable_cgi && httpd_use_cifs',`
  
  tunable_policy(`httpd_enable_cgi && httpd_unified && httpd_builtin_scripting',`
  	domtrans_pattern(httpd_t, httpdcontent, httpd_sys_script_t)
@@ -26369,6 +26385,10 @@ index 3136c6a..2ef8fef 100644
 +tunable_policy(`httpd_can_connect_ftp',`
 +	corenet_tcp_connect_ftp_port(httpd_t)
 +	corenet_tcp_connect_all_ephemeral_ports(httpd_t)
++')
++
++tunable_policy(`httpd_can_connect_ldap',`
++    corenet_tcp_connect_ldap_port(httpd_t)
 +')
 +
  tunable_policy(`httpd_enable_ftp_server',`
@@ -26402,7 +26422,7 @@ index 3136c6a..2ef8fef 100644
  tunable_policy(`httpd_enable_homedirs && use_samba_home_dirs',`
  	fs_read_cifs_files(httpd_t)
  	fs_read_cifs_symlinks(httpd_t)
-@@ -484,7 +676,16 @@ tunable_policy(`httpd_can_sendmail',`
+@@ -484,7 +687,16 @@ tunable_policy(`httpd_can_sendmail',`
  	# allow httpd to connect to mail servers
  	corenet_tcp_connect_smtp_port(httpd_t)
  	corenet_sendrecv_smtp_client_packets(httpd_t)
@@ -26419,7 +26439,7 @@ index 3136c6a..2ef8fef 100644
  ')
  
  tunable_policy(`httpd_ssi_exec',`
-@@ -499,9 +700,19 @@ tunable_policy(`httpd_ssi_exec',`
+@@ -499,9 +711,19 @@ tunable_policy(`httpd_ssi_exec',`
  # to run correctly without this permission, so the permission
  # are dontaudited here.
  tunable_policy(`httpd_tty_comm',`
@@ -26440,7 +26460,7 @@ index 3136c6a..2ef8fef 100644
  ')
  
  optional_policy(`
-@@ -513,7 +724,13 @@ optional_policy(`
+@@ -513,7 +735,13 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -26455,7 +26475,7 @@ index 3136c6a..2ef8fef 100644
  ')
  
  optional_policy(`
-@@ -528,7 +745,19 @@ optional_policy(`
+@@ -528,7 +756,19 @@ optional_policy(`
  	daemontools_service_domain(httpd_t, httpd_exec_t)
  ')
  
@@ -26476,7 +26496,7 @@ index 3136c6a..2ef8fef 100644
  	dbus_system_bus_client(httpd_t)
  
  	tunable_policy(`httpd_dbus_avahi',`
-@@ -537,8 +766,13 @@ optional_policy(`
+@@ -537,8 +777,13 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -26491,7 +26511,7 @@ index 3136c6a..2ef8fef 100644
  	')
  ')
  
-@@ -556,7 +790,13 @@ optional_policy(`
+@@ -556,7 +801,13 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -26505,7 +26525,7 @@ index 3136c6a..2ef8fef 100644
  	mysql_stream_connect(httpd_t)
  	mysql_rw_db_sockets(httpd_t)
  
-@@ -567,6 +807,7 @@ optional_policy(`
+@@ -567,6 +818,7 @@ optional_policy(`
  
  optional_policy(`
  	nagios_read_config(httpd_t)
@@ -26513,7 +26533,7 @@ index 3136c6a..2ef8fef 100644
  ')
  
  optional_policy(`
-@@ -577,6 +818,20 @@ optional_policy(`
+@@ -577,6 +829,20 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -26534,7 +26554,7 @@ index 3136c6a..2ef8fef 100644
  	# Allow httpd to work with postgresql
  	postgresql_stream_connect(httpd_t)
  	postgresql_unpriv_client(httpd_t)
-@@ -591,6 +846,11 @@ optional_policy(`
+@@ -591,6 +857,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -26546,7 +26566,7 @@ index 3136c6a..2ef8fef 100644
  	snmp_dontaudit_read_snmp_var_lib_files(httpd_t)
  	snmp_dontaudit_write_snmp_var_lib_files(httpd_t)
  ')
-@@ -603,6 +863,12 @@ optional_policy(`
+@@ -603,6 +874,12 @@ optional_policy(`
  	yam_read_content(httpd_t)
  ')
  
@@ -26559,7 +26579,7 @@ index 3136c6a..2ef8fef 100644
  ########################################
  #
  # Apache helper local policy
-@@ -616,7 +882,11 @@ allow httpd_helper_t httpd_log_t:file append_file_perms;
+@@ -616,7 +893,11 @@ allow httpd_helper_t httpd_log_t:file append_file_perms;
  
  logging_send_syslog_msg(httpd_helper_t)
  
@@ -26572,7 +26592,7 @@ index 3136c6a..2ef8fef 100644
  
  ########################################
  #
-@@ -654,28 +924,30 @@ libs_exec_lib_files(httpd_php_t)
+@@ -654,28 +935,30 @@ libs_exec_lib_files(httpd_php_t)
  userdom_use_unpriv_users_fds(httpd_php_t)
  
  tunable_policy(`httpd_can_network_connect_db',`
@@ -26616,7 +26636,7 @@ index 3136c6a..2ef8fef 100644
  ')
  
  ########################################
-@@ -685,6 +957,8 @@ optional_policy(`
+@@ -685,6 +968,8 @@ optional_policy(`
  
  allow httpd_suexec_t self:capability { setuid setgid };
  allow httpd_suexec_t self:process signal_perms;
@@ -26625,7 +26645,7 @@ index 3136c6a..2ef8fef 100644
  allow httpd_suexec_t self:unix_stream_socket create_stream_socket_perms;
  
  domtrans_pattern(httpd_t, httpd_suexec_exec_t, httpd_suexec_t)
-@@ -699,17 +973,22 @@ manage_dirs_pattern(httpd_suexec_t, httpd_suexec_tmp_t, httpd_suexec_tmp_t)
+@@ -699,17 +984,22 @@ manage_dirs_pattern(httpd_suexec_t, httpd_suexec_tmp_t, httpd_suexec_tmp_t)
  manage_files_pattern(httpd_suexec_t, httpd_suexec_tmp_t, httpd_suexec_tmp_t)
  files_tmp_filetrans(httpd_suexec_t, httpd_suexec_tmp_t, { file dir })
  
@@ -26651,7 +26671,7 @@ index 3136c6a..2ef8fef 100644
  
  files_read_etc_files(httpd_suexec_t)
  files_read_usr_files(httpd_suexec_t)
-@@ -740,13 +1019,31 @@ tunable_policy(`httpd_can_network_connect',`
+@@ -740,13 +1030,31 @@ tunable_policy(`httpd_can_network_connect',`
  	corenet_sendrecv_all_client_packets(httpd_suexec_t)
  ')
  
@@ -26684,7 +26704,7 @@ index 3136c6a..2ef8fef 100644
  	fs_read_nfs_files(httpd_suexec_t)
  	fs_read_nfs_symlinks(httpd_suexec_t)
  	fs_exec_nfs_files(httpd_suexec_t)
-@@ -769,6 +1066,25 @@ optional_policy(`
+@@ -769,6 +1077,25 @@ optional_policy(`
  	dontaudit httpd_suexec_t httpd_t:unix_stream_socket { read write };
  ')
  
@@ -26710,7 +26730,7 @@ index 3136c6a..2ef8fef 100644
  ########################################
  #
  # Apache system script local policy
-@@ -789,12 +1105,17 @@ read_lnk_files_pattern(httpd_sys_script_t, squirrelmail_spool_t, squirrelmail_sp
+@@ -789,12 +1116,17 @@ read_lnk_files_pattern(httpd_sys_script_t, squirrelmail_spool_t, squirrelmail_sp
  
  kernel_read_kernel_sysctls(httpd_sys_script_t)
  
@@ -26728,7 +26748,7 @@ index 3136c6a..2ef8fef 100644
  ifdef(`distro_redhat',`
  	allow httpd_sys_script_t httpd_log_t:file append_file_perms;
  ')
-@@ -803,18 +1124,50 @@ tunable_policy(`httpd_can_sendmail',`
+@@ -803,18 +1135,50 @@ tunable_policy(`httpd_can_sendmail',`
  	mta_send_mail(httpd_sys_script_t)
  ')
  
@@ -26785,7 +26805,7 @@ index 3136c6a..2ef8fef 100644
  	corenet_tcp_sendrecv_all_ports(httpd_sys_script_t)
  	corenet_udp_sendrecv_all_ports(httpd_sys_script_t)
  	corenet_tcp_connect_all_ports(httpd_sys_script_t)
-@@ -822,14 +1175,29 @@ tunable_policy(`httpd_enable_cgi && httpd_can_network_connect',`
+@@ -822,14 +1186,29 @@ tunable_policy(`httpd_enable_cgi && httpd_can_network_connect',`
  ')
  
  tunable_policy(`httpd_enable_homedirs',`
@@ -26816,7 +26836,7 @@ index 3136c6a..2ef8fef 100644
  tunable_policy(`httpd_enable_homedirs && use_samba_home_dirs',`
  	fs_read_cifs_files(httpd_sys_script_t)
  	fs_read_cifs_symlinks(httpd_sys_script_t)
-@@ -842,10 +1210,20 @@ optional_policy(`
+@@ -842,10 +1221,20 @@ optional_policy(`
  optional_policy(`
  	mysql_stream_connect(httpd_sys_script_t)
  	mysql_rw_db_sockets(httpd_sys_script_t)
@@ -26837,7 +26857,7 @@ index 3136c6a..2ef8fef 100644
  ')
  
  ########################################
-@@ -891,11 +1269,135 @@ optional_policy(`
+@@ -891,11 +1280,135 @@ optional_policy(`
  
  tunable_policy(`httpd_enable_cgi && httpd_unified',`
  	allow httpd_user_script_t httpdcontent:file entrypoint;
@@ -27014,10 +27034,18 @@ index e342775..4ffdb80 100644
  	domain_system_change_exemption($1)
  	role_transition $2 apcupsd_initrc_exec_t system_r;
 diff --git a/policy/modules/services/apcupsd.te b/policy/modules/services/apcupsd.te
-index d052bf0..ec55314 100644
+index d052bf0..3059bd2 100644
 --- a/policy/modules/services/apcupsd.te
 +++ b/policy/modules/services/apcupsd.te
-@@ -87,13 +87,17 @@ miscfiles_read_localization(apcupsd_t)
+@@ -76,6 +76,7 @@ files_etc_filetrans_etc_runtime(apcupsd_t, file)
+ 
+ # https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=240805
+ term_use_unallocated_ttys(apcupsd_t)
++term_use_usb_ttys(apcupsd_t)
+ 
+ #apcupsd runs shutdown, probably need a shutdown domain
+ init_rw_utmp(apcupsd_t)
+@@ -87,13 +88,17 @@ miscfiles_read_localization(apcupsd_t)
  
  sysnet_dns_name_resolve(apcupsd_t)
  
@@ -53300,7 +53328,7 @@ index b64b02f..166e9c3 100644
 +	read_files_pattern($1, procmail_home_t, procmail_home_t)
 +')
 diff --git a/policy/modules/services/procmail.te b/policy/modules/services/procmail.te
-index 29b9295..4c188f9 100644
+index 29b9295..999b986 100644
 --- a/policy/modules/services/procmail.te
 +++ b/policy/modules/services/procmail.te
 @@ -10,6 +10,9 @@ type procmail_exec_t;
@@ -53373,7 +53401,18 @@ index 29b9295..4c188f9 100644
  
  optional_policy(`
  	clamav_domtrans_clamscan(procmail_t)
-@@ -125,6 +128,11 @@ optional_policy(`
+@@ -115,6 +118,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	gnome_manage_data(procmail_t)
++')
++
++optional_policy(`
+ 	munin_dontaudit_search_lib(procmail_t)
+ ')
+ 
+@@ -125,6 +132,11 @@ optional_policy(`
  	postfix_read_spool_files(procmail_t)
  	postfix_read_local_state(procmail_t)
  	postfix_read_master_state(procmail_t)
@@ -57721,7 +57760,7 @@ index cda37bb..617e83f 100644
 +	allow $1 var_lib_nfs_t:file relabel_file_perms;
  ')
 diff --git a/policy/modules/services/rpc.te b/policy/modules/services/rpc.te
-index b1468ed..372f918 100644
+index b1468ed..1896e20 100644
 --- a/policy/modules/services/rpc.te
 +++ b/policy/modules/services/rpc.te
 @@ -6,18 +6,18 @@ policy_module(rpc, 1.12.0)
@@ -57790,7 +57829,7 @@ index b1468ed..372f918 100644
  fs_getattr_all_fs(rpcd_t)
  
  storage_getattr_fixed_disk_dev(rpcd_t)
-@@ -97,15 +105,26 @@ miscfiles_read_generic_certs(rpcd_t)
+@@ -97,21 +105,33 @@ miscfiles_read_generic_certs(rpcd_t)
  
  seutil_dontaudit_search_config(rpcd_t)
  
@@ -57817,7 +57856,14 @@ index b1468ed..372f918 100644
  ########################################
  #
  # NFSD local policy
-@@ -120,9 +139,14 @@ allow nfsd_t { nfsd_rw_t nfsd_ro_t }:dir list_dir_perms;
+ #
+ 
+ allow nfsd_t self:capability { dac_override dac_read_search sys_admin sys_resource };
++dontaudit nfsd_t self:capability sys_rawio;
+ 
+ allow nfsd_t exports_t:file read_file_perms;
+ allow nfsd_t { nfsd_rw_t nfsd_ro_t }:dir list_dir_perms;
+@@ -120,9 +140,14 @@ allow nfsd_t { nfsd_rw_t nfsd_ro_t }:dir list_dir_perms;
  kernel_read_system_state(nfsd_t)
  kernel_read_network_state(nfsd_t)
  kernel_dontaudit_getattr_core_if(nfsd_t)
@@ -57832,7 +57878,7 @@ index b1468ed..372f918 100644
  
  dev_dontaudit_getattr_all_blk_files(nfsd_t)
  dev_dontaudit_getattr_all_chr_files(nfsd_t)
-@@ -148,6 +172,8 @@ storage_raw_read_removable_device(nfsd_t)
+@@ -148,6 +173,8 @@ storage_raw_read_removable_device(nfsd_t)
  # Read access to public_content_t and public_content_rw_t
  miscfiles_read_public_files(nfsd_t)
  
@@ -57841,7 +57887,7 @@ index b1468ed..372f918 100644
  # Write access to public_content_t and public_content_rw_t
  tunable_policy(`allow_nfsd_anon_write',`
  	miscfiles_manage_public_files(nfsd_t)
-@@ -158,7 +184,6 @@ tunable_policy(`nfs_export_all_rw',`
+@@ -158,7 +185,6 @@ tunable_policy(`nfs_export_all_rw',`
  	dev_getattr_all_chr_files(nfsd_t)
  
  	fs_read_noxattr_fs_files(nfsd_t)
@@ -57849,7 +57895,7 @@ index b1468ed..372f918 100644
  ')
  
  tunable_policy(`nfs_export_all_ro',`
-@@ -170,8 +195,7 @@ tunable_policy(`nfs_export_all_ro',`
+@@ -170,8 +196,7 @@ tunable_policy(`nfs_export_all_ro',`
  
  	fs_read_noxattr_fs_files(nfsd_t)
  
@@ -57859,7 +57905,7 @@ index b1468ed..372f918 100644
  ')
  
  ########################################
-@@ -181,7 +205,7 @@ tunable_policy(`nfs_export_all_ro',`
+@@ -181,7 +206,7 @@ tunable_policy(`nfs_export_all_ro',`
  
  allow gssd_t self:capability { dac_override dac_read_search setuid sys_nice };
  allow gssd_t self:process { getsched setsched };
@@ -57868,7 +57914,7 @@ index b1468ed..372f918 100644
  
  manage_dirs_pattern(gssd_t, gssd_tmp_t, gssd_tmp_t)
  manage_files_pattern(gssd_t, gssd_tmp_t, gssd_tmp_t)
-@@ -199,6 +223,7 @@ corecmd_exec_bin(gssd_t)
+@@ -199,6 +224,7 @@ corecmd_exec_bin(gssd_t)
  fs_list_rpc(gssd_t)
  fs_rw_rpc_sockets(gssd_t)
  fs_read_rpc_files(gssd_t)
@@ -57876,7 +57922,7 @@ index b1468ed..372f918 100644
  
  fs_list_inotifyfs(gssd_t)
  files_list_tmp(gssd_t)
-@@ -210,14 +235,14 @@ auth_manage_cache(gssd_t)
+@@ -210,14 +236,14 @@ auth_manage_cache(gssd_t)
  
  miscfiles_read_generic_certs(gssd_t)
  
@@ -57893,7 +57939,7 @@ index b1468ed..372f918 100644
  ')
  
  optional_policy(`
-@@ -229,6 +254,10 @@ optional_policy(`
+@@ -229,6 +255,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -72590,10 +72636,15 @@ index f3e1b57..d7fd7fb 100644
  ')
  
 diff --git a/policy/modules/system/iscsi.fc b/policy/modules/system/iscsi.fc
-index 14d9670..4c9d1b4 100644
+index 14d9670..f28128a 100644
 --- a/policy/modules/system/iscsi.fc
 +++ b/policy/modules/system/iscsi.fc
-@@ -5,3 +5,6 @@
+@@ -1,7 +1,11 @@
+ /sbin/iscsid		--	gen_context(system_u:object_r:iscsid_exec_t,s0)
+ /sbin/brcm_iscsiuio	--	gen_context(system_u:object_r:iscsid_exec_t,s0)
++/sbin/iscsiuio 		--  gen_context(system_u:object_r:iscsid_exec_t,s0)
+ 
+ /var/lib/iscsi(/.*)?		gen_context(system_u:object_r:iscsi_var_lib_t,s0)
  /var/lock/iscsi(/.*)?		gen_context(system_u:object_r:iscsi_lock_t,s0)
  /var/log/brcm-iscsi\.log --	gen_context(system_u:object_r:iscsi_log_t,s0)
  /var/run/iscsid\.pid	--	gen_context(system_u:object_r:iscsi_var_run_t,s0)
