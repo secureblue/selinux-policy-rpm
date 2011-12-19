@@ -17,7 +17,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 69%{?dist}
+Release: 70%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -472,6 +472,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Dec 19 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-70
+- Add httpd_can_connect_ldap() interface
+- apcupsd_t needs to use seriel ports connected to usb devices
+- Kde puts procmail mail directory under ~/.local/share
+- nfsd_t can trigger sys_rawio on tests that involve too many mountpoints, dontaudit for now
+- Add labeling for /sbin/iscsiuio
+
 * Wed Dec 14 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-69
 - Add label for /var/lib/iscan/interpreter
 - Dont audit writes to leaked file descriptors or redirected output for nacl
