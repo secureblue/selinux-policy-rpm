@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 70%{?dist}
+Release: 71%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Dec 20 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-71
+- default trans rules for Rawhide policy
+-  Make sure sound_devices controlC* are labeled correctly on creation
+- sssd now needs sys_admin
+- Allow snmp to read all proc_type
+- Allow to setup users homedir with quota.group
+
 * Mon Dec 19 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-70
 - Add httpd_can_connect_ldap() interface
 - apcupsd_t needs to use seriel ports connected to usb devices
