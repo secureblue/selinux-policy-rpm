@@ -10,10 +10,9 @@
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
-%define POLICYVER 26
-%define libsepolver 2.0.44-2
-%define POLICYCOREUTILSVER 2.0.86-12
-%define CHECKPOLICYVER 2.1.5-2
+%define POLICYVER 27
+%define POLICYCOREUTILSVER 2.1.9-4
+%define CHECKPOLICYVER 2.1.7-2
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
@@ -23,8 +22,6 @@ Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-F16.patch
 patch1: unconfined_permissive.patch
-patch2: thumb.patch
-patch3: default_trans.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -44,6 +41,7 @@ Source22: users-mls
 Source23: users-targeted
 Source25: users-minimum
 Source26: file_contexts.subs_dist
+Source27: selinux-policy.conf
 
 Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -74,6 +72,7 @@ SELinux Base package
 %{_usr}/share/selinux/devel/Makefile
 %{_usr}/share/selinux/devel/example.*
 %{_usr}/share/selinux/devel/policy.*
+%{_usr}/lib/tmpfiles.d/selinux-policy.conf
 
 %package doc
 Summary: SELinux policy documentation
@@ -239,8 +238,6 @@ Based off of reference policy: Checked out revision  2.20091117
 %setup -n serefpolicy-%{version} -q
 %patch -p1
 %patch1 -p1 -b .unconfined
-%patch2 -p1 -b .thumb
-#%patch3 -p1 -b .trans
 
 %install
 mkdir selinux_config
@@ -256,6 +253,8 @@ mkdir -p %{buildroot}%{_sysconfdir}/selinux
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
 touch %{buildroot}%{_sysconfdir}/selinux/config
 touch %{buildroot}%{_sysconfdir}/sysconfig/selinux
+mkdir -p %{buildroot}%{_usr}/lib/tmpfiles.d/
+cp %{SOURCE27} %{buildroot}%{_usr}/lib/tmpfiles.d/
 
 # Always create policy module package directories
 mkdir -p %{buildroot}%{_usr}/share/selinux/{targeted,mls,minimum,modules}/
