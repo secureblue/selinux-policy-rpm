@@ -218,7 +218,7 @@ if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm -f  /etc/selinux/%2/modules/active/modules/qemu.pp /etc/selinux/%2/modules/active/modules/nsplugin.pp \
    /usr/sbin/semodule -B -n -s %2; \
 fi; \
-[ "${SELINUXTYPE}" == "%2" ] && [ selinuxenabled ] && load_policy; \
+[ "${SELINUXTYPE}" == "%2" ] && selinuxenabled && load_policy; \
 if [ %1 -eq 1 ]; then \
    /sbin/restorecon -R /root /var/log /var/run 2> /dev/null; \
 else \
