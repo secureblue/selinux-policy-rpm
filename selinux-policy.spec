@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 71%{?dist}
+Release: 72%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jan 4 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-72
+- New fix for seunshare, requires seunshare_domains to be able to mounton /
+- Allow systemctl running as logrotate_t to connect to private systemd socket
+- Allow tmpwatch to read meminfo
+- Allow rpc.svcgssd to read supported_krb5_enctype
+- Allow zarafa domains to read /dev/random and /dev/urandom
+- Allow snmpd to read dev_snmp6
+- Allow procmail to talk with cyrus
+- Add fixes for check_disk and check_nagios plugins
+
 * Tue Dec 20 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-71
 - default trans rules for Rawhide policy
 -  Make sure sound_devices controlC* are labeled correctly on creation
