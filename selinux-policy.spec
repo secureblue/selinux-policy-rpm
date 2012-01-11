@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 73%{?dist}
+Release: 74%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jan 11 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-74
+- Add labeling for /var/run/systemd/journal/syslog
+- libvirt sends signals to ifconfig
+- Allow domains that read logind session files to list them
+
 * Wed Jan 11 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-73
 - Fixed destined form libvirt-sandbox
 - Allow apps that list sysfs to also read sympolicy links in this filesystem
