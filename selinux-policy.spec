@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 72%{?dist}
+Release: 73%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jan 11 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-73
+- Fixed destined form libvirt-sandbox
+- Allow apps that list sysfs to also read sympolicy links in this filesystem
+- Add ubac_constrained rules for chrome_sandbox
+- Need interface to allow domains to use tmpfs_t files created by the kernel, used by libra
+- Allow postgresql to be executed by the caller
+- Standardize interfaces of daemons 
+- Add new labeling for mm-handler
+- Allow all matahari domains to read network state and etc_runtime_t files
+
 * Wed Jan 4 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-72
 - New fix for seunshare, requires seunshare_domains to be able to mounton /
 - Allow systemctl running as logrotate_t to connect to private systemd socket
