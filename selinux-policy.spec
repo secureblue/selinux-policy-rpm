@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 74.1%{?dist}
+Release: 74.2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -473,6 +473,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jan 13 2012 Dan Walsh <dwalsh@redhat.com> 3.10.0-74.2
+- Fixes to make rawhide boot in enforcing mode with latest systemd changes
+
 * Wed Jan 11 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-74
 - Add labeling for /var/run/systemd/journal/syslog
 - libvirt sends signals to ifconfig
