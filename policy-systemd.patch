@@ -1,0 +1,294 @@
+diff --git a/policy/modules/kernel/devices.if b/policy/modules/kernel/devices.if
+index d5892cc..68b0a8a 100644
+--- a/policy/modules/kernel/devices.if
++++ b/policy/modules/kernel/devices.if
+@@ -143,13 +143,13 @@ interface(`dev_relabel_all_dev_nodes',`
+ 		type device_t;
+ 	')
+ 
+-	relabelfrom_dirs_pattern($1, device_t, device_node)
+-	relabelfrom_files_pattern($1, device_t, device_node)
+-	relabelfrom_lnk_files_pattern($1, device_t, { device_t device_node })
+-	relabel_fifo_files_pattern($1, device_t,  { device_t device_node })
+-	relabel_sock_files_pattern($1, device_t, { device_t device_node })
+-	relabel_blk_files_pattern($1, device_t, { device_t device_node })
+-	relabel_chr_files_pattern($1, device_t, { device_t device_node })
++	relabel_dirs_pattern($1, device_t, device_node)
++	relabel_files_pattern($1, device_t, device_node)
++	relabel_lnk_files_pattern($1, device_t, device_node)
++	relabel_fifo_files_pattern($1, device_t,  device_node)
++	relabel_sock_files_pattern($1, device_t, device_node)
++	relabel_blk_files_pattern($1, device_t, device_node)
++	relabel_chr_files_pattern($1, device_t, device_node)
+ ')
+ 
+ ########################################
+@@ -4201,6 +4201,32 @@ interface(`dev_read_cpu_online',`
+ 
+ ########################################
+ ## <summary>
++##	Relabel cpu online hardware state information.
++## </summary>
++## <desc>
++##	<p>
++##	Allow the specified domain to read /sys/devices/system/cpu/online file.
++##	</p>
++## </desc>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dev_read_cpu_online',`
++	gen_require(`
++		type cpu_online_t;
++		type sysfs_t;
++	')
++
++	dev_search_sysfs($1)
++	allow $1 cpu_online_t:file relabel;
++')
++
++
++########################################
++## <summary>
+ ##	Read hardware state information.
+ ## </summary>
+ ## <desc>
+@@ -4270,6 +4296,26 @@ interface(`dev_relabel_sysfs_dirs',`
+ 
+ ########################################
+ ## <summary>
++##	Relabel hardware state files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dev_relabel_all_sysfs',`
++	gen_require(`
++		type sysfs_t;
++	')
++
++	relabel_dirs_pattern($1, sysfs_t, sysfs_t)
++	relabel_files_pattern($1, sysfs_t, sysfs_t)
++	relabel_lnk_files_pattern($1, sysfs_t, sysfs_t)
++')
++
++########################################
++## <summary>
+ ##	Allow caller to modify hardware state information.
+ ## </summary>
+ ## <param name="domain">
+diff --git a/policy/modules/roles/staff.te b/policy/modules/roles/staff.te
+index 8ea3385..cdcc621 100644
+--- a/policy/modules/roles/staff.te
++++ b/policy/modules/roles/staff.te
+@@ -70,6 +70,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	bluetooth_role(staff_r, staff_t)
++')
++
++optional_policy(`
+ 	dbadm_role_change(staff_r)
+ ')
+ 
+@@ -238,10 +242,6 @@ ifndef(`distro_redhat',`
+ 	')
+ 
+ 	optional_policy(`
+-		bluetooth_role(staff_r, staff_t)
+-	')
+-
+-	optional_policy(`
+ 		cdrecord_role(staff_r, staff_t)
+ 	')
+ 
+diff --git a/policy/modules/roles/unprivuser.te b/policy/modules/roles/unprivuser.te
+index 77967bd..7e0ea58 100644
+--- a/policy/modules/roles/unprivuser.te
++++ b/policy/modules/roles/unprivuser.te
+@@ -35,6 +35,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	bluetooth_role(user_r, user_t)
++')
++
++optional_policy(`
+ 	colord_dbus_chat(user_t)
+ ')
+ 
+diff --git a/policy/modules/services/blueman.te b/policy/modules/services/blueman.te
+index 12ef44c..bccefc9 100644
+--- a/policy/modules/services/blueman.te
++++ b/policy/modules/services/blueman.te
+@@ -36,3 +36,7 @@ miscfiles_read_localization(blueman_t)
+ optional_policy(`
+ 	avahi_domtrans(blueman_t)
+ ')
++
++optional_policy(`
++	gnome_search_gconf(blueman_t)
++')
+diff --git a/policy/modules/services/entropyd.te b/policy/modules/services/entropyd.te
+index b6ac808..053caed 100644
+--- a/policy/modules/services/entropyd.te
++++ b/policy/modules/services/entropyd.te
+@@ -52,6 +52,8 @@ domain_use_interactive_fds(entropyd_t)
+ 
+ logging_send_syslog_msg(entropyd_t)
+ 
++auth_use_nsswitch(entropyd_t)
++
+ miscfiles_read_localization(entropyd_t)
+ 
+ userdom_dontaudit_use_unpriv_user_fds(entropyd_t)
+diff --git a/policy/modules/services/virt.fc b/policy/modules/services/virt.fc
+index 49c15d1..246df1a 100644
+--- a/policy/modules/services/virt.fc
++++ b/policy/modules/services/virt.fc
+@@ -49,3 +49,7 @@ HOME_DIR/VirtualMachines/isos(/.*)? gen_context(system_u:object_r:virt_content_t
+ 
+ # support for nova-stack
+ /usr/bin/nova-compute       --  gen_context(system_u:object_r:virtd_exec_t,s0)
++/usr/bin/qemu		--	gen_context(system_u:object_r:qemu_exec_t,s0)
++/usr/bin/qemu-system-.*	--	gen_context(system_u:object_r:qemu_exec_t,s0)
++/usr/bin/qemu-kvm	--	gen_context(system_u:object_r:qemu_exec_t,s0)
++/usr/libexec/qemu.*	--	gen_context(system_u:object_r:qemu_exec_t,s0)
+diff --git a/policy/modules/system/logging.fc b/policy/modules/system/logging.fc
+index 170e2e0..3bdf89f 100644
+--- a/policy/modules/system/logging.fc
++++ b/policy/modules/system/logging.fc
+@@ -61,6 +61,7 @@ ifdef(`distro_suse', `
+ /var/log/spooler[^/]*		gen_context(system_u:object_r:var_log_t,mls_systemhigh)
+ /var/log/audit(/.*)?		gen_context(system_u:object_r:auditd_log_t,mls_systemhigh)
+ /var/log/syslog-ng(/.*)? 	gen_context(system_u:object_r:syslogd_var_run_t,mls_systemhigh)
++/var/run/log(/.*)?		gen_context(system_u:object_r:syslogd_var_run_t,mls_systemhigh)
+ 
+ ifndef(`distro_gentoo',`
+ /var/log/audit\.log	--	gen_context(system_u:object_r:auditd_log_t,mls_systemhigh)
+diff --git a/policy/modules/system/logging.te b/policy/modules/system/logging.te
+index 5684c8a..688f59a 100644
+--- a/policy/modules/system/logging.te
++++ b/policy/modules/system/logging.te
+@@ -386,7 +386,7 @@ optional_policy(`
+ # chown fsetid for syslog-ng
+ # sys_admin for the integrated klog of syslog-ng and metalog
+ # cjp: why net_admin!
+-allow syslogd_t self:capability { dac_override sys_resource sys_tty_config ipc_lock net_admin sys_admin sys_nice chown fsetid };
++allow syslogd_t self:capability { dac_override sys_resource sys_tty_config ipc_lock net_admin sys_admin sys_nice chown fsetid setuid setgid };
+ dontaudit syslogd_t self:capability sys_tty_config;
+ allow syslogd_t self:capability2 syslog;
+ # setpgid for metalog
+@@ -474,6 +474,7 @@ tunable_policy(`logging_syslogd_can_sendmail',`
+ dev_filetrans(syslogd_t, devlog_t, sock_file)
+ dev_read_sysfs(syslogd_t)
+ dev_read_rand(syslogd_t)
++dev_read_urand(syslogd_t)
+ # relating to systemd-kmsg-syslogd
+ dev_write_kmsg(syslogd_t)
+ 
+@@ -497,6 +498,7 @@ mls_file_write_all_levels(syslogd_t) # Need to be able to write to /var/run/ and
+ term_write_console(syslogd_t)
+ # Allow syslog to a terminal
+ term_write_unallocated_ttys(syslogd_t)
++term_use_generic_ptys(syslogd_t)
+ 
+ init_stream_connect(syslogd_t)
+ # for sending messages to logged in users
+diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
+index 9e08125..903d3d8 100644
+--- a/policy/modules/system/systemd.te
++++ b/policy/modules/system/systemd.te
+@@ -111,6 +111,7 @@ init_dbus_chat(systemd_logind_t)
+ init_dbus_chat_script(systemd_logind_t)
+ init_read_script_state(systemd_logind_t)
+ init_read_state(systemd_logind_t)
++init_rw_stream_sockets(systemd_logind_t)
+ 
+ logging_send_syslog_msg(systemd_logind_t)
+ 
+@@ -198,6 +199,8 @@ kernel_read_network_state(systemd_tmpfiles_t)
+ files_delete_kernel_modules(systemd_tmpfiles_t)
+ 
+ dev_write_kmsg(systemd_tmpfiles_t)
++dev_relabel_all_sysfs(systemd_tmpfiles_t)
++dev_read_cpu_online(systemd_tmpfiles_t)
+ 
+ domain_obj_id_change_exemption(systemd_tmpfiles_t)
+ 
+@@ -322,6 +325,8 @@ fs_getattr_cgroup_files(systemd_notify_t)
+ 
+ auth_use_nsswitch(systemd_notify_t)
+ 
++init_rw_stream_sockets(systemd_notify_t)
++
+ miscfiles_read_localization(systemd_notify_t)
+ 
+ optional_policy(`
+diff --git a/policy/modules/system/udev.te b/policy/modules/system/udev.te
+index 6a93c64..5ff6beb 100644
+--- a/policy/modules/system/udev.te
++++ b/policy/modules/system/udev.te
+@@ -333,6 +333,7 @@ optional_policy(`
+ 	kernel_read_xen_state(udev_t)
+ 	xen_manage_log(udev_t)
+ 	xen_read_image_files(udev_t)
++	xen_stream_connect_xenstore(udev_t)
+ ')
+ 
+ optional_policy(`
+diff --git a/policy/modules/system/xen.fc b/policy/modules/system/xen.fc
+index a5ed06e..f22f770 100644
+--- a/policy/modules/system/xen.fc
++++ b/policy/modules/system/xen.fc
+@@ -4,7 +4,7 @@
+ /usr/sbin/evtchnd	--	gen_context(system_u:object_r:evtchnd_exec_t,s0)
+ /usr/sbin/tapdisk	--	gen_context(system_u:object_r:blktap_exec_t,s0)
+ 
+-/usr/lib/xen/bin/qemu-dm	-- gen_context(system_u:object_r:qemu_dm_exec_t,s0)
++#/usr/lib/xen/bin/qemu-dm	-- gen_context(system_u:object_r:qemu_dm_exec_t,s0)
+ 
+ ifdef(`distro_debian',`
+ /usr/lib/xen-[^/]*/bin/xenconsoled -- gen_context(system_u:object_r:xenconsoled_exec_t,s0)
+diff --git a/policy/modules/system/xen.te b/policy/modules/system/xen.te
+index 5d6dbad..9ab107b 100644
+--- a/policy/modules/system/xen.te
++++ b/policy/modules/system/xen.te
+@@ -167,6 +167,10 @@ files_pid_filetrans(evtchnd_t, evtchnd_var_run_t, { file sock_file dir })
+ #
+ # qemu-dm local policy
+ #
++
++# TODO: This part of policy should be removed
++#       qemu-dm should run in xend_t domain
++
+ # Do we need to allow execution of qemu-dm?
+ tunable_policy(`xend_run_qemu',`
+ 	allow qemu_dm_t self:capability sys_resource;
+@@ -207,6 +211,11 @@ tunable_policy(`xend_run_qemu',`
+ 
+ allow xend_t self:capability { dac_override ipc_lock net_admin setuid sys_admin sys_nice sys_tty_config net_raw };
+ allow xend_t self:process { signal sigkill };
++
++# needed by qemu_dm
++allow xend_t self:capability sys_resource;
++allow xend_t self:process setrlimit;
++
+ dontaudit xend_t self:process ptrace;
+ # internal communication is often done using fifo and unix sockets.
+ allow xend_t self:fifo_file rw_fifo_file_perms;
+@@ -319,7 +328,6 @@ logging_send_syslog_msg(xend_t)
+ miscfiles_read_localization(xend_t)
+ miscfiles_read_hwdata(xend_t)
+ 
+-
+ sysnet_domtrans_dhcpc(xend_t)
+ sysnet_signal_dhcpc(xend_t)
+ sysnet_domtrans_ifconfig(xend_t)
