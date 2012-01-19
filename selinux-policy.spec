@@ -16,13 +16,12 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 74.2%{?dist}
+Release: 75%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-F16.patch
 patch1: unconfined_permissive.patch
-patch2: policy-systemd.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -239,7 +238,6 @@ Based off of reference policy: Checked out revision  2.20091117
 %setup -n serefpolicy-%{version} -q
 %patch -p1
 %patch1 -p1 -b .unconfined
-%patch2 -p1 -b .systemd
 
 %install
 mkdir selinux_config
@@ -473,6 +471,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jan 16 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-75
+- Merge systemd patch
+- systemd-tmpfiles wants to relabel /sys/devices/system/cpu/online
+- Allow deltacloudd dac_override, setuid, setgid  caps
+- Allow aisexec to execute shell
+- Add use_nfs_home_dirs boolean for ssh-keygen
+
 * Fri Jan 13 2012 Dan Walsh <dwalsh@redhat.com> 3.10.0-74.2
 - Fixes to make rawhide boot in enforcing mode with latest systemd changes
 
