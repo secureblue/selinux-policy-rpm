@@ -49,7 +49,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-python >= %{POLICYCOREUTILSVER} bzip2 
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.0.46-6
-Requires(post): /usr/bin/bunzip2 /bin/mktemp /bin/awk /usr/bin/md5sum
+Requires(post): /bin/awk /usr/bin/md5sum
 Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
 Obsoletes: selinux-policy-devel <= %{version}-%{release}
 Provides: selinux-policy-devel = %{version}-%{release}
