@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 75%{?dist}
+Release: 76%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jan 20 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-76
+- Setup labeling of /var/rsa and /var/lib/rsa to allow login programs to write there
+- bluetooth says they do not use /tmp and want to remove the type
+- Allow init to transition to colord
+- Mongod needs to read /proc/sys/vm/zone_reclaim_mode
+- Allow postfix_smtpd_t to connect to spamd
+- Add boolean to allow ftp to connect to all ports > 1023
+- Allow sendmain to write to inherited dovecot tmp files
+
 * Mon Jan 16 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-75
 - Merge systemd patch
 - systemd-tmpfiles wants to relabel /sys/devices/system/cpu/online
