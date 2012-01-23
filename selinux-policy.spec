@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 77%{?dist}
+Release: 78%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jan 23 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-78
+- Add labeling for udisks2
+- Allow fsadmin to communicate with the systemd process
+
 * Mon Jan 23 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-77
 - Treat Bip with bitlbee policy
       * Bip is an IRC proxy
