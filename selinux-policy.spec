@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 76%{?dist}
+Release: 77%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jan 23 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-77
+- Treat Bip with bitlbee policy
+      * Bip is an IRC proxy
+- Add port definition for interwise port
+- Add support for ipa_memcached socket
+- systemd_jounald needs to getattr on all processes
+- mdadmin fixes
+     * uses getpw
+- amavisd calls getpwnam()
+- denyhosts calls getpwall()
+
 * Fri Jan 20 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-76
 - Setup labeling of /var/rsa and /var/lib/rsa to allow login programs to write there
 - bluetooth says they do not use /tmp and want to remove the type
@@ -479,7 +490,7 @@ SELinux Reference policy mls base module.
 - Allow postfix_smtpd_t to connect to spamd
 - Add boolean to allow ftp to connect to all ports > 1023
 - Allow sendmain to write to inherited dovecot tmp files
-
+- setroubleshoot needs to be able to execute rpm to see what version of packages
 * Mon Jan 16 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-75
 - Merge systemd patch
 - systemd-tmpfiles wants to relabel /sys/devices/system/cpu/online
