@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 78%{?dist}
+Release: 79%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,12 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jan 24 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-79
+- Turn on deny_ptrace boolean for the Rawhide run, so we can test this out
+- Cups exchanges dbus messages with init
+- udisk2 needs to send syslog messages
+- certwatch needs to read /etc/passwd
+
 * Mon Jan 23 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-78
 - Add labeling for udisks2
 - Allow fsadmin to communicate with the systemd process
