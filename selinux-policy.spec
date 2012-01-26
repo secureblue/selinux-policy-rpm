@@ -187,7 +187,7 @@ FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 /usr/sbin/selinuxenabled; \
 if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      /sbin/fixfiles -C ${FILE_CONTEXT}.pre restore; \
-     /sbin/restorecon -R /root /var/log /var/run 2> /dev/null; \
+     /sbin/restorecon -R /root /var/log /var/run /etc/passwd* /etc/group* 2> /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
 fi;
 
