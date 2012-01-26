@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 79%{?dist}
+Release: 80%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,19 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jan 26 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-80
+- Add zabbix_can_network boolean
+- Add httpd_can_connect_zabbix boolean
+- Prepare file context labeling for usrmove functions
+- Allow system cronjobs to read kernel network state
+- Add support for selinux_avcstat munin plugin
+- Treat hearbeat with corosync policy
+- Allow corosync to read and write to qpidd shared mem
+-  mozilla_plugin is trying to run pulseaudio 
+- Fixes for new sshd patch for running priv sep domains as the users context
+- Turn off dontaudit rules when turning on allow_ypbind
+- udev now reads /etc/modules.d directory
+
 * Tue Jan 24 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-79
 - Turn on deny_ptrace boolean for the Rawhide run, so we can test this out
 - Cups exchanges dbus messages with init
