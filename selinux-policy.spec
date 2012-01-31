@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 81%{?dist}
+Release: 81.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jan 31 2012 Dan Walsh <dwalsh@redhat.com> 3.10.0-81.1
+- Fix file_context.subs_dist for now to work with pre usrmove
+
 * Mon Jan 30 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-81
 - More /usr move fixes
 
