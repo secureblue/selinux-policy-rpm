@@ -16,7 +16,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 81.2%{?dist}
+Release: 82%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -471,6 +471,21 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Feb 3 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-82
+- Allow gpg and gpg_agent to store sock_file in gpg_secret_t directory
+- lxdm startup scripts should be labeled bin_t, so confined users will work
+- mcstransd now creates a pid, needs back port to F16
+- qpidd should be allowed to connect to the amqp port
+- Label devices 010-029 as usb devices
+- ypserv packager says ypserv does not use tmp_t so removing selinux policy types
+- Remove all ptrace commands that I believe are caused by the kernel/ps avcs
+- Add initial Obex policy
+- Add logging_syslogd_use_tty boolean
+- Add polipo_connect_all_unreserved bolean
+- Allow zabbix to connect to ftp port
+- Allow systemd-logind to be able to switch VTs
+- Allow apache to communicate with memcached through a sock_file
+
 * Tue Jan 31 2012 Dan Walsh <dwalsh@redhat.com> 3.10.0-81.2
 - Fix file_context.subs_dist for now to work with pre usrmove
 
