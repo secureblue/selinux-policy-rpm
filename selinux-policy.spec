@@ -22,7 +22,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 82%{?dist}
+Release: 83%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -482,6 +482,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Feb 6 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-83
+- Add new sysadm_secadm.pp module
+	* contains secadm definition for sysadm_t
+- Move user_mail_domain access out of the interface into the te file
+- Allow httpd_t to create httpd_var_lib_t directories as well as files
+- Allow snmpd to connect to the ricci_modcluster stream
+- Allow firewalld to read /etc/passwd
+- Add auth_use_nsswitch for colord
+- Allow smartd to read network state
+- smartdnotify needs to read /etc/group
+
 * Fri Feb 3 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-82
 - Allow gpg and gpg_agent to store sock_file in gpg_secret_t directory
 - lxdm startup scripts should be labeled bin_t, so confined users will work
