@@ -1,6 +1,9 @@
 %define distro redhat
 %define polyinstatiate n
 %define monolithic n
+%if %{?BUILD_DOC:0}%{!?BUILD_DOC:1}
+%define BUILD_DOC 1
+%endif
 %if %{?BUILD_TARGETED:0}%{!?BUILD_TARGETED:1}
 %define BUILD_TARGETED 1
 %endif
@@ -74,6 +77,7 @@ SELinux Base package
 %{_usr}/share/selinux/devel/policy.*
 %{_usr}/lib/tmpfiles.d/selinux-policy.conf
 
+%if %{BUILD_DOC}
 %package doc
 Summary: SELinux policy documentation
 Group: System Environment/Base
@@ -87,6 +91,7 @@ SELinux policy documentation package
 %defattr(-,root,root,-)
 %doc %{_usr}/share/doc/%{name}-%{version}
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
+%endif
 
 %define makeCmds() \
 make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024 bare \
@@ -282,15 +287,22 @@ make clean
 %installCmds mls mls n deny
 %endif
 
-make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} MLS_CATS=1024 MCS_CATS=1024 install-headers install-docs
+%if %{BUILD_DOC}
+make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} MLS_CATS=1024 MCS_CATS=1024 install-docs
+%endif
+
+make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} MLS_CATS=1024 MCS_CATS=1024 install-headers
+
 mkdir %{buildroot}%{_usr}/share/selinux/devel/
 mkdir %{buildroot}%{_usr}/share/selinux/packages/
 mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/selinux/devel/include
 install -m 644 selinux_config/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
 install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
 install -m 644 doc/policy.* %{buildroot}%{_usr}/share/selinux/devel/
+%if %{BUILD_DOC}
 echo  "xdg-open file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
+%endif
 rm -rf selinux_config
 %clean
 %{__rm} -fR %{buildroot}
