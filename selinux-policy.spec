@@ -3,9 +3,6 @@
 %define monolithic n
 %if %{?BUILD_DOC:0}%{!?BUILD_DOC:1}
 %define BUILD_DOC 1
-%define docs-target install-docs
-%else
-%define docs-target %nil
 %endif
 %if %{?BUILD_TARGETED:0}%{!?BUILD_TARGETED:1}
 %define BUILD_TARGETED 1
@@ -22,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 82%{?dist}
+Release: 84%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -290,7 +287,11 @@ make clean
 %installCmds mls mls n deny
 %endif
 
-make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} MLS_CATS=1024 MCS_CATS=1024 install-headers %{docs-target}
+%if %{BUILD_DOC}
+make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} MLS_CATS=1024 MCS_CATS=1024 install-docs
+%endif
+
+make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} MLS_CATS=1024 MCS_CATS=1024 install-headers
 
 mkdir %{buildroot}%{_usr}/share/selinux/devel/
 mkdir %{buildroot}%{_usr}/share/selinux/packages/
@@ -482,6 +483,20 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Feb 7 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-84
+- Add policy for grindengine MPI jobs
+
+* Mon Feb 6 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-83
+- Add new sysadm_secadm.pp module
+	* contains secadm definition for sysadm_t
+- Move user_mail_domain access out of the interface into the te file
+- Allow httpd_t to create httpd_var_lib_t directories as well as files
+- Allow snmpd to connect to the ricci_modcluster stream
+- Allow firewalld to read /etc/passwd
+- Add auth_use_nsswitch for colord
+- Allow smartd to read network state
+- smartdnotify needs to read /etc/group
+
 * Fri Feb 3 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-82
 - Allow gpg and gpg_agent to store sock_file in gpg_secret_t directory
 - lxdm startup scripts should be labeled bin_t, so confined users will work
