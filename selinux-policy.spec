@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 83%{?dist}
+Release: 84%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -483,6 +483,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Feb 7 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-84
+- Add policy for grindengine MPI jobs
+
 * Mon Feb 6 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-83
 - Add new sysadm_secadm.pp module
 	* contains secadm definition for sysadm_t

@@ -2148,10 +2148,10 @@ index 0000000..bd83148
 +## <summary>No Interfaces</summary>
 diff --git a/policy/modules/admin/permissivedomains.te b/policy/modules/admin/permissivedomains.te
 new file mode 100644
-index 0000000..14d8b32
+index 0000000..75c0f07
 --- /dev/null
 +++ b/policy/modules/admin/permissivedomains.te
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,57 @@
 +policy_module(permissivedomains,17)
 +
 +
@@ -2195,6 +2195,19 @@ index 0000000..14d8b32
 +    ')
 +
 +    permissive obex_t;
++')
++
++optional_policy(`
++    gen_require(`
++        type sge_shepherd_t;
++		type sge_execd_t;
++		type sge_job_t;
++    ')
++
++	permissive sge_shepherd_t;
++	permissive sge_execd_t;
++	permissive sge_job_t;
++
 +')
 diff --git a/policy/modules/admin/portage.fc b/policy/modules/admin/portage.fc
 index db46387..b665b08 100644
@@ -62067,6 +62080,198 @@ index 086cd5f..6e66656 100644
  optional_policy(`
  	rpm_signull(setroubleshoot_fixit_t)
  	rpm_read_db(setroubleshoot_fixit_t)
+diff --git a/policy/modules/services/sge.fc b/policy/modules/services/sge.fc
+new file mode 100644
+index 0000000..160ddc2
+--- /dev/null
++++ b/policy/modules/services/sge.fc
+@@ -0,0 +1,6 @@
++
++/usr/bin/sge_execd	--	gen_context(system_u:object_r:sge_execd_exec_t,s0)
++/usr/bin/sge_shepherd  --  gen_context(system_u:object_r:sge_shepherd_exec_t,s0)
++
++/var/spool/gridengine(/.*)?       gen_context(system_u:object_r:sge_spool_t,s0)
++
+diff --git a/policy/modules/services/sge.if b/policy/modules/services/sge.if
+new file mode 100644
+index 0000000..839f1b3
+--- /dev/null
++++ b/policy/modules/services/sge.if
+@@ -0,0 +1,2 @@
++## <summary>Policy for gridengine MPI jobs</summary>
++
+diff --git a/policy/modules/services/sge.te b/policy/modules/services/sge.te
+new file mode 100644
+index 0000000..3a28b77
+--- /dev/null
++++ b/policy/modules/services/sge.te
+@@ -0,0 +1,166 @@
++policy_module(sge, 1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++## <desc>
++## <p>
++## Allow sge to access nfs file systems.
++## </p>
++## </desc>
++gen_tunable(sge_use_nfs, false)
++
++attribute sge_domain;
++
++type sge_execd_t, sge_domain;
++type sge_execd_exec_t;
++init_daemon_domain(sge_execd_t, sge_execd_exec_t)
++
++type sge_spool_t;
++files_type(sge_spool_t)
++
++type sge_tmp_t;
++files_tmp_file(sge_tmp_t)
++
++type sge_shepherd_t, sge_domain;
++type sge_shepherd_exec_t;
++application_domain(sge_shepherd_t, sge_shepherd_exec_t)
++role system_r types sge_shepherd_t;
++
++type sge_job_t, sge_domain;
++type sge_job_exec_t;
++application_domain(sge_job_t, sge_job_exec_t)
++corecmd_shell_entry_type(sge_job_t)
++role system_r types sge_job_t;
++
++#######################################
++#
++# sge_execd local policy
++#
++
++allow sge_execd_t self:capability { dac_override setuid chown setgid };
++allow sge_execd_t self:process { setsched signal setpgid };
++
++allow sge_execd_t sge_shepherd_t:process signal;
++
++kernel_read_kernel_sysctls(sge_execd_t)
++
++dev_read_sysfs(sge_execd_t)
++
++files_exec_usr_files(sge_execd_t)
++files_search_spool(sge_execd_t)
++
++init_read_utmp(sge_execd_t)
++
++######################################
++#
++# sge_shepherd local policy
++#
++
++allow sge_shepherd_t self:capability { setuid sys_nice chown kill setgid dac_override };
++allow sge_shepherd_t self:process signal_perms;
++
++domtrans_pattern(sge_execd_t, sge_shepherd_exec_t, sge_shepherd_t)
++
++kernel_read_sysctl(sge_shepherd_t)
++kernel_read_kernel_sysctls(sge_shepherd_t)
++
++dev_read_sysfs(sge_shepherd_t)
++
++fs_getattr_all_fs(sge_shepherd_t)
++
++optional_policy(`
++	mta_send_mail(sge_shepherd_t)
++')
++
++#####################################
++#
++# sge_job local policy
++#
++
++allow sge_shepherd_t sge_job_t:process signal_perms;
++
++corecmd_shell_domtrans(sge_shepherd_t, sge_job_t)
++
++kernel_read_kernel_sysctls(sge_job_t)
++
++term_use_all_terms(sge_job_t)
++
++optional_policy(`
++	ssh_basic_client_template(sge_job, sge_job_t, system_r)
++	ssh_domtrans(sge_job_t)
++
++	allow sge_job_t sge_job_ssh_t:process sigkill;
++
++	xserver_exec_xauth(sge_job_ssh_t)
++
++        tunable_policy(`sge_use_nfs',`
++            fs_list_auto_mountpoints(sge_job_ssh_t)
++            fs_manage_nfs_dirs(sge_job_ssh_t)
++            fs_manage_nfs_files(sge_job_ssh_t)
++            fs_read_nfs_symlinks(sge_job_ssh_t)
++        ')
++	')
++
++optional_policy(`
++	xserver_domtrans_xauth(sge_job_t)
++')
++
++optional_policy(`
++	unconfined_domain(sge_job_t)
++')
++
++#####################################
++#
++# sge_domain local policy
++#
++
++allow sge_domain self:fifo_file rw_fifo_file_perms;
++allow sge_domain self:tcp_socket create_stream_socket_perms;
++
++manage_dirs_pattern(sge_domain, sge_spool_t, sge_spool_t)
++manage_files_pattern(sge_domain, sge_spool_t, sge_spool_t)
++manage_lnk_files_pattern(sge_domain, sge_spool_t, sge_spool_t)
++
++manage_files_pattern(sge_domain, sge_tmp_t, sge_tmp_t)
++manage_dirs_pattern(sge_domain, sge_tmp_t, sge_tmp_t)
++files_tmp_filetrans(sge_domain, sge_tmp_t, { file dir })
++
++kernel_read_network_state(sge_domain)
++kernel_read_system_state(sge_domain)
++
++corecmd_exec_bin(sge_domain)
++corecmd_exec_shell(sge_domain)
++
++domain_read_all_domains_state(sge_domain)
++
++files_read_etc_files(sge_domain)
++files_read_usr_files(sge_domain)
++
++dev_read_urand(sge_domain)
++
++logging_send_syslog_msg(sge_domain)
++
++miscfiles_read_localization(sge_domain)
++
++tunable_policy(`sge_use_nfs',`
++    fs_list_auto_mountpoints(sge_domain)
++	fs_manage_nfs_dirs(sge_domain)
++	fs_manage_nfs_files(sge_domain)
++	fs_read_nfs_symlinks(sge_domain)
++	fs_exec_nfs_files(sge_domain)
++')
++
++optional_policy(`
++	sysnet_dns_name_resolve(sge_domain)
++')
++
++optional_policy(`
++    hostname_exec(sge_domain)
++')
++
++optional_policy(`
++	nslcd_stream_connect(sge_domain)
++')
 diff --git a/policy/modules/services/slrnpull.te b/policy/modules/services/slrnpull.te
 index e5e72fd..92eecec 100644
 --- a/policy/modules/services/slrnpull.te
@@ -68104,7 +68309,7 @@ index 4966c94..cb2e1a3 100644
 +/var/lib/pqsql/\.Xauthority.*	--	gen_context(system_u:object_r:xauth_home_t,s0)
 +
 diff --git a/policy/modules/services/xserver.if b/policy/modules/services/xserver.if
-index 130ced9..51e7627 100644
+index 130ced9..86143cf 100644
 --- a/policy/modules/services/xserver.if
 +++ b/policy/modules/services/xserver.if
 @@ -19,9 +19,10 @@
@@ -68404,10 +68609,30 @@ index 130ced9..51e7627 100644
  
  	# Manipulate the global font cache
  	manage_dirs_pattern($1, user_fonts_cache_t, user_fonts_cache_t)
-@@ -549,6 +606,24 @@ interface(`xserver_domtrans_xauth',`
+@@ -547,6 +604,42 @@ interface(`xserver_domtrans_xauth',`
+ 	domtrans_pattern($1, xauth_exec_t, xauth_t)
+ ')
  
- ########################################
- ## <summary>
++######################################
++## <summary>
++##  Allow exec of Xauthority program..
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed to transition.
++##  </summary>
++## </param>
++#
++interface(`xserver_exec_xauth',`
++	gen_require(`
++		type xauth_t, xauth_exec_t;
++	')
++
++	can_exec($1, xauth_exec_t)
++')
++
++########################################
++## <summary>
 +##	Dontaudit exec of Xauthority program.
 +## </summary>
 +## <param name="domain">
@@ -68424,12 +68649,10 @@ index 130ced9..51e7627 100644
 +	dontaudit $1 xauth_exec_t:file execute;
 +')
 +
-+########################################
-+## <summary>
+ ########################################
+ ## <summary>
  ##	Create a Xauthority file in the user home directory.
- ## </summary>
- ## <param name="domain">
-@@ -598,6 +673,7 @@ interface(`xserver_read_user_xauth',`
+@@ -598,6 +691,7 @@ interface(`xserver_read_user_xauth',`
  
  	allow $1 xauth_home_t:file read_file_perms;
  	userdom_search_user_home_dirs($1)
@@ -68437,7 +68660,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -615,7 +691,7 @@ interface(`xserver_setattr_console_pipes',`
+@@ -615,7 +709,7 @@ interface(`xserver_setattr_console_pipes',`
  		type xconsole_device_t;
  	')
  
@@ -68446,7 +68669,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -638,6 +714,25 @@ interface(`xserver_rw_console',`
+@@ -638,6 +732,25 @@ interface(`xserver_rw_console',`
  
  ########################################
  ## <summary>
@@ -68472,7 +68695,7 @@ index 130ced9..51e7627 100644
  ##	Use file descriptors for xdm.
  ## </summary>
  ## <param name="domain">
-@@ -651,7 +746,7 @@ interface(`xserver_use_xdm_fds',`
+@@ -651,7 +764,7 @@ interface(`xserver_use_xdm_fds',`
  		type xdm_t;
  	')
  
@@ -68481,7 +68704,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -670,7 +765,7 @@ interface(`xserver_dontaudit_use_xdm_fds',`
+@@ -670,7 +783,7 @@ interface(`xserver_dontaudit_use_xdm_fds',`
  		type xdm_t;
  	')
  
@@ -68490,7 +68713,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -688,7 +783,7 @@ interface(`xserver_rw_xdm_pipes',`
+@@ -688,7 +801,7 @@ interface(`xserver_rw_xdm_pipes',`
  		type xdm_t;
  	')
  
@@ -68499,7 +68722,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -703,12 +798,11 @@ interface(`xserver_rw_xdm_pipes',`
+@@ -703,12 +816,11 @@ interface(`xserver_rw_xdm_pipes',`
  ## </param>
  #
  interface(`xserver_dontaudit_rw_xdm_pipes',`
@@ -68513,7 +68736,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -724,11 +818,31 @@ interface(`xserver_dontaudit_rw_xdm_pipes',`
+@@ -724,11 +836,31 @@ interface(`xserver_dontaudit_rw_xdm_pipes',`
  #
  interface(`xserver_stream_connect_xdm',`
  	gen_require(`
@@ -68547,7 +68770,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -752,6 +866,25 @@ interface(`xserver_read_xdm_rw_config',`
+@@ -752,6 +884,25 @@ interface(`xserver_read_xdm_rw_config',`
  
  ########################################
  ## <summary>
@@ -68573,7 +68796,7 @@ index 130ced9..51e7627 100644
  ##	Set the attributes of XDM temporary directories.
  ## </summary>
  ## <param name="domain">
-@@ -765,7 +898,7 @@ interface(`xserver_setattr_xdm_tmp_dirs',`
+@@ -765,7 +916,7 @@ interface(`xserver_setattr_xdm_tmp_dirs',`
  		type xdm_tmp_t;
  	')
  
@@ -68582,7 +68805,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -805,7 +938,26 @@ interface(`xserver_read_xdm_pid',`
+@@ -805,7 +956,26 @@ interface(`xserver_read_xdm_pid',`
  	')
  
  	files_search_pids($1)
@@ -68610,7 +68833,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -828,6 +980,24 @@ interface(`xserver_read_xdm_lib_files',`
+@@ -828,6 +998,24 @@ interface(`xserver_read_xdm_lib_files',`
  
  ########################################
  ## <summary>
@@ -68635,7 +68858,7 @@ index 130ced9..51e7627 100644
  ##	Make an X session script an entrypoint for the specified domain.
  ## </summary>
  ## <param name="domain">
-@@ -897,7 +1067,7 @@ interface(`xserver_getattr_log',`
+@@ -897,7 +1085,7 @@ interface(`xserver_getattr_log',`
  	')
  
  	logging_search_logs($1)
@@ -68644,7 +68867,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -916,7 +1086,7 @@ interface(`xserver_dontaudit_write_log',`
+@@ -916,7 +1104,7 @@ interface(`xserver_dontaudit_write_log',`
  		type xserver_log_t;
  	')
  
@@ -68653,7 +68876,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -963,6 +1133,45 @@ interface(`xserver_read_xkb_libs',`
+@@ -963,6 +1151,45 @@ interface(`xserver_read_xkb_libs',`
  
  ########################################
  ## <summary>
@@ -68699,7 +68922,7 @@ index 130ced9..51e7627 100644
  ##	Read xdm temporary files.
  ## </summary>
  ## <param name="domain">
-@@ -976,7 +1185,7 @@ interface(`xserver_read_xdm_tmp_files',`
+@@ -976,7 +1203,7 @@ interface(`xserver_read_xdm_tmp_files',`
  		type xdm_tmp_t;
  	')
  
@@ -68708,7 +68931,7 @@ index 130ced9..51e7627 100644
  	read_files_pattern($1, xdm_tmp_t, xdm_tmp_t)
  ')
  
-@@ -1038,6 +1247,42 @@ interface(`xserver_manage_xdm_tmp_files',`
+@@ -1038,6 +1265,42 @@ interface(`xserver_manage_xdm_tmp_files',`
  
  ########################################
  ## <summary>
@@ -68751,7 +68974,7 @@ index 130ced9..51e7627 100644
  ##	Do not audit attempts to get the attributes of
  ##	xdm temporary named sockets.
  ## </summary>
-@@ -1052,7 +1297,7 @@ interface(`xserver_dontaudit_getattr_xdm_tmp_sockets',`
+@@ -1052,7 +1315,7 @@ interface(`xserver_dontaudit_getattr_xdm_tmp_sockets',`
  		type xdm_tmp_t;
  	')
  
@@ -68760,7 +68983,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -1070,8 +1315,10 @@ interface(`xserver_domtrans',`
+@@ -1070,8 +1333,10 @@ interface(`xserver_domtrans',`
  		type xserver_t, xserver_exec_t;
  	')
  
@@ -68772,7 +68995,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -1185,6 +1432,26 @@ interface(`xserver_stream_connect',`
+@@ -1185,6 +1450,26 @@ interface(`xserver_stream_connect',`
  
  	files_search_tmp($1)
  	stream_connect_pattern($1, xserver_tmp_t, xserver_tmp_t, xserver_t)
@@ -68799,7 +69022,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -1210,7 +1477,7 @@ interface(`xserver_read_tmp_files',`
+@@ -1210,7 +1495,7 @@ interface(`xserver_read_tmp_files',`
  ## <summary>
  ##	Interface to provide X object permissions on a given X server to
  ##	an X client domain.  Gives the domain permission to read the
@@ -68808,7 +69031,7 @@ index 130ced9..51e7627 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1220,13 +1487,23 @@ interface(`xserver_read_tmp_files',`
+@@ -1220,13 +1505,23 @@ interface(`xserver_read_tmp_files',`
  #
  interface(`xserver_manage_core_devices',`
  	gen_require(`
@@ -68833,7 +69056,7 @@ index 130ced9..51e7627 100644
  ')
  
  ########################################
-@@ -1243,10 +1520,462 @@ interface(`xserver_manage_core_devices',`
+@@ -1243,10 +1538,462 @@ interface(`xserver_manage_core_devices',`
  #
  interface(`xserver_unconfined',`
  	gen_require(`
