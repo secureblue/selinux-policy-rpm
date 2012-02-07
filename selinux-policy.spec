@@ -3,9 +3,6 @@
 %define monolithic n
 %if %{?BUILD_DOC:0}%{!?BUILD_DOC:1}
 %define BUILD_DOC 1
-%define docs-target install-docs
-%else
-%define docs-target %nil
 %endif
 %if %{?BUILD_TARGETED:0}%{!?BUILD_TARGETED:1}
 %define BUILD_TARGETED 1
@@ -290,7 +287,11 @@ make clean
 %installCmds mls mls n deny
 %endif
 
-make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} MLS_CATS=1024 MCS_CATS=1024 install-headers %{docs-target}
+%if %{BUILD_DOC}
+make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} MLS_CATS=1024 MCS_CATS=1024 install-docs
+%endif
+
+make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name}-%{version} MLS_CATS=1024 MCS_CATS=1024 install-headers
 
 mkdir %{buildroot}%{_usr}/share/selinux/devel/
 mkdir %{buildroot}%{_usr}/share/selinux/packages/
