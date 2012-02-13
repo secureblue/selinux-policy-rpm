@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.10.0
-Release: 84%{?dist}
+Release: 85%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -483,6 +483,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Feb 13 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-85
+- Allow firewalld to read urand
+- Alias java, execmem_mono to bin_t to allow third parties
+- Add label for kmod
+- /etc/redhat-lsb contains binaries
+- Add boolean to allow gitosis to send mail
+- Add filename transition also for "event20"
+- Allow systemd_tmpfiles_t to delete all file types
+- Allow collectd to ipc_lock
+
 * Tue Feb 7 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-84
 - Add policy for grindengine MPI jobs
 
