@@ -23,7 +23,8 @@ Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-F16.patch
+patch: policy-rawhide.patch
+patch1: policy_contrib-rawhide.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -251,8 +252,13 @@ Based off of reference policy: Checked out revision  2.20091117
 %build
 
 %prep 
+%setup -n serefpolicy-contrib-%{version} -q -b 29
+%patch1 -p1
+contrib_path=`pwd`
 %setup -n serefpolicy-%{version} -q
 %patch -p1
+refpolicy_path=`pwd`
+cp $contrib_path/* $refpolicy_path/policy/modules/contrib
 
 %install
 mkdir selinux_config
@@ -494,6 +500,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jun 7 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-1
+- Mass merge with upstream
+  * new policy topology to include contrib policy modules
+  * we have now two base policy patches
+
 * Wed May 30 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-128
 - Fix description of authlogin_nsswitch_use_ldap
 - Fix transition rule for rhsmcertd_t needed for RHEL7
