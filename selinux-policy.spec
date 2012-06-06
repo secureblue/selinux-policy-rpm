@@ -18,8 +18,8 @@
 %define CHECKPOLICYVER 2.1.9-4
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.10.0
-Release: 128%{?dist}
+Version: 3.11.0
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -45,6 +45,7 @@ Source25: users-minimum
 Source26: file_contexts.subs_dist
 Source27: selinux-policy.conf
 Source28: permissivedomains.pp
+Source29: serefpolicy-contrib-%{version}.tgz
 
 Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
