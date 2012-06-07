@@ -25,6 +25,8 @@ Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-rawhide.patch
 patch1: policy_contrib-rawhide.patch
+patch2: policy_contrib-rawhide-roleattribute.patch
+patch3: policy-rawhide-roleattribute.patch
 Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
