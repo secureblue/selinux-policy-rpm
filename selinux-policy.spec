@@ -394,22 +394,8 @@ SELinux Reference policy targeted base module.
 %postInstall $1 targeted
 exit 0
 
-%triggerpostun targeted -- selinux-policy-targeted < 3.2.5-9.fc9
-. /etc/selinux/config
-[ "${SELINUXTYPE}" != "targeted" ] && exit 0
-setsebool -P use_nfs_home_dirs=1
-/usr/sbin/semanage user -l | grep -s unconfined_u > /dev/null
-if [ $? -eq 0 ]; then
-   /usr/sbin/semanage user -m -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u
-else
-   /usr/sbin/semanage user -a -P user -R "unconfined_r system_r" -r s0-s0:c0.c1023 unconfined_u
-fi
-seuser=`/usr/sbin/semanage login -l | grep __default__ | awk '{ print $2 }'`
-[ "$seuser" != "unconfined_u" ]  && /usr/sbin/semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 __default__
-seuser=`/usr/sbin/semanage login -l | grep root | awk '{ print $2 }'`
-[ "$seuser" = "system_u" ] && /usr/sbin/semanage login -m -s "unconfined_u"  -r s0-s0:c0.c1023 root
-restorecon -R /root /etc/selinux/targeted 2> /dev/null
-/usr/sbin/semodule -r qmail 2> /dev/null
+%triggerpostun targeted -- selinux-policy-targeted < 3.11.0-1.fc18
+restorecon -R -p /home
 exit 0
 
 %files targeted
