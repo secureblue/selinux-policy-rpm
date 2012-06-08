@@ -49,6 +49,7 @@ Source26: file_contexts.subs_dist
 Source27: selinux-policy.conf
 Source28: permissivedomains.pp
 Source29: serefpolicy-contrib-%{version}.tgz
+Source30: booleans.subs_dist
 
 Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -133,6 +134,7 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/file_contexts.local \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/nodes.local \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/users_extra.local \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/users.local \
+cp %{SOURCE30} %{buildroot}%{_sysconfdir}/selinux/%1 \
 bzip2 -c %{buildroot}/%{_usr}/share/selinux/%1/base.pp  > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/base.pp \
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/base.pp  \
 for i in %{buildroot}/%{_usr}/share/selinux/%1/*.pp; do bzip2 -c $i > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/`basename $i`; done \
@@ -191,7 +193,8 @@ rm -f %{buildroot}/%{_sysconfigdir}/selinux/%1/modules/active/policy.kern
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs_dist \
+%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs_dist \
+%{_sysconfdir}/selinux/%1/booleans.subs_dist \
 %config %{_sysconfdir}/selinux/%1/contexts/files/media \
 %dir %{_sysconfdir}/selinux/%1/contexts/users \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/root \
