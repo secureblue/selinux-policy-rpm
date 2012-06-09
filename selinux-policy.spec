@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -259,11 +259,9 @@ Based off of reference policy: Checked out revision  2.20091117
 %prep 
 %setup -n serefpolicy-contrib-%{version} -q -b 29
 %patch1 -p1
-%patch2 -p1
 contrib_path=`pwd`
 %setup -n serefpolicy-%{version} -q
 %patch -p1
-%patch3 -p1
 refpolicy_path=`pwd`
 cp $contrib_path/* $refpolicy_path/policy/modules/contrib
 
@@ -493,6 +491,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Sat Jun 9 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-2
+- Rename boolean names to remove allow_
+
 * Thu Jun 7 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-1
 - Mass merge with upstream
   * new policy topology to include contrib policy modules
