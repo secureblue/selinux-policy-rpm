@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,22 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jun 12 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-3
+- PolicyKit path has changed
+- Allow httpd connect to dirsrv socket
+- Allow tuned to write generic kernel sysctls
+- Dontaudit logwatch to gettr on /dev/dm-2
+- Allow policykit-auth to manage kerberos files
+- Make condor_startd and rgmanager as initrc domain
+- Allow virsh to read /etc/passwd
+- Allow mount to mount on user_tmp_t for /run/user/dwalsh/gvfs
+- xdm now needs to execute xsession_exec_t
+- Need labels for /var/lib/gdm
+- Fix files_filetrans_named_content() interface
+- Add new attribute - initrc_domain
+- Allow systemd_logind_t to signal, signull, sigkill all processes
+- Add filetrans rules for etc_runtime files
+
 * Sat Jun 9 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-2
 - Rename boolean names to remove allow_
 
