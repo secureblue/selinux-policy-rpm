@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,25 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jun 15 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-4
+- Add support for ecryptfs
+  * ecryptfs does not support xattr
+  * we need labeling for HOMEDIR
+- Add policy for (u)mount.ecryptfs*
+- Fix labeling of kerbero host cache files, allow rpc.svcgssd to manage host cache
+- Allow dovecot to manage Maildir content, fix transitions to Maildir
+- Allow postfix_local to transition to dovecot_deliver
+- Dontaudit attempts to setattr on xdm_tmp_t, looks like bogus code
+- Cleanup interface definitions
+- Allow apmd to change with the logind daemon
+- Changes required for sanlock in rhel6
+- Label /run/user/apache as httpd_tmp_t
+- Allow thumb to use lib_t as execmod if boolean turned on
+- Allow squid to create the squid directory in /var with the correct labe
+- Add a new policy for glusterd from Bryan Bickford (bbickfor@redhat.com)
+- Allow virtd to exec xend_exec_t without transition
+- Allow virtd_lxc_t to unmount all file systems
+
 * Tue Jun 12 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-3
 - PolicyKit path has changed
 - Allow httpd connect to dirsrv socket
