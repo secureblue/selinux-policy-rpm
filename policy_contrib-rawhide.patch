@@ -3746,7 +3746,7 @@ index e342775..1fedbe5 100644
 +	allow $1 apcupsd_unit_file_t:service all_service_perms;
  ')
 diff --git a/apcupsd.te b/apcupsd.te
-index d052bf0..77e6e19 100644
+index d052bf0..6c7828b 100644
 --- a/apcupsd.te
 +++ b/apcupsd.te
 @@ -24,6 +24,9 @@ files_tmp_file(apcupsd_tmp_t)
@@ -3759,7 +3759,7 @@ index d052bf0..77e6e19 100644
  ########################################
  #
  # apcupsd local policy
-@@ -76,6 +79,7 @@ files_etc_filetrans_etc_runtime(apcupsd_t, file)
+@@ -76,24 +79,31 @@ files_etc_filetrans_etc_runtime(apcupsd_t, file)
  
  # https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=240805
  term_use_unallocated_ttys(apcupsd_t)
@@ -3767,7 +3767,13 @@ index d052bf0..77e6e19 100644
  
  #apcupsd runs shutdown, probably need a shutdown domain
  init_rw_utmp(apcupsd_t)
-@@ -87,13 +91,17 @@ miscfiles_read_localization(apcupsd_t)
+ init_telinit(apcupsd_t)
+ 
++auth_read_passwd(apcupsd_t)
++
+ logging_send_syslog_msg(apcupsd_t)
+ 
+ miscfiles_read_localization(apcupsd_t)
  
  sysnet_dns_name_resolve(apcupsd_t)
  
@@ -8433,10 +8439,10 @@ index b40f3f7..3676ecc 100644
  #
 diff --git a/cloudform.fc b/cloudform.fc
 new file mode 100644
-index 0000000..f2968f8
+index 0000000..3fe384f
 --- /dev/null
 +++ b/cloudform.fc
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,22 @@
 +/etc/rc\.d/init\.d/iwhd --      gen_context(system_u:object_r:iwhd_initrc_exec_t,s0)
 +/etc/rc\.d/init\.d/mongod	--	gen_context(system_u:object_r:mongod_initrc_exec_t,s0)
 +
@@ -8453,8 +8459,7 @@ index 0000000..f2968f8
 +/var/log/deltacloud-core(/.*)?	gen_context(system_u:object_r:deltacloudd_log_t,s0)
 +/var/log/iwhd\.log		--		gen_context(system_u:object_r:iwhd_log_t,s0)
 +/var/log/mongodb(/.*)?		gen_context(system_u:object_r:mongod_log_t,s0)
-+
-+
++/var/log/thin\.log              --	gen_context(system_u:object_r:thin_log_t,s0)
 +
 +/var/run/mongodb(/.*)?		gen_context(system_u:object_r:mongod_var_run_t,s0)
 +/var/run/aeolus/dbomatic\.pid   --  gen_context(system_u:object_r:mongod_var_run_t,s0)
@@ -8508,10 +8513,10 @@ index 0000000..7f55959
 +')
 diff --git a/cloudform.te b/cloudform.te
 new file mode 100644
-index 0000000..2709243
+index 0000000..787b40a
 --- /dev/null
 +++ b/cloudform.te
-@@ -0,0 +1,224 @@
+@@ -0,0 +1,236 @@
 +policy_module(cloudform, 1.0)
 +########################################
 +#
@@ -8524,6 +8529,9 @@ index 0000000..2709243
 +cloudform_domain_template(iwhd)
 +cloudform_domain_template(mongod)
 +cloudform_domain_template(thin)
++
++type thin_log_t;
++logging_log_file(thin_log_t)
 +
 +type deltacloudd_log_t;
 +logging_log_file(deltacloudd_log_t)
@@ -8572,9 +8580,14 @@ index 0000000..2709243
 +allow cloudform_domain self:fifo_file rw_fifo_file_perms;
 +allow cloudform_domain self:tcp_socket create_stream_socket_perms;
 +
++kernel_read_system_state(cloudform_domain)
++
++dev_read_rand(cloudform_domain)
 +dev_read_urand(cloudform_domain)
 +
 +files_read_etc_files(cloudform_domain)
++
++auth_read_passwd(cloudform_domain)
 +
 +miscfiles_read_certs(cloudform_domain)
 +miscfiles_read_localization(cloudform_domain)
@@ -8713,6 +8726,10 @@ index 0000000..2709243
 +allow thin_t self:netlink_route_socket r_netlink_socket_perms;
 +allow thin_t self:udp_socket create_socket_perms;
 +allow thin_t self:unix_stream_socket create_stream_socket_perms;
++
++manage_files_pattern(thin_t, thin_log_t, thin_log_t)
++manage_dirs_pattern(thin_t, thin_log_t, thin_log_t)
++logging_log_filetrans(thin_t, thin_log_t, { file dir })
 +
 +manage_files_pattern(thin_t, thin_var_run_t, thin_var_run_t)
 +files_pid_filetrans(thin_t, thin_var_run_t, { file })
@@ -12843,7 +12860,7 @@ index 848bb92..25c56f7 100644
 +
 +/usr/local/linuxprinter/ppd(/.*)?      gen_context(system_u:object_r:cupsd_rw_etc_t,s0)
 diff --git a/cups.if b/cups.if
-index 305ddf4..3629b92 100644
+index 305ddf4..11d010a 100644
 --- a/cups.if
 +++ b/cups.if
 @@ -9,6 +9,11 @@
@@ -12928,7 +12945,7 @@ index 305ddf4..3629b92 100644
  	init_labeled_script_domtrans($1, cupsd_initrc_exec_t)
  	domain_system_change_exemption($1)
  	role_transition $2 cupsd_initrc_exec_t system_r;
-@@ -350,9 +384,41 @@ interface(`cups_admin',`
+@@ -350,9 +384,42 @@ interface(`cups_admin',`
  	admin_pattern($1, cupsd_var_run_t)
  	files_list_pids($1)
  
@@ -12963,6 +12980,7 @@ index 305ddf4..3629b92 100644
 +
 +	filetrans_pattern($1, cups_etc_t, cups_rw_etc_t, file, "classes.conf")
 +	filetrans_pattern($1, cups_etc_t, cups_rw_etc_t, file, "printers.conf")
++	filetrans_pattern($1, cups_etc_t, cups_rw_etc_t, file, "printers.conf.O")
 +	filetrans_pattern($1, cups_etc_t, cups_rw_etc_t, file, "cupsd.conf")
 +	filetrans_pattern($1, cups_etc_t, cups_rw_etc_t, file, "cupsd.conf.default")
 +	filetrans_pattern($1, cups_etc_t, cups_rw_etc_t, file, "lpoptions")
@@ -20118,7 +20136,7 @@ index 7ff9d6d..6b0a7ff 100644
  	allow $1 glance_api_t:process signal_perms;
  	ps_process_pattern($1, glance_api_t)
 diff --git a/glance.te b/glance.te
-index 4afb81f..842165a 100644
+index 4afb81f..40df3ea 100644
 --- a/glance.te
 +++ b/glance.te
 @@ -57,12 +57,17 @@ manage_files_pattern(glance_domain, glance_var_run_t, glance_var_run_t)
@@ -20139,10 +20157,11 @@ index 4afb81f..842165a 100644
  miscfiles_read_localization(glance_domain)
  
  optional_policy(`
-@@ -80,6 +85,14 @@ files_tmp_filetrans(glance_registry_t, glance_registry_tmp_t, { file dir })
+@@ -80,6 +85,15 @@ files_tmp_filetrans(glance_registry_t, glance_registry_tmp_t, { file dir })
  
  corenet_tcp_bind_generic_node(glance_registry_t)
  corenet_tcp_bind_glance_registry_port(glance_registry_t)
++corenet_tcp_connect_mysqld_port(glance_registry_t)
 +corenet_tcp_connect_all_ephemeral_ports(glance_registry_t)
 +
 +logging_send_syslog_msg(glance_registry_t)
@@ -20154,7 +20173,7 @@ index 4afb81f..842165a 100644
  
  ########################################
  #
-@@ -94,11 +107,11 @@ can_exec(glance_api_t, glance_tmp_t)
+@@ -94,11 +108,11 @@ can_exec(glance_api_t, glance_tmp_t)
  corecmd_exec_shell(glance_api_t)
  
  corenet_tcp_bind_generic_node(glance_api_t)
@@ -30146,7 +30165,7 @@ index b397fde..30bfefb 100644
 +')
 +
 diff --git a/mozilla.te b/mozilla.te
-index 0724816..c1fa8ea 100644
+index 0724816..0749777 100644
 --- a/mozilla.te
 +++ b/mozilla.te
 @@ -12,14 +12,22 @@ policy_module(mozilla, 2.5.3)
@@ -30316,7 +30335,7 @@ index 0724816..c1fa8ea 100644
  
  manage_files_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t)
  manage_lnk_files_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t)
-@@ -323,31 +350,46 @@ manage_fifo_files_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plug
+@@ -323,31 +350,47 @@ manage_fifo_files_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plug
  manage_sock_files_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t)
  fs_tmpfs_filetrans(mozilla_plugin_t, mozilla_plugin_tmpfs_t, { file lnk_file sock_file fifo_file })
  
@@ -30358,6 +30377,7 @@ index 0724816..c1fa8ea 100644
 +corenet_tcp_connect_soundd_port(mozilla_plugin_t)
 +corenet_tcp_connect_vnc_port(mozilla_plugin_t)
 +corenet_tcp_connect_couchdb_port(mozilla_plugin_t)
++corenet_tcp_connect_monopd_port(mozilla_plugin_t)
 +corenet_tcp_connect_all_ephemeral_ports(mozilla_plugin_t)
 +corenet_tcp_bind_generic_node(mozilla_plugin_t)
 +corenet_udp_bind_generic_node(mozilla_plugin_t)
@@ -30369,7 +30389,7 @@ index 0724816..c1fa8ea 100644
  dev_read_video_dev(mozilla_plugin_t)
  dev_write_video_dev(mozilla_plugin_t)
  dev_read_sysfs(mozilla_plugin_t)
-@@ -356,6 +398,7 @@ dev_write_sound(mozilla_plugin_t)
+@@ -356,6 +399,7 @@ dev_write_sound(mozilla_plugin_t)
  # for nvidia driver
  dev_rw_xserver_misc(mozilla_plugin_t)
  dev_dontaudit_rw_dri(mozilla_plugin_t)
@@ -30377,7 +30397,7 @@ index 0724816..c1fa8ea 100644
  
  domain_use_interactive_fds(mozilla_plugin_t)
  domain_dontaudit_read_all_domains_state(mozilla_plugin_t)
-@@ -363,15 +406,22 @@ domain_dontaudit_read_all_domains_state(mozilla_plugin_t)
+@@ -363,15 +407,22 @@ domain_dontaudit_read_all_domains_state(mozilla_plugin_t)
  files_read_config_files(mozilla_plugin_t)
  files_read_usr_files(mozilla_plugin_t)
  files_list_mnt(mozilla_plugin_t)
@@ -30400,7 +30420,7 @@ index 0724816..c1fa8ea 100644
  logging_send_syslog_msg(mozilla_plugin_t)
  
  miscfiles_read_localization(mozilla_plugin_t)
-@@ -384,35 +434,26 @@ sysnet_dns_name_resolve(mozilla_plugin_t)
+@@ -384,35 +435,27 @@ sysnet_dns_name_resolve(mozilla_plugin_t)
  
  term_getattr_all_ttys(mozilla_plugin_t)
  term_getattr_all_ptys(mozilla_plugin_t)
@@ -30413,6 +30433,7 @@ index 0724816..c1fa8ea 100644
  userdom_manage_user_tmp_dirs(mozilla_plugin_t)
 -userdom_read_user_tmp_files(mozilla_plugin_t)
 +userdom_rw_inherited_user_tmp_files(mozilla_plugin_t)
++userdom_delete_user_tmp_files(mozilla_plugin_t)
 +userdom_rw_inherited_user_home_sock_files(mozilla_plugin_t)
 +userdom_manage_home_certs(mozilla_plugin_t)
  userdom_read_user_tmp_symlinks(mozilla_plugin_t)
@@ -30447,7 +30468,7 @@ index 0724816..c1fa8ea 100644
  
  optional_policy(`
  	alsa_read_rw_config(mozilla_plugin_t)
-@@ -422,35 +463,135 @@ optional_policy(`
+@@ -422,24 +465,36 @@ optional_policy(`
  optional_policy(`
  	dbus_system_bus_client(mozilla_plugin_t)
  	dbus_session_bus_client(mozilla_plugin_t)
@@ -30467,7 +30488,14 @@ index 0724816..c1fa8ea 100644
  ')
  
  optional_policy(`
- 	java_exec(mozilla_plugin_t)
+-	java_exec(mozilla_plugin_t)
++	gpm_dontaudit_getattr_gpmctl(mozilla_plugin_t)
+ ')
+ 
+ optional_policy(`
+-	mplayer_exec(mozilla_plugin_t)
+-	mplayer_read_user_home_files(mozilla_plugin_t)
++	java_exec(mozilla_plugin_t)
  ')
  
 +#optional_policy(`
@@ -30475,16 +30503,13 @@ index 0724816..c1fa8ea 100644
 +#')
 +
  optional_policy(`
- 	mplayer_exec(mozilla_plugin_t)
- 	mplayer_read_user_home_files(mozilla_plugin_t)
+-	pcscd_stream_connect(mozilla_plugin_t)
++	mplayer_exec(mozilla_plugin_t)
++	mplayer_read_user_home_files(mozilla_plugin_t)
  ')
  
  optional_policy(`
--	pcscd_stream_connect(mozilla_plugin_t)
--')
--
--optional_policy(`
- 	pulseaudio_exec(mozilla_plugin_t)
+@@ -447,10 +502,102 @@ optional_policy(`
  	pulseaudio_stream_connect(mozilla_plugin_t)
  	pulseaudio_setattr_home_dir(mozilla_plugin_t)
  	pulseaudio_manage_home_files(mozilla_plugin_t)
@@ -30506,14 +30531,14 @@ index 0724816..c1fa8ea 100644
 +optional_policy(`
 +	xserver_xdm_tmp_filetrans(mozilla_plugin_t, mozilla_plugin_tmp_t, { dir file fifo_file sock_file })
 +	xserver_dontaudit_read_xdm_tmp_files(mozilla_plugin_t)
-+	xserver_dontaudit_xdm_tmp_dirs(mozilla_plugin_t)
  	xserver_read_xdm_pid(mozilla_plugin_t)
  	xserver_stream_connect(mozilla_plugin_t)
  	xserver_use_user_fonts(mozilla_plugin_t)
 +	xserver_read_user_iceauth(mozilla_plugin_t)
 +	xserver_read_user_xauth(mozilla_plugin_t)
-+	xserver_append_xdm_home_files(mozilla_plugin_t);
-+')
++	xserver_append_xdm_home_files(mozilla_plugin_t)
++	xserver_dontaudit_xdm_tmp_dirs(mozilla_plugin_t)
+ ')
 +
 +########################################
 +#
@@ -30572,7 +30597,7 @@ index 0724816..c1fa8ea 100644
 +
 +optional_policy(`
 +	xserver_use_user_fonts(mozilla_plugin_config_t)
- ')
++')
 +ifdef(`distro_redhat',`
 +	typealias mozilla_plugin_t  alias nsplugin_t;
 +	typealias mozilla_plugin_exec_t  alias nsplugin_exec_t;
@@ -39145,10 +39170,10 @@ index 0000000..d00f6ba
 +')
 diff --git a/polipo.te b/polipo.te
 new file mode 100644
-index 0000000..c08cddc
+index 0000000..781625a
 --- /dev/null
 +++ b/polipo.te
-@@ -0,0 +1,171 @@
+@@ -0,0 +1,172 @@
 +policy_module(polipo, 1.0.0)
 +
 +########################################
@@ -39254,6 +39279,7 @@ index 0000000..c08cddc
 +corenet_tcp_sendrecv_http_cache_port(polipo_daemon)
 +corenet_tcp_bind_http_cache_port(polipo_daemon)
 +corenet_sendrecv_http_cache_server_packets(polipo_daemon)
++corenet_tcp_connect_http_port(polipo_daemon)
 +
 +files_read_usr_files(polipo_daemon)
 +
@@ -50252,7 +50278,7 @@ index cfe3172..3eb745d 100644
 +
  ')
 diff --git a/sanlock.te b/sanlock.te
-index e02eb6c..f1314b0 100644
+index e02eb6c..c4130e0 100644
 --- a/sanlock.te
 +++ b/sanlock.te
 @@ -1,4 +1,4 @@
@@ -50291,7 +50317,7 @@ index e02eb6c..f1314b0 100644
 -allow sanlock_t self:capability { sys_nice ipc_lock };
 -allow sanlock_t self:process { setsched signull };
 +allow sanlock_t self:capability { chown setgid dac_override ipc_lock sys_nice };
-+allow sanlock_t self:process { setsched signull signal };
++allow sanlock_t self:process { setsched signull signal sigkill };
 +
  allow sanlock_t self:fifo_file rw_fifo_file_perms;
  allow sanlock_t self:unix_stream_socket create_stream_socket_perms;
@@ -54745,10 +54771,10 @@ index 0000000..9127cec
 +')
 diff --git a/thumb.te b/thumb.te
 new file mode 100644
-index 0000000..e379b1b
+index 0000000..89684c9
 --- /dev/null
 +++ b/thumb.te
-@@ -0,0 +1,109 @@
+@@ -0,0 +1,110 @@
 +policy_module(thumb, 1.0.0)
 +
 +########################################
@@ -54819,6 +54845,7 @@ index 0000000..e379b1b
 +files_read_usr_files(thumb_t)
 +files_read_non_security_files(thumb_t)
 +
++fs_getattr_all_fs(thumb_t)
 +fs_read_dos_files(thumb_t)
 +
 +auth_use_nsswitch(thumb_t)
@@ -56983,7 +57010,7 @@ index 7c5d8d8..85b7d8b 100644
 +	files_pid_filetrans($1, virt_lxc_var_run_t, dir, "libvirt-sandbox")
  ')
 diff --git a/virt.te b/virt.te
-index ad3068a..55dd15c 100644
+index ad3068a..caef8cf 100644
 --- a/virt.te
 +++ b/virt.te
 @@ -5,56 +5,87 @@ policy_module(virt, 1.4.2)
@@ -57587,7 +57614,7 @@ index ad3068a..55dd15c 100644
  files_read_usr_files(virt_domain)
  files_read_var_files(virt_domain)
  files_search_all(virt_domain)
-@@ -449,25 +658,429 @@ files_search_all(virt_domain)
+@@ -449,25 +658,430 @@ files_search_all(virt_domain)
  fs_getattr_tmpfs(virt_domain)
  fs_rw_anon_inodefs_files(virt_domain)
  fs_rw_tmpfs_files(virt_domain)
@@ -57787,6 +57814,7 @@ index ad3068a..55dd15c 100644
 +dev_relabel_all_dev_nodes(virtd_lxc_t)
 +dev_rw_sysfs(virtd_lxc_t)
 +dev_read_sysfs(virtd_lxc_t)
++dev_read_urand(virtd_lxc_t)
 +
 +domain_use_interactive_fds(virtd_lxc_t)
 +

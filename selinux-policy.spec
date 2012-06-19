@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,22 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jun 19 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-5
+- apcupsd needs to read /etc/passwd
+- Sanlock allso sends sigkill
+- Allow glance_registry to connect to the mysqld port
+- Dontaudit mozilla_plugin trying to getattr on /dev/gpmctl
+- Allow firefox plugins/flash to connect to port 1234
+- Allow mozilla plugins to delete user_tmp_t files
+- Add transition name rule for printers.conf.O
+- Allow virt_lxc_t to read urand
+- Allow systemd_loigind to list gstreamer_home_dirs
+- Fix labeling for /usr/bin
+- Fixes for cloudform services
+  * support FIPS
+- Allow polipo to work as web caching
+- Allow chfn to execute tmux
+
 * Fri Jun 15 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-4
 - Add support for ecryptfs
   * ecryptfs does not support xattr
