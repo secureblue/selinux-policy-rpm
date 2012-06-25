@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -235,7 +235,7 @@ fi;
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
    if [ %1 -ne 1 ]; then \
-	/usr/sbin/semodule -n -s %2 -r xfs kudzu kerneloops execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy audioentropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd 2>/dev/null; \
+	/usr/sbin/semodule -n -s %2 -r xfs kudzu kerneloops execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy audioentropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd pyzor razor 2>/dev/null; \
    fi \
    rm -f  /etc/selinux/%2/modules/active/modules/qemu.pp /etc/selinux/%2/modules/active/modules/nsplugin.pp /etc/selinux/%2/modules/active/modules/razor.pp /etc/selinux/%2/modules/active/modules/pyzord.pp \
    /usr/sbin/semodule -B -n -s %2; \
@@ -491,6 +491,30 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jun 25 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-6
+- Add tomcat policy
+- Remove pyzor/razor policy
+- rhsmcertd reads the rpm database
+- Dontaudit  thumb to setattr on xdm_tmp dir
+- Allow wicd to execute ldconfig in the networkmanager_t domain
+- Add /var/run/cherokee\.pid labeling
+- Allow mozilla_plugin to create mozilla_plugin_tmp_t lnk files too
+- Allow postfix-master to r/w pipes other postfix domains
+- Allow snort to create netlink_socket
+- Add kdumpctl policy
+- Allow firstboot to create tmp_t files/directories
+- /usr/bin/paster should not be labeled as piranha_exec_t
+- remove initrc_domain from tomcat
+- Allow ddclient to read /etc/passwd
+- Allow useradd to delete all file types stored in the users homedir
+- Allow ldconfig and insmod to manage kdumpctl tmp files
+- Firstboot should be just creating tmp_t dirs and xauth should be allowed to write to those
+- Transition xauth files within firstboot_tmp_t
+- Fix labeling of /run/media to match /media
+- Label all lxdm.log as xserver_log_t
+- Add port definition for mxi port
+- Allow local_login_t to execute tmux
+
 * Tue Jun 19 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-5
 - apcupsd needs to read /etc/passwd
 - Sanlock allso sends sigkill
