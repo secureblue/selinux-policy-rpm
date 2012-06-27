@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,26 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jun 27 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-7
+- add ptrace_child access to process
+- remove files_read_etc_files() calling from all policies which have auth_use_nsswith()
+- Allow boinc domains to manage boinc_lib_t lnk_files
+- Add support for boinc-client.service unit file
+- Add support for boinc.log
+- Allow mozilla_plugin execmod on mozilla home files if allow_ex
+- Allow dovecot_deliver_t to read dovecot_var_run_t
+- Allow ldconfig and insmod to manage kdumpctl tmp files
+- Move thin policy out from cloudform.pp and add a new thin poli
+- pacemaker needs to communicate with corosync streams
+- abrt is now started on demand by dbus
+- Allow certmonger to talk directly to Dogtag servers
+- Change labeling for /var/lib/cobbler/webui_sessions to httpd_c
+- Allow mozila_plugin to execute gstreamer home files
+- Allow useradd to delete all file types stored in the users hom
+- rhsmcertd reads the rpm database
+- Add support for lightdm
+
+
 * Mon Jun 25 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-6
 - Add tomcat policy
 - Remove pyzor/razor policy
