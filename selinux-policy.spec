@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,21 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jul 3 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-8
+- initrc is calling exportfs which is not confined so it attempts to read nfsd_files
+- Fixes for passenger running within openshift.
+- Add labeling for all tomcat6 dirs
+- Add support for tomcat6
+- Allow cobblerd to read /etc/passwd
+- Allow jockey to read sysfs and and execute binaries with bin_t
+- Allow thum to use user terminals
+- Allow cgclear to read cgconfig config files
+- Fix bcf2g.fc
+- Remove sysnet_dns_name_resolve() from policies where auth_use_nsswitch() is used for other domains
+- Allow dbomatic to execute ruby
+- abrt_watch_log should be abrt_domain
+- Allow mozilla_plugin to connect to gatekeeper port
+
 * Wed Jun 27 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-7
 - add ptrace_child access to process
 - remove files_read_etc_files() calling from all policies which have auth_use_nsswith()
