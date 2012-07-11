@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,37 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jul 11 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-9
+- Until we figure out how to fix systemd issues, allow all apps that send syslog messages to send them to kernel_t
+- Add init_access_check() interface
+- Fix label on /usr/bin/pingus to not be labeled as ping_exec_t
+- Allow tcpdump to create a netlink_socket
+- Label newusers like useradd
+- Change xdm log files to be labeled xdm_log_t
+- Allow sshd_t with privsep to work in MLS
+- Allow freshclam to update databases thru HTTP proxy
+- Allow s-m-config to access check on systemd
+- Allow abrt to read public files by default
+- Fix amavis_create_pid_files() interface
+- Add labeling and filename transition for dbomatic.log
+- Allow system_dbusd_t to stream connect to bluetooth, and use its socket
+- Allow amavisd to execute fsav
+- Allow tuned to use sys_admin and sys_nice capabilities
+- Add php-fpm policy from Bryan
+- Add labeling for aeolus-configserver-thinwrapper
+- Allow thin domains to execute shell
+- Fix gnome_role_gkeyringd() interface description
+- Lot of interface fixes
+- Allow OpenMPI job running as condor_startd_ssh_t to manage condor lib files
+- Allow OpenMPI job to use kerberos
+- Make deltacloudd_t as nsswitch_domain
+- Allow xend_t to run lsscsi
+- Allow qemu-dm running as xend_t to create tun_socket
+- Add labeling for /opt/brother/Printers(.*/)?inf
+- Allow jockey-backend to read pyconfig-64.h labeled as usr_t
+- Fix clamscan_can_scan_system boolean
+- Allow lpr to connectto to /run/user/$USER/keyring-22uREb/pkcs11
+
 * Tue Jul 3 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-8
 - initrc is calling exportfs which is not confined so it attempts to read nfsd_files
 - Fixes for passenger running within openshift.
