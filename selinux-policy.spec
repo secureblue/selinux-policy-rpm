@@ -55,7 +55,7 @@ Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-python >= %{POLICYCOREUTILSVER} bzip2 
-Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.1.8-2
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.1.8-3
 Requires(post): /bin/awk /usr/bin/sha512sum
 Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
 
