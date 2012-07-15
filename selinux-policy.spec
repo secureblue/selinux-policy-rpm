@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,28 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jul 16 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-10
+- Add realmd and stapserver policies
+- Allow useradd to manage stap-server lib files
+- Tighten up capabilities for confined users
+- Label /etc/security/opasswd as shadow_t
+- Add label for /dev/ecryptfs
+- Allow condor_startd_t to start sshd with the ranged
+- Allow lpstat.cups to read fips_enabled file
+- Allow pyzor running as spamc_t to create /root/.pyzor directory
+- Add labelinf for amavisd-snmp init script
+- Add support for amavisd-snmp
+- Allow fprintd sigkill self
+- Allow xend (w/o libvirt) to start virtual machines
+- Allow aiccu to read /etc/passwd
+- Allow condor_startd to Make specified domain MCS trusted for setting any category set for the processes it executes
+- Add condor_startd_ranged_domtrans_to() interface
+- Add ssd_conf_t for /etc/sssd
+- accountsd needs to fchown some files/directories
+- Add ICACLient and zibrauserdata as mozilla_filetrans_home_content
+- SELinux reports afs_t needs dac_override to read /etc/mtab, even though everything works, adding dontaudit
+- Allow xend_t to read the /etc/passwd file
+
 * Wed Jul 11 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-9
 - Until we figure out how to fix systemd issues, allow all apps that send syslog messages to send them to kernel_t
 - Add init_access_check() interface
