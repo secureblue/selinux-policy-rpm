@@ -302,6 +302,7 @@ SELinux %(domainname)s policy is very flexible allowing users to setup their %(d
 The following port types are defined for %(domainname)s:""" % {'domainname':self.domainname})
 
         for p in self.ports:
+            print p
             self.fd.write("""
 
 .EX
@@ -311,8 +312,9 @@ The following port types are defined for %(domainname)s:""" % {'domainname':self
 .EE
 """ % p)
             once = True
-            for p in ( "tcp", "udp" ):
-                if (f,p) in portrecs:
+            for prot in ( "tcp", "udp" ):
+               if (p,prot) in portrecs:
+                    print (p,prot)
                     if once:
                         self.fd.write("""
 
@@ -320,7 +322,7 @@ Default Defined Ports:""")
                     once = False
                     self.fd.write(r"""
 %s %s
-.EE""" % (p, ",".join(portrecs[(f,p)])))
+.EE""" % (prot, ",".join(portrecs[(p,prot)])))
 
     def file_context(self):
         self.fd.write(r"""
