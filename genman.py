@@ -27,9 +27,11 @@ import datetime
 import setools
 import sys
 
+all_attributes = map(lambda x: x['name'], setools.seinfo(setools.ATTRIBUTE))
 entrypoints =  setools.seinfo(setools.ATTRIBUTE,"entry_type")[0]["types"]
 alldomains =  setools.seinfo(setools.ATTRIBUTE,"domain")[0]["types"]
 domains = []
+
 for d in alldomains:
     found = False
     if d[:-2] + "_exec_t" not in entrypoints:
@@ -76,14 +78,27 @@ class ManPage:
         self.anon_list = []
         self.fd = open("%s/%s_selinux.8" % (path, domainname), 'w')
 
+        self.attributes = {}
+        self.ptypes = []
+        self.get_ptypes()
+
+        for domain_type in self.ptypes:
+            self.attributes[domain_type] = setools.seinfo(setools.TYPE,("%s") % domain_type)[0]["attributes"]
+
         self.header()
         self.booleans()
+        self.nsswitch_domain()
         self.public_content()
         self.file_context()
         self.port_types()
         self.process_types()
         self.footer()
         self.fd.close()
+
+    def get_ptypes(self):
+        for f in alldomains:
+            if f.startswith(self.short_name):
+                self.ptypes.append(f)
 
     def header(self):
         self.fd.write('.TH  "%(domainname)s_selinux"  "8"  "%(domainname)s" "dwalsh@redhat.com" "%(domainname)s SELinux Policy documentation"'
@@ -213,12 +228,34 @@ SELinux policy is customizable based on least access required.  %s policy is ext
 
             self.fd.write(self.booltext)
 
+    def nsswitch_domain(self):
+        nsswitch_types = []
+        nsswitch_booleans = ['authlogin_nsswitch_use_ldap', 'allow_kerberos','allow_ypbind']
+        nsswitchbooltext = ""
+        if "nsswitch_domain" in all_attributes:
+            self.fd.write("""
+.SH NSSWITCH DOMAIN
+""")
+            for k in self.attributes.keys():    
+                if "nsswitch_domain" in self.attributes[k]:
+                    nsswitch_types.append(k)
+
+            if len(nsswitch_types):
+                for i in nsswitch_booleans:
+                    desc = seobject.booleans_dict[i][2][0].lower() + seobject.booleans_dict[i][2][1:-1]
+                    nsswitchbooltext += """
+.PP
+If you want to %s for the %s, you must turn on the %s boolean.
+
+.EX
+setsebool -P %s 1
+.EE
+""" % (desc,(", ".join(nsswitch_types)), i, i)
+
+        self.fd.write(nsswitchbooltext)
+
     def process_types(self):
-        ptypes = []
-        for f in alldomains:
-            if f.startswith(self.short_name):
-                ptypes.append(f)
-        if len(ptypes) == 0:
+        if len(self.ptypes) == 0:
             return
         self.fd.write(r"""
 .SH PROCESS TYPES
@@ -234,7 +271,7 @@ The following process types are defined for %(domainname)s:
         self.fd.write("""
 .EX
 .B %s 
-.EE""" % ", ".join(ptypes))
+.EE""" % ", ".join(self.ptypes))
         self.fd.write("""
 .PP
 Note: 
