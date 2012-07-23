@@ -230,7 +230,7 @@ SELinux policy is customizable based on least access required.  %s policy is ext
 
     def nsswitch_domain(self):
         nsswitch_types = []
-        nsswitch_booleans = ['authlogin_nsswitch_use_ldap', 'allow_kerberos','allow_ypbind']
+        nsswitch_booleans = ['authlogin_nsswitch_use_ldap', 'kerberos_enabled']
         nsswitchbooltext = ""
         if "nsswitch_domain" in all_attributes:
             self.fd.write("""
@@ -302,7 +302,6 @@ SELinux %(domainname)s policy is very flexible allowing users to setup their %(d
 The following port types are defined for %(domainname)s:""" % {'domainname':self.domainname})
 
         for p in self.ports:
-            print p
             self.fd.write("""
 
 .EX
@@ -314,7 +313,6 @@ The following port types are defined for %(domainname)s:""" % {'domainname':self
             once = True
             for prot in ( "tcp", "udp" ):
                if (p,prot) in portrecs:
-                    print (p,prot)
                     if once:
                         self.fd.write("""
 
