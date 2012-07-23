@@ -275,7 +275,7 @@ The following process types are defined for %(domainname)s:
         self.fd.write("""
 .PP
 Note: 
-.B semanage permississive -a PROCESS_TYPE 
+.B semanage permissive -a PROCESS_TYPE 
 can be used to make a process type permissive. Permissive process types are not denied access by SELinux. AVC messages will still be generated.
 """)
 

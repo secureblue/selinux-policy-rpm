@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,29 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jul 23 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-12
+- Add interface to dontaudit getattr access on sysctls
+- Allow sshd to execute /bin/login
+- Looks like xdm is recreating the xdm directory in ~/.cache/ on login
+- Allow syslog to use the leaked kernel_t unix_dgram_socket from system-jounald
+-  Fix semanage to work with unconfined domain disabled on F18
+- Dontaudit attempts by mozilla plugins to getattr on all kernel sysctls
+- Virt seems to be using lock files
+- Dovecot seems to be searching directories of every mountpoint
+- Allow jockey to read random/urandom, execute shell and install third-party drivers
+- Add aditional params to allow cachedfiles to manage its content
+- gpg agent needs to read /dev/random
+- The kernel hands an svirt domains /SYSxxxxx which is a tmpfs that httpd wants to read and write
+- Add a bunch of dontaudit rules to quiet svirt_lxc domains
+- Additional perms needed to run svirt_lxc domains
+- Allow cgclear to read cgconfig
+- Allow sys_ptrace capability for snmp
+- Allow freshclam to read /proc
+- Allow procmail to manage /home/user/Maildir content
+- Allow NM to execute wpa_cli
+- Allow amavis to read clamd system state
+- Regenerate man pages
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.11.0-11
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
