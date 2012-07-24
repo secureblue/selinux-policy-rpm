@@ -15,7 +15,7 @@
 %endif
 %define POLICYVER 27
 %define POLICYCOREUTILSVER 2.1.9-4
-%define CHECKPOLICYVER 2.1.9-4
+%define CHECKPOLICYVER 2.1.10-3
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
