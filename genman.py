@@ -209,7 +209,9 @@ control.
                 if b.endswith("anon_write"):
                     self.anon_list.append(b)
                 else:
-                    desc = seobject.booleans_dict[b][2][0].lower() + seobject.booleans_dict[b][2][1:-1]
+                    desc = seobject.booleans_dict[b][2][0].lower() + seobject.booleans_dict[b][2][1:]
+                    if desc[-1] == ".":
+                        desc = desc[:-1]
                     self.booltext += """
 .PP
 If you want to %s, you must turn on the %s boolean.
@@ -361,7 +363,7 @@ Path%s:
         self.fd.write("""
 
 .PP
-Note: File context can be temporarily modified with the chcon command.  If you want to permanantly change the file context you need to use the 
+Note: File context can be temporarily modified with the chcon command.  If you want to permanently change the file context you need to use the 
 .B semanage fcontext 
 command.  This will modify the SELinux labeling database.  You will need to use
 .B restorecon
@@ -440,6 +442,9 @@ selinux(8), %s(8), semanage(8), restorecon(8), chcon(1)
 
         if self.booltext != "":        
             self.fd.write(", setsebool(8)")
+
+if len(sys.argv) > 2:
+        domains = sys.argv[2:]
 
 for domainname in domains:
     ManPage(domainname, sys.argv[1])
