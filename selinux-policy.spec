@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,22 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jul 27 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-13
+- Add systemd_logind_inhibit_var_run_t attribute
+- Remove corenet_all_recvfrom_unlabeled() for non-contrib policies because we moved it to domain.if for all domain_type
+- Add interface for mysqld to dontaudit signull to all processes
+- Label new /var/run/journal directory correctly
+- Allow users to inhibit suspend via systemd
+- Add new type for the /var/run/inhibit directory
+- Add interface to send signull to systemd_login so avahi can send them
+- Allow systemd_passwd to send syslog messages
+- Remove corenet_all_recvfrom_unlabeled() calling fro policy files
+- Allow       editparams.cgi running as httpd_bugzilla_script_t to read /etc/group
+- Allow smbd to read cluster config
+- Add additional labeling for passenger
+- Allow dbus to inhibit suspend via systemd
+- Allow avahi to send signull to systemd_login
+
 * Mon Jul 23 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-12
 - Add interface to dontaudit getattr access on sysctls
 - Allow sshd to execute /bin/login
