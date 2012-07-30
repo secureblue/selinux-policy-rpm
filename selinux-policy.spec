@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jul 30 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-14
+- Add systemd fixes to make rawhide booting
+
 * Fri Jul 27 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-13
 - Add systemd_logind_inhibit_var_run_t attribute
 - Remove corenet_all_recvfrom_unlabeled() for non-contrib policies because we moved it to domain.if for all domain_type
