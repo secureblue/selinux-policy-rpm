@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.0
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jul 30 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-15
+- More fixes for systemd to make rawhide booting from Dan Walsh
+
 * Mon Jul 30 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-14
 - Add systemd fixes to make rawhide booting
 
