@@ -18,8 +18,8 @@
 %define CHECKPOLICYVER 2.1.10-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.11.0
-Release: 15%{?dist}
+Version: 3.11.1
+Release: 0%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Aug 2 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-0
+- Update to upstream
+
 * Mon Jul 30 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.0-15
 - More fixes for systemd to make rawhide booting from Dan Walsh
 
