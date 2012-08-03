@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.1
-Release: 0%{?dist}
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,18 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Aug 3 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-1
+- Fix saslauthd when it tries to read /etc/shadow
+- Label gnome-boxes as a virt homedir
+- Need to allow svirt_t ability to getattr on nfs_t file systems
+- Update sanlock policy to solve all AVC's
+- Change confined users can optionally manage virt content
+- Handle new directories under ~/.cache
+- Add block suspend to appropriate domains
+- More rules required for containers
+- Allow login programs to read /run/ data created by systemd_logind
+- Allow staff users to run svirt_t processes
+
 * Thu Aug 2 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-0
 - Update to upstream
 
