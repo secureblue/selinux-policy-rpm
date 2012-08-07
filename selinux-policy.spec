@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,18 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Aug 7 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-2
+- Add new type selinux_login_config_t for /etc/selinux/<type>/logins/
+- Additional fixes for seutil_manage_module_store()
+- dbus_system_domain() should be used with optional_policy
+- Fix svirt to be allowed to use fusefs file system
+- Allow login programs to read /run/ data created by systemd_login
+- sssd wants to write /etc/selinux/<policy>/logins/ for SELinux PAM module
+- Fix svirt to be allowed to use fusefs file system
+- Allow piranha domain to use nsswitch
+- Sanlock needs to send Kill Signals to non root processes
+- Pulseaudio wants to execute /run/user/PID/.orc
+
 * Fri Aug 3 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-1
 - Fix saslauthd when it tries to read /etc/shadow
 - Label gnome-boxes as a virt homedir
