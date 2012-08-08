@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.1
-Release: 3%{?dist}
+Release: 3.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -491,6 +491,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Aug 8 2012 Dan Walsh <dwalshl@redhat.com> 3.11.1-3.1
+- Update with fixes for SECure linux containers
+
 * Tue Aug 7 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-3
 - Add role rules for realmd, sambagui
 
