@@ -14,12 +14,12 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 27
-%define POLICYCOREUTILSVER 2.1.9-4
+%define POLICYCOREUTILSVER 2.1.13-34
 %define CHECKPOLICYVER 2.1.10-3
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.1
-Release: 3.1%{?dist}
+Release: 66%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -27,16 +27,18 @@ patch: policy-rawhide.patch
 patch1: policy_contrib-rawhide.patch
 patch2: policy_contrib-rawhide-roleattribute.patch
 patch3: policy-rawhide-roleattribute.patch
-Source1: modules-targeted.conf
+Source1: modules-targeted-base.conf 
+Source31: modules-targeted-contrib.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
 Source4: setrans-targeted.conf
-Source5: modules-mls.conf
+Source5: modules-mls-base.conf
+Source32: modules-mls-contrib.conf
 Source6: booleans-mls.conf
 Source8: setrans-mls.conf
 Source14: securetty_types-targeted
 Source15: securetty_types-mls
-Source16: modules-minimum.conf
+#Source16: modules-minimum.conf
 Source17: booleans-minimum.conf
 Source18: setrans-minimum.conf
 Source19: securetty_types-minimum
@@ -54,10 +56,9 @@ Source30: booleans.subs_dist
 Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
-BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-python >= %{POLICYCOREUTILSVER} bzip2 
-Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER} libsemanage >= 2.1.8-3
+BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2 
+Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(post): /bin/awk /usr/bin/sha512sum
-Requires: checkpolicy >= %{CHECKPOLICYVER} m4 
 
 %description 
 SELinux Base package
@@ -75,6 +76,8 @@ SELinux Base package
 Summary: SELinux policy devel
 Group: System Environment/Base
 Requires(pre): selinux-policy = %{version}-%{release}
+Requires: m4 checkpolicy >= %{CHECKPOLICYVER}
+Requires: /usr/bin/make
 
 %description devel
 SELinux policy development and man page package
@@ -107,13 +110,21 @@ SELinux policy documentation package
 %define makeCmds() \
 make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024 bare \
 make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024  conf \
-cp -f selinux_config/modules-%1.conf  ./policy/modules.conf \
 cp -f selinux_config/booleans-%1.conf ./policy/booleans.conf \
 cp -f selinux_config/users-%1 ./policy/users \
+#cp -f selinux_config/modules-%1-base.conf  ./policy/modules.conf \
+
+%define makeModulesConf() \
+cp -f selinux_config/modules-%1-%2.conf  ./policy/modules-base.conf \
+cp -f selinux_config/modules-%1-%2.conf  ./policy/modules.conf \
+if [ %3 == "contrib" ];then \
+	cp selinux_config/modules-%1-%3.conf ./policy/modules-contrib.conf; \
+	cat selinux_config/modules-%1-%3.conf >> ./policy/modules.conf; \
+fi; \
 
 %define installCmds() \
-make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024 base.pp \
-make validate UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024 modules \
+make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024 SEMOD_EXP="/usr/bin/semodule_expand -a" base.pp \
+make validate UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024 SEMOD_EXP="/usr/bin/semodule_expand -a" modules \
 make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} MLS_CATS=1024 MCS_CATS=1024 install \
 make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} MLS_CATS=1024 MCS_CATS=1024 install-appconfig \
 %{__mkdir} -p %{buildroot}/%{_sysconfdir}/selinux/%1/logins \
@@ -134,11 +145,14 @@ touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/file_contexts.local \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/nodes.local \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/users_extra.local \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/users.local \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/file_contexts.homedirs.bin \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/file_contexts.bin \
 cp %{SOURCE30} %{buildroot}%{_sysconfdir}/selinux/%1 \
 bzip2 -c %{buildroot}/%{_usr}/share/selinux/%1/base.pp  > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/base.pp \
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/base.pp  \
 for i in %{buildroot}/%{_usr}/share/selinux/%1/*.pp; do bzip2 -c $i > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/`basename $i`; done \
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/*pp*  \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.disabled \
 /usr/sbin/semodule -s %1 -n -B -p %{buildroot}; \
 /usr/bin/sha512sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policy.sha512; \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts  \
@@ -168,7 +182,9 @@ rm -f %{buildroot}/%{_sysconfigdir}/selinux/%1/modules/active/policy.kern
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/homedir_template \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.disabled \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.local \
+%ghost %{_sysconfdir}/selinux/%1/modules/active/*.bin \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/seusers \
 %dir %{_sysconfdir}/selinux/%1/policy/ \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} \
@@ -191,6 +207,7 @@ rm -f %{buildroot}/%{_sysconfigdir}/selinux/%1/modules/active/policy.kern
 %dir %{_sysconfdir}/selinux/%1/contexts/files \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
+%ghost %{_sysconfdir}/selinux/%1/contexts/files/*.bin \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
 %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs_dist \
@@ -211,6 +228,7 @@ if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      /sbin/fixfiles -C ${FILE_CONTEXT}.pre restore 2> /dev/null; \
      /sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* 2> /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
+     restorecon -R /home/*/.cache /home/*/.config; \
 fi;
 
 %define preInstall() \
@@ -234,11 +252,13 @@ fi;
 . %{_sysconfdir}/selinux/config; \
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
+   (cd /etc/selinux/%2/modules/active/modules; rm -f qemu.pp nsplugin.pp razor.pp pyzord.pp phpfpm.pp hotplug.pp consoletype.pp kudzu.pp howl.pp) \
    if [ %1 -ne 1 ]; then \
-	/usr/sbin/semodule -n -s %2 -r xfs kudzu kerneloops execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy audioentropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd pyzor razor 2>/dev/null; \
+	/usr/sbin/semodule -n -s %2 -r matahari xfs kudzu kerneloops execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy audioentropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd pyzor razor pki-selinux phpfpm consoletype 2>/dev/null; \
    fi \
-   rm -f  /etc/selinux/%2/modules/active/modules/qemu.pp /etc/selinux/%2/modules/active/modules/nsplugin.pp /etc/selinux/%2/modules/active/modules/razor.pp /etc/selinux/%2/modules/active/modules/pyzord.pp \
    /usr/sbin/semodule -B -n -s %2; \
+else \
+    touch /etc/selinux/%2/modules/active/modules/sandbox.disabled \
 fi; \
 [ "${SELINUXTYPE}" == "%2" ] && selinuxenabled && load_policy; \
 if [ %1 -eq 1 ]; then \
@@ -248,7 +268,10 @@ else \
 fi;
 
 %define modulesList() \
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp ", $1 }' ./policy/modules.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules.lst \
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp ", $1 }' ./policy/modules-base.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules-base.lst \
+if [ -e ./policy/modules-contrib.conf ];then \
+	awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp ", $1 }' ./policy/modules-contrib.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules-contrib.lst; \
+fi;
 
 %description
 SELinux Reference Policy - modular.
@@ -267,7 +290,7 @@ cp $contrib_path/* $refpolicy_path/policy/modules/contrib
 
 %install
 mkdir selinux_config
-for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE14} %{SOURCE15} %{SOURCE16} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE21} %{SOURCE22} %{SOURCE23} %{SOURCE25} %{SOURCE26};do
+for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE14} %{SOURCE15} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE21} %{SOURCE22} %{SOURCE23} %{SOURCE25} %{SOURCE26} %{SOURCE31} %{SOURCE32};do
  cp $i selinux_config
 done
 tar zxvf selinux_config/config.tgz
@@ -291,7 +314,9 @@ make clean
 mkdir -p %{buildroot}%{_usr}/share/selinux/targeted
 cp %{SOURCE28} %{buildroot}/%{_usr}/share/selinux/targeted
 %makeCmds targeted mcs n allow
+%makeModulesConf targeted base contrib
 %installCmds targeted mcs n allow
+%modulesList targeted 
 %endif
 
 %if %{BUILD_MINIMUM}
@@ -300,6 +325,7 @@ cp %{SOURCE28} %{buildroot}/%{_usr}/share/selinux/targeted
 mkdir -p %{buildroot}%{_usr}/share/selinux/minimum
 cp %{SOURCE28} %{buildroot}/%{_usr}/share/selinux/minimum
 %makeCmds minimum mcs n allow
+%makeModulesConf targeted base contrib
 %installCmds minimum mcs n allow
 %modulesList minimum
 %endif
@@ -307,7 +333,9 @@ cp %{SOURCE28} %{buildroot}/%{_usr}/share/selinux/minimum
 %if %{BUILD_MLS}
 # Build mls policy
 %makeCmds mls mls n deny
+%makeModulesConf mls base contrib
 %installCmds mls mls n deny
+%modulesList mls
 %endif
 
 mkdir -p %{buildroot}%{_mandir}
@@ -384,6 +412,7 @@ Obsoletes: mod_fcgid-selinux <= %{version}-%{release}
 Obsoletes: cachefilesd-selinux <= 0.10-1
 Conflicts:  seedit
 Conflicts:  389-ds-base < 1.2.7, 389-admin < 1.1.12
+Conflicts:	pki-selinux < 10-0.0-0.45.b1
 
 %description targeted
 SELinux Reference policy targeted base module.
@@ -403,6 +432,8 @@ exit 0
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/unconfined_u
 %fileList targeted
+%{_usr}/share/selinux/targeted/modules-base.lst
+%{_usr}/share/selinux/targeted/modules-contrib.lst
 %endif
 
 %if %{BUILD_MINIMUM}
@@ -422,18 +453,18 @@ SELinux Reference policy minimum base module.
 %pre minimum
 %preInstall minimum
 if [ $1 -ne 1 ]; then
-   /usr/sbin/semodule -s minimum -l 2>/dev/null | awk '{ print $1 }' > /usr/share/selinux/minimum/instmodules.lst
+   /usr/sbin/semodule -s minimum -l 2>/dev/null | awk '{ if ($3 != "Disabled") print $1; }' > /usr/share/selinux/minimum/instmodules.lst
 fi
 
 %post minimum
-allpackages=`cat /usr/share/selinux/minimum/modules.lst`
+contribpackages=`cat /usr/share/selinux/minimum/modules-contrib.lst`
+basepackages=`cat /usr/share/selinux/minimum/modules-base.lst`
 if [ $1 -eq 1 ]; then
-packages="clock.pp execmem.pp unconfined.pp unconfineduser.pp application.pp userdomain.pp authlogin.pp logging.pp selinuxutil.pp init.pp systemd.pp sysnetwork.pp miscfiles.pp libraries.pp modutils.pp sysadm.pp locallogin.pp dbus.pp rpm.pp mount.pp fstools.pp usermanage.pp mta.pp"
-for p in $allpackages; do 
-    touch /etc/selinux/minimum/modules/active/modules/$p.disabled
+for p in $contribpackages; do
+	touch /etc/selinux/minimum/modules/active/modules/$p.disabled
 done
-for p in $packages; do 
-    rm -f /etc/selinux/minimum/modules/active/modules/$p.disabled
+for p in $basepackages apache.pp dbus.pp inetd.pp kerberos.pp mta.pp nis.pp; do
+	rm -f /etc/selinux/minimum/modules/active/modules/$p.disabled
 done
 /usr/sbin/semanage -S minimum -i - << __eof
 login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
@@ -443,10 +474,10 @@ __eof
 /usr/sbin/semodule -B -s minimum
 else
 instpackages=`cat /usr/share/selinux/minimum/instmodules.lst`
-for p in $allpackages; do 
+for p in $contribpackages; do
     touch /etc/selinux/minimum/modules/active/modules/$p.disabled
 done
-for p in $instpackages; do 
+for p in $instpackages apache dbus inetd kerberos mta nis; do
     rm -f /etc/selinux/minimum/modules/active/modules/$p.pp.disabled
 done
 /usr/sbin/semodule -B -s minimum
@@ -458,7 +489,8 @@ exit 0
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %fileList minimum
-%{_usr}/share/selinux/minimum/modules.lst
+%{_usr}/share/selinux/minimum/modules-base.lst
+%{_usr}/share/selinux/minimum/modules-contrib.lst
 %endif
 
 %if %{BUILD_MLS}
@@ -487,12 +519,668 @@ SELinux Reference policy mls base module.
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/mls/contexts/users/unconfined_u
 %fileList mls
-
+%{_usr}/share/selinux/mls/modules-base.lst
+%{_usr}/share/selinux/mls/modules-contrib.lst
 %endif
 
 %changelog
-* Tue Aug 8 2012 Dan Walsh <dwalshl@redhat.com> 3.11.1-3.1
-- Update with fixes for SECure linux containers
+* Mon Dec 17 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-66
+- Allow munin disk plugins to get attributes of all directories
+- Allow munin disk plugins to get attributes of all directorie
+- Allow logwatch to get attributes of all directories
+- Fix networkmanager_manage_lib() interface
+- Fix gnome_manage_config() to allow to manage sock_file
+- Fix virtual_domain_context
+- Add support for dynamic DNS for DHCPv6
+
+* Sat Dec 15 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-65
+- Allow svirt to use netlink_route_socket which was a part of auth_use_nsswitch
+- Add additional labeling for /var/www/openshift/broker
+- Fix rhev policy
+- Allow openshift_initrc domain to dbus chat with systemd_logind
+- Allow httpd to getattr passenger log file if run_stickshift
+- Allow consolehelper-gtk to connect to xserver
+- Add labeling for the tmp-inst directory defined in pam_namespace.conf
+- Add lvm_metadata_t labeling for /etc/multipath
+
+* Fri Dec 14 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-64
+- consoletype is no longer used
+
+* Wed Dec 12 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-63
+- Add label for efivarfs
+- Allow certmonger to send signal to itself
+- Allow plugin-config to read own process status
+- Add more fixes for pacemaker
+- apache/drupal can run clamscan on uploaded content
+- Allow chrome_sandbox_nacl_t to read pid 1 content
+
+* Tue Dec 11 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-62
+- Fix MCS Constraints to control ingres and egres controls on the network.
+- Change name of svirt_nokvm_t to svirt_tcg_t
+- Allow tuned to request the kernel to load kernel modules
+
+* Mon Dec 10 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-61
+- Label /var/lib/pgsql/.ssh as ssh_home_t
+- Add labeling for /usr/bin/pg_ctl
+- Allow systemd-logind to manage keyring user tmp dirs
+- Add support for 7389/tcp port
+- gems seems to be placed in lots of places
+- Since xdm is running a full session, it seems to be trying to execute lots of executables via dbus
+- Add back tcp/8123 port as http_cache port
+- Add ovirt-guest-agent\.pid labeling
+- Allow xend to run scsi_id
+- Allow rhsmcertd-worker to read "physical_package_id"
+- Allow pki_tomcat to connect to ldap port
+- Allow lpr to read /usr/share/fonts
+- Allow open file from CD/DVD drive on domU
+- Allow munin services plugins to talk to SSSD
+- Allow all samba domains to create samba directory in var_t directories
+- Take away svirt_t ability to use nsswitch
+- Dontaudit attempts by openshift to read apache logs
+- Allow apache to create as well as append _ra_content_t
+- Dontaudit sendmail_t reading a leaked file descriptor
+- Add interface to have admin transition /etc/prelink.cache to the proper label
+- Add sntp support to ntp policy
+- Allow firewalld to dbus chat with devicekit_power
+- Allow tuned to call lsblk
+- Allow tor to read /proc/sys/kernel/random/uuid
+- Add tor_can_network_relay boolean  
+
+* Wed Dec 5 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-60
+- Add openshift_initrc_signal() interface
+- Fix typos
+- dspam port is treat as spamd_port_t
+- Allow setroubleshoot to getattr on all executables
+- Allow tuned to execute profiles scripts in /etc/tuned
+- Allow apache to create directories to store its log files
+- Allow all directories/files in /var/log starting with passenger to be labeled passenger_log_t
+- Looks like apache is sending sinal to openshift_initrc_t now,needs back port to RHEL6
+- Allow Postfix to be configured to listen on TCP port 10026 for email from DSPAM
+- Add filename transition for /etc/tuned/active_profile
+- Allow condor_master to send mails
+- Allow condor_master to read submit.cf
+- Allow condor_master to create /tmp files/dirs
+- Allow condor_mater to send sigkill to other condor domains
+- Allow condor_procd sigkill capability
+- tuned-adm wants to talk with tuned daemon
+- Allow kadmind and krb5kdc to also list sssd_public_t
+- Allow accountsd to dbus chat with init
+- Fix git_read_generic_system_content_files() interface
+- pppd wants sys_nice by nmcli because of "syscall=sched_setscheduler"
+- Fix mozilla_plugin_can_network_connect to allow to connect to all ports
+- Label all munin plugins which are not covered by munin plugins policy  as unconfined_munin_plugin_exec_t
+- dspam wants to search /var/spool for opendkim data
+- Revert "Add support for tcp/10026 port as dspam_port_t"
+- Turning on labeled networking requires additional access for netlabel_peer_t; these allow rules need to be back ported to RHEL6
+- Allow all application domains to use fifo_files passed in from userdomains, also allow them to write to tmp_files inherited from userdomain
+- Allow systemd_tmpfiles_t to setattr on mandb_cache_t
+
+* Sat Dec 1 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-59
+- consolekit.pp was not removed from the postinstall script
+
+* Fri Nov 30 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-58
+- Add back consolekit policy
+- Silence bootloader trying to use inherited tty
+- Silence xdm_dbusd_t trying to execute telepathy apps
+- Fix shutdown avcs when machine has unconfined.pp disabled
+- The host and a virtual machine can share the same printer on a usb device
+- Change oddjob to transition to a ranged openshift_initr_exec_t when run from oddjob
+- Allow abrt_watch_log_t to execute bin_t
+- Allow chrome sandbox to write content in ~/.config/chromium
+- Dontaudit setattr on fontconfig dir for thumb_t
+- Allow lircd to request the kernel to load module
+- Make rsync as userdom_home_manager
+- Allow rsync to search automount filesystem
+- Add fixes for pacemaker
+
+* Wed Nov 28 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-57
+- Add support for 4567/tcp port
+- Random fixes from Tuomo Soini
+- xdm wants to get init status
+- Allow programs to run in fips_mode
+- Add interface to allow the reading of all blk device nodes
+- Allow init to relabel rpcbind sock_file
+- Fix labeling for lastlog and faillog related to logrotate
+- ALlow aeolus_configserver to use TRAM port
+- Add fixes for aeolus_configserver
+- Allow snmpd to connect to snmp port
+- Allow spamd_update to create spamd_var_lib_t directories
+- Allow domains that can read sssd_public_t files to also list the directory
+- Remove miscfiles_read_localization, this is defined for all domains
+
+* Mon Nov 26 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-56
+- Allow syslogd to request the kernel to load a module
+- Allow syslogd_t to read the network state information
+- Allow xdm_dbusd_t connect to the system DBUS
+- Add support for 7389/tcp port
+- Allow domains to read/write all inherited sockets
+- Allow staff_t to read kmsg
+- Add awstats_purge_apache_log boolean
+- Allow ksysguardproces to read /.config/Trolltech.conf
+- Allow passenger to create and append puppet log files
+- Add puppet_append_log and puppet_create_log interfaces
+- Add puppet_manage_log() interface
+- Allow tomcat domain to search tomcat_var_lib_t
+- Allow pki_tomcat_t to connect to pki_ca ports
+- Allow pegasus_t to have net_admin capability
+- Allow pegasus_t to write /sys/class/net/<interface>/flags
+- Allow mailserver_delivery to manage mail_home_rw_t lnk_files
+- Allow fetchmail to create log files
+- Allow gnomeclock to manage home config in .kde
+- Allow bittlebee to read kernel sysctls
+- Allow logrotate to list /root
+
+* Mon Nov 19 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-55
+- Fix userhelper_console_role_template()
+- Allow enabling Network Access Point service using blueman
+- Make vmware_host_t as unconfined domain
+- Allow authenticate users in webaccess via squid, using mysql as backend
+- Allow gathers to get various metrics on mounted file systems
+- Allow firewalld to read /etc/hosts
+- Fix cron_admin_role() to make sysadm cronjobs running in the sysadm_t instead of cronjob_t
+- Allow kdumpgui to read/write to zipl.conf
+- Commands needed to get mock to build from staff_t in enforcing mode
+- Allow mdadm_t to manage cgroup files
+- Allow all daemons and systemprocesses to use inherited initrc_tmp_t files
+- dontaudit ifconfig_t looking at fifo_files that are leaked to it
+- Add lableing for Quest Authentication System
+
+* Thu Nov 15 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-54
+- Fix filetrans interface definitions
+- Dontaudit xdm_t to getattr on BOINC lib files
+- Add systemd_reload_all_services() interface
+- Dontaudit write access on /var/lib/net-snmp/mib_indexes 
+- Only stop mcsuntrustedproc from relableing files
+- Allow accountsd to dbus chat with gdm
+- Allow realmd to getattr on all fs
+- Allow logrotate to reload all services
+- Add systemd unit file for radiusd
+- Allow winbind to create samba pid dir
+- Add labeling for /var/nmbd/unexpected
+- Allow chrome and mozilla plugin to connect to msnp ports
+
+* Mon Nov 12 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-53
+- Fix storage_rw_inherited_fixed_disk_dev() to cover also blk_file
+- Dontaudit setfiles reading /dev/random
+- On initial boot gnomeclock is going to need to be set buy gdm
+- Fix tftp_read_content() interface
+- Random apps looking at kernel file systems
+- Testing virt with lxc requiers additional access for virsh_t
+- New allow rules requied for latest libvirt, libvirt talks directly to journald,lxc setup tool needs compromize_kernel,and we need ipc_lock in the container
+- Allow MPD to read /dev/radnom
+- Allow sandbox_web_type to read logind files which needs to read pulseaudio
+- Allow mozilla plugins to read /dev/hpet
+- Add labeling for /var/lib/zarafa-webap
+- Allow BOINC client to use an HTTP proxy for all connections
+- Allow rhsmertd to domain transition to dmidecod
+-  Allow setroubleshootd to send D-Bus msg to ABRT
+
+* Thu Nov 8 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-52
+- Define usbtty_device_t as a term_tty
+- Allow svnserve to accept a connection
+- Allow xend manage default virt_image_t type
+- Allow prelink_cron_system_t to overide user componant when executing cp
+- Add labeling for z-push
+- Gnomeclock sets the realtime clock
+- Openshift seems to be storing apache logs in /var/lib/openshift/.log/httpd
+- Allow lxc domains to use /dev/random and /dev/urandom
+
+* Wed Nov 7 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-51
+- Add port defintion for tcp/9000
+- Fix labeling for /usr/share/cluster/checkquorum to label also checkquorum.wdmd
+- Add rules and labeling for $HOME/cache/\.gstreamer-.* directory
+- Add support for CIM provider openlmi-networking which uses NetworkManager dbus API
+- Allow shorewall_t to create netlink_socket
+- Allow krb5admind to block suspend
+- Fix labels on /var/run/dlm_controld /var/log/dlm_controld
+- Allow krb5kdc to block suspend
+- gnomessytemmm_t needs to read /etc/passwd
+- Allow cgred to read all sysctls
+
+* Tue Nov 5 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-50
+- Allow all domains to read /proc/sys/vm/overcommit_memory
+- Make proc_numa_t an MLS Trusted Object
+- Add /proc/numactl support for confined users
+- Allow ssh_t to connect to any port > 1023
+- Add openvswitch domain
+- Pulseaudio tries to create directories in gnome_home_t directories
+- New ypbind pkg wants to search /var/run which is caused by sd_notify
+- Allow NM to read certs on NFS/CIFS using use_nfs_*, use_samba_* booleans
+- Allow sanlock to read /dev/random
+- Treat php-fpm with httpd_t
+- Allow domains that can read named_conf_t to be able to list the directories
+- Allow winbind to create sock files in /var/run/samba
+
+* Thu Nov 1 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-49
+- Add smsd policy
+- Add support for OpenShift sbin labelin
+- Add boolean to allow virt to use rawip
+- Allow mozilla_plugin to read all file systems with noxattrs support
+- Allow kerberos to write on anon_inodefs fs
+- Additional access required by fenced
+- Add filename transitions for passwd.lock/group.lock
+- UPdate man pages
+- Create coolkey directory in /var/cache with the correct label
+
+* Tue Oct 30 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-48
+- Fix label on /etc/group.lock
+- Allow gnomeclock to create lnk_file in /etc
+- label /root/.pki as a home_cert_t
+- Add interface to make sure rpcbind.sock is created with the correct label
+- Add definition for new directory /var/lib/os-probe and bootloader wants to read udev rules
+- opendkim should be a part of milter
+- Allow libvirt to set the kernel sched algorythm
+- Allow mongod to read sysfs_t
+- Add authconfig policy
+- Remove calls to miscfiles_read_localization all domains get this
+- Allow virsh_t to read /root/.pki/ content
+- Add label for log directory under /var/www/stickshift
+
+* Mon Oct 29 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-47
+- Allow getty to setattr on usb ttys
+- Allow sshd to search all directories for sshd_home_t content
+- Allow staff domains to send dbus messages to kdumpgui
+- Fix labels on /etc/.pwd.lock and friends to be passwd_file_t
+- Dontaudit setfiles reading urand
+- Add files_dontaudit_list_tmp() for domains to which we added sys_nice/setsched
+- Allow staff_gkeyringd_t to read /home/$USER/.local/share/keyrings dir
+- Allow systemd-timedated to read /dev/urandom
+- Allow entropyd_t to read proc_t (meminfo)
+- Add unconfined munin plugin
+- Fix networkmanager_read_conf() interface
+- Allow blueman to list /tmp which is needed by sys_nic/setsched
+- Fix label of /etc/mail/aliasesdb-stamp
+- numad is searching cgroups
+- realmd is communicating with networkmanager using dbus
+- Lots of fixes to try to get kdump to work
+
+* Fri Oct 26 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-46
+- Allow loging programs to dbus chat with realmd
+- Make apache_content_template calling as optional
+- realmd is using policy kit
+
+* Fri Oct 26 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-45
+- Add new selinuxuser_use_ssh_chroot boolean
+- dbus needs to be able to read/write inherited fixed disk device_t passed through it
+- Cleanup netutils process allow rule
+- Dontaudit leaked fifo files from openshift to ping
+- sanlock needs to read mnt_t lnk files
+- Fail2ban needs to setsched and sys_nice
+
+* Wed Oct 24 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-44
+- Change default label of all files in /var/run/rpcbind
+- Allow sandbox domains (java) to read hugetlbfs_t
+- Allow awstats cgi content to create tmp files and read apache log files
+- Allow setuid/setgid for cupsd-config
+- Allow setsched/sys_nice pro cupsd-config
+-  Fix /etc/localtime sym link to be labeled locale_t
+- Allow sshd to search postgresql db t since this is a homedir
+- Allow xwindows users to chat with realmd
+- Allow unconfined domains to configure all files and null_device_t service
+
+* Tue Oct 23 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-43
+- Adopt pki-selinux policy
+
+* Mon Oct 22 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-42
+- pki is leaking which we dontaudit until a pki code fix
+- Allow setcap for arping
+- Update man pages
+- Add labeling for /usr/sbin/mcollectived
+- pki fixes
+- Allow smokeping to execute fping in the netutils_t domain
+
+* Fri Oct 19 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-41
+- Allow mount to relabelfrom unlabeled file systems
+- systemd_logind wants to send and receive messages from devicekit disk over dbus to make connected mouse working
+- Add label to get bin files under libreoffice labeled correctly
+- Fix interface to allow executing of base_ro_file_type
+- Add fixes for realmd
+- Update pki policy
+- Add tftp_homedir boolean
+- Allow blueman sched_setscheduler
+- openshift user domains wants to r/w ssh tcp sockets
+
+* Wed Oct 17 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-40
+- Additional requirements for disable unconfined module when booting
+- Fix label of systemd script files
+- semanage can use -F /dev/stdin to get input
+- syslog now uses kerberos keytabs
+- Allow xserver to compromise_kernel access
+-  Allow nfsd to write to mount_var_run_t when running the mount command
+- Add filename transition rule for bin_t directories
+- Allow files to read usr_t lnk_files
+- dhcpc wants chown
+- Add support for new openshift labeling
+- Clean up for tunable+optional statements
+- Add labeling for /usr/sbin/mkhomedir_helper
+- Allow antivirus domain to managa amavis spool files
+- Allow rpcbind_t to read passwd 
+- Allow pyzor running as spamc to manage amavis spool
+
+
+* Tue Oct 16 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-39
+- Add interfaces to read kernel_t proc info
+- Missed this version of exec_all
+- Allow anyone who can load a kernel module to compromise kernel
+- Add oddjob_dbus_chat to openshift apache policy
+- Allow chrome_sandbox_nacl_t to send signals to itself
+- Add unit file support to usbmuxd_t
+- Allow all openshift domains to read sysfs info
+- Allow openshift domains to getattr on all domains
+
+* Fri Oct 12 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-38
+- MLS fixes from Dan
+- Fix name of capability2 secure_firmware->compromise_kerne
+
+* Thu Oct 11 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-37
+- Allow xdm to search all file systems
+- Add interface to allow the config of all files
+- Add rngd policy
+- Remove kgpg as a gpg_exec_t type
+- Allow plymouthd to block suspend
+- Allow systemd_dbus to config any file
+- Allow system_dbus_t to configure all services
+- Allow freshclam_t to read usr_files
+- varnishd requires execmem to load modules
+
+* Thu Oct 11 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-36
+- Allow semanage to verify types
+- Allow sudo domain to execute user home files
+- Allow session_bus_type to transition to user_tmpfs_t
+- Add dontaudit caused by yum updates
+- Implement pki policy but not activated
+
+* Wed Oct 10 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-35
+- tuned wants to getattr on all filesystems
+- tuned needs also setsched. The build is needed for test day
+
+* Wed Oct 10 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-34
+- Add policy for qemu-qa
+- Allow razor to write own config files
+-  Add an initial antivirus policy to collect all antivirus program
+- Allow qdisk to read usr_t
+- Add additional caps for vmware_host
+- Allow tmpfiles_t to setattr on mandb_cache_t
+- Dontaudit leaked files into mozilla_plugin_config_t
+- Allow wdmd to getattr on tmpfs
+- Allow realmd to use /dev/random
+- allow containers to send audit messages
+- Allow root mount any file via loop device with enforcing mls policy
+- Allow tmpfiles_t to setattr on mandb_cache_t
+- Allow tmpfiles_t to setattr on mandb_cache_t
+- Make userdom_dontaudit_write_all_ not allow open
+- Allow init scripts to read all unit files
+- Add support for saphostctrl ports
+
+* Mon Oct 8 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-33
+- Add kernel_read_system_state to sandbox_client_t
+- Add some of the missing access to kdumpgui
+- Allow systemd_dbusd_t to status the init system
+- Allow vmnet-natd to request the kernel to load a module
+- Allow gsf-office-thum to append .cache/gdm/session.log
+- realmd wants to read .config/dconf/user
+- Firewalld wants sys_nice/setsched
+- Allow tmpreaper to delete mandb cache files
+- Firewalld wants sys_nice/setsched
+- Allow firewalld to perform  a DNS name resolution
+- Allown winbind to read /usr/share/samba/codepages/lowcase.dat
+- Add support for HTTPProxy* in /etc/freshclam.conf
+- Fix authlogin_yubike boolean
+- Extend smbd_selinux man page to include samba booleans
+- Allow dhcpc to execute consoletype
+- Allow ping to use inherited tmp files created in init scripts
+- On full relabel with unconfined domain disabled, initrc was running some chcon's
+- Allow people who delete man pages to delete mandb cache files
+
+* Thu Oct 4 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-32
+- Add missing permissive domains
+
+* Thu Oct 4 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-31
+- Add new mandb policy
+- ALlow systemd-tmpfiles_t to relabel mandb_cache_t
+- Allow logrotate to start all unit files
+
+* Thu Oct 4 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-30
+- Add fixes for ctbd
+- Allow nmbd to stream connect to ctbd
+- Make cglear_t as nsswitch_domain
+- Fix bogus in interfaces
+- Allow openshift to read/write postfix public pipe
+- Add postfix_manage_spool_maildrop_files() interface
+- stickshift paths have been renamed to openshift
+- gnome-settings-daemon wants to write to /run/systemd/inhibit/ pipes
+- Update man pages, adding ENTRYPOINTS
+
+* Tue Oct 2 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-29
+-  Add mei_device_t
+- Make sure gpg content in homedir created with correct label
+- Allow dmesg to write to abrt cache files
+- automount wants to search  virtual memory sysctls
+- Add support for hplip logs stored in /var/log/hp/tmp
+- Add labeling for /etc/owncloud/config.php
+- Allow setroubleshoot to send analysys to syslogd-journal
+- Allow virsh_t to interact with new fenced daemon
+- Allow gpg to write to /etc/mail/spamassassiin directories
+- Make dovecot_deliver_t a mail server delivery type
+- Add label for /var/tmp/DNS25
+
+* Thu Sep 27 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-28
+- Fixes for tomcat_domain template interface
+
+* Thu Sep 27 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-27
+- Remove init_systemd and init_upstart boolean, Move init_daemon_domain and init_system_domain to use attributes
+- Add attribute to all base os types.  Allow all domains to read all ro base OS types
+
+* Wed Sep 26 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-26
+- Additional unit files to be defined as power unit files
+- Fix more boolean names
+
+* Tue Sep 25 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-25
+- Fix boolean name so subs will continue to work
+
+* Tue Sep 25 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-24
+- dbus needs to start getty unit files
+- Add interface to allow system_dbusd_t to start the poweroff service
+- xdm wants to exec telepathy apps
+- Allow users to send messages to systemdlogind
+- Additional rules needed for systemd and other boot apps
+- systemd wants to list /home and /boot
+- Allow gkeyringd to write dbus/conf file
+- realmd needs to read /dev/urand
+- Allow readahead to delete /.readahead if labeled root_t, might get created before policy is loaded
+
+* Thu Sep 20 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-23
+- Fixes to safe more rules
+- Re-write tomcat_domain_template()
+- Fix passenger labeling
+- Allow all domains to read man pages
+- Add ephemeral_port_t to the 'generic' port interfaces
+- Fix the names of postgresql booleans
+
+* Tue Sep 18 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-22
+- Stop using attributes form netlabel_peer and syslog, auth_use_nsswitch setsup netlabel_peer
+- Move netlable_peer check out of booleans
+- Remove call to recvfrom_netlabel for kerberos call
+- Remove use of attributes when calling syslog call 
+- Move -miscfiles_read_localization to domain.te to save hundreds of allow rules
+- Allow all domains to read locale files.  This eliminates around 1500 allow rules- Cleanup nis_use_ypbind_uncond interface
+- Allow rndc to block suspend
+- tuned needs to modify the schedule of the kernel
+- Allow svirt_t domains to read alsa configuration files
+- ighten security on irc domains and make sure they label content in homedir correctly
+- Add filetrans_home_content for irc files
+- Dontaudit all getattr access for devices and filesystems for sandbox domains
+- Allow stapserver to search cgroups directories
+- Allow all postfix domains to talk to spamd
+
+* Mon Sep 17 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-21
+- Add interfaces to ignore setattr until kernel fixes this to be checked after the DAC check
+- Change pam_t to pam_timestamp_t
+- Add dovecot_domain attribute and allow this attribute block_suspend capability2
+- Add sanlock_use_fusefs boolean
+- numad wants send/recieve msg
+- Allow rhnsd to send syslog msgs
+- Make piranha-pulse as initrc domain
+- Update openshift instances to dontaudit setattr until the kernel is fixed.
+
+* Fri Sep 14 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-20
+-  Fix auth_login_pgm_domain() interface to allow domains also managed user tmp dirs because of #856880 related to pam_systemd
+- Remove pam_selinux.8 which conflicts with man page owned by the pam package
+- Allow glance-api to talk to mysql
+- ABRT wants to read Xorg.0.log if if it detects problem with Xorg
+- Fix gstreamer filename trans. interface
+
+* Thu Sep 13 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-19
+- Man page fixes by Dan Walsh
+
+* Tue Sep 11 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-18
+- Allow postalias to read postfix config files
+- Allow man2html to read man pages
+- Allow rhev-agentd to search all mountpoints
+- Allow rhsmcertd to read /dev/random
+- Add tgtd_stream_connect() interface
+- Add cyrus_write_data() interface
+- Dontaudit attempts by sandboxX clients connectiing to the xserver_port_t
+- Add port definition for tcp/81 as http_port_t
+- Fix /dev/twa labeling
+- Allow systemd to read modules config
+
+* Mon Sep 10 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-17
+- Merge openshift policy
+- Allow xauth to read /dev/urandom
+- systemd needs to relabel content in /run/systemd directories
+- Files unconfined should be able to perform all services on all files
+- Puppet tmp file can be leaked to all domains
+- Dontaudit rhsmcertd-worker to search /root/.local
+- Allow chown capability for zarafa domains
+-  Allow system cronjobs to runcon into openshift domains
+- Allow virt_bridgehelper_t to manage content in the svirt_home_t labeled directories
+
+* Fri Sep 7 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-16
+- nmbd wants to create /var/nmbd
+-  Stop transitioning out of anaconda and firstboot, just causes AVC messages
+- Allow clamscan to read /etc files
+- Allow bcfg2 to bind cyphesis port
+- heartbeat should be run as rgmanager_t instead of corosync_t
+- Add labeling for /etc/openldap/certs
+- Add labeling for /opt/sartest directory
+- Make crontab_t as userdom home reader
+- Allow tmpreaper to list admin_home dir
+- Add defition for imap_0 replay cache file
+- Add support for gitolite3
+- Allow virsh_t to send syslog messages
+- allow domains that can read samba content to be able to list the directories also
+- Add realmd_dbus_chat to allow all apps that use nsswitch to talk to realmd
+- Separate out sandbox from sandboxX policy so we can disable it by default
+- Run dmeventd as lvm_t
+- Mounting on any directory requires setattr and write permissions
+- Fix use_nfs_home_dirs() boolean
+- New labels for pam_krb5
+- Allow init and initrc domains to sys_ptrace since this is needed to look at processes not owned by uid 0
+- Add realmd_dbus_chat to allow all apps that use nsswitch to talk to realmd
+
+* Fri Aug 31 2012 Dan Walsh <dwalsh@redhat.com> 3.11.1-15
+- Separate sandbox policy into sandbox and sandboxX, and disable sandbox by default on fresh installs
+- Allow domains that can read etc_t to read etc_runtime_t 
+- Allow all domains to use inherited tmpfiles
+
+* Wed Aug 29 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-14
+- Allow realmd to read resolv.conf
+- Add pegasus_cache_t type
+- Label /usr/sbin/fence_virtd as virsh_exec_t
+- Add policy for pkcsslotd
+- Add support for cpglockd
+- Allow polkit-agent-helper to read system-auth-ac
+- telepathy-idle wants to read gschemas.compiled
+- Allow plymouthd to getattr on fs_t
+- Add slpd policy
+- Allow ksysguardproces to read/write config_usr_t
+
+* Sat Aug 25 2012 Dan Walsh <dwalsh@redhat.com> 3.11.1-13
+- Fix labeling substitution so rpm will label /lib/systemd content correctly
+
+* Fri Aug 24 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-12
+- Add file name transitions for ttyACM0
+- spice-vdagent(d)'s are going to log over to syslog
+- Add sensord policy
+- Add more fixes for passenger policy related to puppet
+- Allow wdmd to create wdmd_tmpfs_t
+- Fix labeling for /var/run/cachefilesd\.pid
+- Add thumb_tmpfs_t files type
+
+* Mon Aug 20 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-11
+- Allow svirt domains to manage the network since this is containerized
+- Allow svirt_lxc_net_t to send audit messages
+
+* Mon Aug 20 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-10
+- Make "snmpwalk -mREDHAT-CLUSTER-MIB ...." working
+- Allow dlm_controld to execute dlm_stonith labeled as bin_t
+- Allow GFS2 working on F17
+- Abrt needs to execute dmesg
+- Allow jockey to list the contents of modeprobe.d
+- Add policy for lightsquid as squid_cron_t
+- Mailscanner is creating files and directories in /tmp
+- dmesg is now reading /dev/kmsg
+- Allow xserver to communicate with secure_firmware
+- Allow fsadm tools (fsck) to read /run/mount contnet
+- Allow sysadm types to read /dev/kmsg
+- 
+
+* Thu Aug 16 2012 Dan Walsh <dwalsh@redhat.com> 3.11.1-9
+- Allow postfix, sssd, rpcd to block_suspend
+- udev seems to need secure_firmware capability
+- Allow virtd to send dbus messages to firewalld so it can configure the firewall
+
+* Thu Aug 16 2012 Dan Walsh <dwalsh@redhat.com> 3.11.1-8
+- Fix labeling of content in /run created by virsh_t
+- Allow condor domains to read kernel sysctls
+- Allow condor_master to connect to amqp
+- Allow thumb drives to create shared memory and semaphores
+- Allow abrt to read mozilla_plugin config files
+- Add labels for lightsquid
+- Default files in /opt and /usr that end in .cgi as httpd_sys_script_t, allow
+- dovecot_auth_t uses ldap for user auth
+- Allow domains that can read dhcp_etc_t to read lnk_files
+- Add more then one watchdog device
+- Allow useradd_t to manage etc_t files so it can rename it and edit them
+- Fix invalid class dir should be fifo_file
+- Move /run/blkid to fsadm and make sure labeling is correct
+
+* Tue Aug 14 2012 Dan Walsh <dwalsh@redhat.com> 3.11.1-7
+- Fix bogus regex found by eparis
+- Fix manage run interface since lvm needs more access
+- syslogd is searching cgroups directory
+- Fixes to allow virt-sandbox-service to manage lxc var run content
+
+* Mon Aug 13 2012 Dan Walsh <dwalsh@redhat.com> 3.11.1-6
+- Fix Boolean settings
+- Add new libjavascriptcoregtk as textrel_shlib_t
+- Allow xdm_t to create xdm_home_t directories
+- Additional access required for systemd
+- Dontaudit mozilla_plugin attempts to ipc_lock
+- Allow tmpreaper to delete unlabeled files
+- Eliminate screen_tmp_t and allow it to manage user_tmp_t
+- Dontaudit mozilla_plugin_config_t to append to leaked file descriptors
+- Allow web plugins to connect to the asterisk ports
+- Condor will recreate the lock directory if it does not exist
+- Oddjob mkhomedir needs to connectto user processes
+- Make oddjob_mkhomedir_t a userdom home manager
+
+* Thu Aug 9 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-5
+- Put placeholder back in place for proper numbering of capabilities
+- Systemd also configures init scripts
+
+* Thu Aug 9 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-4
+- Fix ecryptfs interfaces
+- Bootloader seems to be trolling around /dev/shm and /dev
+- init wants to create /etc/systemd/system-update.target.wants
+- Fix systemd_filetrans call to move it out of tunable
+- Fix up policy to work with systemd userspace manager
+- Add secure_firmware capability and remove bogus epolwakeup
+- Call seutil_*_login_config interfaces where should be needed
+- Allow rhsmcertd to send signal to itself
+- Allow thin domains to send signal to itself
+- Allow Chrome_ChildIO to read dosfs_t
 
 * Tue Aug 7 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-3
 - Add role rules for realmd, sambagui
