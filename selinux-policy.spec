@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.1
-Release: 66%{?dist}
+Release: 67%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -524,6 +524,45 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Dec 21 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-67
+- systemd_logind_t is looking at all files under /run/user/apache
+- Allow systemd to manage all user tmp files
+- Add labeling for /var/named/chroot/etc/localtime
+- Allow netlabel_peer_t type to flow over netif_t and node_t, and only be hindered by MLS, need back port to RHEL6
+- Keystone is now using a differnt port
+- Allow xdm_t to use usbmuxd daemon to control sound
+- Allow passwd daemon to execute gnome_exec_keyringd
+- Fix chrome_sandbox policy
+- Add labeling for /var/run/checkquorum-timer
+- More fixes for the dspam domain, needs back port to RHEL6
+- More fixes for the dspam domain, needs back port to RHEL6
+- sssd needs to connect to kerberos password port if a user changes his password
+- Lots of fixes from RHEL testing of dspam web
+- Allow chrome and mozilla_plugin to create msgq and semaphores
+- Fixes for dspam cgi scripts
+- Fixes for dspam cgi scripts
+- Allow confine users to ptrace screen
+- Backport virt_qemu_ga_t changes from RHEL
+- Fix labeling for dspam.cgi needed for RHEL6
+- We need to back port this policy to RHEL6, for lxc domains
+- Dontaudit attempts to set sys_resource of logrotate
+- Allow corosync to read/write wdmd's tmpfs files
+- I see a ptrace of mozilla_plugin_t by staff_t, will allow without deny_ptrace being set
+- Allow cron jobs to read bind config for unbound
+- libvirt needs to inhibit systemd
+- kdumpctl needs to delete boot_t files
+- Fix duplicate gnome_config_filetrans
+- virtd_lxc_t is using /dev/fuse
+- Passenger needs to create a directory in /var/log, needs a backport to RHEL6 for openshift
+- apcupsd can be setup to listen to snmp trafic
+- Allow transition from kdumpgui to kdumpctl
+- Add fixes for munin CGI scripts
+- Allow deltacloud to connect to openstack at the keystone port
+- Allow domains that transition to svirt domains to be able to signal them
+- Fix file context of gstreamer in .cache directory
+- libvirt is communicating with logind
+- NetworkManager writes to the systemd inhibit pipe
+
 * Mon Dec 17 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-66
 - Allow munin disk plugins to get attributes of all directories
 - Allow munin disk plugins to get attributes of all directorie
@@ -737,7 +776,7 @@ SELinux Reference policy mls base module.
 - gnomessytemmm_t needs to read /etc/passwd
 - Allow cgred to read all sysctls
 
-* Tue Nov 5 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-50
+* Tue Nov 6 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-50
 - Allow all domains to read /proc/sys/vm/overcommit_memory
 - Make proc_numa_t an MLS Trusted Object
 - Add /proc/numactl support for confined users
@@ -1516,7 +1555,7 @@ SELinux Reference policy mls base module.
 * Wed May 9 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-124
 - Make systemd unit files less specific
 
-* Tue May 7 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-123
+* Tue May 8 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-123
 - Fix zarafa labeling
 - Allow guest_t to fix labeling
 - corenet_tcp_bind_all_unreserved_ports(ssh_t) should be called with the user_tcp_server boolean
@@ -1573,7 +1612,7 @@ SELinux Reference policy mls base module.
 - firewalld needs to execute restorecon
 - Allow restorecon and other login domains to execute restorecon
 
-* Tue Apr 26 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-119
+* Tue Apr 24 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-119
 - Allow logrotate to getattr on systemd unit files
 - Add support for tor systemd unit file
 - Allow apmd to create /var/run/pm-utils with the correct label
@@ -1611,13 +1650,13 @@ SELinux Reference policy mls base module.
 - Add labeling for /etc/zipl.conf and zipl binary
 - Turn on allow_execstack and turn off telepathy transition for final release
 
-* Mon Apr 15 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-116
+* Mon Apr 16 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-116
 - More access required for virt_qmf_t
 - Additional assess required for systemd-logind to support multi-seat
 - Allow mozilla_plugin to setrlimit
 - Revert changes to fuse file system to stop deadlock
 
-* Mon Apr 15 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-115
+* Mon Apr 16 2012 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-115
 - Allow condor domains to connect to ephemeral ports
 - More fixes for condor policy
 - Allow keystone to stream connect to mysqld
@@ -2166,15 +2205,15 @@ SELinux Reference policy mls base module.
 - Allow virtd to relabel generic usb which is need if USB device
 - Fixes for virt.if interfaces to consider chr_file as image file type
 
-* Fri Nov 5 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-54.1
+* Fri Nov 4 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-54.1
 - Remove Open Office policy
 - Remove execmem policy
 
-* Fri Nov 5 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-54
+* Fri Nov 4 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-54
 - MCS fixes
 - quota fixes
 
-* Thu Nov 4 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-53.1
+* Thu Nov 3 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-53.1
 - Remove transitions to consoletype
 
 * Tue Nov 1 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-53
@@ -2225,7 +2264,7 @@ SELinux Reference policy mls base module.
 - Add port 8953 as a dns port used by unbound
 - Fix file name transition for alsa and confined users
 
-* Thu Oct 21 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-46.1
+* Fri Oct 21 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-46.1
 - Turn on mock_t and thumb_t for unconfined domains
 
 * Fri Oct 21 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-46
@@ -2243,10 +2282,10 @@ SELinux Reference policy mls base module.
 * Wed Oct 19 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-43
 - Add policies for nova openstack
 
-* Mon Oct 18 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-42
+* Tue Oct 18 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-42
 - Add fixes for nova-stack policy
 
-* Mon Oct 18 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-41
+* Tue Oct 18 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-41
 - Allow svirt_lxc_domain to chr_file and blk_file devices if they are in the domain
 - Allow init process to setrlimit on itself
 - Take away transition rules for users executing ssh-keygen
@@ -2318,7 +2357,7 @@ dontaudit domain domain:process { noatsecure siginh rlimitinh } ;
 - Stop transitioning from unconfined_t to ldconfig_t, but make sure /etc/ld.so.cache is labeled correctly
 - Allow systemd_logind_t to manage /run/USER/dconf/user
 
-* Tue Oct 3 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-36.1
+* Tue Oct 4 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-36.1
 - Fix missing patch from F16
 
 * Mon Oct 3 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-36
@@ -2336,13 +2375,13 @@ dontaudit domain domain:process { noatsecure siginh rlimitinh } ;
 * Mon Oct 3 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-35
 - Stop complaining about leaked file descriptors during install
 
-* Fri Sep 29 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.7
+* Fri Sep 30 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.7
 - Remove java and mono module and merge into execmem
 
-* Fri Sep 29 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.6
+* Fri Sep 30 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.6
 - Fixes for thumb policy and passwd_file_t
 
-* Fri Sep 29 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.4
+* Fri Sep 30 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-34.4
 - Fixes caused by the labeling of /etc/passwd
 - Add thumb.patch to transition unconfined_t to thumb_t for Rawhide
 
@@ -2380,7 +2419,7 @@ dontaudit domain domain:process { noatsecure siginh rlimitinh } ;
 - Add SELinux support for ssh pre-auth net process in F17
 - Add logging_syslogd_can_sendmail boolean
 
-* Wed Sep 20 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-31.1
+* Wed Sep 21 2011 Dan Walsh <dwalsh@redhat.com> 3.10.0-31.1
 - Add definition for ephemeral ports
 - Define user_tty_device_t as a customizable_type
 
@@ -2649,7 +2688,7 @@ dontaudit domain domain:process { noatsecure siginh rlimitinh } ;
 - Lot of fixes
 	* http://git.fedorahosted.org/git/?p=selinux-policy.git;a=log
 
-* Thu May 17 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-22
+* Thu May 19 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.16-22
 - Allow logrotate to execute systemctl
 - Allow nsplugin_t to getattr on gpmctl
 - Fix dev_getattr_all_chr_files() interface
@@ -2924,7 +2963,7 @@ assembled or disassembled.
 - Allow readahead to read all mcs levels
 - Allow mozilla_plugin_t to use nfs or samba homedirs
 
-* Wed Jan 25 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-5
+* Tue Jan 25 2011 Miroslav Grepl <mgrepl@redhat.com> 3.9.13-5
 - Allow nagios plugin to read /proc/meminfo
 - Fix for mozilla_plugin
 - Allow samba_net_t to create /etc/keytab
@@ -3096,7 +3135,7 @@ assembled or disassembled.
 - Dontaudit sys_ptrace capability for iscsid
 - Fixes for nagios plugin policy
 
-* Thu Dec 1 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-5
+* Thu Dec 2 2010 Miroslav Grepl <mgrepl@redhat.com> 3.9.10-5
 - Fix cron to run ranged when started by init
 - Fix devicekit to use log files
 - Dontaudit use of devicekit_var_run_t for fstools
@@ -3354,7 +3393,7 @@ Bz #637339
 - Allow dovecot_deliver to append to inherited log files
 - Lots of fixes for consolehelper
 
-* Wed Sep 21 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-3
+* Wed Sep 22 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-3
 - Fix up Xguest policy
 
 * Thu Sep 16 2010 Dan Walsh <dwalsh@redhat.com> 3.9.5-2
@@ -3375,13 +3414,13 @@ Bz #637339
 - Allow all domains that can use cgroups to search tmpfs_t directory
 - Allow init to send audit messages
 
-* Thu Sep 8 2010 Dan Walsh <dwalsh@redhat.com> 3.9.4-1
+* Thu Sep 9 2010 Dan Walsh <dwalsh@redhat.com> 3.9.4-1
 - Update to upstream
 
-* Thu Sep 8 2010 Dan Walsh <dwalsh@redhat.com> 3.9.3-4
+* Thu Sep 9 2010 Dan Walsh <dwalsh@redhat.com> 3.9.3-4
 - Allow mdadm_t to create files and sock files in /dev/md/
 
-* Thu Sep 8 2010 Dan Walsh <dwalsh@redhat.com> 3.9.3-3
+* Thu Sep 9 2010 Dan Walsh <dwalsh@redhat.com> 3.9.3-3
 - Add policy for ajaxterm
 
 * Wed Sep 8 2010 Dan Walsh <dwalsh@redhat.com> 3.9.3-2
@@ -3403,7 +3442,7 @@ Allow freshclam to execute shell and bin_t
 Allow devicekit_power to transition to dhcpc
 Add boolean to allow icecast to connect to any port
 
-* Thu Aug 31 2010 Dan Walsh <dwalsh@redhat.com> 3.9.2-1
+* Tue Aug 31 2010 Dan Walsh <dwalsh@redhat.com> 3.9.2-1
 - Merge upstream fix of mmap_zero
 - Allow mount to write files in debugfs_t
 - Allow corosync to communicate with clvmd via tmpfs
@@ -3411,11 +3450,10 @@ Add boolean to allow icecast to connect to any port
 - Allow dbus system services to search cgroup_t
 - Define rlogind_t as a login pgm
 
-
-* Wed Aug 31 2010 Dan Walsh <dwalsh@redhat.com> 3.9.1-3
+* Tue Aug 31 2010 Dan Walsh <dwalsh@redhat.com> 3.9.1-3
 - Allow mdadm_t to read/write hugetlbfs
 
-* Tue Aug 30 2010 Dan Walsh <dwalsh@redhat.com> 3.9.1-2
+* Tue Aug 31 2010 Dan Walsh <dwalsh@redhat.com> 3.9.1-2
 - Dominic Grift Cleanup
 - Miroslav Grepl policy for jabberd
 - Various fixes for mount/livecd and prelink
@@ -3447,11 +3485,11 @@ Add boolean to allow icecast to connect to any port
 - Allow mount_t to write to debufs_t dir
 - Dontaudit mount_t trying to write to security_t dir
 
-* Thu Aug 18 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-17
+* Thu Aug 19 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-17
 - Allow clamscan_t execmem if clamd_use_jit set
 - Add policy for firefox plugin-container
 
-* Wed Aug 17 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-16
+* Wed Aug 18 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-16
 - Fix /root/.forward definition
 
 * Tue Aug 17 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-15
@@ -3507,13 +3545,13 @@ Add boolean to allow icecast to connect to any port
 * Tue Jul 20 2010 Dan Walsh <dwalsh@redhat.com> 3.8.8-1
 - Update to latest policy
 
-* Mon Jul 14 2010 Dan Walsh <dwalsh@redhat.com> 3.8.7-3
+* Wed Jul 14 2010 Dan Walsh <dwalsh@redhat.com> 3.8.7-3
 - Fix eclipse labeling from IBMSupportAssasstant packageing
 
-* Mon Jul 14 2010 Dan Walsh <dwalsh@redhat.com> 3.8.7-2
+* Wed Jul 14 2010 Dan Walsh <dwalsh@redhat.com> 3.8.7-2
 - Make boot with systemd in enforcing mode
 
-* Mon Jul 14 2010 Dan Walsh <dwalsh@redhat.com> 3.8.7-1
+* Wed Jul 14 2010 Dan Walsh <dwalsh@redhat.com> 3.8.7-1
 - Update to upstream
 
 * Mon Jul 12 2010 Dan Walsh <dwalsh@redhat.com> 3.8.6-3
@@ -3620,7 +3658,7 @@ Partially resolves 590224
 - Allow aiccu to use tun tap devices
 - Dontaudit shutdown using xserver.log
 
-* Fri May 6 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-14
+* Fri May 7 2010 Dan Walsh <dwalsh@redhat.com> 3.7.19-14
 - Fixes for sandbox_x_net_t  to match access for sandbox_web_t ++
 - Add xdm_etc_t for /etc/gdm directory, allow accountsd to manage this directory
 - Add dontaudit interface for bluetooth dbus
@@ -3841,7 +3879,7 @@ Resolves: #582145
 - Add cachefilesfd policy
 - Dontaudit leaks when transitioning
 
-* Wed Feb 23 2010 Dan Walsh <dwalsh@redhat.com> 3.7.10-4
+* Wed Feb 24 2010 Dan Walsh <dwalsh@redhat.com> 3.7.10-4
 - Change allow_execstack and allow_execmem booleans to on
 - dontaudit acct using console
 - Add label for fping
@@ -3849,7 +3887,7 @@ Resolves: #582145
 - Fix wine dontaudit mmap_zero
 - Allow abrt to read var_t symlinks
 
-* Tue Feb 22 2010 Dan Walsh <dwalsh@redhat.com> 3.7.10-3
+* Tue Feb 23 2010 Dan Walsh <dwalsh@redhat.com> 3.7.10-3
 - Additional policy for rgmanager
 
 * Mon Feb 22 2010 Dan Walsh <dwalsh@redhat.com> 3.7.10-2
@@ -3886,7 +3924,7 @@ Resolves: #582145
 * Mon Feb 1 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-6
 - Lots of fixes found in F12
 
-* Thu Jan 27 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-5
+* Thu Jan 28 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-5
 - Fix rpm_dontaudit_leaks
 
 * Wed Jan 27 2010 Dan Walsh <dwalsh@redhat.com> 3.7.8-4
@@ -3910,7 +3948,7 @@ Resolves: #582145
 - Turn on puppet policy
 - Update to dgrift git policy
 
-* Mon Jan 7 2010 Dan Walsh <dwalsh@redhat.com> 3.7.7-1
+* Thu Jan 7 2010 Dan Walsh <dwalsh@redhat.com> 3.7.7-1
 - Move users file to selection by spec file.
 - Allow vncserver to run as unconfined_u:unconfined_r:unconfined_t
 
@@ -3989,7 +4027,7 @@ Resolves: #582145
 * Thu Sep 24 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-11
 - Allow users to exec restorecond
 
-* Tue Sep 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-10
+* Tue Sep 22 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-10
 - Allow sendmail to request kernel modules load
 
 * Mon Sep 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-9
@@ -4017,12 +4055,12 @@ Resolves: #582145
 * Thu Sep 17 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-2
 - Fixes for sandbox
 
-* Wed Sep 17 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-1
+* Wed Sep 16 2009 Dan Walsh <dwalsh@redhat.com> 3.6.32-1
 - Update to upstream
 - Dontaudit nsplugin search /root
 - Dontaudit nsplugin sys_nice
 
-* Mon Sep 15 2009 Dan Walsh <dwalsh@redhat.com> 3.6.31-5
+* Tue Sep 15 2009 Dan Walsh <dwalsh@redhat.com> 3.6.31-5
 - Fix label on /usr/bin/notepad, /usr/sbin/vboxadd-service
 - Remove policycoreutils-python requirement except for minimum
 
@@ -4145,10 +4183,10 @@ Resolves: #582145
 * Mon Jul 27 2009 Dan Walsh <dwalsh@redhat.com> 3.6.23-2
 - Allow certmaster to override dac permissions
 
-* Thu Jul 22 2009 Dan Walsh <dwalsh@redhat.com> 3.6.23-1
+* Thu Jul 23 2009 Dan Walsh <dwalsh@redhat.com> 3.6.23-1
 - Update to upstream
 
-* Tue Jul 20 2009 Dan Walsh <dwalsh@redhat.com> 3.6.22-3
+* Tue Jul 21 2009 Dan Walsh <dwalsh@redhat.com> 3.6.22-3
 - Fix context for VirtualBox
 
 * Tue Jul 14 2009 Dan Walsh <dwalsh@redhat.com> 3.6.22-1
@@ -4250,7 +4288,7 @@ Resolves: #582145
 * Mon May 11 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-34
 - Allow rpcd_t to send signals to kernel threads
 
-* Fri May 7 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-33
+* Fri May 8 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-33
 - Fix upgrade for F10 to F11
 
 * Thu May 7 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-31
@@ -4351,7 +4389,7 @@ Resolves: #582145
 * Thu Apr 9 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-3
 - Separate out the ucnonfined user from the unconfined.pp package
 
-* Wed Apr 7 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-2
+* Wed Apr 8 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-2
 - Make sure unconfined_java_t and unconfined_mono_t create user_tmpfs_t.
 
 * Tue Apr 7 2009 Dan Walsh <dwalsh@redhat.com> 3.6.12-1
@@ -4413,7 +4451,7 @@ Resolves: #582145
 * Sat Mar 7 2009 Dan Walsh <dwalsh@redhat.com> 3.6.8-2
 - Add pulseaudio context
 
-* Thu Mar 4 2009 Dan Walsh <dwalsh@redhat.com> 3.6.8-1
+* Thu Mar 5 2009 Dan Walsh <dwalsh@redhat.com> 3.6.8-1
 - Upgrade to latest patches
 
 * Wed Mar 4 2009 Dan Walsh <dwalsh@redhat.com> 3.6.7-2
@@ -4560,10 +4598,10 @@ Resolves: #582145
 * Mon Dec 01 2008 Ignacio Vazquez-Abrams <ivazqueznet+rpm@gmail.com> - 3.6.1-2
 - Rebuild for Python 2.6
 
-* Fri Nov 5 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-19
+* Fri Nov 7 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-19
 - Fix labeling on /var/spool/rsyslog
 
-* Thu Nov 5 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-18
+* Thu Nov 6 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-18
 - Allow postgresl to bind to udp nodes
 
 * Wed Nov 5 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-17
@@ -4573,11 +4611,11 @@ Resolves: #582145
 * Wed Nov 5 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-16
 - Fix cyphesis file context
 
-* Tue Nov 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-15
+* Tue Nov 4 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-15
 - Allow hal/pm-utils to look at /var/run/video.rom
 - Add ulogd policy
 
-* Tue Nov 3 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-14
+* Tue Nov 4 2008 Dan Walsh <dwalsh@redhat.com> 3.5.13-14
 - Additional fixes for cyphesis
 - Fix certmaster file context
 - Add policy for system-config-samba
@@ -4712,7 +4750,7 @@ Resolves: #582145
 * Thu Aug 7 2008 Dan Walsh <dwalsh@redhat.com> 3.5.3-1
 - Update to upstream 
 
-* Wed Aug 2 2008 Dan Walsh <dwalsh@redhat.com> 3.5.2-2
+* Sat Aug 2 2008 Dan Walsh <dwalsh@redhat.com> 3.5.2-2
 - Allow system-config-selinux to work with policykit
 
 * Fri Jul 25 2008 Dan Walsh <dwalsh@redhat.com> 3.5.1-5
@@ -4725,7 +4763,7 @@ Resolves: #582145
 * Fri Jul 25 2008 Dan Walsh <dwalsh@redhat.com> 3.5.1-3
 - Fixes for logrotate, alsa
 
-* Thu Jul 25 2008 Dan Walsh <dwalsh@redhat.com> 3.5.1-2
+* Thu Jul 24 2008 Dan Walsh <dwalsh@redhat.com> 3.5.1-2
 - Eliminate vbetool duplicate entry
 
 * Wed Jul 16 2008 Dan Walsh <dwalsh@redhat.com> 3.5.1-1
@@ -4771,7 +4809,7 @@ Resolves: #582145
 * Sun Jun 22 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-5
 - Fix prelude file context
 
-* Fri Jun 12 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-4
+* Fri Jun 13 2008 Dan Walsh <dwalsh@redhat.com> 3.4.2-4
 - allow hplip to talk dbus
 - Fix context on ~/.local dir
 
@@ -4830,7 +4868,7 @@ Resolves: #582145
 * Wed Apr 23 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-39
 - Change etc files to config files to allow users to read them
 
-* Fri Apr 14 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-37
+* Fri Apr 18 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-37
 - Lots of fixes for confined domains on NFS_t homedir
 
 * Mon Apr 14 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-36
@@ -4862,13 +4900,12 @@ Resolves: #582145
 - Allow privhome apps including dovecot read on nfs and cifs home 
 dirs if the boolean is set
 
-
 * Tue Apr 1 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-27
 - Allow nsplugin to read /etc/mozpluggerrc, user_fonts
 - Allow syslog to manage innd logs.
 - Allow procmail to ioctl spamd_exec_t
 
-* Sat Mar 28 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-26
+* Sat Mar 29 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-26
 - Allow initrc_t to dbus chat with consolekit.
 
 * Thu Mar 27 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-25
@@ -4879,7 +4916,7 @@ dirs if the boolean is set
 - Allow mount to mkdir on tmpfs
 - Allow ifconfig to search debugfs
 
-* Fri Mar 18 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-23
+* Fri Mar 21 2008 Dan Walsh <dwalsh@redhat.com> 3.3.1-23
 - Fix file context for MATLAB
 - Fixes for xace
 
@@ -4984,17 +5021,17 @@ directory)
 * Fri Feb 15 2008 Dan Walsh <dwalsh@redhat.com> 3.2.8-1
 - Merge with upstream
 
-* Thu Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-6
+* Thu Feb 7 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-6
 - Allow udev to send audit messages
 
-* Thu Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-5
+* Thu Feb 7 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-5
 - Add additional login users interfaces
   -     userdom_admin_login_user_template(staff)
 
-* Thu Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-3
+* Thu Feb 7 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-3
 - More fixes for polkit
 
-* Thu Feb 5 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-2
+* Thu Feb 7 2008 Dan Walsh <dwalsh@redhat.com> 3.2.7-2
 - Eliminate transition from unconfined_t to qemu by default
 - Fixes for gpg
 
@@ -5088,7 +5125,7 @@ directory)
 - Fix role transition from unconfined_r to system_r when running rpm
 - Allow unconfined_domains to communicate with user dbus instances
 
-* Sat Dec 21 2007 Dan Walsh <dwalsh@redhat.com> 3.2.5-5
+* Sat Dec 22 2007 Dan Walsh <dwalsh@redhat.com> 3.2.5-5
 - Fixes for xguest
 
 * Thu Dec 20 2007 Dan Walsh <dwalsh@redhat.com> 3.2.5-4
@@ -5161,19 +5198,19 @@ directory)
 - Allow udef to read alsa config
 - Fix xguest to be able to connect to sound port
 
-* Fri Oct 17 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-28
+* Fri Oct 19 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-28
 - Fixes for hald_mac 
 - Treat unconfined_home_dir_t as a home dir
 - dontaudit rhgb writes to fonts and root
 
-* Fri Oct 17 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-27
+* Fri Oct 19 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-27
 - Fix dnsmasq
 - Allow rshd full login privs
 
-* Thu Oct 16 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-26
+* Thu Oct 18 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-26
 - Allow rshd to connect to ports > 1023
 
-* Thu Oct 16 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-25
+* Thu Oct 18 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-25
 - Fix vpn to bind to port 4500
 - Allow ssh to create shm
 - Add Kismet policy
@@ -5207,16 +5244,16 @@ directory)
 * Mon Oct 1 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-16
 - Fix exim policy
 
-* Thu Sep 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-15
+* Thu Sep 27 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-15
 - Allow tmpreadper to read man_t
 - Allow racoon to bind to all nodes
 - Fixes for finger print reader
 
-* Tue Sep 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-14
+* Tue Sep 25 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-14
 - Allow xdm to talk to input device (fingerprint reader)
 - Allow octave to run as java
 
-* Tue Sep 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-13
+* Tue Sep 25 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-13
 - Allow login programs to set ioctl on /proc
 
 * Mon Sep 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.8-12
@@ -5346,13 +5383,13 @@ directory)
 * Mon Jul 30 2007 Dan Walsh <dwalsh@redhat.com> 3.0.4-3
 - Allow xserver to write to ramfs mounted by rhgb
 
-* Tue Jul 23 2007 Dan Walsh <dwalsh@redhat.com> 3.0.4-2
+* Tue Jul 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.4-2
 - Add context for dbus machine id
 
-* Tue Jul 23 2007 Dan Walsh <dwalsh@redhat.com> 3.0.4-1
+* Tue Jul 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.4-1
 - Update with latest changes from upstream
 
-* Tue Jul 23 2007 Dan Walsh <dwalsh@redhat.com> 3.0.3-6
+* Tue Jul 24 2007 Dan Walsh <dwalsh@redhat.com> 3.0.3-6
 - Fix prelink to handle execmod
 
 * Mon Jul 23 2007 Dan Walsh <dwalsh@redhat.com> 3.0.3-5
@@ -5402,10 +5439,10 @@ directory)
 - fix squid
 - Fix rpm running as uid
 
-* Wed Jun 26 2007 Dan Walsh <dwalsh@redhat.com> 3.0.1-3
+* Tue Jun 26 2007 Dan Walsh <dwalsh@redhat.com> 3.0.1-3
 - Fix syslog declaration
 
-* Wed Jun 26 2007 Dan Walsh <dwalsh@redhat.com> 3.0.1-2
+* Tue Jun 26 2007 Dan Walsh <dwalsh@redhat.com> 3.0.1-2
 - Allow avahi to access inotify
 - Remove a lot of bogus security_t:filesystem avcs
 
@@ -5449,9 +5486,6 @@ directory)
 * Fri Apr 27 2007 Dan Walsh <dwalsh@redhat.com> 2.6.1-4
 - Allow pcscd_t to send itself signals
 
-* Fri Apr 27 2007 Dan Walsh <dwalsh@redhat.com> 2.6.1-3
-- 
-
 * Wed Apr 25 2007 Dan Walsh <dwalsh@redhat.com> 2.6.1-2
 - Fixes for unix_update
 - Fix logwatch to be able to search all dirs
@@ -5481,7 +5515,7 @@ directory)
 - Rwho policy
 - Fixes for consolekit
 
-* Fri Apr 12 2007 Dan Walsh <dwalsh@redhat.com> 2.5.12-3
+* Fri Apr 13 2007 Dan Walsh <dwalsh@redhat.com> 2.5.12-3
 - fixes for fusefs
 
 * Thu Apr 12 2007 Dan Walsh <dwalsh@redhat.com> 2.5.12-2
@@ -5615,7 +5649,7 @@ Resolves: #227237
 - Fixes to allow kpasswd to work
 - Fixes for bluetooth
 
-* Fri Jan 25 2007 Dan Walsh <dwalsh@redhat.com> 2.5.2-3
+* Fri Jan 26 2007 Dan Walsh <dwalsh@redhat.com> 2.5.2-3
 - Remove some targeted diffs in file context file
 
 * Thu Jan 25 2007 Dan Walsh <dwalsh@redhat.com> 2.5.2-2
@@ -5724,7 +5758,7 @@ Resolves: #212957
 Resolves: #217640
 Resolves: #218014
 
-* Thu Nov 28 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-3
+* Thu Nov 30 2006 Dan Walsh <dwalsh@redhat.com> 2.4.6-3
 - Allow login programs to polyinstatiate homedirs
 Resolves: #216184
 - Allow quotacheck to create database files
@@ -5738,7 +5772,7 @@ Resolves: #217611
 Resolves: #217640
 Resolves: #217725
 
-* Mon Nov 21 2006 Dan Walsh <dwalsh@redhat.com> 2.4.5-4
+* Tue Nov 21 2006 Dan Walsh <dwalsh@redhat.com> 2.4.5-4
 - Fix context for helix players file_context #216942
 
 * Mon Nov 20 2006 Dan Walsh <dwalsh@redhat.com> 2.4.5-3
@@ -5901,21 +5935,21 @@ Resolves: #217725
 * Mon Oct 2 2006 Dan Walsh <dwalsh@redhat.com> 2.3.17-2
 - Fix crond handling for mls
 
-* Fri Sep 28 2006 Dan Walsh <dwalsh@redhat.com> 2.3.17-1
+* Fri Sep 29 2006 Dan Walsh <dwalsh@redhat.com> 2.3.17-1
 - Update to upstream
 
-* Fri Sep 28 2006 Dan Walsh <dwalsh@redhat.com> 2.3.16-9
+* Fri Sep 29 2006 Dan Walsh <dwalsh@redhat.com> 2.3.16-9
 - Remove bluetooth-helper transition
 - Add selinux_validate for semanage
 - Require new version of libsemanage
 
-* Fri Sep 28 2006 Dan Walsh <dwalsh@redhat.com> 2.3.16-8
+* Fri Sep 29 2006 Dan Walsh <dwalsh@redhat.com> 2.3.16-8
 - Fix prelink
 
-* Fri Sep 28 2006 Dan Walsh <dwalsh@redhat.com> 2.3.16-7
+* Fri Sep 29 2006 Dan Walsh <dwalsh@redhat.com> 2.3.16-7
 - Fix rhgb
 
-* Thu Sep 27 2006 Dan Walsh <dwalsh@redhat.com> 2.3.16-6
+* Thu Sep 28 2006 Dan Walsh <dwalsh@redhat.com> 2.3.16-6
 - Fix setrans handling on MLS and useradd
 
 * Wed Sep 27 2006 Dan Walsh <dwalsh@redhat.com> 2.3.16-5
@@ -6022,15 +6056,15 @@ Resolves: #217725
 * Wed Aug 23 2006 Dan Walsh <dwalsh@redhat.com> 2.3.9-1
 - Update to upstream
 
-* Sun Aug 20 2006 Dan Walsh <dwalsh@redhat.com> 2.3.8-2
+* Tue Aug 22 2006 Dan Walsh <dwalsh@redhat.com> 2.3.8-2
 - Fixes for stunnel and postgresql
 - Update from upstream
 
-* Sat Aug 10 2006 Dan Walsh <dwalsh@redhat.com> 2.3.7-1
+* Sat Aug 12 2006 Dan Walsh <dwalsh@redhat.com> 2.3.7-1
 - Update from upstream
 - More java fixes
 
-* Fri Aug 10 2006 Dan Walsh <dwalsh@redhat.com> 2.3.6-4
+* Fri Aug 11 2006 Dan Walsh <dwalsh@redhat.com> 2.3.6-4
 - Change allow_execstack to default to on, for RHEL5 Beta.  
   This is required because of a Java compiler problem.
   Hope to turn off for next beta
@@ -6320,7 +6354,7 @@ Resolves: #217725
 - Lots of file_context fixes for textrel_shlib_t in FC5
 - Turn off execmem auditallow since they are filling log files
 
-* Fri Mar 30 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-1
+* Fri Mar 31 2006 Dan Walsh <dwalsh@redhat.com> 2.2.29-1
 - Update to upstream
 
 * Thu Mar 30 2006 Dan Walsh <dwalsh@redhat.com> 2.2.28-3
@@ -6438,16 +6472,16 @@ Resolves: #217725
 * Fri Feb 24 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-5
 - Fix problem with privoxy talking to Tor
 
-* Thu Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-4
+* Thu Feb 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-4
 - Turn on polyinstatiation
 
-* Thu Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-3
+* Thu Feb 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-3
 - Don't transition from unconfined_t to fsadm_t
 
-* Thu Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-2
+* Thu Feb 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-2
 - Fix policy update model.
 
-* Thu Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-1
+* Thu Feb 23 2006 Dan Walsh <dwalsh@redhat.com> 2.2.21-1
 - Update to upstream
 
 * Wed Feb 22 2006 Dan Walsh <dwalsh@redhat.com> 2.2.20-1
@@ -6588,10 +6622,10 @@ Resolves: #217725
 * Mon Jan 9 2006 Dan Walsh <dwalsh@redhat.com> 2.1.8-1
 - Update to upstream
 - Apply 
-* Fri Jan 7 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-4
+* Fri Jan 6 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-4
 - Add wine and fix hal problems
 
-* Thu Jan 6 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-3
+* Thu Jan 5 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-3
 - Handle new location of hal scripts
 
 * Thu Jan 5 2006 Dan Walsh <dwalsh@redhat.com> 2.1.7-2
@@ -6683,20 +6717,20 @@ Resolves: #217725
 - fix requirements to be on the actual packages so that policy can get
   created properly at install time
 
-* Sun Dec  10 2005 Dan Walsh <dwalsh@redhat.com> 2.1.2-2
+* Sun Dec  11 2005 Dan Walsh <dwalsh@redhat.com> 2.1.2-2
 - Allow unconfined_t to execmod texrel_shlib_t
 
-* Sat Dec  9 2005 Dan Walsh <dwalsh@redhat.com> 2.1.2-1
+* Sat Dec  10 2005 Dan Walsh <dwalsh@redhat.com> 2.1.2-1
 - Update to upstream 
 - Turn off allow_execmem and allow_execmod booleans
 - Add tcpd and automount policies
 
-* Fri Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.1-3
+* Fri Dec  9 2005 Dan Walsh <dwalsh@redhat.com> 2.1.1-3
 - Add two new httpd booleans, turned off by default
      * httpd_can_network_relay
      * httpd_can_network_connect_db
 
-* Fri Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.1-2
+* Fri Dec  9 2005 Dan Walsh <dwalsh@redhat.com> 2.1.1-2
 - Add ghost for policy.20
 
 * Thu Dec  8 2005 Dan Walsh <dwalsh@redhat.com> 2.1.1-1
@@ -6739,10 +6773,10 @@ Update from upstream
 - Fix spec file
 - Fix up passwd changing applications
 
-* Tue Nov 21 2005 Dan Walsh <dwalsh@redhat.com> 2.0.5-1
+* Tue Nov 22 2005 Dan Walsh <dwalsh@redhat.com> 2.0.5-1
 -Update to latest from upstream
 
-* Tue Nov 21 2005 Dan Walsh <dwalsh@redhat.com> 2.0.4-1
+* Tue Nov 22 2005 Dan Walsh <dwalsh@redhat.com> 2.0.4-1
 - Add rules for pegasus and avahi
 
 * Mon Nov 21 2005 Dan Walsh <dwalsh@redhat.com> 2.0.2-2
