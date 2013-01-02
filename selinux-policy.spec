@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.1
-Release: 67%{?dist}
+Release: 69%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -524,6 +524,34 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jan 2 2013 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-69
+- Add systemd_status_all_unit_files() interface
+- Add support for nshadow
+- Allow sysadm_t to administrate the postfix domains
+- Add interface to setattr on isid directories for use by tmpreaper
+- Allow sshd_t sys_admin for use with afs logins
+- Allow systemd to read/write all sysctls
+- Allow sshd_t sys_admin for use with afs logins
+- Allow systemd to read/write all sysctls
+- Add systemd_status_all_unit_files() interface
+- Add support for nshadow
+- Allow sysadm_t to administrate the postfix domains
+- Add interface to setattr on isid directories for use by tmpreaper
+- Allow sshd_t sys_admin for use with afs logins
+- Allow systemd to read/write all sysctls
+- Allow sshd_t sys_admin for use with afs logins
+- Add labeling for /var/named/chroot/etc/localtim
+
+* Thu Dec 27 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-68
+- Allow setroubleshoot_fixit to execute rpm
+- zoneminder needs to connect to httpd ports where remote cameras are listening
+- Allow firewalld to execute content created in /run directory
+- Allow svirt_t to read generic certs
+- Dontaudit leaked ps content to mozilla plugin
+- Allow sshd_t sys_admin for use with afs logins
+- Allow systemd to read/write all sysctls
+- init scripts are creating systemd_unit_file_t directories
+
 * Fri Dec 21 2012 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-67
 - systemd_logind_t is looking at all files under /run/user/apache
 - Allow systemd to manage all user tmp files
