@@ -23,8 +23,8 @@ Release: 67%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-patch: policy-rawhide.patch
-patch1: policy_contrib-rawhide.patch
+patch: policy-rawhide-base.patch
+patch1: policy-rawhide-contrib.patch
 patch2: policy_contrib-rawhide-roleattribute.patch
 patch3: policy-rawhide-roleattribute.patch
 Source1: modules-targeted-base.conf 
