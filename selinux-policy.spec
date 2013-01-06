@@ -13,13 +13,13 @@
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
-%define POLICYVER 27
+%define POLICYVER 28
 %define POLICYCOREUTILSVER 2.1.13-34
-%define CHECKPOLICYVER 2.1.10-3
+%define CHECKPOLICYVER 2.1.11-3
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.11.1
-Release: 69%{?dist}
+Release: 69.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -524,6 +524,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Sat Jan 5 2013 Dan Walsh <dwalsh@redhat.com> 3.11.1-69.1
+- Bump the policy version to 28 to match selinux userspace
+- Rebuild versus latest libsepol
+
 * Wed Jan 2 2013 Miroslav Grepl <mgrepl@redhat.com> 3.11.1-69
 - Add systemd_status_all_unit_files() interface
 - Add support for nshadow
