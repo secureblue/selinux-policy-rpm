@@ -252,9 +252,9 @@ fi;
 . %{_sysconfdir}/selinux/config; \
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
-   (cd /etc/selinux/%2/modules/active/modules; rm -f ctdbd.pp fcoemon.pp glusterd.pp qemu.pp nsplugin.pp razor.pp pyzord.pp phpfpm.pp hotplug.pp consoletype.pp kudzu.pp howl.pp) \
+   (cd /etc/selinux/%2/modules/active/modules; rm -f ctdbd.pp fcoemon.pp glusterd.pp isnsd.pp qemu.pp nsplugin.pp razor.pp pyzord.pp phpfpm.pp hotplug.pp consoletype.pp kudzu.pp howl.pp) \
    if [ %1 -ne 1 ]; then \
-	/usr/sbin/semodule -n -s %2 -r matahari xfs kudzu kerneloops execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy audioentropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd pyzor razor pki-selinux phpfpm consoletype ctdbd fcoemon glusterd 2>/dev/null; \
+	/usr/sbin/semodule -n -s %2 -r matahari xfs kudzu kerneloops execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy audioentropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd pyzor razor pki-selinux phpfpm consoletype ctdbd fcoemon glusterd isnsd 2>/dev/null; \
    fi \
    /usr/sbin/semodule -B -n -s %2; \
 else \
