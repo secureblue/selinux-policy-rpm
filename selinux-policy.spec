@@ -18,8 +18,8 @@
 %define CHECKPOLICYVER 2.1.11-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.11.1
-Release: 69.1%{?dist}
+Version: 3.12.1
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
