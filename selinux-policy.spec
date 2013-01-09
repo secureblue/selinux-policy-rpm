@@ -13,8 +13,8 @@
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
-%define POLICYVER 29
-%define POLICYCOREUTILSVER 2.1.13-34
+%define POLICYVER 28
+%define POLICYCOREUTILSVER 2.1.13-53
 %define CHECKPOLICYVER 2.1.11-3
 Summary: SELinux policy configuration
 Name: selinux-policy
