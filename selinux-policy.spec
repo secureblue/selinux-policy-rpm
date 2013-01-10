@@ -14,12 +14,12 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 29
-%define POLICYCOREUTILSVER 2.1.13-53
+%define POLICYCOREUTILSVER 2.1.13-54
 %define CHECKPOLICYVER 2.1.11-3
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -524,6 +524,21 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jan 10 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-2
+- Remove all mcs overrides and replace with t1 != mcs_constrained_types
+- Add attribute_role for iptables
+- mcs_process_set_categories needs to be called for type
+- Implement additional role_attribute statements
+- Sodo domain is attempting to get the additributes of proc_kcore_t
+- Unbound uses port 8953
+- Allow svirt_t images to compromise_kernel when using pci-passthrough
+- Add label for dns lib files
+- Bluetooth aquires a dbus name
+- Remove redundant files_read_usr_file calling
+- Remove redundant files_read_etc_file calling
+- Fix mozilla_run_plugin()
+- Add role_attribute support for more domains
+
 * Wed Jan 9 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-1
 - Mass merge with upstream
 
