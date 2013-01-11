@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -524,6 +524,14 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jan 11 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-3
+- Allow gnomeclock to talk to puppet over dbus
+- Allow numad access discovered by Dominic
+- Add support for HOME_DIR/.maildir
+- Fix attribute_role for mozilla_plugin_t domain to allow staff_r to access this domain
+- Allow udev to relabel udev_var_run_t lnk_files
+- New bin_t file in mcelog
+
 * Thu Jan 10 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-2
 - Remove all mcs overrides and replace with t1 != mcs_constrained_types
 - Add attribute_role for iptables
