@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -524,6 +524,20 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jan 14 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-4
+- Allow systemd-tmpfiles to relabel lpd spool files
+- Ad labeling for texlive bash scripts
+- Add xserver_filetrans_fonts_cache_home_content() interface
+- Remove duplicate rules from *.te
+- Add support for /var/lock/man-db.lock
+- Add support for /var/tmp/abrt(/.*)?
+- Add additional labeling for munin cgi scripts
+- Allow httpd_t to read munin conf files
+- Allow certwatch to read meminfo
+- Fix nscd_dontaudit_write_sock_file() interfac
+- Fix gnome_filetrans_home_content() to include also "fontconfig" dir as cache_home_t
+- llow mozilla_plugin_t to create HOMEDIR/.fontconfig with the proper labeling 
+
 * Fri Jan 11 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-3
 - Allow gnomeclock to talk to puppet over dbus
 - Allow numad access discovered by Dominic
