@@ -13,16 +13,8 @@
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
-<<<<<<< HEAD
-%define POLICYVER 29
-%define POLICYCOREUTILSVER 2.1.13-34
-||||||| merged common ancestors
-%define POLICYVER 28
-%define POLICYCOREUTILSVER 2.1.13-34
-=======
 %define POLICYVER 29
 %define POLICYCOREUTILSVER 2.1.13-53
->>>>>>> fa970c32f1409d9b0322c292f1e89b2028368e3b
 %define CHECKPOLICYVER 2.1.11-3
 Summary: SELinux policy configuration
 Name: selinux-policy
