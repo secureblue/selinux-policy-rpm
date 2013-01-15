@@ -13,13 +13,21 @@
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
+<<<<<<< HEAD
 %define POLICYVER 29
 %define POLICYCOREUTILSVER 2.1.13-34
+||||||| merged common ancestors
+%define POLICYVER 28
+%define POLICYCOREUTILSVER 2.1.13-34
+=======
+%define POLICYVER 29
+%define POLICYCOREUTILSVER 2.1.13-53
+>>>>>>> fa970c32f1409d9b0322c292f1e89b2028368e3b
 %define CHECKPOLICYVER 2.1.11-3
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.11.1
-Release: 69.1%{?dist}
+Version: 3.12.1
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -252,9 +260,9 @@ fi;
 . %{_sysconfdir}/selinux/config; \
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
-   (cd /etc/selinux/%2/modules/active/modules; rm -f ctdbd.pp fcoemon.pp glusterd.pp isnsd.pp qemu.pp nsplugin.pp razor.pp pyzord.pp phpfpm.pp hotplug.pp consoletype.pp kudzu.pp howl.pp) \
+   (cd /etc/selinux/%2/modules/active/modules; rm -f consolekit.pp ctdbd.pp fcoemon.pp isnsd.pp l2tpd.pp qemu.pp nsplugin.pp razor.pp pyzord.pp phpfpm.pp hotplug.pp consoletype.pp kudzu.pp howl.pp) \
    if [ %1 -ne 1 ]; then \
-	/usr/sbin/semodule -n -s %2 -r matahari xfs kudzu kerneloops execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy audioentropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd pyzor razor pki-selinux phpfpm consoletype ctdbd fcoemon glusterd isnsd 2>/dev/null; \
+	/usr/sbin/semodule -n -s %2 -r matahari xfs kudzu kerneloops execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy audioentropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd pyzor razor pki-selinux phpfpm consoletype ctdbd fcoemon isnsd l2tp consolekit 2>/dev/null; \
    fi \
    /usr/sbin/semodule -B -n -s %2; \
 else \
@@ -524,6 +532,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jan 9 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-1
+- Mass merge with upstream
+
 * Sat Jan 5 2013 Dan Walsh <dwalsh@redhat.com> 3.11.1-69.1
 - Bump the policy version to 28 to match selinux userspace
 - Rebuild versus latest libsepol
