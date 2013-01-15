@@ -14,12 +14,12 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 29
-%define POLICYCOREUTILSVER 2.1.13-53
+%define POLICYCOREUTILSVER 2.1.13-54
 %define CHECKPOLICYVER 2.1.11-3
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 1%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -252,9 +252,9 @@ fi;
 . %{_sysconfdir}/selinux/config; \
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
-   (cd /etc/selinux/%2/modules/active/modules; rm -f consolekit.pp ctdbd.pp fcoemon.pp isnsd.pp l2tpd.pp qemu.pp nsplugin.pp razor.pp pyzord.pp phpfpm.pp hotplug.pp consoletype.pp kudzu.pp howl.pp) \
+   (cd /etc/selinux/%2/modules/active/modules; rm -f  ctdbd.pp fcoemon.pp isnsd.pp l2tpd.pp qemu.pp nsplugin.pp razor.pp pyzord.pp phpfpm.pp hotplug.pp consoletype.pp kudzu.pp howl.pp) \
    if [ %1 -ne 1 ]; then \
-	/usr/sbin/semodule -n -s %2 -r matahari xfs kudzu kerneloops execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy audioentropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd pyzor razor pki-selinux phpfpm consoletype ctdbd fcoemon isnsd l2tp consolekit 2>/dev/null; \
+	/usr/sbin/semodule -n -s %2 -r matahari xfs kudzu kerneloops execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy audioentropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd pyzor razor pki-selinux phpfpm consoletype ctdbd fcoemon isnsd l2tp  2>/dev/null; \
    fi \
    /usr/sbin/semodule -B -n -s %2; \
 else \
@@ -524,6 +524,43 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jan 14 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-4
+- Allow systemd-tmpfiles to relabel lpd spool files
+- Ad labeling for texlive bash scripts
+- Add xserver_filetrans_fonts_cache_home_content() interface
+- Remove duplicate rules from *.te
+- Add support for /var/lock/man-db.lock
+- Add support for /var/tmp/abrt(/.*)?
+- Add additional labeling for munin cgi scripts
+- Allow httpd_t to read munin conf files
+- Allow certwatch to read meminfo
+- Fix nscd_dontaudit_write_sock_file() interfac
+- Fix gnome_filetrans_home_content() to include also "fontconfig" dir as cache_home_t
+- llow mozilla_plugin_t to create HOMEDIR/.fontconfig with the proper labeling 
+
+* Fri Jan 11 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-3
+- Allow gnomeclock to talk to puppet over dbus
+- Allow numad access discovered by Dominic
+- Add support for HOME_DIR/.maildir
+- Fix attribute_role for mozilla_plugin_t domain to allow staff_r to access this domain
+- Allow udev to relabel udev_var_run_t lnk_files
+- New bin_t file in mcelog
+
+* Thu Jan 10 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-2
+- Remove all mcs overrides and replace with t1 != mcs_constrained_types
+- Add attribute_role for iptables
+- mcs_process_set_categories needs to be called for type
+- Implement additional role_attribute statements
+- Sodo domain is attempting to get the additributes of proc_kcore_t
+- Unbound uses port 8953
+- Allow svirt_t images to compromise_kernel when using pci-passthrough
+- Add label for dns lib files
+- Bluetooth aquires a dbus name
+- Remove redundant files_read_usr_file calling
+- Remove redundant files_read_etc_file calling
+- Fix mozilla_run_plugin()
+- Add role_attribute support for more domains
+
 * Wed Jan 9 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-1
 - Mass merge with upstream
 
