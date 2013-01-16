@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -524,6 +524,27 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jan 16 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-5
+- Fix systemd_manage_unit_symlinks() interface
+- Call systemd_manage_unit_symlinks(() which is correct interface
+- Add filename transition for opasswd
+- Switch gnomeclock_dbus_chat to systemd_dbus_chat_timedated since we have switched the name of gnomeclock
+- Allow sytstemd-timedated to get status of init_t
+- Add new systemd policies for hostnamed and rename gnomeclock_t to systemd_timedate_t
+- colord needs to communicate with systemd and systemd_logind, also remove duplicate rules
+- Switch gnomeclock_dbus_chat to systemd_dbus_chat_timedated since we have switched the name of gnomeclock
+- Allow gpg_t to manage all gnome files
+- Stop using pcscd_read_pub_files
+- New rules for xguest, dontaudit attempts to dbus chat
+- Allow firewalld to create its mmap files in tmpfs and tmp directories
+- Allow firewalld to create its mmap files in tmpfs and tmp directories
+- run unbound-chkconf as named_t, so it can read dnssec
+- Colord is reading xdm process state, probably reads state of any apps that sends dbus message
+- Allow mdadm_t to change the kernel scheduler
+- mythtv policy
+- Update mandb_admin() interface
+- Allow dsspam to listen on own tpc_socket
+
 * Mon Jan 14 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-4
 - Allow systemd-tmpfiles to relabel lpd spool files
 - Ad labeling for texlive bash scripts
