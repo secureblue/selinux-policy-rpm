@@ -57,6 +57,7 @@ Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2 
+Requires: selinux-policy-filesystem
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(post): /bin/awk /usr/bin/sha512sum
 
@@ -67,10 +68,19 @@ SELinux Base package
 %defattr(-,root,root,-)
 %dir %{_usr}/share/selinux
 %dir %{_usr}/share/selinux/packages
-%dir %{_sysconfdir}/selinux
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config
 %ghost %{_sysconfdir}/sysconfig/selinux
 %{_usr}/lib/tmpfiles.d/selinux-policy.conf
+
+%package filesystem
+Summary: SELinux policy filesystem
+Group: System Environment/Base
+
+%description filesystem
+SELinux policy filesytem
+
+%files filesystem
+%dir %{_sysconfdir}/selinux
 
 %package devel
 Summary: SELinux policy devel
