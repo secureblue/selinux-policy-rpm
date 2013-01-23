@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -524,6 +524,37 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jan 23 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-6
+- kde gnomeclock wants to write content to /tmp
+- /usr/libexec/kde4/kcmdatetimehelper attempts to create /root/.kde
+- Allow blueman_t to rwx zero_device_t, for some kind of jre
+- Allow mozilla_plugin_t to rwx zero_device_t, for some kind of jre
+- Ftp full access should be allowed to create directories as well as files
+- Add boolean to allow rsync_full_acces, so that an rsync server can write all
+- over the local machine
+- logrotate needs to rotate logs in openshift directories, needs back port to RHEL6
+- Add missing vpnc_roles type line
+- Allow stapserver to write content in /tmp
+- Allow gnome keyring to create keyrings dir in ~/.local/share
+- Dontaudit thumb drives trying to bind to udp sockets if nis_enabled is turned on
+- Add interface to colord_t dbus_chat to allow it to read remote process state
+- Allow colord_t to read cupsd_t state
+- Add mate-thumbnail-font as thumnailer
+- Allow sectoolm to sys_ptrace since it is looking at other proceses /proc data.
+- Allow qpidd to list /tmp. Needed by ssl
+- Only allow init_t to transition to rsync_t domain, not initrc_t.  This should be back ported to F17, F18
+- - Added systemd support for ksmtuned
+- Added booleans
+ 	ksmtuned_use_nfs
+ 	ksmtuned_use_cifs
+- firewalld seems to be creating mmap files which it needs to execute in /run /tmp and /dev/shm.  Would like to clean this up but for now we will allow
+- Looks like qpidd_t needs to read /dev/random
+- Lots of probing avc's caused by execugting gpg from staff_t
+- Dontaudit senmail triggering a net_admin avc
+- Change thumb_role to use thumb_run, not sure why we have a thumb_role, needs back port
+- Logwatch does access check on mdadm binary
+- Add raid_access_check_mdadm() iterface
+
 * Wed Jan 16 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-5
 - Fix systemd_manage_unit_symlinks() interface
 - Call systemd_manage_unit_symlinks(() which is correct interface
@@ -544,6 +575,15 @@ SELinux Reference policy mls base module.
 - mythtv policy
 - Update mandb_admin() interface
 - Allow dsspam to listen on own tpc_socket
+- seutil_filetrans_named_content needs to be optional
+- Allow sysadm_t to execute content in his homedir
+- Add attach_queue to tun_socket, new patch from Paul Moore
+- Change most of selinux configuration types to security_file_type.
+- Add filename transition rules for selinux configuration
+- ssh into a box with -X -Y requires ssh_use_ptys
+- Dontaudit thumb drives trying to bind to udp sockets if nis_enabled is turned on
+- Allow all unpriv userdomains to send dbus messages to hostnamed and timedated
+- New allow rules found by Tom London for systemd_hostnamed
 
 * Mon Jan 14 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-4
 - Allow systemd-tmpfiles to relabel lpd spool files
