@@ -2055,18 +2055,60 @@ index 6f1384c..e9c715d 100644
  
 diff --git a/antivirus.fc b/antivirus.fc
 new file mode 100644
-index 0000000..e9a09f0
+index 0000000..e44bff0
 --- /dev/null
 +++ b/antivirus.fc
-@@ -0,0 +1 @@
-+/var/opt/f-secure(/.*)?			gen_context(system_u:object_r:antivirus_db_t,s0)
+@@ -0,0 +1,43 @@
++/etc/amavis(d)?\.conf			--	gen_context(system_u:object_r:antivirus_conf_t,s0)
++/etc/amavisd(/.*)?					gen_context(system_u:object_r:antivirus_conf_t,s0)
++
++/etc/rc\.d/init\.d/amavis		--	gen_context(system_u:object_r:antivirus_initrc_exec_t,s0)
++/etc/rc\.d/init\.d/amavisd-snmp	--	gen_context(system_u:object_r:antivirus_initrc_exec_t,s0)
++/etc/rc\.d/init\.d/clamd.*		--	gen_context(system_u:object_r:antivirus_initrc_exec_t,s0)
++
++/usr/lib/systemd/system/clamd.*	--	gen_context(system_u:object_r:antivirus_unit_file_t,s0)
++
++/usr/lib/AntiVir/antivir		--	gen_context(system_u:object_r:antivirus_exec_t,s0)
++
++/usr/sbin/amavisd.*				--	gen_context(system_u:object_r:antivirus_exec_t,s0)
++/usr/bin/clamscan				--	gen_context(system_u:object_r:antivirus_exec_t,s0)
++/usr/bin/clamdscan				--	gen_context(system_u:object_r:antivirus_exec_t,s0)
++/usr/bin/freshclam				--	gen_context(system_u:object_r:antivirus_exec_t,s0)
++
++/usr/sbin/clamd					--	gen_context(system_u:object_r:antivirus_exec_t,s0)
++/usr/sbin/clamav-milter			--	gen_context(system_u:object_r:antivirus_exec_t,s0)
++
++/var/clamav(/.*)?					gen_context(system_u:object_r:antivirus_db_t,s0)
++
++
++/var/amavis(/.*)?					gen_context(system_u:object_r:antivirus_db_t,s0)
++/var/lib/amavis(/.*)?				gen_context(system_u:object_r:antivirus_db_t,s0)
++/var/lib/clamav(/.*)?				gen_context(system_u:object_r:antivirus_db_t,s0)
++/var/lib/clamd.*					gen_context(system_u:object_r:antivirus_db_t,s0)
++/var/opt/f-secure(/.*)?				gen_context(system_u:object_r:antivirus_db_t,s0)
++/var/spool/amavisd(/.*)?			gen_context(system_u:object_r:antivirus_db_t,s0)
++/var/virusmails(/.*)?				gen_context(system_u:object_r:antivirus_db_t,s0)
++
++/var/log/amavisd\.log.* 		--  gen_context(system_u:object_r:antivirus_log_t,s0)
++/var/log/clamav.*   				gen_context(system_u:object_r:antivirus_log_t,s0)
++/var/log/freshclam.*    		--  gen_context(system_u:object_r:antivirus_log_t,s0)
++/var/log/clamav/freshclam.* 	--  gen_context(system_u:object_r:antivirus_log_t,s0)
++/var/log/clamd.*    				gen_context(system_u:object_r:antivirus_log_t,s0)
++
++/var/run/amavis(d)?(/.*)?			gen_context(system_u:object_r:antivirus_var_run_t,s0)
++/var/run/amavisd-snmp-subagent\.pid	--	gen_context(system_u:object_r:antivirus_var_run_t,s0)
++
++/var/run/amavis(d)?/clamd\.pid	--	gen_context(system_u:object_r:antivirus_var_run_t,s0)
++/var/run/clamav.*					gen_context(system_u:object_r:antivirus_var_run_t,s0)
++/var/run/clamd.*					gen_context(system_u:object_r:antivirus_var_run_t,s0)
++
 diff --git a/antivirus.if b/antivirus.if
 new file mode 100644
-index 0000000..fe0cdf0
+index 0000000..3929b7e
 --- /dev/null
 +++ b/antivirus.if
-@@ -0,0 +1,20 @@
-+## <summary>SELinux policy for antivirus programs.</summary>
+@@ -0,0 +1,322 @@
++## <summary>SELinux policy for antivirus programs - amavis, clamd, freshclam and clamscan</summary>
 +
 +######################################
 +## <summary>
@@ -2086,12 +2128,314 @@ index 0000000..fe0cdf0
 +
 +        typeattribute $1 antivirus_domain;
 +')
++
++#######################################
++## <summary>
++##  Execute a domain transition to run antivirus program.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed to transition.
++##  </summary>
++## </param>
++#
++interface(`antivirus_domtrans',`
++    gen_require(`
++        type antivirus_t, antivirus_exec_t;
++    ')
++
++    domtrans_pattern($1, antivirus_exec_t, antivirus_t)
++')
++
++#######################################
++## <summary>
++##  Execute antivirus program without a transition.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`antivirus_exec',`
++    gen_require(`
++        type antivirus_exec_t;
++    ')
++
++    can_exec($1, antivirus_exec_t)
++')
++
++#######################################
++## <summary>
++##  Connect to run antivirus program.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`antivirus_stream_connect',`
++    gen_require(`
++        type antivirus_t, antivirus_db_t, antivirus_var_run_t;
++    ')
++
++    files_search_pids($1)
++    stream_connect_pattern($1, antivirus_var_run_t, antivirus_var_run_t, antivirus_t)
++	stream_connect_pattern($1, antivirus_db_t, antivirus_db_t, antivirus_t)
++')
++
++#######################################
++## <summary>
++##  Allow the specified domain to append
++##  to antivirus log files.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`antivirus_append_log',`
++    gen_require(`
++        type antivirus_log_t;
++    ')
++
++    logging_search_logs($1)
++    allow $1 antivirus_log_t:dir list_dir_perms;
++    append_files_pattern($1, antivirus_log_t, antivirus_log_t)
++')
++
++#######################################
++## <summary>
++##  Read antivirus configuration files.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`antivirus_read_config',`
++    gen_require(`
++        type antivirus_conf_t;
++    ')
++
++    files_search_etc($1)
++    allow $1 antivirus_conf_t:file read_file_perms;
++')
++
++#######################################
++## <summary>
++##  Search antivirus db content directories.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`antivirus_search_db',`
++    gen_require(`
++        type antivirus_db_t;
++    ')
++
++    files_search_var_lib($1)
++	files_search_spool($1)
++    allow $1 antivirus_db_t:dir search_dir_perms;
++')
++
++######################################
++## <summary>
++##  Read antivirus db content directories.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`antivirus_read_db',`
++    gen_require(`
++        type antivirus_db_t;
++    ')
++
++    files_search_var_lib($1)
++    files_search_spool($1)
++	read_files_pattern($1, antivirus_db_t, antivirus_db_t)
++	read_lnk_files_pattern($1, antivirus_db_t, antivirus_db_t)
++')
++
++#####################################
++## <summary>
++##  Read and write antivirus db content directories.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`antivirus_rw_db',`
++    gen_require(`
++        type antivirus_db_t;
++    ')
++
++    files_search_var_lib($1)
++    files_search_spool($1)
++    write_files_pattern($1, antivirus_db_t, antivirus_db_t)
++')
++
++####################################
++## <summary>
++##  Manage antivirus db content directories.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`antivirus_manage_db',`
++    gen_require(`
++        type antivirus_db_t;
++    ')
++
++    files_search_var_lib($1)
++    files_search_spool($1)
++    manage_files_pattern($1, antivirus_db_t, antivirus_db_t)
++	manage_dirs_pattern($1, antivirus_db_t, antivirus_db_t)
++')
++
++#######################################
++## <summary>
++##  Manage antivirus pid content.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`antivirus_manage_pid',`
++    gen_require(`
++        type antivirus_var_run_t;
++    ')
++
++    manage_dirs_pattern($1, antivirus_var_run_t, antivirus_var_run_t)
++    manage_files_pattern($1, antivirus_var_run_t, antivirus_var_run_t)
++')
++
++######################################
++## <summary>
++##      Read antivirus state files.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`antivirus_read_state_clamd',`
++        gen_require(`
++                type antivirus_t;
++        ')
++
++        kernel_search_proc($1)
++        ps_process_pattern($1, antivirus_t)
++')
++
++######################################
++## <summary>
++##      Execute antivirus server in the antivirus domain.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed to transition.
++##      </summary>
++## </param>
++#
++interface(`antivirus_systemctl',`
++        gen_require(`
++                type antivirus_t;
++                type antivirus_unit_file_t;
++        ')
++
++        systemd_exec_systemctl($1)
++        systemd_read_fifo_file_passwd_run($1)
++        allow $1 antivirus_unit_file_t:file read_file_perms;
++        allow $1 antivirus_unit_file_t:service manage_service_perms;
++
++        ps_process_pattern($1, antivirus_t)
++')
++
++#######################################
++## <summary>
++##  All of the rules required to administrate
++##  an antivirus programs environment
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++## <param name="role">
++##  <summary>
++##  The role to be allowed to manage the clamav domain.
++##  </summary>
++## </param>
++## <rolecap/>
++#
++interface(`antivirus_admin',`
++    gen_require(`
++		attribute antivirus_domain;
++        type antivirus_t, antivirus_conf_t, antivirus_tmp_t;
++        type antivirus_log_t, antivirus_db_t, antivirus_var_run_t;
++        type antivirus_initrc_exec_t, antivirus_unit_file_t;
++    ')
++
++	allow $1 antivirus_t:process signal_perms;
++    ps_process_pattern($1, antivirus_t)
++
++    tunable_policy(`deny_ptrace',`',`
++        allow $1 antivirus_t:process ptrace;
++    ')
++
++    init_labeled_script_domtrans($1, antivirus_initrc_exec_t)
++    domain_system_change_exemption($1)
++    role_transition $2 antivirus_initrc_exec_t system_r;
++    allow $2 system_r;
++
++	antivirus_systemctl($1)
++    admin_pattern($1, antivirus_unit_file_t)
++    allow $1 antivirus_unit_file_t:service all_service_perms;
++
++    files_list_etc($1)
++    admin_pattern($1, antivirus_conf_t)
++
++    files_list_var_lib($1)
++	admin_pattern($1, antivirus_db_t)
++
++    logging_list_logs($1)
++    admin_pattern($1, antivirus_log_t)
++
++    files_list_pids($1)
++    admin_pattern($1, antivirus_var_run_t)
++
++    files_list_tmp($1)
++    admin_pattern($1, antivirus_tmp_t)
++
++    optional_policy(`
++        systemd_passwd_agent_exec($1)
++        systemd_read_fifo_file_passwd_run($1)
++    ')
++')
 diff --git a/antivirus.te b/antivirus.te
 new file mode 100644
-index 0000000..feabdf3
+index 0000000..fa4edf1
 --- /dev/null
 +++ b/antivirus.te
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,243 @@
 +policy_module(antivirus, 1.0.0)
 +
 +########################################
@@ -2106,27 +2450,234 @@ index 0000000..feabdf3
 +## </desc>
 +gen_tunable(antivirus_can_scan_system, false)
 +
++## <desc>
++##  <p>
++##  Determine whether can antivirus programs use JIT compiler.
++##  </p>
++## </desc>
++gen_tunable(antivirus_use_jit, false)
++
 +attribute antivirus_domain;
 +
++type antivirus_t;
++type antivirus_exec_t;
++typeattribute antivirus_t antivirus_domain;
++typealias antivirus_t alias { amavis_t clamd_t clamscan_t freshclam_t } ;
++typealias antivirus_exec_t alias { amavis_exec_t clamd_exec_t clamscan_exec_t freshclam_exec_t };
++init_daemon_domain(antivirus_t, antivirus_exec_t)
++
++type antivirus_initrc_exec_t;
++typealias antivirus_initrc_exec_t alias { clamd_initrc_exec_t amavis_initrc_exec_t };
++init_script_file(antivirus_initrc_exec_t)
++
++type antivirus_unit_file_t;
++typealias antivirus_unit_file_t alias { clamd_unit_file_t };
++systemd_unit_file(antivirus_unit_file_t)
++
++type antivirus_conf_t;
++typealias antivirus_conf_t alias { clamd_etc_t };
++files_config_file(antivirus_conf_t)
++
++type antivirus_var_run_t;
++typealias antivirus_var_run_t alias { amavis_var_run_t clamd_var_run_t clamd_sock_t };
++files_pid_file(antivirus_var_run_t)
++
++type antivirus_log_t;
++typealias antivirus_log_t alias { amavis_var_log_t clamd_var_log_t freshclam_var_log_t };
++logging_log_file(antivirus_log_t)
++
 +type antivirus_db_t;
++typealias antivirus_db_t alias { amavis_var_lib_t amavis_quarantine_t amavis_spool_t clamd_var_lib_t };
 +files_type(antivirus_db_t)
++
++type antivirus_tmp_t;
++typealias antivirus_tmp_t alias { amavis_tmp_t clamd_tmp_t clamscan_tmp_t };
++files_tmp_file(antivirus_tmp_t)
 +
 +########################################
 +#
 +# antivirus domain local policy
 +#
 +
++allow antivirus_domain self:capability { dac_override chown kill setgid setuid };
++dontaudit antivirus_domain self:capability sys_tty_config;
++allow antivirus_domain self:process signal_perms;
++
++allow antivirus_domain self:fifo_file rw_fifo_file_perms;
++allow antivirus_domain self:unix_stream_socket { accept connectto listen };
++allow antivirus_domain self:tcp_socket { listen accept };
++
++allow antivirus_domain antivirus_conf_t:dir list_dir_perms;
++read_files_pattern(antivirus_domain, antivirus_conf_t, antivirus_conf_t)
++read_lnk_files_pattern(antivirus_domain, antivirus_conf_t, antivirus_conf_t)
++
 +manage_files_pattern(antivirus_domain, antivirus_db_t, antivirus_db_t)
 +manage_dirs_pattern(antivirus_domain, antivirus_db_t, antivirus_db_t)
++manage_sock_files_pattern(antivirus_domain, antivirus_db_t, antivirus_db_t)
 +
-+optional_policy(`
-+	amavis_manage_spool_files(antivirus_domain)
-+')
++manage_dirs_pattern(antivirus_domain, antivirus_tmp_t, antivirus_tmp_t)
++manage_files_pattern(antivirus_domain, antivirus_tmp_t, antivirus_tmp_t)
++manage_sock_files_pattern(antivirus_domain, antivirus_tmp_t, antivirus_tmp_t)
++files_tmp_filetrans(antivirus_domain, antivirus_tmp_t, { file dir sock_file } )
++
++allow antivirus_domain antivirus_log_t:dir setattr_dir_perms;
++manage_files_pattern(antivirus_domain, antivirus_log_t, antivirus_log_t)
++manage_sock_files_pattern(antivirus_domain, antivirus_log_t, antivirus_log_t)
++logging_log_filetrans(antivirus_domain, antivirus_log_t, { sock_file file dir })
++
++manage_dirs_pattern(antivirus_domain, antivirus_var_run_t, antivirus_var_run_t)
++manage_files_pattern(antivirus_domain, antivirus_var_run_t, antivirus_var_run_t)
++manage_sock_files_pattern(antivirus_domain, antivirus_var_run_t, antivirus_var_run_t)
++
++can_exec(antivirus_domain, antivirus_exec_t)
++
++kernel_read_kernel_sysctls(antivirus_domain)
++kernel_read_sysctl(antivirus_domain)
++kernel_read_system_state(antivirus_t)
++
++kernel_dontaudit_list_proc(antivirus_domain)
++kernel_dontaudit_read_proc_symlinks(antivirus_domain)
++
++corecmd_exec_bin(antivirus_domain)
++corecmd_exec_shell(antivirus_domain)
++
++corenet_all_recvfrom_netlabel(antivirus_t)
++corenet_tcp_sendrecv_generic_if(antivirus_t)
++corenet_udp_sendrecv_generic_if(antivirus_t)
++corenet_tcp_sendrecv_generic_node(antivirus_domain)
++corenet_udp_sendrecv_generic_node(antivirus_domain)
++corenet_tcp_sendrecv_all_ports(antivirus_domain)
++corenet_udp_sendrecv_all_ports(antivirus_domain)
++corenet_tcp_bind_generic_node(antivirus_domain)
++corenet_udp_bind_generic_node(antivirus_domain)
++
++corenet_sendrecv_amavisd_send_client_packets(antivirus_domain)
++corenet_tcp_connect_amavisd_send_port(antivirus_domain)
++
++corenet_sendrecv_amavisd_recv_server_packets(antivirus_domain)
++corenet_tcp_bind_amavisd_recv_port(antivirus_domain)
++
++corenet_sendrecv_generic_server_packets(antivirus_domain)
++corenet_udp_bind_generic_port(antivirus_domain)
++corenet_dontaudit_udp_bind_all_ports(antivirus_domain)
++
++corenet_sendrecv_razor_client_packets(antivirus_domain)
++corenet_tcp_connect_razor_port(antivirus_domain)
++corenet_tcp_connect_agentx_port(antivirus_domain)
++
++corenet_tcp_connect_clamd_port(antivirus_domain)
++
++corenet_sendrecv_clamd_server_packets(antivirus_domain)
++corenet_tcp_bind_clamd_port(antivirus_domain)
++
++corenet_sendrecv_http_client_packets(antivirus_domain)
++corenet_tcp_connect_http_port(antivirus_domain)
++corenet_tcp_sendrecv_http_port(antivirus_domain)
++
++corenet_sendrecv_squid_client_packets(antivirus_domain)
++corenet_tcp_connect_squid_port(antivirus_domain)
++corenet_tcp_sendrecv_squid_port(antivirus_domain)
++
++dev_read_rand(antivirus_domain)
++dev_read_sysfs(antivirus_domain)
++dev_read_urand(antivirus_domain)
++
++domain_dontaudit_read_all_domains_state(antivirus_domain)
++
++files_read_etc_runtime_files(antivirus_domain)
++files_search_spool(antivirus_domain)
++
++fs_getattr_xattr_fs(antivirus_domain)
++
++auth_use_nsswitch(antivirus_t)
++auth_dontaudit_read_shadow(antivirus_domain)
++
++init_read_state(antivirus_domain)
++init_read_utmp(antivirus_domain)
++init_stream_connect_script(antivirus_domain)
++
++logging_send_syslog_msg(antivirus_t)
++
++miscfiles_read_generic_certs(antivirus_domain)
++
++sysnet_use_ldap(antivirus_domain)
++
++userdom_dontaudit_search_user_home_dirs(antivirus_domain)
 +
 +tunable_policy(`antivirus_can_scan_system',`
-+        files_read_non_security_files(antivirus_domain)
-+        files_getattr_all_pipes(antivirus_domain)
-+        files_getattr_all_sockets(antivirus_domain)
++	files_read_non_security_files(antivirus_domain)
++	files_getattr_all_pipes(antivirus_domain)
++	files_getattr_all_sockets(antivirus_domain)
++')
++
++tunable_policy(`antivirus_use_jit',`
++    allow antivirus_domain self:process execmem;
++    allow antivirus_domain self:process execmem;
++',`
++    dontaudit antivirus_domain self:process execmem;
++    dontaudit antivirus_domain self:process execmem;
++')
++
++optional_policy(`
++	apache_read_sys_content(antivirus_domain)
++')
++
++optional_policy(`
++	antivirus_systemctl(antivirus_domain)
++')
++
++optional_policy(`
++	cron_system_entry(antivirus_t, antivirus_exec_t)
++    cron_use_fds(antivirus_domain)
++    cron_use_system_job_fds(antivirus_domain)
++    cron_rw_pipes(antivirus_domain)
++')
++
++optional_policy(`
++    dcc_domtrans_client(antivirus_domain)
++    dcc_stream_connect_dccifd(antivirus_domain)
++')
++
++optional_policy(`
++    exim_read_spool_files(antivirus_domain)
++')
++
++optional_policy(`
++    mta_read_config(antivirus_domain)
++	mta_read_queue(antivirus_domain)
++	mta_send_mail(antivirus_domain)
++')
++
++optional_policy(`
++    nslcd_stream_connect(antivirus_domain)
++')
++
++optional_policy(`
++    postfix_read_config(antivirus_domain)
++    postfix_list_spool(antivirus_domain)
++')
++
++optional_policy(`
++    pyzor_domtrans(antivirus_domain)
++    pyzor_signal(antivirus_domain)
++')
++
++optional_policy(`
++    razor_domtrans(antivirus_domain)
++')
++
++optional_policy(`
++    snmp_manage_var_lib_dirs(antivirus_domain)
++    snmp_manage_var_lib_files(antivirus_domain)
++    snmp_stream_connect(antivirus_domain)
++')
++
++optional_policy(`
++	spamd_stream_connect(clamd_t)
++    spamassassin_exec(antivirus_domain)
++    spamassassin_exec_client(antivirus_domain)
++    spamassassin_read_lib_files(antivirus_domain)
++	spamassassin_read_pid_files(antivirus_domain)
 +')
 diff --git a/apache.fc b/apache.fc
 index 550a69e..d2af19f 100644
@@ -7094,7 +7645,7 @@ index 536ec3c..271b976 100644
 -
 -miscfiles_read_localization(bcfg2_t)
 diff --git a/bind.fc b/bind.fc
-index 2b9a3a1..b5dadee 100644
+index 2b9a3a1..1742ebf 100644
 --- a/bind.fc
 +++ b/bind.fc
 @@ -1,54 +1,71 @@
@@ -7133,7 +7684,7 @@ index 2b9a3a1..b5dadee 100644
 +/usr/sbin/r?ndc		--	gen_context(system_u:object_r:ndc_exec_t,s0)
  /usr/sbin/unbound	--	gen_context(system_u:object_r:named_exec_t,s0)
 +/usr/sbin/unbound-anchor --	gen_context(system_u:object_r:named_exec_t,s0)
-+/usr/sbin/unbound-chkconf --	gen_context(system_u:object_r:named_exec_t,s0)
++/usr/sbin/unbound-checkconf --	gen_context(system_u:object_r:named_exec_t,s0)
  
 -/var/bind(/.*)?	gen_context(system_u:object_r:named_cache_t,s0)
 -/var/bind/pri(/.*)?	gen_context(system_u:object_r:named_zone_t,s0)
@@ -13750,7 +14301,7 @@ index 1303b30..058864e 100644
 +    logging_log_filetrans($1, cron_log_t, $2, $3)
  ')
 diff --git a/cron.te b/cron.te
-index 28e1b86..cb96ffb 100644
+index 28e1b86..69722fa 100644
 --- a/cron.te
 +++ b/cron.te
 @@ -1,4 +1,4 @@
@@ -14192,7 +14743,7 @@ index 28e1b86..cb96ffb 100644
  
  optional_policy(`
 -	hal_write_log(crond_t)
-+	amavis_search_lib(crond_t)
++	antivirus_search_db(crond_t)
  ')
  
  optional_policy(`
@@ -17003,7 +17554,7 @@ index a5c21e0..4639421 100644
  	stream_connect_pattern($1, dcc_var_t, dccifd_var_run_t, dccifd_t)
  ')
 diff --git a/dcc.te b/dcc.te
-index 15d908f..27463a3 100644
+index 15d908f..147dd14 100644
 --- a/dcc.te
 +++ b/dcc.te
 @@ -45,7 +45,7 @@ type dcc_var_t;
@@ -17050,7 +17601,7 @@ index 15d908f..27463a3 100644
  files_read_etc_runtime_files(dcc_client_t)
  
  fs_getattr_all_fs(dcc_client_t)
-@@ -131,9 +140,7 @@ auth_use_nsswitch(dcc_client_t)
+@@ -131,12 +140,10 @@ auth_use_nsswitch(dcc_client_t)
  
  logging_send_syslog_msg(dcc_client_t)
  
@@ -17060,7 +17611,11 @@ index 15d908f..27463a3 100644
 +userdom_use_inherited_user_terminals(dcc_client_t)
  
  optional_policy(`
- 	amavis_read_spool_files(dcc_client_t)
+-	amavis_read_spool_files(dcc_client_t)
++	antivirus_read_db(dcc_client_t)
+ ')
+ 
+ optional_policy(`
 @@ -160,15 +167,18 @@ manage_lnk_files_pattern(dcc_dbclean_t, dcc_var_t, dcc_var_t)
  
  kernel_read_system_state(dcc_dbclean_t)
@@ -20720,7 +21275,7 @@ index 6041113..ef3b449 100644
  	role_transition $2 exim_initrc_exec_t system_r;
  	allow $2 system_r;
 diff --git a/exim.te b/exim.te
-index 19325ce..c41cedc 100644
+index 19325ce..5957aad 100644
 --- a/exim.te
 +++ b/exim.te
 @@ -49,7 +49,7 @@ type exim_log_t;
@@ -20766,6 +21321,17 @@ index 19325ce..c41cedc 100644
  ')
  
  tunable_policy(`exim_read_user_files',`
+@@ -170,8 +168,8 @@ tunable_policy(`exim_manage_user_files',`
+ ')
+ 
+ optional_policy(`
+-	clamav_domtrans_clamscan(exim_t)
+-	clamav_stream_connect(exim_t)
++	antivirus_domtrans(exim_t)
++	antivirus_stream_connect(exim_t)
+ ')
+ 
+ optional_policy(`
 @@ -218,6 +216,7 @@ optional_policy(`
  
  optional_policy(`
@@ -24940,7 +25506,7 @@ index d03fd43..f73c152 100644
 +    type_transition $1 gkeyringd_exec_t:process $2;
  ')
 diff --git a/gnome.te b/gnome.te
-index 20f726b..dde0180 100644
+index 20f726b..ac1375b 100644
 --- a/gnome.te
 +++ b/gnome.te
 @@ -1,18 +1,36 @@
@@ -25134,7 +25700,7 @@ index 20f726b..dde0180 100644
 +# gnome-system-monitor-mechanisms local policy
 +#
 +
-+allow gnomesystemmm_t self:capability sys_nice;
++allow gnomesystemmm_t self:capability { sys_admin sys_nice };
 +allow gnomesystemmm_t self:fifo_file rw_fifo_file_perms;
 +
 +rw_files_pattern(gnomesystemmm_t, config_usr_t, config_usr_t)
@@ -25782,7 +26348,7 @@ index 180f1b7..951b790 100644
 +	userdom_user_home_dir_filetrans($1, gpg_secret_t, dir, ".gnupg")
 +')
 diff --git a/gpg.te b/gpg.te
-index 44cf341..74366a2 100644
+index 44cf341..c47fa5f 100644
 --- a/gpg.te
 +++ b/gpg.te
 @@ -1,47 +1,47 @@
@@ -26081,7 +26647,7 @@ index 44cf341..74366a2 100644
  
  tunable_policy(`use_nfs_home_dirs',`
  	fs_dontaudit_rw_nfs_files(gpg_helper_t)
-@@ -207,29 +224,33 @@ tunable_policy(`use_samba_home_dirs',`
+@@ -207,29 +224,35 @@ tunable_policy(`use_samba_home_dirs',`
  
  ########################################
  #
@@ -26112,17 +26678,18 @@ index 44cf341..74366a2 100644
 -filetrans_pattern(gpg_agent_t, gpg_secret_t, gpg_agent_tmp_t, sock_file, "log-socket")
 -
 -domtrans_pattern(gpg_agent_t, pinentry_exec_t, gpg_pinentry_t)
--
--kernel_dontaudit_search_sysctl(gpg_agent_t)
 +# allow gpg to connect to the gpg agent
 +stream_connect_pattern(gpg_t, gpg_agent_tmp_t, gpg_agent_tmp_t, gpg_agent_t)
+ 
+-kernel_dontaudit_search_sysctl(gpg_agent_t)
++kernel_read_system_state(gpg_agent_t)
  
 +corecmd_read_bin_symlinks(gpg_agent_t)
 +corecmd_search_bin(gpg_agent_t)
  corecmd_exec_shell(gpg_agent_t)
  
  dev_read_rand(gpg_agent_t)
-@@ -239,32 +260,27 @@ domain_use_interactive_fds(gpg_agent_t)
+@@ -239,31 +262,30 @@ domain_use_interactive_fds(gpg_agent_t)
  
  fs_dontaudit_list_inotifyfs(gpg_agent_t)
  
@@ -26147,24 +26714,25 @@ index 44cf341..74366a2 100644
  	userdom_manage_user_home_content_dirs(gpg_agent_t)
  	userdom_manage_user_home_content_files(gpg_agent_t)
 -	userdom_user_home_dir_filetrans_user_home_content(gpg_agent_t, file)
--')
--
+ ')
+ 
 -tunable_policy(`use_nfs_home_dirs',`
 -	fs_manage_nfs_dirs(gpg_agent_t)
 -	fs_manage_nfs_files(gpg_agent_t)
 -	fs_manage_nfs_symlinks(gpg_agent_t)
- ')
+-')
++userdom_home_manager(gpg_agent_t)
  
 -tunable_policy(`use_samba_home_dirs',`
 -	fs_manage_cifs_dirs(gpg_agent_t)
 -	fs_manage_cifs_files(gpg_agent_t)
 -	fs_manage_cifs_symlinks(gpg_agent_t)
--')
-+userdom_home_manager(gpg_agent_t)
++optional_policy(`
++	gnome_manage_config(gpg_agent_t)
+ ')
  
  optional_policy(`
- 	mozilla_dontaudit_rw_user_home_files(gpg_agent_t)
-@@ -277,8 +293,17 @@ optional_policy(`
+@@ -277,8 +299,17 @@ optional_policy(`
  
  allow gpg_pinentry_t self:process { getcap getsched setsched signal };
  allow gpg_pinentry_t self:fifo_file rw_fifo_file_perms;
@@ -26183,7 +26751,7 @@ index 44cf341..74366a2 100644
  
  manage_sock_files_pattern(gpg_pinentry_t, gpg_pinentry_tmp_t, gpg_pinentry_tmp_t)
  userdom_user_tmp_filetrans(gpg_pinentry_t, gpg_pinentry_tmp_t, sock_file)
-@@ -287,53 +312,89 @@ manage_dirs_pattern(gpg_pinentry_t, gpg_pinentry_tmpfs_t, gpg_pinentry_tmpfs_t)
+@@ -287,53 +318,89 @@ manage_dirs_pattern(gpg_pinentry_t, gpg_pinentry_tmpfs_t, gpg_pinentry_tmpfs_t)
  manage_files_pattern(gpg_pinentry_t, gpg_pinentry_tmpfs_t, gpg_pinentry_tmpfs_t)
  fs_tmpfs_filetrans(gpg_pinentry_t, gpg_pinentry_tmpfs_t, { file dir })
  
@@ -32514,7 +33082,7 @@ index 0293f34..bd1d48e 100644
 +	files_list_pids($1)
  ')
 diff --git a/mailscanner.te b/mailscanner.te
-index 725ba32..f0ceff1 100644
+index 725ba32..cec64d0 100644
 --- a/mailscanner.te
 +++ b/mailscanner.te
 @@ -34,6 +34,7 @@ allow mscan_t self:process signal;
@@ -32540,8 +33108,9 @@ index 725ba32..f0ceff1 100644
 -miscfiles_read_localization(mscan_t)
 -
  optional_policy(`
- 	clamav_domtrans_clamscan(mscan_t)
-+	clamav_manage_clamd_pid(mscan_t)
+-	clamav_domtrans_clamscan(mscan_t)
++	antivirus_domtrans(mscan_t)
++	antivirus_manage_pid(mscan_t)
  ')
  
  optional_policy(`
@@ -35319,7 +35888,7 @@ index 6194b80..84438b1 100644
  ')
 +
 diff --git a/mozilla.te b/mozilla.te
-index 6a306ee..b745274 100644
+index 6a306ee..01a5114 100644
 --- a/mozilla.te
 +++ b/mozilla.te
 @@ -1,4 +1,4 @@
@@ -36127,7 +36696,7 @@ index 6a306ee..b745274 100644
  ')
  
  optional_policy(`
-@@ -568,108 +536,100 @@ optional_policy(`
+@@ -568,108 +536,103 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -36159,12 +36728,12 @@ index 6a306ee..b745274 100644
 -allow mozilla_plugin_config_t mozilla_plugin_rw_t:dir manage_dir_perms;
 -allow mozilla_plugin_config_t mozilla_plugin_rw_t:file manage_file_perms;
 -allow mozilla_plugin_config_t mozilla_plugin_rw_t:lnk_file manage_lnk_file_perms;
--
++allow mozilla_plugin_config_t self:process { setsched signal_perms getsched execmem execstack };
+ 
 -manage_dirs_pattern(mozilla_plugin_config_t, { mozilla_home_t mozilla_plugin_home_t }, { mozilla_home_t mozilla_plugin_home_t })
 -manage_files_pattern(mozilla_plugin_config_t, { mozilla_home_t mozilla_plugin_home_t }, mozilla_plugin_home_t)
 -manage_lnk_files_pattern(mozilla_plugin_config_t, { mozilla_home_t mozilla_plugin_home_t }, mozilla_plugin_home_t)
-+allow mozilla_plugin_config_t self:process { setsched signal_perms getsched execmem execstack };
- 
+-
 -userdom_user_home_dir_filetrans(mozilla_plugin_config_t, mozilla_home_t, dir, ".galeon")
 -userdom_user_home_dir_filetrans(mozilla_plugin_config_t, mozilla_home_t, dir, ".mozilla")
 -userdom_user_home_dir_filetrans(mozilla_plugin_config_t, mozilla_home_t, dir, ".netscape")
@@ -36242,10 +36811,10 @@ index 6a306ee..b745274 100644
 +userdom_dontaudit_write_all_user_tmp_content_files(mozilla_plugin_config_t)
  
 -userdom_use_user_ptys(mozilla_plugin_config_t)
--
--mozilla_run_plugin(mozilla_plugin_config_t, mozilla_plugin_config_roles)
 +domtrans_pattern(mozilla_plugin_config_t, mozilla_plugin_exec_t, mozilla_plugin_t)
  
+-mozilla_run_plugin(mozilla_plugin_config_t, mozilla_plugin_config_roles)
+-
 -tunable_policy(`allow_execmem',`
 -	allow mozilla_plugin_config_t self:process execmem;
 -')
@@ -36277,11 +36846,15 @@ index 6a306ee..b745274 100644
 +	typealias mozilla_plugin_config_t  alias nsplugin_config_t;
 +	typealias mozilla_plugin_config_exec_t  alias nsplugin_config_exec_t;
  ')
- 
+-
 -optional_policy(`
 -	automount_dontaudit_getattr_tmp_dirs(mozilla_plugin_config_t)
++userdom_user_home_dir_filetrans(mozilla_plugin_t, mozilla_home_t, { dir file })
++userdom_user_home_dir_filetrans_pattern(mozilla_plugin_t, file)
 +tunable_policy(`mozilla_plugin_enable_homedirs',`
 +	userdom_user_home_dir_filetrans(mozilla_plugin_t, mozilla_home_t, { dir file })
++', `
++   userdom_user_home_dir_filetrans_pattern(mozilla_plugin_t, dir)
  ')
  
 -optional_policy(`
@@ -37650,7 +38223,7 @@ index ed81cac..7d1522c 100644
 +	mta_filetrans_admin_home_content($1)
 +')
 diff --git a/mta.te b/mta.te
-index afd2fad..b2abfca 100644
+index afd2fad..af79d2b 100644
 --- a/mta.te
 +++ b/mta.te
 @@ -1,4 +1,4 @@
@@ -38237,8 +38810,8 @@ index afd2fad..b2abfca 100644
 +')
 +
 +optional_policy(`
-+	clamav_stream_connect(user_mail_domain)
-+	clamav_stream_connect(mta_user_agent)
++	antivirus_stream_connect(user_mail_domain)
++	antivirus_stream_connect(mta_user_agent)
 +')
 diff --git a/munin.fc b/munin.fc
 index eb4b72a..4968324 100644
@@ -40984,7 +41557,7 @@ index 0e8508c..96dbf6f 100644
 +	files_etc_filetrans($1, NetworkManager_var_lib_t, file, "wireed-settings.conf")
  ')
 diff --git a/networkmanager.te b/networkmanager.te
-index 0b48a30..1dc0c55 100644
+index 0b48a30..da4eebb 100644
 --- a/networkmanager.te
 +++ b/networkmanager.te
 @@ -1,4 +1,4 @@
@@ -41015,7 +41588,7 @@ index 0b48a30..1dc0c55 100644
  type NetworkManager_log_t;
  logging_log_file(NetworkManager_log_t)
  
-@@ -39,24 +42,40 @@ init_system_domain(wpa_cli_t, wpa_cli_exec_t)
+@@ -39,24 +42,41 @@ init_system_domain(wpa_cli_t, wpa_cli_exec_t)
  # Local policy
  #
  
@@ -41049,6 +41622,7 @@ index 0b48a30..1dc0c55 100644
  allow NetworkManager_t self:tun_socket { create_socket_perms relabelfrom relabelto };
 +allow NetworkManager_t self:udp_socket create_socket_perms;
  allow NetworkManager_t self:packet_socket create_socket_perms;
++allow NetworkManager_t self:rawip_socket create_socket_perms;
  
  allow NetworkManager_t wpa_cli_t:unix_dgram_socket sendto;
  
@@ -41065,7 +41639,7 @@ index 0b48a30..1dc0c55 100644
  
  manage_dirs_pattern(NetworkManager_t, NetworkManager_etc_rw_t, NetworkManager_etc_rw_t)
  manage_files_pattern(NetworkManager_t, NetworkManager_etc_rw_t, NetworkManager_etc_rw_t)
-@@ -68,6 +87,7 @@ create_files_pattern(NetworkManager_t, NetworkManager_log_t, NetworkManager_log_
+@@ -68,6 +88,7 @@ create_files_pattern(NetworkManager_t, NetworkManager_log_t, NetworkManager_log_
  setattr_files_pattern(NetworkManager_t, NetworkManager_log_t, NetworkManager_log_t)
  logging_log_filetrans(NetworkManager_t, NetworkManager_log_t, file)
  
@@ -41073,7 +41647,7 @@ index 0b48a30..1dc0c55 100644
  manage_files_pattern(NetworkManager_t, NetworkManager_tmp_t, NetworkManager_tmp_t)
  manage_sock_files_pattern(NetworkManager_t, NetworkManager_tmp_t, NetworkManager_tmp_t)
  files_tmp_filetrans(NetworkManager_t, NetworkManager_tmp_t, { sock_file file })
-@@ -81,9 +101,6 @@ manage_files_pattern(NetworkManager_t, NetworkManager_var_run_t, NetworkManager_
+@@ -81,9 +102,6 @@ manage_files_pattern(NetworkManager_t, NetworkManager_var_run_t, NetworkManager_
  manage_sock_files_pattern(NetworkManager_t, NetworkManager_var_run_t, NetworkManager_var_run_t)
  files_pid_filetrans(NetworkManager_t, NetworkManager_var_run_t, { dir file sock_file })
  
@@ -41083,7 +41657,7 @@ index 0b48a30..1dc0c55 100644
  kernel_read_system_state(NetworkManager_t)
  kernel_read_network_state(NetworkManager_t)
  kernel_read_kernel_sysctls(NetworkManager_t)
-@@ -91,7 +108,6 @@ kernel_request_load_module(NetworkManager_t)
+@@ -91,7 +109,6 @@ kernel_request_load_module(NetworkManager_t)
  kernel_read_debugfs(NetworkManager_t)
  kernel_rw_net_sysctls(NetworkManager_t)
  
@@ -41091,7 +41665,7 @@ index 0b48a30..1dc0c55 100644
  corenet_all_recvfrom_netlabel(NetworkManager_t)
  corenet_tcp_sendrecv_generic_if(NetworkManager_t)
  corenet_udp_sendrecv_generic_if(NetworkManager_t)
-@@ -102,22 +118,15 @@ corenet_raw_sendrecv_generic_node(NetworkManager_t)
+@@ -102,22 +119,15 @@ corenet_raw_sendrecv_generic_node(NetworkManager_t)
  corenet_tcp_sendrecv_all_ports(NetworkManager_t)
  corenet_udp_sendrecv_all_ports(NetworkManager_t)
  corenet_udp_bind_generic_node(NetworkManager_t)
@@ -41117,7 +41691,7 @@ index 0b48a30..1dc0c55 100644
  dev_rw_sysfs(NetworkManager_t)
  dev_read_rand(NetworkManager_t)
  dev_read_urand(NetworkManager_t)
-@@ -125,13 +134,6 @@ dev_dontaudit_getattr_generic_blk_files(NetworkManager_t)
+@@ -125,13 +135,6 @@ dev_dontaudit_getattr_generic_blk_files(NetworkManager_t)
  dev_getattr_all_chr_files(NetworkManager_t)
  dev_rw_wireless(NetworkManager_t)
  
@@ -41131,7 +41705,7 @@ index 0b48a30..1dc0c55 100644
  fs_getattr_all_fs(NetworkManager_t)
  fs_search_auto_mountpoints(NetworkManager_t)
  fs_list_inotifyfs(NetworkManager_t)
-@@ -140,6 +142,16 @@ mls_file_read_all_levels(NetworkManager_t)
+@@ -140,6 +143,16 @@ mls_file_read_all_levels(NetworkManager_t)
  
  selinux_dontaudit_search_fs(NetworkManager_t)
  
@@ -41148,7 +41722,7 @@ index 0b48a30..1dc0c55 100644
  storage_getattr_fixed_disk_dev(NetworkManager_t)
  
  init_read_utmp(NetworkManager_t)
-@@ -148,10 +160,11 @@ init_domtrans_script(NetworkManager_t)
+@@ -148,10 +161,11 @@ init_domtrans_script(NetworkManager_t)
  
  auth_use_nsswitch(NetworkManager_t)
  
@@ -41161,7 +41735,7 @@ index 0b48a30..1dc0c55 100644
  
  seutil_read_config(NetworkManager_t)
  
-@@ -166,21 +179,32 @@ sysnet_kill_dhcpc(NetworkManager_t)
+@@ -166,21 +180,32 @@ sysnet_kill_dhcpc(NetworkManager_t)
  sysnet_read_dhcpc_state(NetworkManager_t)
  sysnet_delete_dhcpc_state(NetworkManager_t)
  sysnet_search_dhcp_state(NetworkManager_t)
@@ -41198,7 +41772,7 @@ index 0b48a30..1dc0c55 100644
  ')
  
  optional_policy(`
-@@ -196,10 +220,6 @@ optional_policy(`
+@@ -196,10 +221,6 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41209,7 +41783,7 @@ index 0b48a30..1dc0c55 100644
  	consoletype_exec(NetworkManager_t)
  ')
  
-@@ -210,16 +230,11 @@ optional_policy(`
+@@ -210,16 +231,11 @@ optional_policy(`
  optional_policy(`
  	dbus_system_domain(NetworkManager_t, NetworkManager_exec_t)
  
@@ -41228,7 +41802,7 @@ index 0b48a30..1dc0c55 100644
  	')
  ')
  
-@@ -231,18 +246,19 @@ optional_policy(`
+@@ -231,18 +247,19 @@ optional_policy(`
  	dnsmasq_kill(NetworkManager_t)
  	dnsmasq_signal(NetworkManager_t)
  	dnsmasq_signull(NetworkManager_t)
@@ -41251,7 +41825,7 @@ index 0b48a30..1dc0c55 100644
  ')
  
  optional_policy(`
-@@ -257,11 +273,7 @@ optional_policy(`
+@@ -257,11 +274,7 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41264,7 +41838,7 @@ index 0b48a30..1dc0c55 100644
  ')
  
  optional_policy(`
-@@ -274,10 +286,17 @@ optional_policy(`
+@@ -274,10 +287,17 @@ optional_policy(`
  	nscd_signull(NetworkManager_t)
  	nscd_kill(NetworkManager_t)
  	nscd_initrc_domtrans(NetworkManager_t)
@@ -41282,7 +41856,7 @@ index 0b48a30..1dc0c55 100644
  ')
  
  optional_policy(`
-@@ -289,6 +308,7 @@ optional_policy(`
+@@ -289,6 +309,7 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41290,7 +41864,7 @@ index 0b48a30..1dc0c55 100644
  	policykit_domtrans_auth(NetworkManager_t)
  	policykit_read_lib(NetworkManager_t)
  	policykit_read_reload(NetworkManager_t)
-@@ -296,7 +316,7 @@ optional_policy(`
+@@ -296,7 +317,7 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41299,7 +41873,7 @@ index 0b48a30..1dc0c55 100644
  ')
  
  optional_policy(`
-@@ -307,6 +327,7 @@ optional_policy(`
+@@ -307,6 +328,7 @@ optional_policy(`
  	ppp_signal(NetworkManager_t)
  	ppp_signull(NetworkManager_t)
  	ppp_read_config(NetworkManager_t)
@@ -41307,7 +41881,7 @@ index 0b48a30..1dc0c55 100644
  ')
  
  optional_policy(`
-@@ -320,13 +341,14 @@ optional_policy(`
+@@ -320,13 +342,14 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41326,7 +41900,7 @@ index 0b48a30..1dc0c55 100644
  ')
  
  optional_policy(`
-@@ -356,6 +378,5 @@ rw_sock_files_pattern(wpa_cli_t, NetworkManager_var_run_t, NetworkManager_var_ru
+@@ -356,6 +379,5 @@ rw_sock_files_pattern(wpa_cli_t, NetworkManager_var_run_t, NetworkManager_var_ru
  init_dontaudit_use_fds(wpa_cli_t)
  init_use_script_ptys(wpa_cli_t)
  
@@ -45151,7 +45725,7 @@ index 8635ea2..6012235 100644
 +	obex_dbus_chat($2)
  ')
 diff --git a/obex.te b/obex.te
-index cd29ea8..1a7e853 100644
+index cd29ea8..efbf8f8 100644
 --- a/obex.te
 +++ b/obex.te
 @@ -1,4 +1,4 @@
@@ -45160,7 +45734,7 @@ index cd29ea8..1a7e853 100644
  
  ########################################
  #
-@@ -14,7 +14,7 @@ role obex_roles types obex_t;
+@@ -14,30 +14,25 @@ role obex_roles types obex_t;
  
  ########################################
  #
@@ -45169,12 +45743,14 @@ index cd29ea8..1a7e853 100644
  #
  
  allow obex_t self:fifo_file rw_fifo_file_perms;
-@@ -22,22 +22,15 @@ allow obex_t self:socket create_stream_socket_perms;
+ allow obex_t self:socket create_stream_socket_perms;
  
- dev_read_urand(obex_t)
+-dev_read_urand(obex_t)
++kernel_request_load_module(obex_t)
  
 -files_read_etc_files(obex_t)
--
++dev_read_urand(obex_t)
+ 
  logging_send_syslog_msg(obex_t)
  
 -miscfiles_read_localization(obex_t)
@@ -52510,7 +53086,7 @@ index 2e23946..41da729 100644
 +	postfix_config_filetrans($1, postfix_prng_t, file, "prng_exch")
  ')
 diff --git a/postfix.te b/postfix.te
-index 191a66f..0a90ce1 100644
+index 191a66f..2178086 100644
 --- a/postfix.te
 +++ b/postfix.te
 @@ -1,4 +1,4 @@
@@ -52931,7 +53507,7 @@ index 191a66f..0a90ce1 100644
  
  mta_read_aliases(postfix_cleanup_t)
  
-@@ -393,29 +288,45 @@ optional_policy(`
+@@ -393,36 +288,53 @@ optional_policy(`
  
  ########################################
  #
@@ -52983,11 +53559,13 @@ index 191a66f..0a90ce1 100644
  tunable_policy(`postfix_local_write_mail_spool',`
  	mta_manage_spool(postfix_local_t)
  ')
-@@ -423,6 +334,7 @@ tunable_policy(`postfix_local_write_mail_spool',`
+ 
  optional_policy(`
- 	clamav_search_lib(postfix_local_t)
- 	clamav_exec_clamscan(postfix_local_t)
-+	clamav_stream_connect(postfix_domain)
+-	clamav_search_lib(postfix_local_t)
+-	clamav_exec_clamscan(postfix_local_t)
++	antivirus_search_db(postfix_local_t)
++	antivirus_exec(postfix_local_t)
++	antivirus_stream_connect(postfix_domain)
  ')
  
  optional_policy(`
@@ -55288,7 +55866,7 @@ index 00edeab..166e9c3 100644
 +	read_files_pattern($1, procmail_home_t, procmail_home_t)
  ')
 diff --git a/procmail.te b/procmail.te
-index d447152..543fa5c 100644
+index d447152..c166238 100644
 --- a/procmail.te
 +++ b/procmail.te
 @@ -1,4 +1,4 @@
@@ -55323,7 +55901,7 @@ index d447152..543fa5c 100644
  allow procmail_t procmail_log_t:dir setattr_dir_perms;
  create_files_pattern(procmail_t, procmail_log_t, procmail_log_t)
  append_files_pattern(procmail_t, procmail_log_t, procmail_log_t)
-@@ -40,56 +44,68 @@ logging_log_filetrans(procmail_t, procmail_log_t, { file dir })
+@@ -40,59 +44,71 @@ logging_log_filetrans(procmail_t, procmail_log_t, { file dir })
  allow procmail_t procmail_tmp_t:file manage_file_perms;
  files_tmp_filetrans(procmail_t, procmail_tmp_t, file)
  
@@ -55415,8 +55993,13 @@ index d447152..543fa5c 100644
 +userdom_home_manager(procmail_t)
 +
  optional_policy(`
- 	clamav_domtrans_clamscan(procmail_t)
- 	clamav_search_lib(procmail_t)
+-	clamav_domtrans_clamscan(procmail_t)
+-	clamav_search_lib(procmail_t)
++	antivirus_domtrans(procmail_t)
++	antivirus_search_db(procmail_t)
+ ')
+ 
+ optional_policy(`
 @@ -100,12 +116,7 @@ optional_policy(`
  ')
  
@@ -57651,7 +58234,7 @@ index 593c03d..2c411af 100644
 +	admin_pattern($1, pyzor_var_lib_t)
  ')
 diff --git a/pyzor.te b/pyzor.te
-index 6c456d2..f7bf36e 100644
+index 6c456d2..86daaba 100644
 --- a/pyzor.te
 +++ b/pyzor.te
 @@ -1,61 +1,82 @@
@@ -57778,7 +58361,7 @@ index 6c456d2..f7bf36e 100644
  
  manage_files_pattern(pyzor_t, pyzor_tmp_t, pyzor_tmp_t)
  manage_dirs_pattern(pyzor_t, pyzor_tmp_t, pyzor_tmp_t)
-@@ -67,37 +88,25 @@ kernel_read_system_state(pyzor_t)
+@@ -67,41 +88,28 @@ kernel_read_system_state(pyzor_t)
  corecmd_list_bin(pyzor_t)
  corecmd_getattr_bin_files(pyzor_t)
  
@@ -57822,8 +58405,13 @@ index 6c456d2..f7bf36e 100644
 +userdom_dontaudit_search_user_home_dirs(pyzor_t)
  
  optional_policy(`
- 	amavis_manage_lib_files(pyzor_t)
-@@ -111,25 +120,24 @@ optional_policy(`
+-	amavis_manage_lib_files(pyzor_t)
+-	amavis_manage_spool_files(pyzor_t)
++	antivirus_manage_db(pyzor_t)
+ ')
+ 
+ optional_policy(`
+@@ -111,25 +119,24 @@ optional_policy(`
  
  ########################################
  #
@@ -57857,7 +58445,7 @@ index 6c456d2..f7bf36e 100644
  kernel_read_kernel_sysctls(pyzord_t)
  kernel_read_system_state(pyzord_t)
  
-@@ -137,24 +145,25 @@ dev_read_urand(pyzord_t)
+@@ -137,24 +144,25 @@ dev_read_urand(pyzord_t)
  
  corecmd_exec_bin(pyzord_t)
  
@@ -64933,10 +65521,10 @@ index c49828c..a323332 100644
  sysnet_dns_name_resolve(rpcbind_t)
  
 diff --git a/rpm.fc b/rpm.fc
-index ebe91fc..3916381 100644
+index ebe91fc..9e96a5c 100644
 --- a/rpm.fc
 +++ b/rpm.fc
-@@ -1,61 +1,65 @@
+@@ -1,61 +1,66 @@
 -/bin/rpm	--	gen_context(system_u:object_r:rpm_exec_t,s0)
  
 -/etc/rc\.d/init\.d/bcfg2	--	gen_context(system_u:object_r:rpm_initrc_exec_t,s0)
@@ -65014,6 +65602,7 @@ index ebe91fc..3916381 100644
 +
 +/var/cache/PackageKit(/.*)?		gen_context(system_u:object_r:rpm_var_cache_t,s0)
 +/var/cache/yum(/.*)?			gen_context(system_u:object_r:rpm_var_cache_t,s0)
++/var/cache/dnf(/.*)?			gen_context(system_u:object_r:rpm_var_cache_t,s0)
  
 -/var/lock/bcfg2\.run	--	gen_context(system_u:object_r:rpm_lock_t,s0)
 +/var/lib/alternatives(/.*)?		gen_context(system_u:object_r:rpm_var_lib_t,s0)
@@ -71324,7 +71913,7 @@ index 88e753f..ca74cd9 100644
 +	admin_pattern($1, mail_spool_t)
  ')
 diff --git a/sendmail.te b/sendmail.te
-index 5f35d78..c2eb07e 100644
+index 5f35d78..7bffa0b 100644
 --- a/sendmail.te
 +++ b/sendmail.te
 @@ -1,18 +1,10 @@
@@ -71477,6 +72066,17 @@ index 5f35d78..c2eb07e 100644
  optional_policy(`
 -	cfengine_dontaudit_write_log_files(sendmail_t)
 +	cfengine_dontaudit_write_log(sendmail_t)
+ ')
+ 
+ optional_policy(`
+@@ -129,8 +122,8 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
+-	clamav_search_lib(sendmail_t)
+-	clamav_stream_connect(sendmail_t)
++	antivirus_search_db(sendmail_t)
++	antivirus_stream_connect(sendmail_t)
  ')
  
  optional_policy(`
@@ -74081,7 +74681,7 @@ index 1499b0b..82fc7f6 100644
 -	spamassassin_role($2, $1)
  ')
 diff --git a/spamassassin.te b/spamassassin.te
-index 4faa7e0..c7f47b3 100644
+index 4faa7e0..258b449 100644
 --- a/spamassassin.te
 +++ b/spamassassin.te
 @@ -1,4 +1,4 @@
@@ -74492,14 +75092,14 @@ index 4faa7e0..c7f47b3 100644
  logging_send_syslog_msg(spamc_t)
  
 -miscfiles_read_localization(spamc_t)
-+auth_use_nsswitch(spamc_t)
- 
+-
 -tunable_policy(`use_nfs_home_dirs',`
 -	fs_manage_nfs_dirs(spamc_t)
 -	fs_manage_nfs_files(spamc_t)
 -	fs_manage_nfs_symlinks(spamc_t)
 -')
--
++auth_use_nsswitch(spamc_t)
+ 
 -tunable_policy(`use_samba_home_dirs',`
 -	fs_manage_cifs_dirs(spamc_t)
 -	fs_manage_cifs_files(spamc_t)
@@ -74622,7 +75222,7 @@ index 4faa7e0..c7f47b3 100644
  corenet_all_recvfrom_netlabel(spamd_t)
  corenet_tcp_sendrecv_generic_if(spamd_t)
  corenet_udp_sendrecv_generic_if(spamd_t)
-@@ -331,78 +432,61 @@ corenet_udp_sendrecv_generic_node(spamd_t)
+@@ -331,78 +432,58 @@ corenet_udp_sendrecv_generic_node(spamd_t)
  corenet_tcp_sendrecv_all_ports(spamd_t)
  corenet_udp_sendrecv_all_ports(spamd_t)
  corenet_tcp_bind_generic_node(spamd_t)
@@ -74691,9 +75291,7 @@ index 4faa7e0..c7f47b3 100644
 -sysnet_use_ldap(spamd_t)
 -
  userdom_use_unpriv_users_fds(spamd_t)
-+userdom_search_user_home_dirs(spamd_t)
-+userdom_home_manager(spamd_t)
- 
+-
 -tunable_policy(`spamd_enable_home_dirs',`
 -	userdom_manage_user_home_content_dirs(spamd_t)
 -	userdom_manage_user_home_content_files(spamd_t)
@@ -74710,23 +75308,24 @@ index 4faa7e0..c7f47b3 100644
 -	fs_manage_cifs_dirs(spamd_t)
 -	fs_manage_cifs_files(spamd_t)
 -	fs_manage_cifs_symlinks(spamd_t)
-+optional_policy(`
-+	clamav_stream_connect(spamd_t)
- ')
+-')
++userdom_search_user_home_dirs(spamd_t)
++userdom_home_manager(spamd_t)
  
  optional_policy(`
 -	amavis_manage_lib_files(spamd_t)
++	antivirus_stream_connect(spamd_t)
++	antivirus_manage_db(spamd_t)
+ ')
+ 
+ optional_policy(`
+-	clamav_stream_connect(spamd_t)
 +	exim_manage_spool_dirs(spamd_t)
 +	exim_manage_spool_files(spamd_t)
  ')
  
  optional_policy(`
--	clamav_stream_connect(spamd_t)
-+	amavis_manage_lib_files(spamd_t)
- ')
- 
- optional_policy(`
-@@ -421,21 +505,13 @@ optional_policy(`
+@@ -421,21 +502,13 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -74750,7 +75349,7 @@ index 4faa7e0..c7f47b3 100644
  ')
  
  optional_policy(`
-@@ -443,8 +519,8 @@ optional_policy(`
+@@ -443,8 +516,8 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -74760,7 +75359,7 @@ index 4faa7e0..c7f47b3 100644
  ')
  
  optional_policy(`
-@@ -455,7 +531,12 @@ optional_policy(`
+@@ -455,7 +528,12 @@ optional_policy(`
  optional_policy(`
  	razor_domtrans(spamd_t)
  	razor_read_lib_files(spamd_t)
@@ -74774,7 +75373,7 @@ index 4faa7e0..c7f47b3 100644
  ')
  
  optional_policy(`
-@@ -463,9 +544,9 @@ optional_policy(`
+@@ -463,9 +541,9 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -74785,7 +75384,7 @@ index 4faa7e0..c7f47b3 100644
  ')
  
  optional_policy(`
-@@ -474,32 +555,29 @@ optional_policy(`
+@@ -474,32 +552,29 @@ optional_policy(`
  
  ########################################
  #
@@ -74825,7 +75424,7 @@ index 4faa7e0..c7f47b3 100644
  
  corecmd_exec_bin(spamd_update_t)
  corecmd_exec_shell(spamd_update_t)
-@@ -508,25 +586,20 @@ dev_read_urand(spamd_update_t)
+@@ -508,25 +583,20 @@ dev_read_urand(spamd_update_t)
  
  domain_use_interactive_fds(spamd_update_t)
  
@@ -82481,7 +83080,7 @@ index 9dec06c..d8a2b54 100644
 +	allow svirt_lxc_domain $1:process sigchld;
  ')
 diff --git a/virt.te b/virt.te
-index 1f22fba..ff76d37 100644
+index 1f22fba..f704c9a 100644
 --- a/virt.te
 +++ b/virt.te
 @@ -1,94 +1,98 @@
@@ -83730,7 +84329,7 @@ index 1f22fba..ff76d37 100644
  	xen_stream_connect(virsh_t)
  	xen_stream_connect_xenstore(virsh_t)
  ')
-@@ -879,34 +908,39 @@ optional_policy(`
+@@ -879,34 +908,40 @@ optional_policy(`
  	kernel_read_xen_state(virsh_ssh_t)
  	kernel_write_xen_state(virsh_ssh_t)
  
@@ -83759,9 +84358,10 @@ index 1f22fba..ff76d37 100644
 +allow virtd_lxc_t self:netlink_route_socket rw_netlink_socket_perms;
 +allow virtd_lxc_t self:unix_stream_socket create_stream_socket_perms;
  allow virtd_lxc_t self:packet_socket create_socket_perms;
- 
--allow virtd_lxc_t svirt_lxc_domain:process { getattr getsched setsched transition signal signull sigkill };
 -
+-allow virtd_lxc_t svirt_lxc_domain:process { getattr getsched setsched transition signal signull sigkill };
++ps_process_pattern(virtd_lxc_t, svirt_lxc_domain)
+ 
  allow virtd_lxc_t virt_image_type:dir mounton;
  manage_files_pattern(virtd_lxc_t, virt_image_t, virt_image_t)
  
@@ -83780,7 +84380,7 @@ index 1f22fba..ff76d37 100644
  
  manage_dirs_pattern(virtd_lxc_t, svirt_lxc_file_t, svirt_lxc_file_t)
  manage_files_pattern(virtd_lxc_t, svirt_lxc_file_t, svirt_lxc_file_t)
-@@ -916,12 +950,15 @@ manage_sock_files_pattern(virtd_lxc_t, svirt_lxc_file_t, svirt_lxc_file_t)
+@@ -916,12 +951,15 @@ manage_sock_files_pattern(virtd_lxc_t, svirt_lxc_file_t, svirt_lxc_file_t)
  manage_fifo_files_pattern(virtd_lxc_t, svirt_lxc_file_t, svirt_lxc_file_t)
  allow virtd_lxc_t svirt_lxc_file_t:dir_file_class_set { relabelto relabelfrom };
  allow virtd_lxc_t svirt_lxc_file_t:filesystem { relabelto relabelfrom };
@@ -83796,7 +84396,7 @@ index 1f22fba..ff76d37 100644
  
  corecmd_exec_bin(virtd_lxc_t)
  corecmd_exec_shell(virtd_lxc_t)
-@@ -933,10 +970,8 @@ dev_read_urand(virtd_lxc_t)
+@@ -933,10 +971,8 @@ dev_read_urand(virtd_lxc_t)
  
  domain_use_interactive_fds(virtd_lxc_t)
  
@@ -83807,7 +84407,15 @@ index 1f22fba..ff76d37 100644
  files_relabel_rootfs(virtd_lxc_t)
  files_mounton_non_security(virtd_lxc_t)
  files_mount_all_file_type_fs(virtd_lxc_t)
-@@ -955,15 +990,11 @@ fs_rw_cgroup_files(virtd_lxc_t)
+@@ -944,6 +980,7 @@ files_unmount_all_file_type_fs(virtd_lxc_t)
+ files_list_isid_type_dirs(virtd_lxc_t)
+ files_root_filetrans(virtd_lxc_t, svirt_lxc_file_t, dir_file_class_set)
+ 
++fs_read_fusefs_files(virtd_lxc_t)
+ fs_getattr_all_fs(virtd_lxc_t)
+ fs_manage_tmpfs_dirs(virtd_lxc_t)
+ fs_manage_tmpfs_chr_files(virtd_lxc_t)
+@@ -955,15 +992,11 @@ fs_rw_cgroup_files(virtd_lxc_t)
  fs_unmount_all_fs(virtd_lxc_t)
  fs_relabelfrom_tmpfs(virtd_lxc_t)
  
@@ -83826,7 +84434,7 @@ index 1f22fba..ff76d37 100644
  
  term_use_generic_ptys(virtd_lxc_t)
  term_use_ptmx(virtd_lxc_t)
-@@ -973,20 +1004,38 @@ auth_use_nsswitch(virtd_lxc_t)
+@@ -973,20 +1006,38 @@ auth_use_nsswitch(virtd_lxc_t)
  
  logging_send_syslog_msg(virtd_lxc_t)
  
@@ -83859,7 +84467,7 @@ index 1f22fba..ff76d37 100644
 +allow svirt_lxc_domain self:capability { kill setuid setgid dac_override sys_boot ipc_lock };
 +
 +allow virtd_t svirt_lxc_domain:unix_stream_socket { create_stream_socket_perms connectto };
-+allow virtd_t svirt_lxc_domain:process { signal_perms };
++allow virtd_t svirt_lxc_domain:process { signal_perms getattr };
 +allow virtd_lxc_t svirt_lxc_domain:process { getattr getsched setsched transition signal signull sigkill };
 +allow svirt_lxc_domain virtd_lxc_t:process sigchld;
 +allow svirt_lxc_domain virtd_lxc_t:fd use;
@@ -83871,7 +84479,7 @@ index 1f22fba..ff76d37 100644
  allow svirt_lxc_domain self:process { execstack execmem getattr signal_perms getsched setsched setcap setpgid };
  allow svirt_lxc_domain self:fifo_file manage_file_perms;
  allow svirt_lxc_domain self:sem create_sem_perms;
-@@ -995,19 +1044,6 @@ allow svirt_lxc_domain self:msgq create_msgq_perms;
+@@ -995,19 +1046,6 @@ allow svirt_lxc_domain self:msgq create_msgq_perms;
  allow svirt_lxc_domain self:unix_stream_socket { create_stream_socket_perms connectto };
  allow svirt_lxc_domain self:unix_dgram_socket { sendto create_socket_perms };
  
@@ -83891,7 +84499,7 @@ index 1f22fba..ff76d37 100644
  manage_dirs_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
  manage_files_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
  manage_lnk_files_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
-@@ -1015,17 +1051,14 @@ manage_sock_files_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
+@@ -1015,17 +1053,14 @@ manage_sock_files_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
  manage_fifo_files_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
  rw_chr_files_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
  rw_blk_files_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
@@ -83910,7 +84518,7 @@ index 1f22fba..ff76d37 100644
  kernel_dontaudit_search_kernel_sysctl(svirt_lxc_domain)
  
  corecmd_exec_all_executables(svirt_lxc_domain)
-@@ -1037,21 +1070,20 @@ files_dontaudit_getattr_all_pipes(svirt_lxc_domain)
+@@ -1037,21 +1072,20 @@ files_dontaudit_getattr_all_pipes(svirt_lxc_domain)
  files_dontaudit_getattr_all_sockets(svirt_lxc_domain)
  files_dontaudit_list_all_mountpoints(svirt_lxc_domain)
  files_dontaudit_write_etc_runtime_files(svirt_lxc_domain)
@@ -83937,7 +84545,7 @@ index 1f22fba..ff76d37 100644
  auth_dontaudit_read_login_records(svirt_lxc_domain)
  auth_dontaudit_write_login_records(svirt_lxc_domain)
  auth_search_pam_console_data(svirt_lxc_domain)
-@@ -1063,11 +1095,14 @@ init_dontaudit_write_utmp(svirt_lxc_domain)
+@@ -1063,11 +1097,14 @@ init_dontaudit_write_utmp(svirt_lxc_domain)
  
  libs_dontaudit_setattr_lib_files(svirt_lxc_domain)
  
@@ -83954,7 +84562,7 @@ index 1f22fba..ff76d37 100644
  
  optional_policy(`
  	udev_read_pid_files(svirt_lxc_domain)
-@@ -1078,81 +1113,63 @@ optional_policy(`
+@@ -1078,81 +1115,63 @@ optional_policy(`
  	apache_read_sys_content(svirt_lxc_domain)
  ')
  
@@ -84059,7 +84667,7 @@ index 1f22fba..ff76d37 100644
  allow virt_qmf_t self:tcp_socket create_stream_socket_perms;
  allow virt_qmf_t self:netlink_route_socket create_netlink_socket_perms;
  
-@@ -1165,12 +1182,12 @@ dev_read_sysfs(virt_qmf_t)
+@@ -1165,12 +1184,12 @@ dev_read_sysfs(virt_qmf_t)
  dev_read_rand(virt_qmf_t)
  dev_read_urand(virt_qmf_t)
  
@@ -84074,7 +84682,7 @@ index 1f22fba..ff76d37 100644
  sysnet_read_config(virt_qmf_t)
  
  optional_policy(`
-@@ -1183,9 +1200,8 @@ optional_policy(`
+@@ -1183,9 +1202,8 @@ optional_policy(`
  
  ########################################
  #
@@ -84085,7 +84693,7 @@ index 1f22fba..ff76d37 100644
  allow virt_bridgehelper_t self:process { setcap getcap };
  allow virt_bridgehelper_t self:capability { setpcap setgid setuid net_admin };
  allow virt_bridgehelper_t self:tcp_socket create_stream_socket_perms;
-@@ -1198,5 +1214,65 @@ kernel_read_network_state(virt_bridgehelper_t)
+@@ -1198,5 +1216,65 @@ kernel_read_network_state(virt_bridgehelper_t)
  
  corenet_rw_tun_tap_dev(virt_bridgehelper_t)
  

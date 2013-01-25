@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -524,6 +524,23 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jan 25 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-7
+- mount.glusterfs executes glusterfsd binary
+- Allow systemd_hostnamed_t to stream connect to systemd
+- Dontaudit any user doing a access check
+- Allow obex-data-server to request the kernel to load a module
+- Allow gpg-agent to manage gnome content (~/.cache/gpg-agent-info)
+- Allow gpg-agent to read /proc/sys/crypto/fips_enabled
+- Add new types for antivirus.pp policy module
+- Allow gnomesystemmm_t caps because of ioprio_set
+- Make sure if mozilla_plugin creates files while in permissive mode, they get created with the correct label, user_home_t
+- Allow gnomesystemmm_t caps because of ioprio_set
+- Allow NM rawip socket
+- files_relabel_non_security_files can not be used with boolean
+- Add interface to thumb_t dbus_chat to allow it to read remote process state
+- ALlow logrotate to domtrans to mdadm_t
+- kde gnomeclock wants to write content to /tmp
+
 * Wed Jan 23 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-6
 - kde gnomeclock wants to write content to /tmp
 - /usr/libexec/kde4/kcmdatetimehelper attempts to create /root/.kde
