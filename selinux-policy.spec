@@ -57,7 +57,6 @@ Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2 
-Requires: selinux-policy-filesystem
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(post): /bin/awk /usr/bin/sha512sum
 
@@ -68,19 +67,10 @@ SELinux Base package
 %defattr(-,root,root,-)
 %dir %{_usr}/share/selinux
 %dir %{_usr}/share/selinux/packages
+%dir %{_sysconfdir}/selinux
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config
 %ghost %{_sysconfdir}/sysconfig/selinux
 %{_usr}/lib/tmpfiles.d/selinux-policy.conf
-
-%package filesystem
-Summary: SELinux policy filesystem
-Group: System Environment/Base
-
-%description filesystem
-SELinux policy filesytem
-
-%files filesystem
-%dir %{_sysconfdir}/selinux
 
 %package devel
 Summary: SELinux policy devel
@@ -262,17 +252,14 @@ fi;
 . %{_sysconfdir}/selinux/config; \
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
-   (cd /etc/selinux/%2/modules/active/modules; rm -f gnomeclock.pp ctdbd.pp fcoemon.pp isnsd.pp l2tpd.pp qemu.pp nsplugin.pp razor.pp pyzord.pp phpfpm.pp hotplug.pp consoletype.pp kudzu.pp howl.pp) \
-   if [ %1 -ne 1 ]; then \
-	/usr/sbin/semodule -n -s %2 -r gnomeclock matahari xfs kudzu kerneloops execmem openoffice ada tzdata hal hotplug howl java mono moilscanner gamin audio_entropy audioentropy iscsid polkit_auth polkit rtkit_daemon ModemManager telepathysofiasip ethereal passanger qpidd pyzor razor pki-selinux phpfpm consoletype ctdbd fcoemon isnsd l2tp  2>/dev/null; \
-   fi \
+   (cd /etc/selinux/%2/modules/active/modules; rm -f gnomeclock.pp matahari.pp xfs.pp kudzu.pp kerneloops.pp execmem.pp openoffice.pp ada.pp tzdata.pp hal.pp hotplug.pp howl.pp java.pp mono.pp moilscanner.pp gamin.pp audio_entropy.pp audioentropy.pp iscsid.pp polkit_auth.pp polkit.pp rtkit_daemon.pp ModemManager.pp telepathysofiasip.pp ethereal.pp passanger.pp qpidd.pp pyzor.pp razor.pp pki-selinux.pp phpfpm.pp consoletype.pp ctdbd.pp fcoemon.pp isnsd.pp l2tp.pp ) \
    /usr/sbin/semodule -B -n -s %2; \
 else \
     touch /etc/selinux/%2/modules/active/modules/sandbox.disabled \
 fi; \
 [ "${SELINUXTYPE}" == "%2" ] && selinuxenabled && load_policy; \
 if [ %1 -eq 1 ]; then \
-   /sbin/restorecon -R /root /var/log /var/run 2> /dev/null; \
+   /sbin/restorecon -R /root /var/log /run 2> /dev/null; \
 else \
 %relabel %2 \
 fi;
@@ -434,7 +421,7 @@ SELinux Reference policy targeted base module.
 %postInstall $1 targeted
 exit 0
 
-%triggerpostun targeted -- selinux-policy-targeted < 3.11.0-1.fc18
+%triggerpostun targeted -- selinux-policy-targeted < selinux-policy-3.12.1-7.fc19
 restorecon -R -p /home
 exit 0
 
