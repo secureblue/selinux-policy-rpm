@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -524,6 +524,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jan 28 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-8
+- Change ssh_use_pts to use macro and only inherited sshd_devpts_t
+- Allow confined users to read systemd_logind seat information
+- libmpg ships badly created libraries
+- Add support for strongswan.service
+- Add labeling for strongswan
+- Allow l2tpd_t to read network manager content in /run directory
+- Allow rsync to getattr any file in rsync_data_t
+- Add labeling and filename transition for .grl-podcasts
+
 * Fri Jan 25 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-7
 - mount.glusterfs executes glusterfsd binary
 - Allow systemd_hostnamed_t to stream connect to systemd
