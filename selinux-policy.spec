@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -521,6 +521,18 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jan 30 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-9
+- boinc_cliean wants also execmem as boinc projecs have
+- Allow sa-update to search admin home for /root/.spamassassin
+- Allow sa-update to search admin home for /root/.spamassassin
+- Allow antivirus domain to read net sysctl
+- Dontaudit attempts from thumb_t to connect to ssd
+- Dontaudit attempts by readahead to read sock_files
+- Dontaudit attempts by readahead to read sock_files
+- Create tmpfs file while running as wine as user_tmpfs_t
+- Dontaudit attempts by readahead to read sock_files
+- libmpg ships badly created librarie
+
 * Mon Jan 28 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-8
 - Change ssh_use_pts to use macro and only inherited sshd_devpts_t
 - Allow confined users to read systemd_logind seat information
