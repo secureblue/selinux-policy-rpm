@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -521,6 +521,56 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jan 5 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-10
+- Fix smartmontools
+- Fix userdom_restricted_xwindows_user_template() interface
+- Add xserver_xdm_ioctl_log() interface
+- Allow Xusers to ioctl lxdm.log to make lxdm working
+- Add MLS fixes to make MLS boot/log-in working
+- Add mls_socket_write_all_levels() also for syslogd
+- fsck.xfs needs to read passwd
+- Fix ntp_filetrans_named_content calling in init.te
+- Allow postgresql to create pg_log dir
+- Allow sshd to read rsync_data_t to make rsync <backuphost> working
+- Change ntp.conf to be labeled net_conf_t
+- Allow useradd to create homedirs in /run.  ircd-ratbox does this and we should just allow it
+- Allow xdm_t to execute gstreamer home content
+- Allod initrc_t and unconfined domains, and sysadm_t to manage ntp
+- New policy for openstack swift domains
+- More access required for openshift_cron_t
+- Use cupsd_log_t instead of cupsd_var_log_t
+- rpm_script_roles should be used in rpm_run
+- Fix rpm_run() interface
+- Fix openshift_initrc_run()
+- Fix sssd_dontaudit_stream_connect() interface
+- Fix sssd_dontaudit_stream_connect() interface
+- Allow LDA's job to deliver mail to the mailbox
+- dontaudit block_suspend for mozilla_plugin_t
+- Allow l2tpd_t to all signal perms
+- Allow uuidgen to read /dev/random
+- Allow mozilla-plugin-config to read power_supply info
+- Implement cups_domain attribute for cups domains
+- We now need access to user terminals since we start by executing a command outside the tty
+- We now need access to user terminals since we start by executing a command outside the tty
+- svirt lxc containers want to execute userhelper apps, need these changes to allow this to happen
+- Add containment of openshift cron jobs
+- Allow system cron jobs to create tmp directories
+- Make userhelp_conf_t a config file
+- Change rpm to use rpm_script_roles
+- More fixes for rsync to make rsync <backuphost> wokring
+- Allow logwatch to domtrans to mdadm
+- Allow pacemaker to domtrans to ifconfig
+- Allow pacemaker to setattr on corosync.log
+- Add pacemaker_use_execmem for memcheck-amd64 command
+- Allow block_suspend capability
+- Allow create fifo_file in /tmp with pacemaker_tmp_t
+- Allow systat to getattr on fixed disk
+- Relabel /etc/ntp.conf to be net_conf_t
+- ntp_admin should create files in /etc with the correct label
+- Add interface to create ntp_conf_t files in /etc
+- Add additional labeling for quantum
+- Allow quantum to execute dnsmasq with transition
+
 * Wed Jan 30 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-9
 - boinc_cliean wants also execmem as boinc projecs have
 - Allow sa-update to search admin home for /root/.spamassassin
