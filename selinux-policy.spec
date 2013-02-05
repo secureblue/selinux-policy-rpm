@@ -521,7 +521,7 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Tue Jan 5 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-10
+* Tue Feb 5 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-10
 - Fix smartmontools
 - Fix userdom_restricted_xwindows_user_template() interface
 - Add xserver_xdm_ioctl_log() interface
