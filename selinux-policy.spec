@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -521,6 +521,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Feb 8 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-11
+- Allow gpg to read fips_enabled
+- Add support for /var/cache/realmd
+- Add support for /usr/sbin/blazer_usb and systemd support for nut
+- Add labeling for fenced_sanlock and allow sanclok transition to fenced_t
+- bitlbee wants to read own log file
+- Allow glance domain to send a signal itself
+- Allow xend_t to request that the kernel load a kernel module
+- Allow pacemaker to execute heartbeat lib files
+- cleanup new swift policy
+
 * Tue Feb 5 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-10
 - Fix smartmontools
 - Fix userdom_restricted_xwindows_user_template() interface
