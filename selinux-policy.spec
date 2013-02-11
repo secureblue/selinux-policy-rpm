@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -521,6 +521,20 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Feb 11 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-12
+- Rename files_rw_inherited_tmp_files to files_rw_inherited_tmp_file
+- Add missing files_rw_inherited_tmp_files interface
+- Add additional interface for ecryptfs
+- ALlow nova-cert to connect to postgresql
+- Allow keystone to connect to postgresql
+- Allow all cups domains to getattr on filesystems
+- Allow pppd to send signull
+- Allow tuned to execute ldconfig
+- Allow gpg to read fips_enabled
+- Add additional fixes for ecryptfs
+- Allow httpd to work with posgresql
+- Allow keystone getsched and setsched
+
 * Fri Feb 8 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-11
 - Allow gpg to read fips_enabled
 - Add support for /var/cache/realmd
