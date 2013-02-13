@@ -14,8 +14,8 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 29
-%define POLICYCOREUTILSVER 2.1.13-54
-%define CHECKPOLICYVER 2.1.11-3
+%define POLICYCOREUTILSVER 2.1.14-1
+%define CHECKPOLICYVER 2.1.12-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
