@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -521,6 +521,22 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Feb 14 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-13
+- virsh now does a setexeccon call
+- Additional rules required by openshift domains
+- Allow svirt_lxc_domains to use inherited terminals, needed to make virt-sandbox-service execute work
+- Allow spamd_update_t to search spamc_home_t
+- Avcs discovered by mounting an isci device under /mnt
+- Allow lspci running as logrotate to read pci.ids
+- Additional fix for networkmanager_read_pid_files()
+- Fix networkmanager_read_pid_files() interface
+- Allow all svirt domains to connect to svirt_socket_t
+- Allow virsh to set SELinux context for a process.
+- Allow tuned to create netlink_kobject_uevent_socket
+- Allow systemd-timestamp to set SELinux context
+- Add support for /var/lib/systemd/linger
+- Fix ssh_sysadm_login to be working on MLS as expected
+
 * Mon Feb 11 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-12
 - Rename files_rw_inherited_tmp_files to files_rw_inherited_tmp_file
 - Add missing files_rw_inherited_tmp_files interface
