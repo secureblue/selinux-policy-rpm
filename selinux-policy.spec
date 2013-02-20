@@ -226,10 +226,11 @@ FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 /usr/sbin/selinuxenabled; \
 if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      /sbin/fixfiles -C ${FILE_CONTEXT}.pre restore 2> /dev/null; \
-     /sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* 2> /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
-     restorecon -R /home/*/.cache /home/*/.config; \
-fi;
+     /sbin/restorecon -R /home/*/.cache /home/*/.config; \
+fi; \
+/sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* 2> /dev/null; \
+/sbin/restorecon -R /home/*/.cache /home/*/.config;
 
 %define preInstall() \
 if [ $1 -ne 1 ] && [ -s /etc/selinux/config ]; then \
