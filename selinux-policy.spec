@@ -229,7 +229,7 @@ if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      rm -f ${FILE_CONTEXT}.pre; \
      /sbin/restorecon -R /home/*/.cache /home/*/.config; \
 fi; \
-/sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* 2> /dev/null; \
+/sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null; \
 /sbin/restorecon -R /home/*/.cache /home/*/.config;
 
 %define preInstall() \
