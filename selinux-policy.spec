@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -522,6 +522,47 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Feb 20 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-14
+- Allow gluster to get attrs on all fs
+- New access required for virt-sandbox
+- Allow dnsmasq to execute bin_t
+- Allow dnsmasq to create content in /var/run/NetworkManager
+- Fix openshift_initrc_signal() interface
+- Dontaudit openshift domains doing getattr on other domains
+- Allow consolehelper domain to communicate with session bus
+- Mock should not be transitioning to any other domains,  we should keep mock_t as mock_t
+- Update virt_qemu_ga_t policy
+- Allow authconfig running from realmd to restart oddjob service
+- Add systemd support for oddjob
+- Add initial policy for realmd_consolehelper_t which if for authconfig executed by realmd
+- Add labeling for gnashpluginrc
+- Allow chrome_nacl to execute /dev/zero
+- Allow condor domains to read /proc
+- mozilla_plugin_t will getattr on /core if firefox crashes
+- Allow condor domains to read /etc/passwd
+- Allow dnsmasq to execute shell scripts, openstack requires this access
+- Fix glusterd labeling
+- Allow virtd_t to interact with the socket type
+- Allow nmbd_t to override dac if you turned on sharing all files
+- Allow tuned to created kobject_uevent socket
+- Allow guest user to run fusermount
+- Allow openshift to read /proc and locale
+- Allow realmd to dbus chat with rpm
+- Add new interface for virt
+- Remove depracated interfaces
+- Allow systemd_domains read access on etc, etc_runtime and usr files, also allow them to connect stream to syslog socket
+- /usr/share/munin/plugins/plugin.sh should be labeled as bin_t
+- Remove some more unconfined_t process transitions, that I don't believe are necessary
+- Stop transitioning uncofnined_t to checkpc
+- dmraid creates /var/lock/dmraid
+- Allow systemd_localed to creatre unix_dgram_sockets
+- Allow systemd_localed to write kernel messages.
+- Also cleanup systemd definition a little.
+- Fix userdom_restricted_xwindows_user_template() interface
+- Label any block devices or char devices under /dev/infiniband as fixed_disk_device_t
+- User accounts need to dbus chat with accountsd daemon
+- Gnome requires all users to be able to read /proc/1/
+
 * Thu Feb 14 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-13
 - virsh now does a setexeccon call
 - Additional rules required by openshift domains
