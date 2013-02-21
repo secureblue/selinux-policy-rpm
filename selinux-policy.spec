@@ -14,7 +14,7 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 29
-%define POLICYCOREUTILSVER 2.1.14-1
+%define POLICYCOREUTILSVER 2.1.14-7
 %define CHECKPOLICYVER 2.1.12-1
 Summary: SELinux policy configuration
 Name: selinux-policy
@@ -89,6 +89,8 @@ SELinux policy development and man page package
 %dir %{_usr}/share/selinux/devel
 %dir %{_usr}/share/selinux/devel/include
 %{_usr}/share/selinux/devel/include/*
+%dir %{_usr}/share/selinux/devel/html
+%{_usr}/share/selinux/devel/html/*html
 %{_usr}/share/selinux/devel/Makefile
 %{_usr}/share/selinux/devel/example.*
 
@@ -347,7 +349,11 @@ install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
 install -m 644 doc/policy.* %{buildroot}%{_usr}/share/selinux/devel/
 echo  "xdg-open file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
-
+/usr/bin/sepolicy manpage -a -p %{buildroot}/usr/share/man/man8/ -w -r %{buildroot}
+mkdir %{buildroot}%{_usr}/share/selinux/devel/html
+htmldir=`compgen -d %{buildroot}%{_usr}/share/man/man8/`
+mv ${htmldir}/* %{buildroot}%{_usr}/share/selinux/devel/html
+rm -rf ${htmldir}
 mkdir %{buildroot}%{_usr}/share/selinux/packages/
 
 rm -rf selinux_config
