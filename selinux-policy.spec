@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -528,6 +528,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Feb 21 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-15
+- Man pages are now generated in the build process
+- Allow cgred to list inotifyfs filesystem
+
 * Wed Feb 20 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-14
 - Allow gluster to get attrs on all fs
 - New access required for virt-sandbox
