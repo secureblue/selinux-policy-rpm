@@ -64,7 +64,7 @@ index e4f84de..94697ea 100644
 +/var/cache/retrace-server(/.*)?						gen_context(system_u:object_r:abrt_retrace_cache_t,s0)
 +/var/spool/retrace-server(/.*)?						gen_context(system_u:object_r:abrt_retrace_spool_t,s0)
 diff --git a/abrt.if b/abrt.if
-index 058d908..cce58bb 100644
+index 058d908..b7620e3 100644
 --- a/abrt.if
 +++ b/abrt.if
 @@ -1,4 +1,26 @@
@@ -314,7 +314,7 @@ index 058d908..cce58bb 100644
 +	')
 +
 +	systemd_exec_systemctl($1)
-+	allow $1 abrt_unit_file_t:file read_file_perms;
++	allow $1 abrt_unit_file_t:file manage_file_perms;
 +	allow $1 abrt_unit_file_t:service manage_service_perms;
 +
 +	ps_process_pattern($1, abrt_t)
@@ -16924,7 +16924,7 @@ index dda905b..31f269b 100644
  /var/named/chroot/var/run/dbus(/.*)?	gen_context(system_u:object_r:system_dbusd_var_run_t,s0)
 +')
 diff --git a/dbus.if b/dbus.if
-index afcf3a2..90299b3 100644
+index afcf3a2..0730306 100644
 --- a/dbus.if
 +++ b/dbus.if
 @@ -1,4 +1,4 @@
@@ -17409,7 +17409,7 @@ index afcf3a2..90299b3 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -543,33 +387,57 @@ interface(`dbus_system_bus_unconfined',`
+@@ -543,33 +387,24 @@ interface(`dbus_system_bus_unconfined',`
  #
  interface(`dbus_system_domain',`
  	gen_require(`
@@ -17425,122 +17425,114 @@ index afcf3a2..90299b3 100644
 -	role system_r types $1;
 -
  	domtrans_pattern(system_dbusd_t, $2, $1)
-+')
  
 -	dbus_system_bus_client($1)
 -	dbus_connect_system_bus($1)
 -
 -	ps_process_pattern(system_dbusd_t, $1)
-+########################################
-+## <summary>
-+##	Use and inherit system DBUS file descriptors.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`dbus_use_system_bus_fds',`
-+	gen_require(`
-+		type system_dbusd_t;
-+	')
- 
+-
 -	userdom_read_all_users_state($1)
-+	allow $1 system_dbusd_t:fd use;
-+')
++	ps_process_pattern($1, system_dbusd_t)
  
 -	ifdef(`hide_broken_symptoms', `
 -		dontaudit $1 system_dbusd_t:netlink_selinux_socket { read write };
-+########################################
-+## <summary>
-+##	Allow unconfined access to the system DBUS.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`dbus_unconfined',`
-+	gen_require(`
-+		attribute dbusd_unconfined;
- 	')
-+
-+	typeattribute $1 dbusd_unconfined;
+-	')
  ')
  
  ########################################
  ## <summary>
 -##	Use and inherit DBUS system bus
 -##	file descriptors.
-+##	Delete all dbus pid files
++##	Use and inherit system DBUS file descriptors.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -577,18 +445,20 @@ interface(`dbus_system_domain',`
- ##	</summary>
- ## </param>
- #
--interface(`dbus_use_system_bus_fds',`
-+interface(`dbus_delete_pid_files',`
- 	gen_require(`
--		type system_dbusd_t;
-+		type system_dbusd_var_run_t;
- 	')
- 
--	allow $1 system_dbusd_t:fd use;
-+	files_search_pids($1)
-+	delete_files_pattern($1, system_dbusd_var_run_t, system_dbusd_var_run_t)
- ')
+@@ -587,26 +422,25 @@ interface(`dbus_use_system_bus_fds',`
  
  ########################################
  ## <summary>
 -##	Do not audit attempts to read and
 -##	write DBUS system bus TCP sockets.
-+##	Do not audit attempts to connect to
-+##	session bus types with a unix
-+##	stream socket.
++##	Allow unconfined access to the system DBUS.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -596,28 +466,51 @@ interface(`dbus_use_system_bus_fds',`
+-##	Domain to not audit.
++##	Domain allowed access.
  ##	</summary>
  ## </param>
  #
 -interface(`dbus_dontaudit_system_bus_rw_tcp_sockets',`
-+interface(`dbus_dontaudit_stream_connect_session_bus',`
++interface(`dbus_unconfined',`
  	gen_require(`
 -		type system_dbusd_t;
-+		attribute session_bus_type;
++		attribute dbusd_unconfined;
  	')
  
 -	dontaudit $1 system_dbusd_t:tcp_socket { read write };
-+	dontaudit $1 session_bus_type:unix_stream_socket connectto;
++	typeattribute $1 dbusd_unconfined;
  ')
  
  ########################################
  ## <summary>
 -##	Unconfined access to DBUS.
-+##	Do not audit attempts to send dbus
-+##	messages to session bus types.
++##	Delete all dbus pid files
  ## </summary>
  ## <param name="domain">
  ##	<summary>
--##	Domain allowed access.
-+##	Domain to not audit.
+@@ -614,10 +448,72 @@ interface(`dbus_dontaudit_system_bus_rw_tcp_sockets',`
  ##	</summary>
  ## </param>
  #
 -interface(`dbus_unconfined',`
-+interface(`dbus_dontaudit_chat_session_bus',`
++interface(`dbus_delete_pid_files',`
  	gen_require(`
 -		attribute dbusd_unconfined;
-+		attribute session_bus_type;
-+		class dbus send_msg;
++		type system_dbusd_var_run_t;
  	')
  
 -	typeattribute $1 dbusd_unconfined;
++	files_search_pids($1)
++	delete_files_pattern($1, system_dbusd_var_run_t, system_dbusd_var_run_t)
++')
++
++########################################
++## <summary>
++##	Do not audit attempts to connect to
++##	session bus types with a unix
++##	stream socket.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`dbus_dontaudit_stream_connect_session_bus',`
++	gen_require(`
++		attribute session_bus_type;
++	')
++
++	dontaudit $1 session_bus_type:unix_stream_socket connectto;
++')
++
++########################################
++## <summary>
++##	Do not audit attempts to send dbus
++##	messages to session bus types.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`dbus_dontaudit_chat_session_bus',`
++	gen_require(`
++		attribute session_bus_type;
++		class dbus send_msg;
++	')
++
 +	dontaudit $1 session_bus_type:dbus send_msg;
 +')
 +
@@ -23707,11 +23699,34 @@ index 0000000..1ed97fe
 +
 diff --git a/glusterd.te b/glusterd.te
 new file mode 100644
-index 0000000..6704414
+index 0000000..9cfc035
 --- /dev/null
 +++ b/glusterd.te
-@@ -0,0 +1,104 @@
+@@ -0,0 +1,145 @@
 +policy_module(glusterfs, 1.0.1)
++
++## <desc>
++## <p>
++## Allow glusterfsd to modify public files used for public file
++## transfer services.  Files/Directories must be labeled
++## public_content_rw_t.
++## </p>
++## </desc>
++gen_tunable(gluster_anon_write, false)
++
++## <desc>
++## <p>
++## Allow glusterfsd to share any file/directory read only.
++## </p>
++## </desc>
++gen_tunable(gluster_export_all_ro, false)
++
++## <desc>
++## <p>
++## Allow glusterfsd to share any file/directory read/write.
++## </p>
++## </desc>
++gen_tunable(gluster_export_all_rw, false)
 +
 +########################################
 +#
@@ -23806,6 +23821,8 @@ index 0000000..6704414
 +
 +domain_use_interactive_fds(glusterd_t)
 +
++fs_getattr_all_fs(glusterd_t)
++
 +auth_use_nsswitch(glusterd_t)
 +
 +fs_getattr_all_fs(glusterd_t)
@@ -23813,8 +23830,24 @@ index 0000000..6704414
 +logging_send_syslog_msg(glusterd_t)
 +
 +miscfiles_read_localization(glusterd_t)
++miscfiles_read_public_files(glusterd_t)
 +
 +userdom_manage_user_home_dirs(glusterd_t)
++
++tunable_policy(`gluster_anon_write',`
++	miscfiles_manage_public_files(glusterd_t)
++') 
++
++tunable_policy(`gluster_export_all_ro',`
++	fs_read_noxattr_fs_files(glusterd_t) 
++	files_read_non_security_files(glusterd_t) 
++')
++
++tunable_policy(`gluster_export_all_rw',`
++	fs_manage_noxattr_fs_files(glusterd_t) 
++	files_manage_non_security_files(glusterd_t)
++')
++
 diff --git a/glusterfs.fc b/glusterfs.fc
 deleted file mode 100644
 index 4bd6ade..0000000
@@ -28136,10 +28169,84 @@ index c5a8112..947efe0 100644
  userdom_dontaudit_use_unpriv_user_fds(irqbalance_t)
  userdom_dontaudit_search_user_home_dirs(irqbalance_t)
  
+diff --git a/iscsi.fc b/iscsi.fc
+index 08b7560..9d1930b 100644
+--- a/iscsi.fc
++++ b/iscsi.fc
+@@ -1,19 +1,17 @@
+-/etc/rc\.d/init\.d/((iscsi)|(iscsid))	--	gen_context(system_u:object_r:iscsi_initrc_exec_t,s0)
+-
+ /sbin/iscsid	--	gen_context(system_u:object_r:iscsid_exec_t,s0)
+-/sbin/brcm_iscsiuio	--	gen_context(system_u:object_r:iscsid_exec_t,s0)
+ /sbin/iscsiuio	--	gen_context(system_u:object_r:iscsid_exec_t,s0)
+ 
+ /usr/sbin/iscsid	--	gen_context(system_u:object_r:iscsid_exec_t,s0)
+-/usr/sbin/brcm_iscsiuio	--	gen_context(system_u:object_r:iscsid_exec_t,s0)
+ /usr/sbin/iscsiuio	--	gen_context(system_u:object_r:iscsid_exec_t,s0)
+ 
+ /var/lib/iscsi(/.*)?	gen_context(system_u:object_r:iscsi_var_lib_t,s0)
+ 
+ /var/lock/iscsi(/.*)?	gen_context(system_u:object_r:iscsi_lock_t,s0)
+ 
+-/var/log/brcm-iscsi\.log.*	--	gen_context(system_u:object_r:iscsi_log_t,s0)
+ /var/log/iscsiuio\.log.*	--	gen_context(system_u:object_r:iscsi_log_t,s0)
+ 
+ /var/run/iscsid\.pid	--	gen_context(system_u:object_r:iscsi_var_run_t,s0)
+ /var/run/iscsiuio\.pid	--	gen_context(system_u:object_r:iscsi_var_run_t,s0)
++
++/usr/lib/systemd/system/((iscsi)|(iscsid)|(iscsiuio))\.service	--	gen_context(system_u:object_r:iscsi_unit_file_t,s0)
++/usr/lib/systemd/system/((iscsid)|(iscsiuio))\.socket	--	gen_context(system_u:object_r:iscsi_unit_file_t,s0)
+diff --git a/iscsi.if b/iscsi.if
+index 1a35420..1d27695 100644
+--- a/iscsi.if
++++ b/iscsi.if
+@@ -88,27 +88,21 @@ interface(`iscsi_read_lib_files',`
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+-## <param name="role">
+-##	<summary>
+-##	Role allowed access.
+-##	</summary>
+-## </param>
+ ## <rolecap/>
+ #
+ interface(`iscsi_admin',`
+ 	gen_require(`
+ 		type iscsid_t, iscsi_lock_t, iscsi_log_t;
+ 		type iscsi_var_lib_t, iscsi_var_run_t, iscsi_tmp_t;
+-		type iscsi_initrc_exec_t;
++		type iscsi_unit_file_t;
+ 	')
+ 
+ 	allow $1 iscsid_t:process { ptrace signal_perms };
+ 	ps_process_pattern($1, iscsid_t)
+ 
+-	init_labeled_script_domtrans($1, iscsi_initrc_exec_t)
+-	domain_system_change_exemption($1)
+-	role_transition $2 iscsi_initrc_exec_t system_r;
+-	allow $2 system_r;
++	systemd_exec_systemctl($1)
++	allow $1 iscsi_unit_file_t:file manage_file_perms;
++	allow $1 iscsi_unit_file_t:service manage_service_perms;
+ 
+ 	logging_search_logs($1)
+ 	admin_pattern($1, iscsi_log_t)
 diff --git a/iscsi.te b/iscsi.te
-index 57304e4..3dba77f 100644
+index 57304e4..74153ec 100644
 --- a/iscsi.te
 +++ b/iscsi.te
+@@ -9,8 +9,8 @@ type iscsid_t;
+ type iscsid_exec_t;
+ init_daemon_domain(iscsid_t, iscsid_exec_t)
+ 
+-type iscsi_initrc_exec_t;
+-init_script_file(iscsi_initrc_exec_t)
++type iscsi_unit_file_t;
++systemd_unit_file(iscsi_unit_file_t)
+ 
+ type iscsi_lock_t;
+ files_lock_file(iscsi_lock_t)
 @@ -33,7 +33,6 @@ files_pid_file(iscsi_var_run_t)
  #
  
@@ -28148,7 +28255,12 @@ index 57304e4..3dba77f 100644
  allow iscsid_t self:process { setrlimit setsched signal };
  allow iscsid_t self:fifo_file rw_fifo_file_perms;
  allow iscsid_t self:unix_stream_socket { accept connectto listen };
-@@ -68,7 +67,6 @@ kernel_read_network_state(iscsid_t)
+@@ -64,11 +63,11 @@ files_pid_filetrans(iscsid_t, iscsi_var_run_t, file)
+ 
+ can_exec(iscsid_t, iscsid_exec_t)
+ 
++kernel_request_load_module(iscsid_t)
+ kernel_read_network_state(iscsid_t)
  kernel_read_system_state(iscsid_t)
  kernel_setsched(iscsid_t)
  
@@ -28156,18 +28268,22 @@ index 57304e4..3dba77f 100644
  corenet_all_recvfrom_netlabel(iscsid_t)
  corenet_tcp_sendrecv_generic_if(iscsid_t)
  corenet_tcp_sendrecv_generic_node(iscsid_t)
-@@ -85,6 +83,10 @@ corenet_sendrecv_isns_client_packets(iscsid_t)
+@@ -85,10 +84,12 @@ corenet_sendrecv_isns_client_packets(iscsid_t)
  corenet_tcp_connect_isns_port(iscsid_t)
  corenet_tcp_sendrecv_isns_port(iscsid_t)
  
+-dev_read_raw_memory(iscsid_t)
 +corenet_sendrecv_winshadow_client_packets(iscsid_t)
 +corenet_tcp_connect_winshadow_port(iscsid_t)
 +corenet_tcp_sendrecv_winshadow_port(iscsid_t)
 +
- dev_read_raw_memory(iscsid_t)
  dev_rw_sysfs(iscsid_t)
  dev_rw_userio_dev(iscsid_t)
-@@ -99,8 +101,6 @@ init_stream_connect_script(iscsid_t)
+-dev_write_raw_memory(iscsid_t)
+ 
+ domain_use_interactive_fds(iscsid_t)
+ domain_dontaudit_read_all_domains_state(iscsid_t)
+@@ -99,8 +100,6 @@ init_stream_connect_script(iscsid_t)
  
  logging_send_syslog_msg(iscsid_t)
  
@@ -42489,7 +42605,7 @@ index 8aa1bfa..cd0e015 100644
 +/usr/lib/systemd/system/yppasswdd.*	--	gen_context(system_u:object_r:nis_unit_file_t,s0)
 +/usr/lib/systemd/system/ypxfrd.*	--	gen_context(system_u:object_r:nis_unit_file_t,s0)
 diff --git a/nis.if b/nis.if
-index 46e55c3..1112fae 100644
+index 46e55c3..346242e 100644
 --- a/nis.if
 +++ b/nis.if
 @@ -1,4 +1,4 @@
@@ -42518,14 +42634,12 @@ index 46e55c3..1112fae 100644
  	corenet_tcp_sendrecv_generic_if($1)
  	corenet_udp_sendrecv_generic_if($1)
  	corenet_tcp_sendrecv_generic_node($1)
-@@ -49,14 +44,13 @@ interface(`nis_use_ypbind_uncond',`
+@@ -49,14 +44,11 @@ interface(`nis_use_ypbind_uncond',`
  	corenet_udp_bind_generic_node($1)
  	corenet_tcp_bind_generic_port($1)
  	corenet_udp_bind_generic_port($1)
 -	corenet_dontaudit_tcp_bind_all_reserved_ports($1)
 -	corenet_dontaudit_udp_bind_all_reserved_ports($1)
-+	corenet_tcp_bind_all_rpc_ports($1)
-+	corenet_udp_bind_all_rpc_ports($1)
  	corenet_dontaudit_tcp_bind_all_ports($1)
  	corenet_dontaudit_udp_bind_all_ports($1)
  	corenet_tcp_connect_portmap_port($1)
@@ -42536,7 +42650,7 @@ index 46e55c3..1112fae 100644
  	corenet_sendrecv_portmap_client_packets($1)
  	corenet_sendrecv_generic_client_packets($1)
  	corenet_sendrecv_generic_server_packets($1)
-@@ -88,14 +82,14 @@ interface(`nis_use_ypbind_uncond',`
+@@ -88,14 +80,14 @@ interface(`nis_use_ypbind_uncond',`
  ## <rolecap/>
  #
  interface(`nis_use_ypbind',`
@@ -42553,7 +42667,7 @@ index 46e55c3..1112fae 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -105,7 +99,7 @@ interface(`nis_use_ypbind',`
+@@ -105,7 +97,7 @@ interface(`nis_use_ypbind',`
  ## <rolecap/>
  #
  interface(`nis_authenticate',`
@@ -42562,7 +42676,7 @@ index 46e55c3..1112fae 100644
  		nis_use_ypbind_uncond($1)
  		corenet_tcp_bind_all_rpc_ports($1)
  		corenet_udp_bind_all_rpc_ports($1)
-@@ -133,20 +127,19 @@ interface(`nis_domtrans_ypbind',`
+@@ -133,20 +125,19 @@ interface(`nis_domtrans_ypbind',`
  
  #######################################
  ## <summary>
@@ -42590,7 +42704,7 @@ index 46e55c3..1112fae 100644
  	can_exec($1, ypbind_exec_t)
  ')
  
-@@ -169,11 +162,11 @@ interface(`nis_exec_ypbind',`
+@@ -169,11 +160,11 @@ interface(`nis_exec_ypbind',`
  #
  interface(`nis_run_ypbind',`
  	gen_require(`
@@ -42604,7 +42718,7 @@ index 46e55c3..1112fae 100644
  ')
  
  ########################################
-@@ -196,7 +189,7 @@ interface(`nis_signal_ypbind',`
+@@ -196,7 +187,7 @@ interface(`nis_signal_ypbind',`
  
  ########################################
  ## <summary>
@@ -42613,7 +42727,7 @@ index 46e55c3..1112fae 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -272,10 +265,11 @@ interface(`nis_read_ypbind_pid',`
+@@ -272,10 +263,11 @@ interface(`nis_read_ypbind_pid',`
  #
  interface(`nis_delete_ypbind_pid',`
  	gen_require(`
@@ -42627,7 +42741,7 @@ index 46e55c3..1112fae 100644
  ')
  
  ########################################
-@@ -355,8 +349,57 @@ interface(`nis_initrc_domtrans_ypbind',`
+@@ -355,8 +347,57 @@ interface(`nis_initrc_domtrans_ypbind',`
  
  ########################################
  ## <summary>
@@ -42687,7 +42801,7 @@ index 46e55c3..1112fae 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -372,32 +415,56 @@ interface(`nis_initrc_domtrans_ypbind',`
+@@ -372,32 +413,56 @@ interface(`nis_initrc_domtrans_ypbind',`
  #
  interface(`nis_admin',`
  	gen_require(`
@@ -51986,7 +52100,7 @@ index 032a84d..be00a65 100644
 +	allow $1 policykit_auth_t:process signal;
  ')
 diff --git a/policykit.te b/policykit.te
-index 49694e8..0372dfd 100644
+index 49694e8..e426304 100644
 --- a/policykit.te
 +++ b/policykit.te
 @@ -1,4 +1,4 @@
@@ -52018,7 +52132,7 @@ index 49694e8..0372dfd 100644
  
  type policykit_resolve_t, policykit_domain;
  type policykit_resolve_exec_t;
-@@ -42,48 +37,43 @@ files_pid_file(policykit_var_run_t)
+@@ -42,63 +37,64 @@ files_pid_file(policykit_var_run_t)
  
  #######################################
  #
@@ -52081,7 +52195,10 @@ index 49694e8..0372dfd 100644
  
  domain_read_all_domains_state(policykit_t)
  
-@@ -93,12 +83,17 @@ fs_list_inotifyfs(policykit_t)
+ files_dontaudit_search_all_mountpoints(policykit_t)
+ 
++fs_getattr_all_fs(policykit_t)
+ fs_list_inotifyfs(policykit_t)
  
  auth_use_nsswitch(policykit_t)
  
@@ -52099,7 +52216,7 @@ index 49694e8..0372dfd 100644
  	optional_policy(`
  		consolekit_dbus_chat(policykit_t)
  	')
-@@ -109,29 +104,43 @@ optional_policy(`
+@@ -109,29 +105,43 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -52151,7 +52268,7 @@ index 49694e8..0372dfd 100644
  
  rw_files_pattern(policykit_auth_t, policykit_reload_t, policykit_reload_t)
  
-@@ -145,9 +154,6 @@ manage_dirs_pattern(policykit_auth_t, policykit_var_run_t, policykit_var_run_t)
+@@ -145,9 +155,6 @@ manage_dirs_pattern(policykit_auth_t, policykit_var_run_t, policykit_var_run_t)
  manage_files_pattern(policykit_auth_t, policykit_var_run_t, policykit_var_run_t)
  files_pid_filetrans(policykit_auth_t, policykit_var_run_t, { file dir })
  
@@ -52161,7 +52278,7 @@ index 49694e8..0372dfd 100644
  kernel_dontaudit_search_kernel_sysctl(policykit_auth_t)
  
  dev_read_video_dev(policykit_auth_t)
-@@ -162,48 +168,58 @@ auth_rw_var_auth(policykit_auth_t)
+@@ -162,48 +169,58 @@ auth_rw_var_auth(policykit_auth_t)
  auth_use_nsswitch(policykit_auth_t)
  auth_domtrans_chk_passwd(policykit_auth_t)
  
@@ -52230,7 +52347,7 @@ index 49694e8..0372dfd 100644
  
  rw_files_pattern(policykit_grant_t, policykit_reload_t, policykit_reload_t)
  
-@@ -211,23 +227,20 @@ manage_files_pattern(policykit_grant_t, policykit_var_run_t, policykit_var_run_t
+@@ -211,23 +228,20 @@ manage_files_pattern(policykit_grant_t, policykit_var_run_t, policykit_var_run_t
  
  manage_files_pattern(policykit_grant_t, policykit_var_lib_t, policykit_var_lib_t)
  
@@ -52257,7 +52374,7 @@ index 49694e8..0372dfd 100644
  	optional_policy(`
  		consolekit_dbus_chat(policykit_grant_t)
  	')
-@@ -235,26 +248,28 @@ optional_policy(`
+@@ -235,26 +249,28 @@ optional_policy(`
  
  ########################################
  #
@@ -52292,7 +52409,7 @@ index 49694e8..0372dfd 100644
  userdom_read_all_users_state(policykit_resolve_t)
  
  optional_policy(`
-@@ -266,6 +281,7 @@ optional_policy(`
+@@ -266,6 +282,7 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -69204,7 +69321,7 @@ index aee75af..a6bab06 100644
 +	allow $1 samba_unit_file_t:service all_service_perms;
  ')
 diff --git a/samba.te b/samba.te
-index 57c034b..4d983f7 100644
+index 57c034b..055c3c5 100644
 --- a/samba.te
 +++ b/samba.te
 @@ -1,4 +1,4 @@
@@ -69758,9 +69875,9 @@ index 57c034b..4d983f7 100644
 +
 +tunable_policy(`samba_export_all_rw',`
 +	allow nmbd_t self:capability { dac_read_search dac_override };
-+	fs_read_noxattr_fs_files(smbd_t) 
++	fs_manage_noxattr_fs_files(smbd_t) 
 +	files_manage_non_security_files(smbd_t)
-+	fs_read_noxattr_fs_files(nmbd_t) 
++	fs_manage_noxattr_fs_files(nmbd_t) 
 +	files_manage_non_security_files(nmbd_t)
 +')
 +
@@ -79818,10 +79935,10 @@ index 0000000..601aea3
 +/usr/lib/tumbler[^/]*/tumblerd		--	gen_context(system_u:object_r:thumb_exec_t,s0)
 diff --git a/thumb.if b/thumb.if
 new file mode 100644
-index 0000000..72c42ad
+index 0000000..eb30b4c
 --- /dev/null
 +++ b/thumb.if
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,125 @@
 +
 +## <summary>policy for thumb</summary>
 +
@@ -79901,8 +80018,7 @@ index 0000000..72c42ad
 +	ps_process_pattern($2, thumb_t)
 +	allow thumb_t $2:unix_stream_socket connectto;
 +
-+	allow $2 thumb_t:dbus send_msg;
-+	allow thumb_t $2:dbus send_msg;
++	thumb_dbus_chat($2)
 +	thumb_filetrans_home_content($2)
 +')
 +

@@ -31994,10 +31994,10 @@ index 0000000..595f756
 +/var/run/initramfs(/.*)?	<<none>>
 diff --git a/policy/modules/system/systemd.if b/policy/modules/system/systemd.if
 new file mode 100644
-index 0000000..a4b0917
+index 0000000..8b02900
 --- /dev/null
 +++ b/policy/modules/system/systemd.if
-@@ -0,0 +1,1041 @@
+@@ -0,0 +1,1043 @@
 +## <summary>SELinux policy for systemd components</summary>
 +
 +#######################################
@@ -33016,12 +33016,13 @@ index 0000000..a4b0917
 +
 +	allow $1 systemd_timedated_t:dbus send_msg;
 +	allow systemd_timedated_t $1:dbus send_msg;
++	ps_process_pattern(systemd_hostnamed_t, $1)
 +')
 +
 +########################################
 +## <summary>
 +##	Send and receive messages from
-+##	systemd hostnamed over dbus.
++##	systemd timedated over dbus.
 +## </summary>
 +## <param name="domain">
 +##	<summary>
@@ -33037,14 +33038,15 @@ index 0000000..a4b0917
 +
 +	allow $1 systemd_hostnamed_t:dbus send_msg;
 +	allow systemd_hostnamed_t $1:dbus send_msg;
++	ps_process_pattern(systemd_hostnamed_t, $1)
 +')
 +
 diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
 new file mode 100644
-index 0000000..6c712b8
+index 0000000..913fc52
 --- /dev/null
 +++ b/policy/modules/system/systemd.te
-@@ -0,0 +1,618 @@
+@@ -0,0 +1,620 @@
 +policy_module(systemd, 1.0.0)
 +
 +#######################################
@@ -33520,6 +33522,8 @@ index 0000000..6c712b8
 +
 +seutil_read_config(systemd_localed_t)
 +seutil_read_file_contexts(systemd_localed_t)
++
++logging_stream_connect_syslog(systemd_localed_t)
 +
 +miscfiles_manage_localization(systemd_localed_t)
 +miscfiles_etc_filetrans_localization(systemd_localed_t)
@@ -35034,7 +35038,7 @@ index db75976..65191bd 100644
 +
 +/var/run/user(/.*)?	gen_context(system_u:object_r:user_tmp_t,s0)
 diff --git a/policy/modules/system/userdomain.if b/policy/modules/system/userdomain.if
-index 3c5dba7..4efa151 100644
+index 3c5dba7..c270e54 100644
 --- a/policy/modules/system/userdomain.if
 +++ b/policy/modules/system/userdomain.if
 @@ -30,9 +30,11 @@ template(`userdom_base_user_template',`
@@ -35050,7 +35054,7 @@ index 3c5dba7..4efa151 100644
  	corecmd_shell_entry_type($1_t)
  	corecmd_bin_entry_type($1_t)
  	domain_user_exemption_target($1_t)
-@@ -44,79 +46,132 @@ template(`userdom_base_user_template',`
+@@ -44,79 +46,133 @@ template(`userdom_base_user_template',`
  	term_user_pty($1_t, user_devpts_t)
  
  	term_user_tty($1_t, user_tty_device_t)
@@ -35202,6 +35206,7 @@ index 3c5dba7..4efa151 100644
 +	miscfiles_read_public_files($1_usertype)
  
 -	tunable_policy(`allow_execmem',`
++	systemd_dbus_chat_hostnamed($1_usertype)
 +	systemd_dbus_chat_logind($1_usertype)
 +	systemd_read_logind_sessions_files($1_usertype)
 +	systemd_write_inhibit_pipes($1_usertype)
@@ -35235,7 +35240,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  #######################################
-@@ -150,6 +205,8 @@ interface(`userdom_ro_home_role',`
+@@ -150,6 +206,8 @@ interface(`userdom_ro_home_role',`
  		type user_home_t, user_home_dir_t;
  	')
  
@@ -35244,7 +35249,7 @@ index 3c5dba7..4efa151 100644
  	##############################
  	#
  	# Domain access to home dir
-@@ -167,27 +224,6 @@ interface(`userdom_ro_home_role',`
+@@ -167,27 +225,6 @@ interface(`userdom_ro_home_role',`
  	read_sock_files_pattern($2, { user_home_t user_home_dir_t }, user_home_t)
  	files_list_home($2)
  
@@ -35272,7 +35277,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  #######################################
-@@ -219,8 +255,11 @@ interface(`userdom_ro_home_role',`
+@@ -219,8 +256,11 @@ interface(`userdom_ro_home_role',`
  interface(`userdom_manage_home_role',`
  	gen_require(`
  		type user_home_t, user_home_dir_t;
@@ -35284,7 +35289,7 @@ index 3c5dba7..4efa151 100644
  	##############################
  	#
  	# Domain access to home dir
-@@ -229,43 +268,47 @@ interface(`userdom_manage_home_role',`
+@@ -229,43 +269,47 @@ interface(`userdom_manage_home_role',`
  	type_member $2 user_home_dir_t:dir user_home_dir_t;
  
  	# full control of the home directory
@@ -35348,7 +35353,7 @@ index 3c5dba7..4efa151 100644
  	')
  ')
  
-@@ -273,6 +316,25 @@ interface(`userdom_manage_home_role',`
+@@ -273,6 +317,25 @@ interface(`userdom_manage_home_role',`
  ## <summary>
  ##	Manage user temporary files
  ## </summary>
@@ -35374,7 +35379,7 @@ index 3c5dba7..4efa151 100644
  ## <param name="role">
  ##	<summary>
  ##	Role allowed access.
-@@ -287,17 +349,64 @@ interface(`userdom_manage_home_role',`
+@@ -287,17 +350,64 @@ interface(`userdom_manage_home_role',`
  #
  interface(`userdom_manage_tmp_role',`
  	gen_require(`
@@ -35444,7 +35449,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  #######################################
-@@ -317,11 +426,31 @@ interface(`userdom_exec_user_tmp_files',`
+@@ -317,11 +427,31 @@ interface(`userdom_exec_user_tmp_files',`
  	')
  
  	exec_files_pattern($1, user_tmp_t, user_tmp_t)
@@ -35476,7 +35481,7 @@ index 3c5dba7..4efa151 100644
  ##	Role access for the user tmpfs type
  ##	that the user has full access.
  ## </summary>
-@@ -348,59 +477,60 @@ interface(`userdom_exec_user_tmp_files',`
+@@ -348,59 +478,60 @@ interface(`userdom_exec_user_tmp_files',`
  #
  interface(`userdom_manage_tmpfs_role',`
  	gen_require(`
@@ -35567,7 +35572,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  #######################################
-@@ -431,6 +561,7 @@ template(`userdom_xwindows_client_template',`
+@@ -431,6 +562,7 @@ template(`userdom_xwindows_client_template',`
  	dev_dontaudit_rw_dri($1_t)
  	# GNOME checks for usb and other devices:
  	dev_rw_usbfs($1_t)
@@ -35575,7 +35580,7 @@ index 3c5dba7..4efa151 100644
  
  	xserver_user_x_domain_template($1, $1_t, user_tmpfs_t)
  	xserver_xsession_entry_type($1_t)
-@@ -463,8 +594,8 @@ template(`userdom_change_password_template',`
+@@ -463,8 +595,8 @@ template(`userdom_change_password_template',`
  	')
  
  	optional_policy(`
@@ -35586,7 +35591,7 @@ index 3c5dba7..4efa151 100644
  	')
  ')
  
-@@ -491,7 +622,8 @@ template(`userdom_common_user_template',`
+@@ -491,7 +623,8 @@ template(`userdom_common_user_template',`
  		attribute unpriv_userdomain;
  	')
  
@@ -35596,7 +35601,7 @@ index 3c5dba7..4efa151 100644
  
  	##############################
  	#
-@@ -501,41 +633,51 @@ template(`userdom_common_user_template',`
+@@ -501,41 +634,51 @@ template(`userdom_common_user_template',`
  	# evolution and gnome-session try to create a netlink socket
  	dontaudit $1_t self:netlink_socket { create ioctl read getattr write setattr append bind connect getopt setopt shutdown };
  	dontaudit $1_t self:netlink_route_socket { create ioctl read getattr write setattr append bind connect getopt setopt shutdown nlmsg_read nlmsg_write };
@@ -35671,7 +35676,7 @@ index 3c5dba7..4efa151 100644
  
  	# cjp: some of this probably can be removed
  	selinux_get_fs_mount($1_t)
-@@ -546,93 +688,121 @@ template(`userdom_common_user_template',`
+@@ -546,93 +689,121 @@ template(`userdom_common_user_template',`
  	selinux_compute_user_contexts($1_t)
  
  	# for eject
@@ -35831,7 +35836,7 @@ index 3c5dba7..4efa151 100644
  	')
  
  	optional_policy(`
-@@ -646,19 +816,17 @@ template(`userdom_common_user_template',`
+@@ -646,19 +817,17 @@ template(`userdom_common_user_template',`
  
  	# for running depmod as part of the kernel packaging process
  	optional_policy(`
@@ -35856,7 +35861,7 @@ index 3c5dba7..4efa151 100644
  			mysql_stream_connect($1_t)
  		')
  	')
-@@ -671,7 +839,7 @@ template(`userdom_common_user_template',`
+@@ -671,7 +840,7 @@ template(`userdom_common_user_template',`
  
  	optional_policy(`
  		# to allow monitoring of pcmcia status
@@ -35865,7 +35870,7 @@ index 3c5dba7..4efa151 100644
  	')
  
  	optional_policy(`
-@@ -680,9 +848,9 @@ template(`userdom_common_user_template',`
+@@ -680,9 +849,9 @@ template(`userdom_common_user_template',`
  	')
  
  	optional_policy(`
@@ -35878,7 +35883,7 @@ index 3c5dba7..4efa151 100644
  		')
  	')
  
-@@ -693,32 +861,36 @@ template(`userdom_common_user_template',`
+@@ -693,32 +862,36 @@ template(`userdom_common_user_template',`
  	')
  
  	optional_policy(`
@@ -35926,7 +35931,7 @@ index 3c5dba7..4efa151 100644
  	')
  ')
  
-@@ -743,17 +915,33 @@ template(`userdom_common_user_template',`
+@@ -743,17 +916,33 @@ template(`userdom_common_user_template',`
  template(`userdom_login_user_template', `
  	gen_require(`
  		class context contains;
@@ -35965,7 +35970,7 @@ index 3c5dba7..4efa151 100644
  
  	userdom_change_password_template($1)
  
-@@ -761,82 +949,100 @@ template(`userdom_login_user_template', `
+@@ -761,82 +950,100 @@ template(`userdom_login_user_template', `
  	#
  	# User domain Local policy
  	#
@@ -36102,7 +36107,7 @@ index 3c5dba7..4efa151 100644
  	')
  ')
  
-@@ -868,6 +1074,12 @@ template(`userdom_restricted_user_template',`
+@@ -868,6 +1075,12 @@ template(`userdom_restricted_user_template',`
  	typeattribute $1_t unpriv_userdomain;
  	domain_interactive_fd($1_t)
  
@@ -36115,7 +36120,7 @@ index 3c5dba7..4efa151 100644
  	##############################
  	#
  	# Local policy
-@@ -908,41 +1120,97 @@ template(`userdom_restricted_xwindows_user_template',`
+@@ -908,41 +1121,97 @@ template(`userdom_restricted_xwindows_user_template',`
  	# Local policy
  	#
  
@@ -36226,7 +36231,7 @@ index 3c5dba7..4efa151 100644
  		')
  
  		optional_policy(`
-@@ -951,12 +1219,30 @@ template(`userdom_restricted_xwindows_user_template',`
+@@ -951,12 +1220,30 @@ template(`userdom_restricted_xwindows_user_template',`
  	')
  
  	optional_policy(`
@@ -36258,7 +36263,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  #######################################
-@@ -990,27 +1276,33 @@ template(`userdom_unpriv_user_template', `
+@@ -990,27 +1277,33 @@ template(`userdom_unpriv_user_template', `
  	#
  
  	# Inherit rules for ordinary users.
@@ -36296,7 +36301,7 @@ index 3c5dba7..4efa151 100644
  			fs_manage_noxattr_fs_files($1_t)
  			fs_manage_noxattr_fs_dirs($1_t)
  			# Write floppies
-@@ -1021,23 +1313,57 @@ template(`userdom_unpriv_user_template', `
+@@ -1021,23 +1314,57 @@ template(`userdom_unpriv_user_template', `
  		')
  	')
  
@@ -36364,7 +36369,7 @@ index 3c5dba7..4efa151 100644
  	')
  
  	# Run pppd in pppd_t by default for user
-@@ -1046,7 +1372,9 @@ template(`userdom_unpriv_user_template', `
+@@ -1046,7 +1373,9 @@ template(`userdom_unpriv_user_template', `
  	')
  
  	optional_policy(`
@@ -36375,7 +36380,7 @@ index 3c5dba7..4efa151 100644
  	')
  ')
  
-@@ -1082,7 +1410,7 @@ template(`userdom_unpriv_user_template', `
+@@ -1082,7 +1411,7 @@ template(`userdom_unpriv_user_template', `
  template(`userdom_admin_user_template',`
  	gen_require(`
  		attribute admindomain;
@@ -36384,7 +36389,7 @@ index 3c5dba7..4efa151 100644
  	')
  
  	##############################
-@@ -1109,6 +1437,7 @@ template(`userdom_admin_user_template',`
+@@ -1109,6 +1438,7 @@ template(`userdom_admin_user_template',`
  	#
  
  	allow $1_t self:capability ~{ sys_module audit_control audit_write };
@@ -36392,7 +36397,7 @@ index 3c5dba7..4efa151 100644
  	allow $1_t self:process { setexec setfscreate };
  	allow $1_t self:netlink_audit_socket nlmsg_readpriv;
  	allow $1_t self:tun_socket create;
-@@ -1117,6 +1446,9 @@ template(`userdom_admin_user_template',`
+@@ -1117,6 +1447,9 @@ template(`userdom_admin_user_template',`
  	# Skip authentication when pam_rootok is specified.
  	allow $1_t self:passwd rootok;
  
@@ -36402,7 +36407,7 @@ index 3c5dba7..4efa151 100644
  	kernel_read_software_raid_state($1_t)
  	kernel_getattr_core_if($1_t)
  	kernel_getattr_message_if($1_t)
-@@ -1131,6 +1463,7 @@ template(`userdom_admin_user_template',`
+@@ -1131,6 +1464,7 @@ template(`userdom_admin_user_template',`
  	kernel_sigstop_unlabeled($1_t)
  	kernel_signull_unlabeled($1_t)
  	kernel_sigchld_unlabeled($1_t)
@@ -36410,7 +36415,7 @@ index 3c5dba7..4efa151 100644
  
  	corenet_tcp_bind_generic_port($1_t)
  	# allow setting up tunnels
-@@ -1148,10 +1481,14 @@ template(`userdom_admin_user_template',`
+@@ -1148,10 +1482,14 @@ template(`userdom_admin_user_template',`
  	dev_rename_all_blk_files($1_t)
  	dev_rename_all_chr_files($1_t)
  	dev_create_generic_symlinks($1_t)
@@ -36425,7 +36430,7 @@ index 3c5dba7..4efa151 100644
  	domain_dontaudit_ptrace_all_domains($1_t)
  	# signal all domains:
  	domain_kill_all_domains($1_t)
-@@ -1162,30 +1499,39 @@ template(`userdom_admin_user_template',`
+@@ -1162,30 +1500,39 @@ template(`userdom_admin_user_template',`
  	domain_sigchld_all_domains($1_t)
  	# for lsof
  	domain_getattr_all_sockets($1_t)
@@ -36470,7 +36475,7 @@ index 3c5dba7..4efa151 100644
  	# The following rule is temporary until such time that a complete
  	# policy management infrastructure is in place so that an administrator
  	# cannot directly manipulate policy files with arbitrary programs.
-@@ -1194,6 +1540,8 @@ template(`userdom_admin_user_template',`
+@@ -1194,6 +1541,8 @@ template(`userdom_admin_user_template',`
  	# But presently necessary for installing the file_contexts file.
  	seutil_manage_bin_policy($1_t)
  
@@ -36479,7 +36484,7 @@ index 3c5dba7..4efa151 100644
  	userdom_manage_user_home_content_dirs($1_t)
  	userdom_manage_user_home_content_files($1_t)
  	userdom_manage_user_home_content_symlinks($1_t)
-@@ -1201,13 +1549,17 @@ template(`userdom_admin_user_template',`
+@@ -1201,13 +1550,17 @@ template(`userdom_admin_user_template',`
  	userdom_manage_user_home_content_sockets($1_t)
  	userdom_user_home_dir_filetrans_user_home_content($1_t, { dir file lnk_file fifo_file sock_file })
  
@@ -36498,7 +36503,7 @@ index 3c5dba7..4efa151 100644
  	optional_policy(`
  		postgresql_unconfined($1_t)
  	')
-@@ -1253,6 +1605,8 @@ template(`userdom_security_admin_template',`
+@@ -1253,6 +1606,8 @@ template(`userdom_security_admin_template',`
  	dev_relabel_all_dev_nodes($1)
  
  	files_create_boot_flag($1)
@@ -36507,7 +36512,7 @@ index 3c5dba7..4efa151 100644
  
  	# Necessary for managing /boot/efi
  	fs_manage_dos_files($1)
-@@ -1265,8 +1619,10 @@ template(`userdom_security_admin_template',`
+@@ -1265,8 +1620,10 @@ template(`userdom_security_admin_template',`
  	selinux_set_enforce_mode($1)
  	selinux_set_all_booleans($1)
  	selinux_set_parameters($1)
@@ -36519,7 +36524,7 @@ index 3c5dba7..4efa151 100644
  	auth_relabel_shadow($1)
  
  	init_exec($1)
-@@ -1277,29 +1633,31 @@ template(`userdom_security_admin_template',`
+@@ -1277,29 +1634,31 @@ template(`userdom_security_admin_template',`
  	logging_read_audit_config($1)
  
  	seutil_manage_bin_policy($1)
@@ -36562,7 +36567,7 @@ index 3c5dba7..4efa151 100644
  	')
  
  	optional_policy(`
-@@ -1360,14 +1718,17 @@ interface(`userdom_user_home_content',`
+@@ -1360,14 +1719,17 @@ interface(`userdom_user_home_content',`
  	gen_require(`
  		attribute user_home_content_type;
  		type user_home_t;
@@ -36581,7 +36586,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -1408,6 +1769,51 @@ interface(`userdom_user_tmpfs_file',`
+@@ -1408,6 +1770,51 @@ interface(`userdom_user_tmpfs_file',`
  ## <summary>
  ##	Allow domain to attach to TUN devices created by administrative users.
  ## </summary>
@@ -36633,7 +36638,7 @@ index 3c5dba7..4efa151 100644
  ## <param name="domain">
  ##	<summary>
  ##	Domain allowed access.
-@@ -1512,11 +1918,31 @@ interface(`userdom_search_user_home_dirs',`
+@@ -1512,11 +1919,31 @@ interface(`userdom_search_user_home_dirs',`
  	')
  
  	allow $1 user_home_dir_t:dir search_dir_perms;
@@ -36665,7 +36670,7 @@ index 3c5dba7..4efa151 100644
  ##	Do not audit attempts to search user home directories.
  ## </summary>
  ## <desc>
-@@ -1558,6 +1984,14 @@ interface(`userdom_list_user_home_dirs',`
+@@ -1558,6 +1985,14 @@ interface(`userdom_list_user_home_dirs',`
  
  	allow $1 user_home_dir_t:dir list_dir_perms;
  	files_search_home($1)
@@ -36680,7 +36685,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -1573,9 +2007,11 @@ interface(`userdom_list_user_home_dirs',`
+@@ -1573,9 +2008,11 @@ interface(`userdom_list_user_home_dirs',`
  interface(`userdom_dontaudit_list_user_home_dirs',`
  	gen_require(`
  		type user_home_dir_t;
@@ -36692,7 +36697,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -1632,6 +2068,42 @@ interface(`userdom_relabelto_user_home_dirs',`
+@@ -1632,6 +2069,42 @@ interface(`userdom_relabelto_user_home_dirs',`
  	allow $1 user_home_dir_t:dir relabelto;
  ')
  
@@ -36735,7 +36740,7 @@ index 3c5dba7..4efa151 100644
  ########################################
  ## <summary>
  ##	Create directories in the home dir root with
-@@ -1711,6 +2183,8 @@ interface(`userdom_dontaudit_search_user_home_content',`
+@@ -1711,6 +2184,8 @@ interface(`userdom_dontaudit_search_user_home_content',`
  	')
  
  	dontaudit $1 user_home_t:dir search_dir_perms;
@@ -36744,7 +36749,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -1744,10 +2218,12 @@ interface(`userdom_list_all_user_home_content',`
+@@ -1744,10 +2219,12 @@ interface(`userdom_list_all_user_home_content',`
  #
  interface(`userdom_list_user_home_content',`
  	gen_require(`
@@ -36759,7 +36764,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -1772,7 +2248,7 @@ interface(`userdom_manage_user_home_content_dirs',`
+@@ -1772,7 +2249,7 @@ interface(`userdom_manage_user_home_content_dirs',`
  
  ########################################
  ## <summary>
@@ -36768,7 +36773,7 @@ index 3c5dba7..4efa151 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1780,19 +2256,17 @@ interface(`userdom_manage_user_home_content_dirs',`
+@@ -1780,19 +2257,17 @@ interface(`userdom_manage_user_home_content_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -36792,7 +36797,7 @@ index 3c5dba7..4efa151 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1800,31 +2274,31 @@ interface(`userdom_delete_all_user_home_content_dirs',`
+@@ -1800,31 +2275,31 @@ interface(`userdom_delete_all_user_home_content_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -36832,7 +36837,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -1848,6 +2322,25 @@ interface(`userdom_dontaudit_setattr_user_home_content_files',`
+@@ -1848,6 +2323,25 @@ interface(`userdom_dontaudit_setattr_user_home_content_files',`
  
  ########################################
  ## <summary>
@@ -36858,7 +36863,7 @@ index 3c5dba7..4efa151 100644
  ##	Mmap user home files.
  ## </summary>
  ## <param name="domain">
-@@ -1878,14 +2371,36 @@ interface(`userdom_mmap_user_home_content_files',`
+@@ -1878,14 +2372,36 @@ interface(`userdom_mmap_user_home_content_files',`
  interface(`userdom_read_user_home_content_files',`
  	gen_require(`
  		type user_home_dir_t, user_home_t;
@@ -36896,7 +36901,7 @@ index 3c5dba7..4efa151 100644
  ##	Do not audit attempts to read user home files.
  ## </summary>
  ## <param name="domain">
-@@ -1896,11 +2411,14 @@ interface(`userdom_read_user_home_content_files',`
+@@ -1896,11 +2412,14 @@ interface(`userdom_read_user_home_content_files',`
  #
  interface(`userdom_dontaudit_read_user_home_content_files',`
  	gen_require(`
@@ -36914,7 +36919,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -1941,7 +2459,25 @@ interface(`userdom_dontaudit_write_user_home_content_files',`
+@@ -1941,7 +2460,25 @@ interface(`userdom_dontaudit_write_user_home_content_files',`
  
  ########################################
  ## <summary>
@@ -36941,7 +36946,7 @@ index 3c5dba7..4efa151 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1951,17 +2487,15 @@ interface(`userdom_dontaudit_write_user_home_content_files',`
+@@ -1951,17 +2488,15 @@ interface(`userdom_dontaudit_write_user_home_content_files',`
  #
  interface(`userdom_delete_all_user_home_content_files',`
  	gen_require(`
@@ -36962,7 +36967,7 @@ index 3c5dba7..4efa151 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1969,12 +2503,48 @@ interface(`userdom_delete_all_user_home_content_files',`
+@@ -1969,12 +2504,48 @@ interface(`userdom_delete_all_user_home_content_files',`
  ##	</summary>
  ## </param>
  #
@@ -37013,7 +37018,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -2010,8 +2580,7 @@ interface(`userdom_read_user_home_content_symlinks',`
+@@ -2010,8 +2581,7 @@ interface(`userdom_read_user_home_content_symlinks',`
  		type user_home_dir_t, user_home_t;
  	')
  
@@ -37023,7 +37028,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -2027,20 +2596,14 @@ interface(`userdom_read_user_home_content_symlinks',`
+@@ -2027,20 +2597,14 @@ interface(`userdom_read_user_home_content_symlinks',`
  #
  interface(`userdom_exec_user_home_content_files',`
  	gen_require(`
@@ -37048,7 +37053,7 @@ index 3c5dba7..4efa151 100644
  
  ########################################
  ## <summary>
-@@ -2123,7 +2686,7 @@ interface(`userdom_manage_user_home_content_symlinks',`
+@@ -2123,7 +2687,7 @@ interface(`userdom_manage_user_home_content_symlinks',`
  
  ########################################
  ## <summary>
@@ -37057,7 +37062,7 @@ index 3c5dba7..4efa151 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2131,19 +2694,17 @@ interface(`userdom_manage_user_home_content_symlinks',`
+@@ -2131,19 +2695,17 @@ interface(`userdom_manage_user_home_content_symlinks',`
  ##	</summary>
  ## </param>
  #
@@ -37081,7 +37086,7 @@ index 3c5dba7..4efa151 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2151,12 +2712,12 @@ interface(`userdom_delete_all_user_home_content_symlinks',`
+@@ -2151,12 +2713,12 @@ interface(`userdom_delete_all_user_home_content_symlinks',`
  ##	</summary>
  ## </param>
  #
@@ -37097,7 +37102,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -2393,11 +2954,11 @@ interface(`userdom_dontaudit_manage_user_tmp_dirs',`
+@@ -2393,11 +2955,11 @@ interface(`userdom_dontaudit_manage_user_tmp_dirs',`
  #
  interface(`userdom_read_user_tmp_files',`
  	gen_require(`
@@ -37112,7 +37117,7 @@ index 3c5dba7..4efa151 100644
  	files_search_tmp($1)
  ')
  
-@@ -2417,7 +2978,7 @@ interface(`userdom_dontaudit_read_user_tmp_files',`
+@@ -2417,7 +2979,7 @@ interface(`userdom_dontaudit_read_user_tmp_files',`
  		type user_tmp_t;
  	')
  
@@ -37121,7 +37126,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -2664,6 +3225,25 @@ interface(`userdom_tmp_filetrans_user_tmp',`
+@@ -2664,6 +3226,25 @@ interface(`userdom_tmp_filetrans_user_tmp',`
  	files_tmp_filetrans($1, user_tmp_t, $2, $3)
  ')
  
@@ -37147,7 +37152,7 @@ index 3c5dba7..4efa151 100644
  ########################################
  ## <summary>
  ##	Read user tmpfs files.
-@@ -2680,13 +3260,14 @@ interface(`userdom_read_user_tmpfs_files',`
+@@ -2680,13 +3261,14 @@ interface(`userdom_read_user_tmpfs_files',`
  	')
  
  	read_files_pattern($1, user_tmpfs_t, user_tmpfs_t)
@@ -37163,7 +37168,7 @@ index 3c5dba7..4efa151 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2707,7 +3288,7 @@ interface(`userdom_rw_user_tmpfs_files',`
+@@ -2707,7 +3289,7 @@ interface(`userdom_rw_user_tmpfs_files',`
  
  ########################################
  ## <summary>
@@ -37172,7 +37177,7 @@ index 3c5dba7..4efa151 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2715,19 +3296,17 @@ interface(`userdom_rw_user_tmpfs_files',`
+@@ -2715,19 +3297,17 @@ interface(`userdom_rw_user_tmpfs_files',`
  ##	</summary>
  ## </param>
  #
@@ -37195,7 +37200,7 @@ index 3c5dba7..4efa151 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2735,21 +3314,39 @@ interface(`userdom_manage_user_tmpfs_files',`
+@@ -2735,21 +3315,39 @@ interface(`userdom_manage_user_tmpfs_files',`
  ##	</summary>
  ## </param>
  #
@@ -37240,7 +37245,7 @@ index 3c5dba7..4efa151 100644
  ##	</summary>
  ## </param>
  #
-@@ -2817,6 +3414,24 @@ interface(`userdom_use_user_ttys',`
+@@ -2817,6 +3415,24 @@ interface(`userdom_use_user_ttys',`
  
  ########################################
  ## <summary>
@@ -37265,7 +37270,7 @@ index 3c5dba7..4efa151 100644
  ##	Read and write a user domain pty.
  ## </summary>
  ## <param name="domain">
-@@ -2835,22 +3450,34 @@ interface(`userdom_use_user_ptys',`
+@@ -2835,22 +3451,34 @@ interface(`userdom_use_user_ptys',`
  
  ########################################
  ## <summary>
@@ -37308,7 +37313,7 @@ index 3c5dba7..4efa151 100644
  ## </desc>
  ## <param name="domain">
  ##	<summary>
-@@ -2859,14 +3486,33 @@ interface(`userdom_use_user_ptys',`
+@@ -2859,14 +3487,33 @@ interface(`userdom_use_user_ptys',`
  ## </param>
  ## <infoflow type="both" weight="10"/>
  #
@@ -37346,7 +37351,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -2885,8 +3531,27 @@ interface(`userdom_dontaudit_use_user_terminals',`
+@@ -2885,8 +3532,27 @@ interface(`userdom_dontaudit_use_user_terminals',`
  		type user_tty_device_t, user_devpts_t;
  	')
  
@@ -37376,7 +37381,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -2958,69 +3623,68 @@ interface(`userdom_spec_domtrans_unpriv_users',`
+@@ -2958,69 +3624,68 @@ interface(`userdom_spec_domtrans_unpriv_users',`
  	allow unpriv_userdomain $1:process sigchld;
  ')
  
@@ -37477,7 +37482,7 @@ index 3c5dba7..4efa151 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3028,12 +3692,12 @@ interface(`userdom_manage_unpriv_user_semaphores',`
+@@ -3028,12 +3693,12 @@ interface(`userdom_manage_unpriv_user_semaphores',`
  ##	</summary>
  ## </param>
  #
@@ -37492,7 +37497,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -3097,7 +3761,7 @@ interface(`userdom_entry_spec_domtrans_unpriv_users',`
+@@ -3097,7 +3762,7 @@ interface(`userdom_entry_spec_domtrans_unpriv_users',`
  
  	domain_entry_file_spec_domtrans($1, unpriv_userdomain)
  	allow unpriv_userdomain $1:fd use;
@@ -37501,7 +37506,7 @@ index 3c5dba7..4efa151 100644
  	allow unpriv_userdomain $1:process sigchld;
  ')
  
-@@ -3113,29 +3777,13 @@ interface(`userdom_entry_spec_domtrans_unpriv_users',`
+@@ -3113,29 +3778,13 @@ interface(`userdom_entry_spec_domtrans_unpriv_users',`
  #
  interface(`userdom_search_user_home_content',`
  	gen_require(`
@@ -37535,7 +37540,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -3217,7 +3865,7 @@ interface(`userdom_dontaudit_use_user_ptys',`
+@@ -3217,7 +3866,7 @@ interface(`userdom_dontaudit_use_user_ptys',`
  		type user_devpts_t;
  	')
  
@@ -37544,7 +37549,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -3272,7 +3920,64 @@ interface(`userdom_write_user_tmp_files',`
+@@ -3272,7 +3921,64 @@ interface(`userdom_write_user_tmp_files',`
  		type user_tmp_t;
  	')
  
@@ -37610,7 +37615,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -3290,7 +3995,7 @@ interface(`userdom_dontaudit_use_user_ttys',`
+@@ -3290,7 +3996,7 @@ interface(`userdom_dontaudit_use_user_ttys',`
  		type user_tty_device_t;
  	')
  
@@ -37619,7 +37624,7 @@ index 3c5dba7..4efa151 100644
  ')
  
  ########################################
-@@ -3309,6 +4014,7 @@ interface(`userdom_read_all_users_state',`
+@@ -3309,6 +4015,7 @@ interface(`userdom_read_all_users_state',`
  	')
  
  	read_files_pattern($1, userdomain, userdomain)
@@ -37627,7 +37632,7 @@ index 3c5dba7..4efa151 100644
  	kernel_search_proc($1)
  ')
  
-@@ -3385,6 +4091,42 @@ interface(`userdom_signal_all_users',`
+@@ -3385,6 +4092,42 @@ interface(`userdom_signal_all_users',`
  	allow $1 userdomain:process signal;
  ')
  
@@ -37670,7 +37675,7 @@ index 3c5dba7..4efa151 100644
  ########################################
  ## <summary>
  ##	Send a SIGCHLD signal to all user domains.
-@@ -3405,6 +4147,24 @@ interface(`userdom_sigchld_all_users',`
+@@ -3405,6 +4148,24 @@ interface(`userdom_sigchld_all_users',`
  
  ########################################
  ## <summary>
@@ -37695,7 +37700,7 @@ index 3c5dba7..4efa151 100644
  ##	Create keys for all user domains.
  ## </summary>
  ## <param name="domain">
-@@ -3439,3 +4199,1365 @@ interface(`userdom_dbus_send_all_users',`
+@@ -3439,3 +4200,1365 @@ interface(`userdom_dbus_send_all_users',`
  
  	allow $1 userdomain:dbus send_msg;
  ')
