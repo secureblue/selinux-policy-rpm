@@ -26,7 +26,6 @@ Source: serefpolicy-%{version}.tgz
 patch: policy-rawhide-base.patch
 patch1: policy-rawhide-contrib.patch
 patch2: policy_contrib-rawhide-roleattribute.patch
-patch3: policy-rawhide-roleattribute.patch
 Source1: modules-targeted-base.conf 
 Source31: modules-targeted-contrib.conf
 Source2: booleans-targeted.conf
@@ -229,10 +228,9 @@ FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      /sbin/fixfiles -C ${FILE_CONTEXT}.pre restore 2> /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
-     /sbin/restorecon -R /home/*/.cache /home/*/.config; \
 fi; \
 /sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null; \
-/sbin/restorecon -R /home/*/.cache /home/*/.config;
+/sbin/restorecon -R /home/*/.cache /home/*/.config 2> /dev/null
 
 %define preInstall() \
 if [ $1 -ne 1 ] && [ -s /etc/selinux/config ]; then \
