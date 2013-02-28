@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -526,6 +526,52 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Feb 27 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-16
+- Fix authconfig.py labeling
+- Make any domains that write homedir content do it correctly
+- Allow glusterd to read/write anyhwere on the file system by default
+- Be a little more liberal with the rsync log files
+- Fix iscsi_admin interface
+- Allow iscsid_t to read /dev/urand
+- Fix up iscsi domain for use with unit files
+- Add filename transition support for spamassassin policy
+- Allow web plugins to use badly formated libraries
+- Allow nmbd_t to create samba_var_t directories
+- Add filename transition support for spamassassin policy
+- Add filename transition support for tvtime
+- Fix alsa_home_filetrans_alsa_home() interface
+- Move all userdom_filetrans_home_content() calling out of booleans
+- Allow logrotote to getattr on all file sytems
+- Remove duplicate userdom_filetrans_home_content() calling
+- Allow kadmind to read /etc/passwd
+- Dontaudit append .xsession-errors file on ecryptfs for  policykit-auth
+- Allow antivirus domain to manage antivirus db links
+- Allow logrotate to read /sys
+- Allow mandb to setattr on man dirs
+- Remove mozilla_plugin_enable_homedirs boolean
+- Fix ftp_home_dir boolean
+- homedir mozilla filetrans has been moved to userdom_home_manager
+- homedir telepathy filetrans has been moved to userdom_home_manager
+- Remove gnome_home_dir_filetrans() from gnome_role_gkeyringd()
+- Might want to eventually write a daemon on fusefsd.
+- Add policy fixes for sshd [net] child from plautrba@redhat.com
+- Tor uses a new port
+- Remove bin_t for authconfig.py
+- Fix so only one call to userdom_home_file_trans
+- Allow home_manager_types to create content with the correctl label
+- Fix all domains that write data into the homedir to do it with the correct label
+- Change the postgresql to use proper boolean names, which is causing httpd_t to
+- not get access to postgresql_var_run_t
+- Hostname needs to send syslog messages
+- Localectl needs to be able to send dbus signals to users
+- Make sure userdom_filetrans_type will create files/dirs with user_home_t labeling by default
+- Allow user_home_manger domains to create spam* homedir content with correct labeling
+- Allow user_home_manger domains to create HOMEDIR/.tvtime with correct labeling
+- Add missing miscfiles_setattr_man_pages() interface and for now comment some rules for userdom_filetrans_type to make build process working
+- Declare userdom_filetrans_type attribute
+- userdom_manage_home_role() needs to be called withoout usertype attribute because of userdom_filetrans_type attribute
+- fusefsd is mounding a fuse file system on /run/user/UID/gvfs
+
 * Thu Feb 21 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-15
 - Man pages are now generated in the build process
 - Allow cgred to list inotifyfs filesystem
