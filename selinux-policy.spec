@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -526,6 +526,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Feb 1 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-17
+- Merge rgmanger, corosync,pacemaker,aisexec policies to cluster_t in rhcs.pp
+
 * Wed Feb 27 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-16
 - Fix authconfig.py labeling
 - Make any domains that write homedir content do it correctly
