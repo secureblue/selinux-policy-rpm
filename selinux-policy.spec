@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -230,7 +230,7 @@ if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      rm -f ${FILE_CONTEXT}.pre; \
 fi; \
 /sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null; \
-/sbin/restorecon -R /home/*/.cache /home/*/.config 2> /dev/null
+/sbin/restorecon -R /home/*/.cache /home/*/.config 2> /dev/null; \
 
 %define preInstall() \
 if [ $1 -ne 1 ] && [ -s /etc/selinux/config ]; then \
@@ -526,6 +526,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Mar 4 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-18
+- Fix POSTIN scriptlet
+
 * Fri Mar 1 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-17
 - Merge rgmanger, corosync,pacemaker,aisexec policies to cluster_t in rhcs.pp
 
