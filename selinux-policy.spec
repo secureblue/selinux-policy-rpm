@@ -230,7 +230,7 @@ if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      rm -f ${FILE_CONTEXT}.pre; \
 fi; \
 /sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null; \
-/sbin/restorecon -R /home/*/.cache /home/*/.config 2> /dev/null
+/sbin/restorecon -R /home/*/.cache /home/*/.config 2> /dev/null;
 
 %define preInstall() \
 if [ $1 -ne 1 ] && [ -s /etc/selinux/config ]; then \
