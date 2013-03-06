@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 16%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -230,7 +230,7 @@ if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      rm -f ${FILE_CONTEXT}.pre; \
 fi; \
 /sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null; \
-/sbin/restorecon -R /home/*/.cache /home/*/.config 2> /dev/null;
+/sbin/restorecon -R /home/*/.cache /home/*/.config 2> /dev/null; \
 
 %define preInstall() \
 if [ $1 -ne 1 ] && [ -s /etc/selinux/config ]; then \
@@ -253,7 +253,7 @@ fi;
 . %{_sysconfdir}/selinux/config; \
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
-   (cd /etc/selinux/%2/modules/active/modules; rm -f shutdown.pp amavis.pp clamav.pp gnomeclock.pp matahari.pp xfs.pp kudzu.pp kerneloops.pp execmem.pp openoffice.pp ada.pp tzdata.pp hal.pp hotplug.pp howl.pp java.pp mono.pp moilscanner.pp gamin.pp audio_entropy.pp audioentropy.pp iscsid.pp polkit_auth.pp polkit.pp rtkit_daemon.pp ModemManager.pp telepathysofiasip.pp ethereal.pp passanger.pp qpidd.pp pyzor.pp razor.pp pki-selinux.pp phpfpm.pp consoletype.pp ctdbd.pp fcoemon.pp isnsd.pp l2tp.pp ) \
+   (cd /etc/selinux/%2/modules/active/modules; rm -f shutdown.pp amavis.pp clamav.pp gnomeclock.pp matahari.pp xfs.pp kudzu.pp kerneloops.pp execmem.pp openoffice.pp ada.pp tzdata.pp hal.pp hotplug.pp howl.pp java.pp mono.pp moilscanner.pp gamin.pp audio_entropy.pp audioentropy.pp iscsid.pp polkit_auth.pp polkit.pp rtkit_daemon.pp ModemManager.pp telepathysofiasip.pp ethereal.pp passanger.pp qpidd.pp pyzor.pp razor.pp pki-selinux.pp phpfpm.pp consoletype.pp ctdbd.pp fcoemon.pp isnsd.pp l2tp.pp rgmanager.pp corosync.pp aisexec.pp pacemaker.pp ) \
    /usr/sbin/semodule -B -n -s %2; \
 else \
     touch /etc/selinux/%2/modules/active/modules/sandbox.disabled \
@@ -526,6 +526,12 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Mar 4 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-18
+- Fix POSTIN scriptlet
+
+* Fri Mar 1 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-17
+- Merge rgmanger, corosync,pacemaker,aisexec policies to cluster_t in rhcs.pp
+
 * Wed Feb 27 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-16
 - Fix authconfig.py labeling
 - Make any domains that write homedir content do it correctly
