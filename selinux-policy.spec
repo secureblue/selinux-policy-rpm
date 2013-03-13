@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 18%{?dist}
+Release: 20%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -526,6 +526,32 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Mar 8 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-20
+- Adopt swift changes from lhh@redhat.com
+- Add rhcs_manage_cluster_pid_files() interface
+- Allow screen domains to configure tty and setup sock_file in ~/.screen directory
+- ALlow setroubleshoot to read default_context_t, needed to backport to F18
+- Label /etc/owncloud as being an apache writable directory
+- Allow sshd to stream connect to an lxc domain
+
+* Thu Mar 7 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-19
+- Allow postgresql to manage rgmanager pid files
+- Allow postgresql to read ccs data
+- Allow systemd_domain to send dbus messages to policykit
+- Add labels for /etc/hostname and /etc/machine-info and allow systemd-hostnamed to create them
+- All systemd domains that create content are reading the file_context file and setfscreate
+- Systemd domains need to search through init_var_run_t
+- Allow sshd to communicate with libvirt to set containers labels
+- Add interface to manage pid files
+- Allow NetworkManger_t to read /etc/hostname
+- Dontaudit leaked locked files into openshift_domains
+- Add fixes for oo-cgroup-read - it nows creates tmp files
+- Allow gluster to manage all directories as well as files
+- Dontaudit chrome_sandbox_nacl_t using user terminals
+- Allow sysstat to manage its own log files
+- Allow virtual machines to setrlimit and send itself signals.
+- Add labeling for /var/run/hplip
+
 * Mon Mar 4 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-18
 - Fix POSTIN scriptlet
 
