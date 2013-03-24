@@ -15,11 +15,11 @@
 %endif
 %define POLICYVER 29
 %define POLICYCOREUTILSVER 2.1.14-12
-%define CHECKPOLICYVER 2.1.12-1
+%define CHECKPOLICYVER 2.1.12-3
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 20%{?dist}
+Release: 23%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -253,7 +253,7 @@ fi;
 . %{_sysconfdir}/selinux/config; \
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
-   (cd /etc/selinux/%2/modules/active/modules; rm -f shutdown.pp amavis.pp clamav.pp gnomeclock.pp matahari.pp xfs.pp kudzu.pp kerneloops.pp execmem.pp openoffice.pp ada.pp tzdata.pp hal.pp hotplug.pp howl.pp java.pp mono.pp moilscanner.pp gamin.pp audio_entropy.pp audioentropy.pp iscsid.pp polkit_auth.pp polkit.pp rtkit_daemon.pp ModemManager.pp telepathysofiasip.pp ethereal.pp passanger.pp qpidd.pp pyzor.pp razor.pp pki-selinux.pp phpfpm.pp consoletype.pp ctdbd.pp fcoemon.pp isnsd.pp l2tp.pp rgmanager.pp corosync.pp aisexec.pp pacemaker.pp ) \
+   (cd /etc/selinux/%2/modules/active/modules; rm -f shutdown.pp amavis.pp clamav.pp gnomeclock.pp matahari.pp xfs.pp kudzu.pp kerneloops.pp execmem.pp openoffice.pp ada.pp tzdata.pp hal.pp hotplug.pp howl.pp java.pp mono.pp moilscanner.pp gamin.pp audio_entropy.pp audioentropy.pp iscsid.pp polkit_auth.pp polkit.pp rtkit_daemon.pp ModemManager.pp telepathysofiasip.pp ethereal.pp passanger.pp qpidd.pp pyzor.pp razor.pp pki-selinux.pp phpfpm.pp consoletype.pp ctdbd.pp fcoemon.pp isnsd.pp rgmanager.pp corosync.pp aisexec.pp pacemaker.pp ) \
    /usr/sbin/semodule -B -n -s %2; \
 else \
     touch /etc/selinux/%2/modules/active/modules/sandbox.disabled \
@@ -526,6 +526,58 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Mar 20 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-23
+- Allow localectl to read /etc/X11/xorg.conf.d directory
+- Revert "Revert "Fix filetrans rules for kdm creates .xsession-errors""
+- Allow mount to transition to systemd_passwd_agent
+- Make sure abrt directories are labeled correctly
+- Allow commands that are going to read mount pid files to search mount_var_run_t
+- label /usr/bin/repoquery as rpm_exec_t
+- Allow automount to block suspend
+- Add abrt_filetrans_named_content so that abrt directories get labeled correctly
+- Allow virt domains to setrlimit and read file_context
+
+* Mon Mar 18 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-22
+- Allow nagios to manage nagios spool files
+- /var/spool/snmptt is a directory which snmdp needs to write to, needs back port to RHEL6
+- Add swift_alias.* policy files which contain typealiases for swift types
+- Add support for /run/lock/opencryptoki
+- Allow pkcsslotd chown capability
+- Allow pkcsslotd to read passwd
+- Add rsync_stub() interface
+- Allow systemd_timedate also manage gnome config homedirs
+- Label /usr/lib64/security/pam_krb5/pam_krb5_cchelper as bin_t
+- Fix filetrans rules for kdm creates .xsession-errors
+- Allow sytemd_tmpfiles to create wtmp file
+- Really should not label content  under /var/lock, since it could have labels on it different from var_lock_t
+- Allow systemd to list all file system directories
+- Add some basic stub interfaces which will be used in PRODUCT policies
+
+* Wed Mar 13 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-21
+- Fix log transition rule for cluster domains
+- Start to group all cluster log together
+- Dont use filename transition for POkemon Advanced Adventure until a new checkpolicy update
+- cups uses usbtty_device_t devices
+- These fixes were all required to build a MLS virtual Machine with single level desktops
+- Allow domains to transiton using httpd_exec_t
+- Allow svirt domains to manage kernel key rings
+- Allow setroubleshoot to execute ldconfig
+- Allow firewalld to read generate gnome data
+- Allow bluetooth to read machine-info
+- Allow boinc domain to send signal to itself
+- Fix gnome_filetrans_home_content() interface
+- Allow mozilla_plugins to list apache modules, for use with gxine
+- Fix labels for POkemon in the users homedir
+- Allow xguest to read mdstat
+- Dontaudit virt_domains getattr on /dev/*
+- These fixes were all required to build a MLS virtual Machine with single level desktops
+- Need to back port this to RHEL6 for openshift
+- Add tcp/8891 as milter port
+- Allow nsswitch domains to read sssd_var_lib_t files
+- Allow ping to read network state.
+- Fix typo
+- Add labels to /etc/X11/xorg.d and allow systemd-timestampd_t to manage them
+
 * Fri Mar 8 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-20
 - Adopt swift changes from lhh@redhat.com
 - Add rhcs_manage_cluster_pid_files() interface
