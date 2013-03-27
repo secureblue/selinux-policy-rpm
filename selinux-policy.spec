@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 23%{?dist}
+Release: 24%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -526,6 +526,28 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Mar 26 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-24
+- Add labeling for /usr/share/pki
+- Allow programs that read var_run_t symlinks also read var_t symlinks
+- Add additional ports as mongod_port_t for  27018, 27019, 28017, 28018 and 28019 ports
+- Fix labeling for /etc/dhcp directory
+- add missing systemd_stub_unit_file() interface
+- Add files_stub_var() interface
+- Add lables for cert_t directories
+- Make localectl set-x11-keymap working at all
+- Allow abrt to manage mock build environments to catch build problems.
+- Allow virt_domains to setsched for running gdb on itself
+- Allow thumb_t to execute user home content
+- Allow pulseaudio running as mozilla_plugin_t to read /run/systemd/users/1000
+- Allow certwatch to execut /usr/bin/httpd
+- Allow cgred to send signal perms to itself, needs back port to RHEL6
+- Allow openshift_cron_t to look at quota
+- Allow cups_t to read inhered tmpfs_t from the kernel
+- Allow yppasswdd to use NIS
+- Tuned wants sys_rawio capability
+- Add ftpd_use_fusefs boolean
+- Allow dirsrvadmin_t to signal itself
+
 * Wed Mar 20 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-23
 - Allow localectl to read /etc/X11/xorg.conf.d directory
 - Revert "Revert "Fix filetrans rules for kdm creates .xsession-errors""
