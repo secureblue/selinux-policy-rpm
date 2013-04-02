@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 24%{?dist}
+Release: 25%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -526,6 +526,38 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Apr 2 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-25
+- Allow realmd to create tmp files
+- FIx ircssi_home_t type to irssi_home_t
+- Allow adcli running as realmd_t to connect to ldap port
+- Allow NetworkManager to transition to ipsec_t, for running strongswan
+- Make openshift_initrc_t an lxc_domain
+- Allow gssd to manage user_tmp_t files
+- Fix handling of irclogs in users homedir
+- Fix labeling for drupal an wp-content in subdirs of /var/www/html
+- Allow abrt to read utmp_t file
+- Fix openshift policy to transition lnk_file, sock-file an fifo_file when created in a tmpfs_t, needs back port to RHEL6
+- fix labeling for (oo|rhc)-restorer-wrapper.sh
+- firewalld needs to be able to write to network sysctls
+- Fix mozilla_plugin_dontaudit_rw_sem() interface
+- Dontaudit generic ipc read/write to a mozilla_plugin for sandbox_x domains
+- Add mozilla_plugin_dontaudit_rw_sem() interface
+- Allow svirt_lxc_t to transition to openshift domains
+- Allow condor domains block_suspend and dac_override caps
+- Allow condor_master to read passd
+- Allow condor_master to read system state
+- Allow NetworkManager to transition to ipsec_t, for running strongswan
+- Lots of access required by lvm_t to created encrypted usb device
+- Allow xdm_t to dbus communicate with systemd_localed_t
+- Label strongswan content as ipsec_exec_mgmt_t for now
+- Allow users to dbus chat with systemd_localed
+- Fix handling of .xsession-errors in xserver.if, so kde will work
+- Might be a bug but we are seeing avc's about people status on init_t:service
+- Make sure we label content under /var/run/lock as <<none>>
+- Allow daemon and systemprocesses to search init_var_run_t directory
+- Add boolean to allow xdm to write xauth data to the home directory
+- Allow mount to write keys for the unconfined domain
+
 * Tue Mar 26 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-24
 - Add labeling for /usr/share/pki
 - Allow programs that read var_run_t symlinks also read var_t symlinks
