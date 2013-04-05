@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 25%{?dist}
+Release: 26%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -526,6 +526,39 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Apr 5 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-26
+- Try to label on controlC devices up to 30 correctly
+- Add mount_rw_pid_files() interface
+- Add additional mount/umount interfaces needed by mock
+- fsadm_t sends audit messages in reads kernel_ipc_info when doing livecd-iso-to-disk
+- Fix tabs
+- Allow initrc_domain to search rgmanager lib files
+- Add more fixes which make mock working together with confined users
+  * Allow mock_t to manage rpm files
+  * Allow mock_t to read rpm log files
+  * Allow mock to setattr on tmpfs, devpts
+  * Allow mount/umount filesystems
+- Add rpm_read_log() interface
+- yum-cron runs rpm from within it.
+- Allow tuned to transition to dmidecode
+- Allow firewalld to do net_admin
+- Allow mock to unmont tmpfs_t
+- Fix virt_sigkill() interface
+- Add additional fixes for mock. Mainly caused by mount running in mock_t
+- Allow mock to write sysfs_t and mount pid files
+- Add mailman_domain to mailman_template()
+- Allow openvswitch to execute shell
+- Allow qpidd to use kerberos
+- Allow mailman to use fusefs, needs back port to RHEL6
+- Allow apache and its scripts to use anon_inodefs
+- Add alias for git_user_content_t and git_sys_content_t so that RHEL6 will update to RHEL7
+- Realmd needs to connect to samba ports, needs back port to F18 also
+- Allow colord to read /run/initial-setup-
+- Allow sanlock-helper to send sigkill to virtd which is registred to sanlock
+- Add virt_kill() interface
+- Add rgmanager_search_lib() interface
+- Allow wdmd to getattr on all filesystems. Back ported from RHEL6
+
 * Tue Apr 2 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-25
 - Allow realmd to create tmp files
 - FIx ircssi_home_t type to irssi_home_t
