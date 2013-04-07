@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 23%{?dist}
+Release: 26%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -526,6 +526,93 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Apr 5 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-26
+- Try to label on controlC devices up to 30 correctly
+- Add mount_rw_pid_files() interface
+- Add additional mount/umount interfaces needed by mock
+- fsadm_t sends audit messages in reads kernel_ipc_info when doing livecd-iso-to-disk
+- Fix tabs
+- Allow initrc_domain to search rgmanager lib files
+- Add more fixes which make mock working together with confined users
+  * Allow mock_t to manage rpm files
+  * Allow mock_t to read rpm log files
+  * Allow mock to setattr on tmpfs, devpts
+  * Allow mount/umount filesystems
+- Add rpm_read_log() interface
+- yum-cron runs rpm from within it.
+- Allow tuned to transition to dmidecode
+- Allow firewalld to do net_admin
+- Allow mock to unmont tmpfs_t
+- Fix virt_sigkill() interface
+- Add additional fixes for mock. Mainly caused by mount running in mock_t
+- Allow mock to write sysfs_t and mount pid files
+- Add mailman_domain to mailman_template()
+- Allow openvswitch to execute shell
+- Allow qpidd to use kerberos
+- Allow mailman to use fusefs, needs back port to RHEL6
+- Allow apache and its scripts to use anon_inodefs
+- Add alias for git_user_content_t and git_sys_content_t so that RHEL6 will update to RHEL7
+- Realmd needs to connect to samba ports, needs back port to F18 also
+- Allow colord to read /run/initial-setup-
+- Allow sanlock-helper to send sigkill to virtd which is registred to sanlock
+- Add virt_kill() interface
+- Add rgmanager_search_lib() interface
+- Allow wdmd to getattr on all filesystems. Back ported from RHEL6
+
+* Tue Apr 2 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-25
+- Allow realmd to create tmp files
+- FIx ircssi_home_t type to irssi_home_t
+- Allow adcli running as realmd_t to connect to ldap port
+- Allow NetworkManager to transition to ipsec_t, for running strongswan
+- Make openshift_initrc_t an lxc_domain
+- Allow gssd to manage user_tmp_t files
+- Fix handling of irclogs in users homedir
+- Fix labeling for drupal an wp-content in subdirs of /var/www/html
+- Allow abrt to read utmp_t file
+- Fix openshift policy to transition lnk_file, sock-file an fifo_file when created in a tmpfs_t, needs back port to RHEL6
+- fix labeling for (oo|rhc)-restorer-wrapper.sh
+- firewalld needs to be able to write to network sysctls
+- Fix mozilla_plugin_dontaudit_rw_sem() interface
+- Dontaudit generic ipc read/write to a mozilla_plugin for sandbox_x domains
+- Add mozilla_plugin_dontaudit_rw_sem() interface
+- Allow svirt_lxc_t to transition to openshift domains
+- Allow condor domains block_suspend and dac_override caps
+- Allow condor_master to read passd
+- Allow condor_master to read system state
+- Allow NetworkManager to transition to ipsec_t, for running strongswan
+- Lots of access required by lvm_t to created encrypted usb device
+- Allow xdm_t to dbus communicate with systemd_localed_t
+- Label strongswan content as ipsec_exec_mgmt_t for now
+- Allow users to dbus chat with systemd_localed
+- Fix handling of .xsession-errors in xserver.if, so kde will work
+- Might be a bug but we are seeing avc's about people status on init_t:service
+- Make sure we label content under /var/run/lock as <<none>>
+- Allow daemon and systemprocesses to search init_var_run_t directory
+- Add boolean to allow xdm to write xauth data to the home directory
+- Allow mount to write keys for the unconfined domain
+
+* Tue Mar 26 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-24
+- Add labeling for /usr/share/pki
+- Allow programs that read var_run_t symlinks also read var_t symlinks
+- Add additional ports as mongod_port_t for  27018, 27019, 28017, 28018 and 28019 ports
+- Fix labeling for /etc/dhcp directory
+- add missing systemd_stub_unit_file() interface
+- Add files_stub_var() interface
+- Add lables for cert_t directories
+- Make localectl set-x11-keymap working at all
+- Allow abrt to manage mock build environments to catch build problems.
+- Allow virt_domains to setsched for running gdb on itself
+- Allow thumb_t to execute user home content
+- Allow pulseaudio running as mozilla_plugin_t to read /run/systemd/users/1000
+- Allow certwatch to execut /usr/bin/httpd
+- Allow cgred to send signal perms to itself, needs back port to RHEL6
+- Allow openshift_cron_t to look at quota
+- Allow cups_t to read inhered tmpfs_t from the kernel
+- Allow yppasswdd to use NIS
+- Tuned wants sys_rawio capability
+- Add ftpd_use_fusefs boolean
+- Allow dirsrvadmin_t to signal itself
+
 * Wed Mar 20 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-23
 - Allow localectl to read /etc/X11/xorg.conf.d directory
 - Revert "Revert "Fix filetrans rules for kdm creates .xsession-errors""
