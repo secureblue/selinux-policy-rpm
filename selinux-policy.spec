@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 26%{?dist}
+Release: 27%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -526,6 +526,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Sat Apr 6 2013 Dan Walsh <dwalsh@redhat.com> 3.12.1-27
+- Fix file_contexts.subs to label /run/lock correctly
+
 * Fri Apr 5 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-26
 - Try to label on controlC devices up to 30 correctly
 - Add mount_rw_pid_files() interface
@@ -590,6 +593,7 @@ SELinux Reference policy mls base module.
 - Allow daemon and systemprocesses to search init_var_run_t directory
 - Add boolean to allow xdm to write xauth data to the home directory
 - Allow mount to write keys for the unconfined domain
+- Add unconfined_write_keys() interface
 
 * Tue Mar 26 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-24
 - Add labeling for /usr/share/pki
