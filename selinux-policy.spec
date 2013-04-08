@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 27%{?dist}
+Release: 28%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -526,6 +526,20 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Apr 8 2013 Dan Walsh <dwalsh@redhat.com> 3.12.1-28
+- Allow httpd_t to connect to osapi_compute port using httpd_use_openstack bolean
+- Fixes for dlm_controld
+- Fix apache_read_sys_content_rw_dirs() interface
+- Allow logrotate to read /var/log/z-push dir
+- Allow postfix_postdrop to acces postfix_public socket
+- Allow sched_setscheduler for cupsd_t
+- Add missing context for /usr/sbin/snmpd
+- Allow consolehelper more access discovered by Tom London
+- Allow fsdaemon to send signull to all domain
+- Add port definition for osapi_compute port
+- Allow unconfined to create /etc/hostname with correct labeling
+- Add systemd_filetrans_named_hostname() interface
+
 * Sat Apr 6 2013 Dan Walsh <dwalsh@redhat.com> 3.12.1-27
 - Fix file_contexts.subs to label /run/lock correctly
 
