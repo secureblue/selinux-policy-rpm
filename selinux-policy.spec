@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 28%{?dist}
+Release: 29%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -526,6 +526,41 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Apr 11 2013 Miroslav Grepl <mgrpel@redhat.com> 3.12.1-29
+- Add mising nslcd_dontaudit_write_sock_file() interface
+- one more fix
+- Fix pki_read_tomcat_lib_files() interface
+- Allow certmonger to read pki-tomcat lib files
+- Allow certwatch to execute bin_t
+- Allow snmp to manage /var/lib/net-snmp files
+- Don't audit attempts to write to stream socket of nscld by thumbnailers
+- Allow git_system_t to read network state
+- Allow pegasas to execute mount command
+- Fix desc for drdb_admin
+- Fix condor_amin()
+- Interface fixes for uptime, vdagent, vnstatd
+- Fix labeling for moodle in /var/www/moodle/data
+- Add interface fixes
+- Allow bugzilla to read certs
+- /var/www/moodle needs to be writable by apache
+- Add interface to dontaudit attempts to send dbus messages to systemd domains, for xguest
+- Fix namespace_init_t to create content with proper labels, and allow it to manage all user content
+- Allow httpd_t to connect to osapi_compute port using httpd_use_openstack bolean
+- Fixes for dlm_controld
+- Fix apache_read_sys_content_rw_dirs() interface
+- Allow logrotate to read /var/log/z-push dir
+- Fix sys_nice for cups_domain
+- Allow postfix_postdrop to acces postfix_public socket
+- Allow sched_setscheduler for cupsd_t
+- Add missing context for /usr/sbin/snmpd
+- Kernel_t needs mac_admin in order to support labeled NFS
+- Fix systemd_dontaudit_dbus_chat() interface
+- Add interface to dontaudit attempts to send dbus messages to systemd domains, for xguest
+- Allow consolehelper domain to write Xauth files in /root
+- Add port definition for osapi_compute port
+- Allow unconfined to create /etc/hostname with correct labeling
+- Add systemd_filetrans_named_hostname() interface
+
 * Mon Apr 8 2013 Dan Walsh <dwalsh@redhat.com> 3.12.1-28
 - Allow httpd_t to connect to osapi_compute port using httpd_use_openstack bolean
 - Fixes for dlm_controld
