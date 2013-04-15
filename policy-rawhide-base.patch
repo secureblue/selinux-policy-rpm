@@ -22234,7 +22234,7 @@ index d1f64a0..3be3d00 100644
 +/var/lib/pqsql/\.Xauthority.*	--	gen_context(system_u:object_r:xauth_home_t,s0)
 +
 diff --git a/policy/modules/services/xserver.if b/policy/modules/services/xserver.if
-index 6bf0ecc..0ef3955 100644
+index 6bf0ecc..2706448 100644
 --- a/policy/modules/services/xserver.if
 +++ b/policy/modules/services/xserver.if
 @@ -19,9 +19,10 @@
@@ -23084,7 +23084,33 @@ index 6bf0ecc..0ef3955 100644
  	gen_require(`
  		type xserver_t;
  	')
-@@ -1226,6 +1595,26 @@ interface(`xserver_stream_connect',`
+@@ -1210,6 +1579,25 @@ interface(`xserver_dontaudit_rw_stream_sockets',`
+ 
+ ########################################
+ ## <summary>
++##	Do not audit attempts to read and write xdm
++##	unix domain stream sockets.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`xserver_dontaudit_xdm_rw_stream_sockets',`
++    gen_require(`
++        type xdm_t;
++    ')
++
++    dontaudit $1 xdm_t:unix_stream_socket { read write };
++')
++
++########################################
++## <summary>
+ ##	Connect to the X server over a unix domain
+ ##	stream socket.
+ ## </summary>
+@@ -1226,6 +1614,26 @@ interface(`xserver_stream_connect',`
  
  	files_search_tmp($1)
  	stream_connect_pattern($1, xserver_tmp_t, xserver_tmp_t, xserver_t)
@@ -23111,7 +23137,7 @@ index 6bf0ecc..0ef3955 100644
  ')
  
  ########################################
-@@ -1251,7 +1640,7 @@ interface(`xserver_read_tmp_files',`
+@@ -1251,7 +1659,7 @@ interface(`xserver_read_tmp_files',`
  ## <summary>
  ##	Interface to provide X object permissions on a given X server to
  ##	an X client domain.  Gives the domain permission to read the
@@ -23120,7 +23146,7 @@ index 6bf0ecc..0ef3955 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1261,13 +1650,23 @@ interface(`xserver_read_tmp_files',`
+@@ -1261,13 +1669,23 @@ interface(`xserver_read_tmp_files',`
  #
  interface(`xserver_manage_core_devices',`
  	gen_require(`
@@ -23145,7 +23171,7 @@ index 6bf0ecc..0ef3955 100644
  ')
  
  ########################################
-@@ -1284,10 +1683,604 @@ interface(`xserver_manage_core_devices',`
+@@ -1284,10 +1702,604 @@ interface(`xserver_manage_core_devices',`
  #
  interface(`xserver_unconfined',`
  	gen_require(`
@@ -23753,7 +23779,7 @@ index 6bf0ecc..0ef3955 100644
 +	files_search_tmp($1)
 +')
 diff --git a/policy/modules/services/xserver.te b/policy/modules/services/xserver.te
-index 2696452..48c4924 100644
+index 2696452..d6f03e7 100644
 --- a/policy/modules/services/xserver.te
 +++ b/policy/modules/services/xserver.te
 @@ -26,27 +26,50 @@ gen_require(`
@@ -24318,7 +24344,7 @@ index 2696452..48c4924 100644
  
  storage_dontaudit_read_fixed_disk(xdm_t)
  storage_dontaudit_write_fixed_disk(xdm_t)
-@@ -441,28 +620,42 @@ storage_dontaudit_raw_read_removable_device(xdm_t)
+@@ -441,28 +620,43 @@ storage_dontaudit_raw_read_removable_device(xdm_t)
  storage_dontaudit_raw_write_removable_device(xdm_t)
  storage_dontaudit_setattr_removable_dev(xdm_t)
  storage_dontaudit_rw_scsi_generic(xdm_t)
@@ -24361,10 +24387,11 @@ index 2696452..48c4924 100644
 -sysnet_read_config(xdm_t)
 +systemd_write_inhibit_pipes(xdm_t)
 +systemd_dbus_chat_localed(xdm_t)
++systemd_start_power_services(xdm_t)
  
  userdom_dontaudit_use_unpriv_user_fds(xdm_t)
  userdom_create_all_users_keys(xdm_t)
-@@ -471,24 +664,43 @@ userdom_read_user_home_content_files(xdm_t)
+@@ -471,24 +665,43 @@ userdom_read_user_home_content_files(xdm_t)
  # Search /proc for any user domain processes.
  userdom_read_all_users_state(xdm_t)
  userdom_signal_all_users(xdm_t)
@@ -24414,7 +24441,7 @@ index 2696452..48c4924 100644
  tunable_policy(`xdm_sysadm_login',`
  	userdom_xsession_spec_domtrans_all_users(xdm_t)
  	# FIXME:
-@@ -502,11 +714,26 @@ tunable_policy(`xdm_sysadm_login',`
+@@ -502,11 +715,26 @@ tunable_policy(`xdm_sysadm_login',`
  ')
  
  optional_policy(`
@@ -24441,7 +24468,7 @@ index 2696452..48c4924 100644
  ')
  
  optional_policy(`
-@@ -514,12 +741,72 @@ optional_policy(`
+@@ -514,12 +742,72 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -24514,7 +24541,7 @@ index 2696452..48c4924 100644
  	hostname_exec(xdm_t)
  ')
  
-@@ -537,28 +824,78 @@ optional_policy(`
+@@ -537,28 +825,78 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -24602,7 +24629,7 @@ index 2696452..48c4924 100644
  ')
  
  optional_policy(`
-@@ -570,6 +907,14 @@ optional_policy(`
+@@ -570,6 +908,14 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -24617,7 +24644,7 @@ index 2696452..48c4924 100644
  	xfs_stream_connect(xdm_t)
  ')
  
-@@ -594,8 +939,11 @@ allow xserver_t input_xevent_t:x_event send;
+@@ -594,8 +940,11 @@ allow xserver_t input_xevent_t:x_event send;
  # execheap needed until the X module loader is fixed.
  # NVIDIA Needs execstack
  
@@ -24630,7 +24657,7 @@ index 2696452..48c4924 100644
  allow xserver_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
  allow xserver_t self:fd use;
  allow xserver_t self:fifo_file rw_fifo_file_perms;
-@@ -608,8 +956,15 @@ allow xserver_t self:unix_dgram_socket { create_socket_perms sendto };
+@@ -608,8 +957,15 @@ allow xserver_t self:unix_dgram_socket { create_socket_perms sendto };
  allow xserver_t self:unix_stream_socket { create_stream_socket_perms connectto };
  allow xserver_t self:tcp_socket create_stream_socket_perms;
  allow xserver_t self:udp_socket create_socket_perms;
@@ -24646,7 +24673,7 @@ index 2696452..48c4924 100644
  manage_dirs_pattern(xserver_t, xserver_tmp_t, xserver_tmp_t)
  manage_files_pattern(xserver_t, xserver_tmp_t, xserver_tmp_t)
  manage_sock_files_pattern(xserver_t, xserver_tmp_t, xserver_tmp_t)
-@@ -617,6 +972,10 @@ files_tmp_filetrans(xserver_t, xserver_tmp_t, { file dir sock_file })
+@@ -617,6 +973,10 @@ files_tmp_filetrans(xserver_t, xserver_tmp_t, { file dir sock_file })
  
  filetrans_pattern(xserver_t, xserver_tmp_t, xserver_tmp_t, sock_file)
  
@@ -24657,7 +24684,7 @@ index 2696452..48c4924 100644
  manage_dirs_pattern(xserver_t, xserver_tmpfs_t, xserver_tmpfs_t)
  manage_files_pattern(xserver_t, xserver_tmpfs_t, xserver_tmpfs_t)
  manage_lnk_files_pattern(xserver_t, xserver_tmpfs_t, xserver_tmpfs_t)
-@@ -628,12 +987,19 @@ manage_files_pattern(xserver_t, xkb_var_lib_t, xkb_var_lib_t)
+@@ -628,12 +988,19 @@ manage_files_pattern(xserver_t, xkb_var_lib_t, xkb_var_lib_t)
  manage_lnk_files_pattern(xserver_t, xkb_var_lib_t, xkb_var_lib_t)
  files_search_var_lib(xserver_t)
  
@@ -24679,7 +24706,7 @@ index 2696452..48c4924 100644
  
  kernel_read_system_state(xserver_t)
  kernel_read_device_sysctls(xserver_t)
-@@ -641,12 +1007,12 @@ kernel_read_modprobe_sysctls(xserver_t)
+@@ -641,12 +1008,12 @@ kernel_read_modprobe_sysctls(xserver_t)
  # Xorg wants to check if kernel is tainted
  kernel_read_kernel_sysctls(xserver_t)
  kernel_write_proc_files(xserver_t)
@@ -24693,7 +24720,7 @@ index 2696452..48c4924 100644
  corenet_all_recvfrom_netlabel(xserver_t)
  corenet_tcp_sendrecv_generic_if(xserver_t)
  corenet_udp_sendrecv_generic_if(xserver_t)
-@@ -667,23 +1033,27 @@ dev_rw_apm_bios(xserver_t)
+@@ -667,23 +1034,27 @@ dev_rw_apm_bios(xserver_t)
  dev_rw_agp(xserver_t)
  dev_rw_framebuffer(xserver_t)
  dev_manage_dri_dev(xserver_t)
@@ -24724,7 +24751,7 @@ index 2696452..48c4924 100644
  
  # brought on by rhgb
  files_search_mnt(xserver_t)
-@@ -694,7 +1064,16 @@ fs_getattr_xattr_fs(xserver_t)
+@@ -694,7 +1065,16 @@ fs_getattr_xattr_fs(xserver_t)
  fs_search_nfs(xserver_t)
  fs_search_auto_mountpoints(xserver_t)
  fs_search_ramfs(xserver_t)
@@ -24742,7 +24769,7 @@ index 2696452..48c4924 100644
  mls_xwin_read_to_clearance(xserver_t)
  
  selinux_validate_context(xserver_t)
-@@ -708,20 +1087,18 @@ init_getpgid(xserver_t)
+@@ -708,20 +1088,18 @@ init_getpgid(xserver_t)
  term_setattr_unallocated_ttys(xserver_t)
  term_use_unallocated_ttys(xserver_t)
  
@@ -24766,7 +24793,7 @@ index 2696452..48c4924 100644
  
  userdom_search_user_home_dirs(xserver_t)
  userdom_use_user_ttys(xserver_t)
-@@ -729,8 +1106,6 @@ userdom_setattr_user_ttys(xserver_t)
+@@ -729,8 +1107,6 @@ userdom_setattr_user_ttys(xserver_t)
  userdom_read_user_tmp_files(xserver_t)
  userdom_rw_user_tmpfs_files(xserver_t)
  
@@ -24775,7 +24802,7 @@ index 2696452..48c4924 100644
  ifndef(`distro_redhat',`
  	allow xserver_t self:process { execmem execheap execstack };
  	domain_mmap_low_uncond(xserver_t)
-@@ -775,16 +1150,44 @@ optional_policy(`
+@@ -775,16 +1151,44 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -24821,7 +24848,7 @@ index 2696452..48c4924 100644
  	unconfined_domtrans(xserver_t)
  ')
  
-@@ -793,6 +1196,10 @@ optional_policy(`
+@@ -793,6 +1197,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -24832,7 +24859,7 @@ index 2696452..48c4924 100644
  	xfs_stream_connect(xserver_t)
  ')
  
-@@ -808,10 +1215,10 @@ allow xserver_t xdm_t:shm rw_shm_perms;
+@@ -808,10 +1216,10 @@ allow xserver_t xdm_t:shm rw_shm_perms;
  
  # NB we do NOT allow xserver_t xdm_var_lib_t:dir, only access to an open
  # handle of a file inside the dir!!!
@@ -24846,7 +24873,7 @@ index 2696452..48c4924 100644
  
  # Label pid and temporary files with derived types.
  manage_files_pattern(xserver_t, xdm_tmp_t, xdm_tmp_t)
-@@ -819,7 +1226,7 @@ manage_lnk_files_pattern(xserver_t, xdm_tmp_t, xdm_tmp_t)
+@@ -819,7 +1227,7 @@ manage_lnk_files_pattern(xserver_t, xdm_tmp_t, xdm_tmp_t)
  manage_sock_files_pattern(xserver_t, xdm_tmp_t, xdm_tmp_t)
  
  # Run xkbcomp.
@@ -24855,7 +24882,7 @@ index 2696452..48c4924 100644
  can_exec(xserver_t, xkb_var_lib_t)
  
  # VNC v4 module in X server
-@@ -832,26 +1239,21 @@ init_use_fds(xserver_t)
+@@ -832,26 +1240,21 @@ init_use_fds(xserver_t)
  # to read ROLE_home_t - examine this in more detail
  # (xauth?)
  userdom_read_user_home_content_files(xserver_t)
@@ -24890,7 +24917,7 @@ index 2696452..48c4924 100644
  ')
  
  optional_policy(`
-@@ -902,7 +1304,7 @@ allow x_domain xproperty_t:x_property { getattr create read write append destroy
+@@ -902,7 +1305,7 @@ allow x_domain xproperty_t:x_property { getattr create read write append destroy
  allow x_domain root_xdrawable_t:x_drawable { getattr setattr list_child add_child remove_child send receive hide show };
  # operations allowed on my windows
  allow x_domain self:x_drawable { create destroy getattr setattr read write show hide list_child add_child remove_child manage send receive };
@@ -24899,7 +24926,7 @@ index 2696452..48c4924 100644
  # operations allowed on all windows
  allow x_domain x_domain:x_drawable { getattr get_property set_property remove_child };
  
-@@ -956,11 +1358,31 @@ allow x_domain self:x_resource { read write };
+@@ -956,11 +1359,31 @@ allow x_domain self:x_resource { read write };
  # can mess with the screensaver
  allow x_domain xserver_t:x_screen { getattr saver_getattr };
  
@@ -24931,7 +24958,7 @@ index 2696452..48c4924 100644
  tunable_policy(`! xserver_object_manager',`
  	# should be xserver_unconfined(x_domain),
  	# but typeattribute doesnt work in conditionals
-@@ -982,18 +1404,40 @@ tunable_policy(`! xserver_object_manager',`
+@@ -982,18 +1405,40 @@ tunable_policy(`! xserver_object_manager',`
  	allow x_domain xevent_type:{ x_event x_synthetic_event } *;
  ')
  
@@ -28170,7 +28197,7 @@ index 24e7804..1894886 100644
 +	allow $1 init_t:system undefined;
 +')
 diff --git a/policy/modules/system/init.te b/policy/modules/system/init.te
-index dd3be8d..84ffb31 100644
+index dd3be8d..969bda2 100644
 --- a/policy/modules/system/init.te
 +++ b/policy/modules/system/init.te
 @@ -11,10 +11,24 @@ gen_require(`
@@ -28277,7 +28304,7 @@ index dd3be8d..84ffb31 100644
  # is ~sys_module really needed? observed:
  # sys_boot
  # sys_tty_config
-@@ -110,12 +145,32 @@ allow init_t self:fifo_file rw_fifo_file_perms;
+@@ -110,12 +145,33 @@ allow init_t self:fifo_file rw_fifo_file_perms;
  
  # Re-exec itself
  can_exec(init_t, init_exec_t)
@@ -28291,6 +28318,7 @@ index dd3be8d..84ffb31 100644
 +manage_files_pattern(init_t, initrc_state_t, initrc_state_t)
 +can_exec(init_t, initrc_state_t)
 +
++allow daemon initrc_t:unix_dgram_socket sendto;
 +allow init_t initrc_t:unix_stream_socket { connectto create_stream_socket_perms };
 +allow initrc_t init_t:unix_stream_socket { connectto rw_stream_socket_perms sendto };
 +allow initrc_t init_t:fifo_file rw_fifo_file_perms;
@@ -28316,7 +28344,7 @@ index dd3be8d..84ffb31 100644
  
  allow init_t initctl_t:fifo_file manage_fifo_file_perms;
  dev_filetrans(init_t, initctl_t, fifo_file)
-@@ -125,13 +180,17 @@ allow init_t initrc_var_run_t:file { rw_file_perms setattr };
+@@ -125,13 +181,17 @@ allow init_t initrc_var_run_t:file { rw_file_perms setattr };
  
  kernel_read_system_state(init_t)
  kernel_share_state(init_t)
@@ -28335,7 +28363,7 @@ index dd3be8d..84ffb31 100644
  
  domain_getpgid_all_domains(init_t)
  domain_kill_all_domains(init_t)
-@@ -139,14 +198,20 @@ domain_signal_all_domains(init_t)
+@@ -139,14 +199,20 @@ domain_signal_all_domains(init_t)
  domain_signull_all_domains(init_t)
  domain_sigstop_all_domains(init_t)
  domain_sigchld_all_domains(init_t)
@@ -28356,7 +28384,7 @@ index dd3be8d..84ffb31 100644
  # file descriptors inherited from the rootfs:
  files_dontaudit_rw_root_files(init_t)
  files_dontaudit_rw_root_chr_files(init_t)
-@@ -156,28 +221,48 @@ fs_list_inotifyfs(init_t)
+@@ -156,28 +222,48 @@ fs_list_inotifyfs(init_t)
  fs_write_ramfs_sockets(init_t)
  
  mcs_process_set_categories(init_t)
@@ -28408,7 +28436,7 @@ index dd3be8d..84ffb31 100644
  
  ifdef(`distro_gentoo',`
  	allow init_t self:process { getcap setcap };
-@@ -186,29 +271,178 @@ ifdef(`distro_gentoo',`
+@@ -186,29 +272,178 @@ ifdef(`distro_gentoo',`
  ')
  
  ifdef(`distro_redhat',`
@@ -28595,7 +28623,7 @@ index dd3be8d..84ffb31 100644
  ')
  
  optional_policy(`
-@@ -216,6 +450,27 @@ optional_policy(`
+@@ -216,6 +451,27 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -28623,7 +28651,7 @@ index dd3be8d..84ffb31 100644
  	unconfined_domain(init_t)
  ')
  
-@@ -225,8 +480,9 @@ optional_policy(`
+@@ -225,8 +481,9 @@ optional_policy(`
  #
  
  allow initrc_t self:process { getpgid setsched setpgid setrlimit getsched };
@@ -28635,7 +28663,7 @@ index dd3be8d..84ffb31 100644
  allow initrc_t self:passwd rootok;
  allow initrc_t self:key manage_key_perms;
  
-@@ -257,12 +513,16 @@ manage_fifo_files_pattern(initrc_t, initrc_state_t, initrc_state_t)
+@@ -257,12 +514,16 @@ manage_fifo_files_pattern(initrc_t, initrc_state_t, initrc_state_t)
  
  allow initrc_t initrc_var_run_t:file manage_file_perms;
  files_pid_filetrans(initrc_t, initrc_var_run_t, file)
@@ -28652,7 +28680,7 @@ index dd3be8d..84ffb31 100644
  
  manage_dirs_pattern(initrc_t, initrc_var_log_t, initrc_var_log_t)
  manage_files_pattern(initrc_t, initrc_var_log_t, initrc_var_log_t)
-@@ -278,23 +538,36 @@ kernel_change_ring_buffer_level(initrc_t)
+@@ -278,23 +539,36 @@ kernel_change_ring_buffer_level(initrc_t)
  kernel_clear_ring_buffer(initrc_t)
  kernel_get_sysvipc_info(initrc_t)
  kernel_read_all_sysctls(initrc_t)
@@ -28695,7 +28723,7 @@ index dd3be8d..84ffb31 100644
  corenet_tcp_sendrecv_all_ports(initrc_t)
  corenet_udp_sendrecv_all_ports(initrc_t)
  corenet_tcp_connect_all_ports(initrc_t)
-@@ -302,9 +575,11 @@ corenet_sendrecv_all_client_packets(initrc_t)
+@@ -302,9 +576,11 @@ corenet_sendrecv_all_client_packets(initrc_t)
  
  dev_read_rand(initrc_t)
  dev_read_urand(initrc_t)
@@ -28707,7 +28735,7 @@ index dd3be8d..84ffb31 100644
  dev_rw_sysfs(initrc_t)
  dev_list_usbfs(initrc_t)
  dev_read_framebuffer(initrc_t)
-@@ -312,8 +587,10 @@ dev_write_framebuffer(initrc_t)
+@@ -312,8 +588,10 @@ dev_write_framebuffer(initrc_t)
  dev_read_realtime_clock(initrc_t)
  dev_read_sound_mixer(initrc_t)
  dev_write_sound_mixer(initrc_t)
@@ -28718,7 +28746,7 @@ index dd3be8d..84ffb31 100644
  dev_delete_lvm_control_dev(initrc_t)
  dev_manage_generic_symlinks(initrc_t)
  dev_manage_generic_files(initrc_t)
-@@ -321,8 +598,7 @@ dev_manage_generic_files(initrc_t)
+@@ -321,8 +599,7 @@ dev_manage_generic_files(initrc_t)
  dev_delete_generic_symlinks(initrc_t)
  dev_getattr_all_blk_files(initrc_t)
  dev_getattr_all_chr_files(initrc_t)
@@ -28728,7 +28756,7 @@ index dd3be8d..84ffb31 100644
  
  domain_kill_all_domains(initrc_t)
  domain_signal_all_domains(initrc_t)
-@@ -331,7 +607,6 @@ domain_sigstop_all_domains(initrc_t)
+@@ -331,7 +608,6 @@ domain_sigstop_all_domains(initrc_t)
  domain_sigchld_all_domains(initrc_t)
  domain_read_all_domains_state(initrc_t)
  domain_getattr_all_domains(initrc_t)
@@ -28736,7 +28764,7 @@ index dd3be8d..84ffb31 100644
  domain_getsession_all_domains(initrc_t)
  domain_use_interactive_fds(initrc_t)
  # for lsof which is used by alsa shutdown:
-@@ -339,6 +614,7 @@ domain_dontaudit_getattr_all_udp_sockets(initrc_t)
+@@ -339,6 +615,7 @@ domain_dontaudit_getattr_all_udp_sockets(initrc_t)
  domain_dontaudit_getattr_all_tcp_sockets(initrc_t)
  domain_dontaudit_getattr_all_dgram_sockets(initrc_t)
  domain_dontaudit_getattr_all_pipes(initrc_t)
@@ -28744,7 +28772,7 @@ index dd3be8d..84ffb31 100644
  
  files_getattr_all_dirs(initrc_t)
  files_getattr_all_files(initrc_t)
-@@ -346,14 +622,15 @@ files_getattr_all_symlinks(initrc_t)
+@@ -346,14 +623,15 @@ files_getattr_all_symlinks(initrc_t)
  files_getattr_all_pipes(initrc_t)
  files_getattr_all_sockets(initrc_t)
  files_purge_tmp(initrc_t)
@@ -28762,7 +28790,7 @@ index dd3be8d..84ffb31 100644
  files_read_usr_files(initrc_t)
  files_manage_urandom_seed(initrc_t)
  files_manage_generic_spool(initrc_t)
-@@ -363,8 +640,12 @@ files_list_isid_type_dirs(initrc_t)
+@@ -363,8 +641,12 @@ files_list_isid_type_dirs(initrc_t)
  files_mounton_isid_type_dirs(initrc_t)
  files_list_default(initrc_t)
  files_mounton_default(initrc_t)
@@ -28776,7 +28804,7 @@ index dd3be8d..84ffb31 100644
  fs_list_inotifyfs(initrc_t)
  fs_register_binary_executable_type(initrc_t)
  # rhgb-console writes to ramfs
-@@ -374,10 +655,11 @@ fs_mount_all_fs(initrc_t)
+@@ -374,10 +656,11 @@ fs_mount_all_fs(initrc_t)
  fs_unmount_all_fs(initrc_t)
  fs_remount_all_fs(initrc_t)
  fs_getattr_all_fs(initrc_t)
@@ -28790,7 +28818,7 @@ index dd3be8d..84ffb31 100644
  mcs_process_set_categories(initrc_t)
  
  mls_file_read_all_levels(initrc_t)
-@@ -386,6 +668,7 @@ mls_process_read_up(initrc_t)
+@@ -386,6 +669,7 @@ mls_process_read_up(initrc_t)
  mls_process_write_down(initrc_t)
  mls_rangetrans_source(initrc_t)
  mls_fd_share_all_levels(initrc_t)
@@ -28798,7 +28826,7 @@ index dd3be8d..84ffb31 100644
  
  selinux_get_enforce_mode(initrc_t)
  
-@@ -397,6 +680,7 @@ term_use_all_terms(initrc_t)
+@@ -397,6 +681,7 @@ term_use_all_terms(initrc_t)
  term_reset_tty_labels(initrc_t)
  
  auth_rw_login_records(initrc_t)
@@ -28806,7 +28834,7 @@ index dd3be8d..84ffb31 100644
  auth_setattr_login_records(initrc_t)
  auth_rw_lastlog(initrc_t)
  auth_read_pam_pid(initrc_t)
-@@ -415,20 +699,18 @@ logging_read_all_logs(initrc_t)
+@@ -415,20 +700,18 @@ logging_read_all_logs(initrc_t)
  logging_append_all_logs(initrc_t)
  logging_read_audit_config(initrc_t)
  
@@ -28830,7 +28858,7 @@ index dd3be8d..84ffb31 100644
  
  ifdef(`distro_debian',`
  	dev_setattr_generic_dirs(initrc_t)
-@@ -450,7 +732,6 @@ ifdef(`distro_gentoo',`
+@@ -450,7 +733,6 @@ ifdef(`distro_gentoo',`
  	allow initrc_t self:process setfscreate;
  	dev_create_null_dev(initrc_t)
  	dev_create_zero_dev(initrc_t)
@@ -28838,7 +28866,7 @@ index dd3be8d..84ffb31 100644
  	term_create_console_dev(initrc_t)
  
  	# unfortunately /sbin/rc does stupid tricks
-@@ -485,6 +766,10 @@ ifdef(`distro_gentoo',`
+@@ -485,6 +767,10 @@ ifdef(`distro_gentoo',`
  	sysnet_setattr_config(initrc_t)
  
  	optional_policy(`
@@ -28849,7 +28877,7 @@ index dd3be8d..84ffb31 100644
  		alsa_read_lib(initrc_t)
  	')
  
-@@ -505,7 +790,7 @@ ifdef(`distro_redhat',`
+@@ -505,7 +791,7 @@ ifdef(`distro_redhat',`
  
  	# Red Hat systems seem to have a stray
  	# fd open from the initrd
@@ -28858,7 +28886,7 @@ index dd3be8d..84ffb31 100644
  	files_dontaudit_read_root_files(initrc_t)
  
  	# These seem to be from the initrd
-@@ -520,6 +805,7 @@ ifdef(`distro_redhat',`
+@@ -520,6 +806,7 @@ ifdef(`distro_redhat',`
  	files_create_boot_dirs(initrc_t)
  	files_create_boot_flag(initrc_t)
  	files_rw_boot_symlinks(initrc_t)
@@ -28866,7 +28894,7 @@ index dd3be8d..84ffb31 100644
  	# wants to read /.fonts directory
  	files_read_default_files(initrc_t)
  	files_mountpoint(initrc_tmp_t)
-@@ -540,6 +826,7 @@ ifdef(`distro_redhat',`
+@@ -540,6 +827,7 @@ ifdef(`distro_redhat',`
  	miscfiles_rw_localization(initrc_t)
  	miscfiles_setattr_localization(initrc_t)
  	miscfiles_relabel_localization(initrc_t)
@@ -28874,7 +28902,7 @@ index dd3be8d..84ffb31 100644
  
  	miscfiles_read_fonts(initrc_t)
  	miscfiles_read_hwdata(initrc_t)
-@@ -549,8 +836,44 @@ ifdef(`distro_redhat',`
+@@ -549,8 +837,44 @@ ifdef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -28919,7 +28947,7 @@ index dd3be8d..84ffb31 100644
  	')
  
  	optional_policy(`
-@@ -558,14 +881,31 @@ ifdef(`distro_redhat',`
+@@ -558,14 +882,31 @@ ifdef(`distro_redhat',`
  		rpc_write_exports(initrc_t)
  		rpc_manage_nfs_state_data(initrc_t)
  	')
@@ -28951,7 +28979,7 @@ index dd3be8d..84ffb31 100644
  	')
  ')
  
-@@ -576,6 +916,39 @@ ifdef(`distro_suse',`
+@@ -576,6 +917,39 @@ ifdef(`distro_suse',`
  	')
  ')
  
@@ -28991,7 +29019,7 @@ index dd3be8d..84ffb31 100644
  optional_policy(`
  	amavis_search_lib(initrc_t)
  	amavis_setattr_pid_files(initrc_t)
-@@ -588,6 +961,8 @@ optional_policy(`
+@@ -588,6 +962,8 @@ optional_policy(`
  optional_policy(`
  	apache_read_config(initrc_t)
  	apache_list_modules(initrc_t)
@@ -29000,7 +29028,7 @@ index dd3be8d..84ffb31 100644
  ')
  
  optional_policy(`
-@@ -609,6 +984,7 @@ optional_policy(`
+@@ -609,6 +985,7 @@ optional_policy(`
  
  optional_policy(`
  	cgroup_stream_connect_cgred(initrc_t)
@@ -29008,7 +29036,7 @@ index dd3be8d..84ffb31 100644
  ')
  
  optional_policy(`
-@@ -625,6 +1001,17 @@ optional_policy(`
+@@ -625,6 +1002,17 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -29026,7 +29054,7 @@ index dd3be8d..84ffb31 100644
  	dev_getattr_printer_dev(initrc_t)
  
  	cups_read_log(initrc_t)
-@@ -641,9 +1028,13 @@ optional_policy(`
+@@ -641,9 +1029,13 @@ optional_policy(`
  	dbus_connect_system_bus(initrc_t)
  	dbus_system_bus_client(initrc_t)
  	dbus_read_config(initrc_t)
@@ -29040,7 +29068,7 @@ index dd3be8d..84ffb31 100644
  	')
  
  	optional_policy(`
-@@ -656,15 +1047,11 @@ optional_policy(`
+@@ -656,15 +1048,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -29058,7 +29086,7 @@ index dd3be8d..84ffb31 100644
  ')
  
  optional_policy(`
-@@ -685,6 +1072,15 @@ optional_policy(`
+@@ -685,6 +1073,15 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -29074,7 +29102,7 @@ index dd3be8d..84ffb31 100644
  	inn_exec_config(initrc_t)
  ')
  
-@@ -725,6 +1121,7 @@ optional_policy(`
+@@ -725,6 +1122,7 @@ optional_policy(`
  	lpd_list_spool(initrc_t)
  
  	lpd_read_config(initrc_t)
@@ -29082,7 +29110,7 @@ index dd3be8d..84ffb31 100644
  ')
  
  optional_policy(`
-@@ -742,7 +1139,14 @@ optional_policy(`
+@@ -742,7 +1140,14 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -29097,7 +29125,7 @@ index dd3be8d..84ffb31 100644
  	mta_dontaudit_read_spool_symlinks(initrc_t)
  ')
  
-@@ -765,6 +1169,10 @@ optional_policy(`
+@@ -765,6 +1170,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -29108,7 +29136,7 @@ index dd3be8d..84ffb31 100644
  	postgresql_manage_db(initrc_t)
  	postgresql_read_config(initrc_t)
  ')
-@@ -774,10 +1182,20 @@ optional_policy(`
+@@ -774,10 +1183,20 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -29129,7 +29157,7 @@ index dd3be8d..84ffb31 100644
  	quota_manage_flags(initrc_t)
  ')
  
-@@ -786,6 +1204,10 @@ optional_policy(`
+@@ -786,6 +1205,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -29140,7 +29168,7 @@ index dd3be8d..84ffb31 100644
  	fs_write_ramfs_sockets(initrc_t)
  	fs_search_ramfs(initrc_t)
  
-@@ -807,8 +1229,6 @@ optional_policy(`
+@@ -807,8 +1230,6 @@ optional_policy(`
  	# bash tries ioctl for some reason
  	files_dontaudit_ioctl_all_pids(initrc_t)
  
@@ -29149,7 +29177,7 @@ index dd3be8d..84ffb31 100644
  ')
  
  optional_policy(`
-@@ -817,6 +1237,10 @@ optional_policy(`
+@@ -817,6 +1238,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -29160,7 +29188,7 @@ index dd3be8d..84ffb31 100644
  	# shorewall-init script run /var/lib/shorewall/firewall
  	shorewall_lib_domtrans(initrc_t)
  ')
-@@ -826,10 +1250,12 @@ optional_policy(`
+@@ -826,10 +1251,12 @@ optional_policy(`
  	squid_manage_logs(initrc_t)
  ')
  
@@ -29173,7 +29201,7 @@ index dd3be8d..84ffb31 100644
  
  optional_policy(`
  	ssh_dontaudit_read_server_keys(initrc_t)
-@@ -856,12 +1282,27 @@ optional_policy(`
+@@ -856,12 +1283,27 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -29202,7 +29230,7 @@ index dd3be8d..84ffb31 100644
  
  	ifdef(`distro_redhat',`
  		# system-config-services causes avc messages that should be dontaudited
-@@ -871,6 +1312,18 @@ optional_policy(`
+@@ -871,6 +1313,18 @@ optional_policy(`
  	optional_policy(`
  		mono_domtrans(initrc_t)
  	')
@@ -29221,7 +29249,7 @@ index dd3be8d..84ffb31 100644
  ')
  
  optional_policy(`
-@@ -886,6 +1339,10 @@ optional_policy(`
+@@ -886,6 +1340,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -29232,7 +29260,7 @@ index dd3be8d..84ffb31 100644
  	# Set device ownerships/modes.
  	xserver_setattr_console_pipes(initrc_t)
  
-@@ -896,3 +1353,196 @@ optional_policy(`
+@@ -896,3 +1354,196 @@ optional_policy(`
  optional_policy(`
  	zebra_read_config(initrc_t)
  ')
@@ -29989,7 +30017,7 @@ index 5dfa44b..aa4d8fc 100644
  
  optional_policy(`
 diff --git a/policy/modules/system/libraries.fc b/policy/modules/system/libraries.fc
-index 73bb3c0..dbd708d 100644
+index 73bb3c0..aadfba0 100644
 --- a/policy/modules/system/libraries.fc
 +++ b/policy/modules/system/libraries.fc
 @@ -1,3 +1,4 @@
@@ -30063,16 +30091,18 @@ index 73bb3c0..dbd708d 100644
  /usr/lib/libADM5.*\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/libatiadlxx\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/win32/.*\.so(\.[^/]*)*		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
-@@ -141,6 +151,8 @@ ifdef(`distro_redhat',`
+@@ -141,19 +151,21 @@ ifdef(`distro_redhat',`
  /usr/lib/ati-fglrx/.+\.so(\..*)?	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/fglrx/.*\.so(\.[^/]*)*		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/libjs\.so.*			--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 +/usr/lib/libjavascriptcoregtk[^/]*\.so.* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 +/usr/lib/libzvbi\.so(\.[^/]*)* 		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/sse2/libx264\.so(\.[^/]*)* 	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
- /usr/lib(/.*)?/libnvidia.+\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
+-/usr/lib(/.*)?/libnvidia.+\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
++/usr/lib/libnvidia\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
++/usr/lib.*/libnvidia\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib(/.*)?/nvidia_drv.*\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
-@@ -148,12 +160,11 @@ ifdef(`distro_redhat',`
+ /usr/lib/nero/plug-ins/libMP3\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/nvidia-graphics(-[^/]*/)?libGL(core)?\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/nvidia-graphics(-[^/]*/)?libnvidia.*\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/nvidia-graphics(-[^/]*/)?libXvMCNVIDIA\.so.* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -30088,7 +30118,7 @@ index 73bb3c0..dbd708d 100644
  /usr/NX/lib/libXcomp\.so.*		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/NX/lib/libjpeg\.so.* 		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  
-@@ -182,11 +193,13 @@ ifdef(`distro_redhat',`
+@@ -182,11 +194,13 @@ ifdef(`distro_redhat',`
  # Fedora Core packages: gstreamer-plugins, compat-libstdc++, Glide3, libdv
  # 	HelixPlayer, SDL, xorg-x11, xorg-x11-libs, Hermes, valgrind, openoffice.org-libs, httpd - php
  HOME_DIR/.*/plugins/nppdf\.so.* 	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -30102,7 +30132,7 @@ index 73bb3c0..dbd708d 100644
  /usr/lib/libfglrx_gamma\.so.* 		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/mozilla/plugins/nppdf\.so 	-- 	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/mozilla/plugins/libvlcplugin\.so --	gen_context(system_u:object_r:textrel_shlib_t,s0)
-@@ -241,13 +254,11 @@ HOME_DIR/.*/plugins/nppdf\.so.* 	--	gen_context(system_u:object_r:textrel_shlib_
+@@ -241,13 +255,11 @@ HOME_DIR/.*/plugins/nppdf\.so.* 	--	gen_context(system_u:object_r:textrel_shlib_
  
  # Livna.org packages: xmms-mp3, ffmpeg, xvidcore, xine-lib, gsm, lame
  /usr/lib.*/libmpg123\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -30118,7 +30148,7 @@ index 73bb3c0..dbd708d 100644
  
  # Jai, Sun Microsystems (Jpackage SPRM)
  /usr/lib/libmlib_jai\.so		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
-@@ -269,20 +280,19 @@ HOME_DIR/.mozilla/plugins/nprhapengine\.so.* --	gen_context(system_u:object_r:te
+@@ -269,20 +281,19 @@ HOME_DIR/.mozilla/plugins/nprhapengine\.so.* --	gen_context(system_u:object_r:te
  
  # Java, Sun Microsystems (JPackage SRPM)
  /usr/(.*/)?jre.*/.*\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -30149,7 +30179,7 @@ index 73bb3c0..dbd708d 100644
  
  /usr/(.*/)?intellinux/SPPlugins/ADMPlugin\.apl -- gen_context(system_u:object_r:textrel_shlib_t,s0)
  
-@@ -299,17 +309,154 @@ HOME_DIR/.mozilla/plugins/nprhapengine\.so.* --	gen_context(system_u:object_r:te
+@@ -299,17 +310,151 @@ HOME_DIR/.mozilla/plugins/nprhapengine\.so.* --	gen_context(system_u:object_r:te
  #
  /var/cache/ldconfig(/.*)?			gen_context(system_u:object_r:ldconfig_cache_t,s0)
  
@@ -30201,8 +30231,6 @@ index 73bb3c0..dbd708d 100644
 +/usr/lib/googleearth/.*\.so.*    --     gen_context(system_u:object_r:textrel_shlib_t,s0)
 +/usr/lib/google-earth/.*\.so.*    --     gen_context(system_u:object_r:textrel_shlib_t,s0)
 +/opt/google-earth/.*\.so.*    --     gen_context(system_u:object_r:textrel_shlib_t,s0)
-+/opt/google/.*\.so.*    --     gen_context(system_u:object_r:textrel_shlib_t,s0)
-+/opt/google/chrome/.*\.so.*    --     gen_context(system_u:object_r:textrel_shlib_t,s0)
 +
 +/usr/lib/nspluginwrapper/np.*\.so	-- gen_context(system_u:object_r:lib_t,s0)
 +
@@ -30307,7 +30335,6 @@ index 73bb3c0..dbd708d 100644
 +/opt/lgtonmc/bin/.*\.so(\.[0-9])?  	--  gen_context(system_u:object_r:textrel_shlib_t,s0)
 +/opt/google/picasa/.*\.dll	--  gen_context(system_u:object_r:textrel_shlib_t,s0)
 +/opt/google/picasa/.*\.yti	--  gen_context(system_u:object_r:textrel_shlib_t,s0)
-+/opt/google/talkplugin/.*\.so.* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 +
 +/usr/sbin/ldconfig		--	gen_context(system_u:object_r:ldconfig_exec_t,s0)
 diff --git a/policy/modules/system/libraries.if b/policy/modules/system/libraries.if

@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 29%{?dist}
+Release: 30%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -526,7 +526,31 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Thu Apr 11 2013 Miroslav Grepl <mgrpel@redhat.com> 3.12.1-29
+* Mon Apr 15 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-30
+- Allow alsa_t signal_perms, we probaly should search for any app that can execute something without transition and give it signal_perms...
+- Add dontaudit for mozilla_plugin_t looking at the xdm_t sockets
+- Fix deny_ptrace boolean, certain ptrace leaked into the system
+- Allow winbind to manage kerberos_rcache_host
+- Allow spamd to create spamd_var_lib_t directories
+- Remove transition to mozilla_tmp_t by mozilla_t, to allow it to manage the users tmp dirs
+- Add mising nslcd_dontaudit_write_sock_file() interface
+- one more fix
+- Fix pki_read_tomcat_lib_files() interface
+- Allow certmonger to read pki-tomcat lib files
+- Allow certwatch to execute bin_t
+- Allow snmp to manage /var/lib/net-snmp files
+- Call snmp_manage_var_lib_files(fogorn_t) instead of snmp_manage_var_dirs
+- Fix vmware_role() interface
+- Fix cobbler_manage_lib_files() interface
+- Allow nagios check disk plugins to execute bin_t
+- Allow quantum to transition to openvswitch_t
+- Allow postdrop to stream connect to postfix-master
+- Allow quantum to stream connect to openvswitch
+- Add xserver_dontaudit_xdm_rw_stream_sockets() interface
+- Allow daemon to send dgrams to initrc_t
+- Allow kdm to start the power service to initiate a reboot or poweroff
+
+* Thu Apr 11 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-29
 - Add mising nslcd_dontaudit_write_sock_file() interface
 - one more fix
 - Fix pki_read_tomcat_lib_files() interface
