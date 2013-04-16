@@ -19854,10 +19854,10 @@ index 0000000..b214253
 +')
 diff --git a/dirsrv.te b/dirsrv.te
 new file mode 100644
-index 0000000..217b0ef
+index 0000000..8cf8ddd
 --- /dev/null
 +++ b/dirsrv.te
-@@ -0,0 +1,190 @@
+@@ -0,0 +1,194 @@
 +policy_module(dirsrv,1.0.0)
 +
 +########################################
@@ -20003,6 +20003,10 @@ index 0000000..217b0ef
 +
 +optional_policy(`
 +	rpcbind_stream_connect(dirsrv_t)
++')
++
++optional_policy(`
++    uuidd_stream_connect_manager(dirsrv_t)
 +')
 +
 +########################################
@@ -24581,7 +24585,7 @@ index e39de43..5818f74 100644
 +/usr/libexec/gnome-system-monitor-mechanism 	--      gen_context(system_u:object_r:gnomesystemmm_exec_t,s0)
 +/usr/libexec/kde(3|4)/ksysguardprocesslist_helper	--		gen_context(system_u:object_r:gnomesystemmm_exec_t,s0)
 diff --git a/gnome.if b/gnome.if
-index d03fd43..b000017 100644
+index d03fd43..26023f7 100644
 --- a/gnome.if
 +++ b/gnome.if
 @@ -1,123 +1,154 @@
@@ -25152,7 +25156,7 @@ index d03fd43..b000017 100644
  ## <summary>
 -##	Create, read, write, and delete
 -##	generic gnome home content.
-+##	Set attributes of cache home dir (.cache)
++##	Create generic cache home dir (.cache)
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -25161,25 +25165,26 @@ index d03fd43..b000017 100644
  ## </param>
  #
 -interface(`gnome_manage_generic_home_content',`
-+interface(`gnome_setattr_cache_home_dir',`
++interface(`gnome_create_generic_cache_dir',`
  	gen_require(`
 -		type gnome_home_t;
 +		type cache_home_t;
  	')
  
-+	setattr_dirs_pattern($1, cache_home_t, cache_home_t)
- 	userdom_search_user_home_dirs($1)
+-	userdom_search_user_home_dirs($1)
 -	allow $1 gnome_home_t:dir manage_dir_perms;
 -	allow $1 gnome_home_t:file manage_file_perms;
 -	allow $1 gnome_home_t:fifo_file manage_fifo_file_perms;
 -	allow $1 gnome_home_t:lnk_file manage_lnk_file_perms;
 -	allow $1 gnome_home_t:sock_file manage_sock_file_perms;
++	allow $1 cache_home_t:dir create_dir_perms;
++	userdom_user_home_dir_filetrans($1, cache_home_t, dir, ".cache")
  ')
  
  ########################################
  ## <summary>
 -##	Search generic gnome home directories.
-+##	Manage cache home dir (.cache)
++##	Set attributes of cache home dir (.cache)
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -25188,13 +25193,13 @@ index d03fd43..b000017 100644
  ## </param>
  #
 -interface(`gnome_search_generic_home',`
-+interface(`gnome_manage_cache_home_dir',`
++interface(`gnome_setattr_cache_home_dir',`
  	gen_require(`
 -		type gnome_home_t;
 +		type cache_home_t;
  	')
  
-+	manage_dirs_pattern($1, cache_home_t, cache_home_t)
++	setattr_dirs_pattern($1, cache_home_t, cache_home_t)
  	userdom_search_user_home_dirs($1)
 -	allow $1 gnome_home_t:dir search_dir_perms;
  ')
@@ -25203,7 +25208,7 @@ index d03fd43..b000017 100644
  ## <summary>
 -##	Create objects in gnome user home
 -##	directories with a private type.
-+##	append to generic cache home files (.cache)
++##	Manage cache home dir (.cache)
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -25227,13 +25232,13 @@ index d03fd43..b000017 100644
 -## </param>
  #
 -interface(`gnome_home_filetrans',`
-+interface(`gnome_append_generic_cache_files',`
++interface(`gnome_manage_cache_home_dir',`
  	gen_require(`
 -		type gnome_home_t;
 +		type cache_home_t;
  	')
  
-+	append_files_pattern($1, cache_home_t, cache_home_t)
++	manage_dirs_pattern($1, cache_home_t, cache_home_t)
  	userdom_search_user_home_dirs($1)
 -	filetrans_pattern($1, gnome_home_t, $2, $3, $4)
  ')
@@ -25241,7 +25246,7 @@ index d03fd43..b000017 100644
  ########################################
  ## <summary>
 -##	Create generic gconf home directories.
-+##	write to generic cache home files (.cache)
++##	append to generic cache home files (.cache)
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -25250,29 +25255,57 @@ index d03fd43..b000017 100644
  ## </param>
  #
 -interface(`gnome_create_generic_gconf_home_dirs',`
-+interface(`gnome_write_generic_cache_files',`
++interface(`gnome_append_generic_cache_files',`
  	gen_require(`
 -		type gconf_home_t;
 +		type cache_home_t;
  	')
  
 -	allow $1 gconf_home_t:dir create_dir_perms;
-+	write_files_pattern($1, cache_home_t, cache_home_t)
++	append_files_pattern($1, cache_home_t, cache_home_t)
 +	userdom_search_user_home_dirs($1)
  ')
  
  ########################################
  ## <summary>
 -##	Read generic gconf home content.
-+##	Manage a sock_file in the generic cache home files (.cache)
++##	write to generic cache home files (.cache)
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -449,46 +497,36 @@ interface(`gnome_create_generic_gconf_home_dirs',`
+@@ -449,23 +497,18 @@ interface(`gnome_create_generic_gconf_home_dirs',`
  ##	</summary>
  ## </param>
  #
 -interface(`gnome_read_generic_gconf_home_content',`
++interface(`gnome_write_generic_cache_files',`
+ 	gen_require(`
+-		type gconf_home_t;
++		type cache_home_t;
+ 	')
+ 
++	write_files_pattern($1, cache_home_t, cache_home_t)
+ 	userdom_search_user_home_dirs($1)
+-	allow $1 gconf_home_t:dir list_dir_perms;
+-	allow $1 gconf_home_t:file read_file_perms;
+-	allow $1 gconf_home_t:fifo_file read_fifo_file_perms;
+-	allow $1 gconf_home_t:lnk_file read_lnk_file_perms;
+-	allow $1 gconf_home_t:sock_file read_sock_file_perms;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Create, read, write, and delete
+-##	generic gconf home content.
++##	Manage a sock_file in the generic cache home files (.cache)
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -473,82 +516,72 @@ interface(`gnome_read_generic_gconf_home_content',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`gnome_manage_generic_gconf_home_content',`
 +interface(`gnome_manage_generic_cache_sockets',`
  	gen_require(`
 -		type gconf_home_t;
@@ -25280,18 +25313,17 @@ index d03fd43..b000017 100644
  	')
  
  	userdom_search_user_home_dirs($1)
--	allow $1 gconf_home_t:dir list_dir_perms;
--	allow $1 gconf_home_t:file read_file_perms;
--	allow $1 gconf_home_t:fifo_file read_fifo_file_perms;
--	allow $1 gconf_home_t:lnk_file read_lnk_file_perms;
--	allow $1 gconf_home_t:sock_file read_sock_file_perms;
+-	allow $1 gconf_home_t:dir manage_dir_perms;
+-	allow $1 gconf_home_t:file manage_file_perms;
+-	allow $1 gconf_home_t:fifo_file manage_fifo_file_perms;
+-	allow $1 gconf_home_t:lnk_file manage_lnk_file_perms;
+-	allow $1 gconf_home_t:sock_file manage_sock_file_perms;
 +	manage_sock_files_pattern($1, cache_home_t, cache_home_t)
  ')
  
  ########################################
  ## <summary>
--##	Create, read, write, and delete
--##	generic gconf home content.
+-##	Search generic gconf home directories.
 +##	Dontaudit read/write to generic cache home files (.cache)
  ## </summary>
  ## <param name="domain">
@@ -25301,7 +25333,7 @@ index d03fd43..b000017 100644
  ##	</summary>
  ## </param>
  #
--interface(`gnome_manage_generic_gconf_home_content',`
+-interface(`gnome_search_generic_gconf_home',`
 +interface(`gnome_dontaudit_rw_generic_cache_files',`
  	gen_require(`
 -		type gconf_home_t;
@@ -25309,34 +25341,41 @@ index d03fd43..b000017 100644
  	')
  
 -	userdom_search_user_home_dirs($1)
--	allow $1 gconf_home_t:dir manage_dir_perms;
--	allow $1 gconf_home_t:file manage_file_perms;
--	allow $1 gconf_home_t:fifo_file manage_fifo_file_perms;
--	allow $1 gconf_home_t:lnk_file manage_lnk_file_perms;
--	allow $1 gconf_home_t:sock_file manage_sock_file_perms;
+-	allow $1 gconf_home_t:dir search_dir_perms;
 +	dontaudit $1 cache_home_t:file rw_inherited_file_perms;
  ')
  
  ########################################
  ## <summary>
--##	Search generic gconf home directories.
+-##	Create objects in user home
+-##	directories with the generic gconf
+-##	home type.
 +##	read gnome homedir content (.config)
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -496,29 +534,35 @@ interface(`gnome_manage_generic_gconf_home_content',`
+ ##	Domain allowed access.
  ##	</summary>
  ## </param>
+-## <param name="object_class">
+-##	<summary>
+-##	Class of the object being created.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
  #
--interface(`gnome_search_generic_gconf_home',`
+-interface(`gnome_home_filetrans_gconf_home',`
 +interface(`gnome_read_config',`
  	gen_require(`
 -		type gconf_home_t;
 +		attribute gnome_home_type;
  	')
  
--	userdom_search_user_home_dirs($1)
--	allow $1 gconf_home_t:dir search_dir_perms;
+-	userdom_user_home_dir_filetrans($1, gconf_home_t, $2, $3)
 +	list_dirs_pattern($1, gnome_home_type, gnome_home_type)
 +	read_files_pattern($1, gnome_home_type, gnome_home_type)
 +	read_lnk_files_pattern($1, gnome_home_type, gnome_home_type)
@@ -25345,7 +25384,7 @@ index d03fd43..b000017 100644
  ########################################
  ## <summary>
 -##	Create objects in user home
--##	directories with the generic gconf
+-##	directories with the generic gnome
 -##	home type.
 +##	Create objects in a Gnome gconf home directory
 +##	with an automatic type transition to
@@ -25368,18 +25407,18 @@ index d03fd43..b000017 100644
  ##	</summary>
  ## </param>
  ## <param name="name" optional="true">
-@@ -527,62 +571,125 @@ interface(`gnome_search_generic_gconf_home',`
+@@ -557,52 +590,76 @@ interface(`gnome_home_filetrans_gconf_home',`
  ##	</summary>
  ## </param>
  #
--interface(`gnome_home_filetrans_gconf_home',`
+-interface(`gnome_home_filetrans_gnome_home',`
 +interface(`gnome_data_filetrans',`
  	gen_require(`
--		type gconf_home_t;
+-		type gnome_home_t;
 +		type data_home_t;
  	')
  
--	userdom_user_home_dir_filetrans($1, gconf_home_t, $2, $3)
+-	userdom_user_home_dir_filetrans($1, gnome_home_t, $2, $3)
 +	filetrans_pattern($1, data_home_t, $2, $3, $4)
 +	gnome_search_gconf($1)
  ')
@@ -25387,9 +25426,8 @@ index d03fd43..b000017 100644
 -########################################
 +#######################################
  ## <summary>
--##	Create objects in user home
--##	directories with the generic gnome
--##	home type.
+-##	Create objects in gnome gconf home
+-##	directories with a private type.
 +##	Read generic data home files.
  ## </summary>
  ## <param name="domain">
@@ -25397,7 +25435,15 @@ index d03fd43..b000017 100644
  ##	Domain allowed access.
  ##	</summary>
  ## </param>
+-## <param name="private_type">
+-##	<summary>
+-##	Private file type.
+-##	</summary>
+-## </param>
 -## <param name="object_class">
+-##	<summary>
+-##	Class of the object being created.
+-##	</summary>
 +#
 +interface(`gnome_read_generic_data_home_files',`
 +	gen_require(`
@@ -25415,7 +25461,8 @@ index d03fd43..b000017 100644
 +##  <summary>
 +##  Domain allowed access.
 +##  </summary>
-+## </param>
+ ## </param>
+-## <param name="name" optional="true">
 +#
 +interface(`gnome_read_generic_data_home_dirs',`
 +    gen_require(`
@@ -25431,44 +25478,46 @@ index d03fd43..b000017 100644
 +## </summary>
 +## <param name="domain">
  ##	<summary>
--##	Class of the object being created.
-+##	Domain allowed access.
- ##	</summary>
- ## </param>
--## <param name="name" optional="true">
-+#
-+interface(`gnome_manage_data',`
-+	gen_require(`
-+		type data_home_t;
-+		type gconf_home_t;
-+	')
-+
-+		allow $1 gconf_home_t:dir search_dir_perms;
-+		manage_dirs_pattern($1, data_home_t, data_home_t)
-+		manage_files_pattern($1, data_home_t, data_home_t)
-+		manage_lnk_files_pattern($1, data_home_t, data_home_t)
-+')
-+
-+########################################
-+## <summary>
-+##	Read icc data home content.
-+## </summary>
-+## <param name="domain">
- ##	<summary>
 -##	The name of the object being created.
 +##	Domain allowed access.
  ##	</summary>
  ## </param>
  #
--interface(`gnome_home_filetrans_gnome_home',`
+-interface(`gnome_gconf_home_filetrans',`
++interface(`gnome_manage_data',`
+ 	gen_require(`
++		type data_home_t;
+ 		type gconf_home_t;
+ 	')
+ 
+-	userdom_search_user_home_dirs($1)
+-	filetrans_pattern($1, gconf_home_t, $2, $3, $4)
++		allow $1 gconf_home_t:dir search_dir_perms;
++		manage_dirs_pattern($1, data_home_t, data_home_t)
++		manage_files_pattern($1, data_home_t, data_home_t)
++		manage_lnk_files_pattern($1, data_home_t, data_home_t)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Read generic gnome keyring home files.
++##	Read icc data home content.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -610,93 +667,126 @@ interface(`gnome_gconf_home_filetrans',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`gnome_read_keyring_home_files',`
 +interface(`gnome_read_home_icc_data_content',`
  	gen_require(`
--		type gnome_home_t;
+-		type gnome_home_t, gnome_keyring_home_t;
 +		type icc_data_home_t, gconf_home_t, data_home_t;
  	')
  
--	userdom_user_home_dir_filetrans($1, gnome_home_t, $2, $3)
-+	userdom_search_user_home_dirs($1)
+ 	userdom_search_user_home_dirs($1)
+-	read_files_pattern($1, { gnome_home_t gnome_keyring_home_t }, gnome_keyring_home_t)
 +	allow $1 { gconf_home_t data_home_t }:dir search_dir_perms;
 +	list_dirs_pattern($1, icc_data_home_t, icc_data_home_t)
 +	read_files_pattern($1, icc_data_home_t, icc_data_home_t)
@@ -25477,87 +25526,9 @@ index d03fd43..b000017 100644
  
  ########################################
  ## <summary>
--##	Create objects in gnome gconf home
--##	directories with a private type.
-+##	Read inherited icc data home files.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
- ##	Domain allowed access.
- ##	</summary>
- ## </param>
--## <param name="private_type">
-+#
-+interface(`gnome_read_inherited_home_icc_data_files',`
-+	gen_require(`
-+		type icc_data_home_t;
-+	')
-+
-+	allow $1 icc_data_home_t:file read_inherited_file_perms;
-+')
-+
-+########################################
-+## <summary>
-+##	Create gconf_home_t objects in the /root directory
-+## </summary>
-+## <param name="domain">
- ##	<summary>
--##	Private file type.
-+##	Domain allowed access.
- ##	</summary>
- ## </param>
- ## <param name="object_class">
- ##	<summary>
--##	Class of the object being created.
-+##	The class of the object to be created.
- ##	</summary>
- ## </param>
- ## <param name="name" optional="true">
-@@ -591,65 +698,76 @@ interface(`gnome_home_filetrans_gnome_home',`
- ##	</summary>
- ## </param>
- #
--interface(`gnome_gconf_home_filetrans',`
-+interface(`gnome_admin_home_gconf_filetrans',`
- 	gen_require(`
- 		type gconf_home_t;
- 	')
- 
--	userdom_search_user_home_dirs($1)
--	filetrans_pattern($1, gconf_home_t, $2, $3, $4)
-+	userdom_admin_home_dir_filetrans($1, gconf_home_t, $2, $3)
- ')
- 
- ########################################
- ## <summary>
--##	Read generic gnome keyring home files.
-+##	Do not audit attempts to read
-+##	inherited gconf config files.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
--##	Domain allowed access.
-+##	Domain to not audit.
- ##	</summary>
- ## </param>
- #
--interface(`gnome_read_keyring_home_files',`
-+interface(`gnome_dontaudit_read_inherited_gconf_config_files',`
- 	gen_require(`
--		type gnome_home_t, gnome_keyring_home_t;
-+		type gconf_etc_t;
- 	')
- 
--	userdom_search_user_home_dirs($1)
--	read_files_pattern($1, { gnome_home_t gnome_keyring_home_t }, gnome_keyring_home_t)
-+	dontaudit $1 gconf_etc_t:file read_inherited_file_perms;
- ')
- 
- ########################################
- ## <summary>
 -##	Send and receive messages from
 -##	gnome keyring daemon over dbus.
-+##	read gconf config files
++##	Read inherited icc data home files.
  ## </summary>
 -## <param name="role_prefix">
 -##	<summary>
@@ -25572,15 +25543,96 @@ index d03fd43..b000017 100644
  ## </param>
  #
 -interface(`gnome_dbus_chat_gkeyringd',`
-+interface(`gnome_read_gconf_config',`
++interface(`gnome_read_inherited_home_icc_data_files',`
  	gen_require(`
 -		type $1_gkeyringd_t;
 -		class dbus send_msg;
-+		type gconf_etc_t;
++		type icc_data_home_t;
  	')
  
 -	allow $2 $1_gkeyringd_t:dbus send_msg;
 -	allow $1_gkeyringd_t $2:dbus send_msg;
++	allow $1 icc_data_home_t:file read_inherited_file_perms;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Send and receive messages from all
+-##	gnome keyring daemon over dbus.
++##	Create gconf_home_t objects in the /root directory
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
++## <param name="object_class">
++##	<summary>
++##	The class of the object to be created.
++##	</summary>
++## </param>
++## <param name="name" optional="true">
++##	<summary>
++##	The name of the object being created.
++##	</summary>
++## </param>
+ #
+-interface(`gnome_dbus_chat_all_gkeyringd',`
++interface(`gnome_admin_home_gconf_filetrans',`
+ 	gen_require(`
+-		attribute gkeyringd_domain;
+-		class dbus send_msg;
++		type gconf_home_t;
+ 	')
+ 
+-	allow $1 gkeyringd_domain:dbus send_msg;
+-	allow gkeyringd_domain $1:dbus send_msg;
++	userdom_admin_home_dir_filetrans($1, gconf_home_t, $2, $3)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Connect to gnome keyring daemon
+-##	with a unix stream socket.
++##	Do not audit attempts to read
++##	inherited gconf config files.
+ ## </summary>
+-## <param name="role_prefix">
++## <param name="domain">
+ ##	<summary>
+-##	The prefix of the user domain (e.g., user
+-##	is the prefix for user_t).
++##	Domain to not audit.
+ ##	</summary>
+ ## </param>
++#
++interface(`gnome_dontaudit_read_inherited_gconf_config_files',`
++	gen_require(`
++		type gconf_etc_t;
++	')
++
++	dontaudit $1 gconf_etc_t:file read_inherited_file_perms;
++')
++
++########################################
++## <summary>
++##	read gconf config files
++## </summary>
+ ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`gnome_stream_connect_gkeyringd',`
++interface(`gnome_read_gconf_config',`
+ 	gen_require(`
+-		type $1_gkeyringd_t, gnome_keyring_tmp_t;
++		type gconf_etc_t;
+ 	')
+ 
+-	files_search_tmp($2)
+-	stream_connect_pattern($2, gnome_keyring_tmp_t, gnome_keyring_tmp_t, $1_gkeyringd_t)
 +	allow $1 gconf_etc_t:dir list_dir_perms;
 +	read_files_pattern($1, gconf_etc_t, gconf_etc_t)
 +	files_search_etc($1)
@@ -25607,78 +25659,59 @@ index d03fd43..b000017 100644
  
  ########################################
  ## <summary>
--##	Send and receive messages from all
--##	gnome keyring daemon over dbus.
+-##	Connect to all gnome keyring daemon
+-##	with a unix stream socket.
 +##	Execute gconf programs in 
 +##	in the caller domain.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -657,46 +775,36 @@ interface(`gnome_dbus_chat_gkeyringd',`
- ##	</summary>
- ## </param>
- #
--interface(`gnome_dbus_chat_all_gkeyringd',`
-+interface(`gnome_exec_gconf',`
- 	gen_require(`
--		attribute gkeyringd_domain;
--		class dbus send_msg;
-+		type gconfd_exec_t;
- 	')
- 
--	allow $1 gkeyringd_domain:dbus send_msg;
--	allow gkeyringd_domain $1:dbus send_msg;
-+	can_exec($1, gconfd_exec_t)
- ')
- 
- ########################################
- ## <summary>
--##	Connect to gnome keyring daemon
--##	with a unix stream socket.
-+##	Execute gnome keyringd in the caller domain.
- ## </summary>
--## <param name="role_prefix">
--##	<summary>
--##	The prefix of the user domain (e.g., user
--##	is the prefix for user_t).
--##	</summary>
--## </param>
- ## <param name="domain">
- ##	<summary>
- ##	Domain allowed access.
- ##	</summary>
- ## </param>
- #
--interface(`gnome_stream_connect_gkeyringd',`
-+interface(`gnome_exec_keyringd',`
- 	gen_require(`
--		type $1_gkeyringd_t, gnome_keyring_tmp_t;
-+		type gkeyringd_exec_t;
- 	')
- 
--	files_search_tmp($2)
--	stream_connect_pattern($2, gnome_keyring_tmp_t, gnome_keyring_tmp_t, $1_gkeyringd_t)
-+	can_exec($1, gkeyringd_exec_t)
-+	corecmd_search_bin($1)
- ')
- 
- ########################################
- ## <summary>
--##	Connect to all gnome keyring daemon
--##	with a unix stream socket.
-+##	Read gconf home files
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -704,12 +812,774 @@ interface(`gnome_stream_connect_gkeyringd',`
+@@ -704,12 +794,811 @@ interface(`gnome_stream_connect_gkeyringd',`
  ##	</summary>
  ## </param>
  #
 -interface(`gnome_stream_connect_all_gkeyringd',`
-+interface(`gnome_read_gconf_home_files',`
++interface(`gnome_exec_gconf',`
  	gen_require(`
 -		attribute gkeyringd_domain;
 -		type gnome_keyring_tmp_t;
++		type gconfd_exec_t;
++	')
++
++	can_exec($1, gconfd_exec_t)
++')
++
++########################################
++## <summary>
++##	Execute gnome keyringd in the caller domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`gnome_exec_keyringd',`
++	gen_require(`
++		type gkeyringd_exec_t;
++	')
++
++	can_exec($1, gkeyringd_exec_t)
++	corecmd_search_bin($1)
++')
++
++########################################
++## <summary>
++##	Read gconf home files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`gnome_read_gconf_home_files',`
++	gen_require(`
 +		type gconf_home_t;
 +		type data_home_t;
 +	')
@@ -25705,10 +25738,9 @@ index d03fd43..b000017 100644
 +interface(`gnome_search_gkeyringd_tmp_dirs',`
 +	gen_require(`
 +		type gkeyringd_tmp_t;
- 	')
- 
- 	files_search_tmp($1)
--	stream_connect_pattern($1, gnome_keyring_tmp_t, gnome_keyring_tmp_t, gkeyringd_domain)
++	')
++
++	files_search_tmp($1)
 +	allow $1 gkeyringd_tmp_t:dir search_dir_perms;
 +')
 +
@@ -25725,9 +25757,10 @@ index d03fd43..b000017 100644
 +interface(`gnome_list_gkeyringd_tmp_dirs',`
 +	gen_require(`
 +		type gkeyringd_tmp_t;
-+	')
-+
-+	files_search_tmp($1)
+ 	')
+ 
+ 	files_search_tmp($1)
+-	stream_connect_pattern($1, gnome_keyring_tmp_t, gnome_keyring_tmp_t, gkeyringd_domain)
 +	allow $1 gkeyringd_tmp_t:dir list_dir_perms;
 +')
 +
@@ -44014,10 +44047,10 @@ index 0000000..7d11148
 +')
 diff --git a/nova.te b/nova.te
 new file mode 100644
-index 0000000..c3a9a89
+index 0000000..061a689
 --- /dev/null
 +++ b/nova.te
-@@ -0,0 +1,325 @@
+@@ -0,0 +1,329 @@
 +policy_module(nova, 1.0.0)
 +
 +########################################
@@ -44195,6 +44228,10 @@ index 0000000..c3a9a89
 +allow nova_console_t self:udp_socket create_socket_perms;
 +
 +auth_use_nsswitch(nova_console_t)
++
++optional_policy(`
++    mysql_stream_connect(nova_console_t)
++')
 +
 +#######################################
 +#
@@ -62034,7 +62071,7 @@ index afc0068..7616aa4 100644
 +	')
  ')
 diff --git a/quantum.te b/quantum.te
-index 769d1fd..5bbd65f 100644
+index 769d1fd..bf3f16f 100644
 --- a/quantum.te
 +++ b/quantum.te
 @@ -21,6 +21,9 @@ files_tmp_file(quantum_tmp_t)
@@ -62047,11 +62084,12 @@ index 769d1fd..5bbd65f 100644
  ########################################
  #
  # Local policy
-@@ -61,11 +64,12 @@ corenet_tcp_sendrecv_generic_node(quantum_t)
+@@ -61,11 +64,13 @@ corenet_tcp_sendrecv_generic_node(quantum_t)
  corenet_tcp_sendrecv_all_ports(quantum_t)
  corenet_tcp_bind_generic_node(quantum_t)
  
 +corenet_tcp_bind_quantum_port(quantum_t)
++corenet_tcp_connect_keystone_port(quantum_t)
 +corenet_tcp_connect_mysqld_port(quantum_t)
 +
  dev_list_sysfs(quantum_t)
@@ -62062,7 +62100,7 @@ index 769d1fd..5bbd65f 100644
  auth_use_nsswitch(quantum_t)
  
  libs_exec_ldconfig(quantum_t)
-@@ -73,8 +77,6 @@ libs_exec_ldconfig(quantum_t)
+@@ -73,8 +78,6 @@ libs_exec_ldconfig(quantum_t)
  logging_send_audit_msgs(quantum_t)
  logging_send_syslog_msg(quantum_t)
  
@@ -62071,7 +62109,7 @@ index 769d1fd..5bbd65f 100644
  sysnet_domtrans_ifconfig(quantum_t)
  
  optional_policy(`
-@@ -94,3 +96,12 @@ optional_policy(`
+@@ -94,3 +97,12 @@ optional_policy(`
  
  	postgresql_tcp_connect(quantum_t)
  ')
@@ -81934,10 +81972,10 @@ index 0000000..bfcd2c7
 +')
 diff --git a/thumb.te b/thumb.te
 new file mode 100644
-index 0000000..797d761
+index 0000000..4e9dc5e
 --- /dev/null
 +++ b/thumb.te
-@@ -0,0 +1,142 @@
+@@ -0,0 +1,143 @@
 +policy_module(thumb, 1.0.0)
 +
 +########################################
@@ -82060,6 +82098,7 @@ index 0000000..797d761
 +	gnome_manage_gstreamer_home_files(thumb_t)
 +	gnome_manage_gstreamer_home_dirs(thumb_t)
 +	gnome_exec_gstreamer_home_files(thumb_t)
++	gnome_create_generic_cache_dir(thumb_t)
 +	gnome_cache_filetrans(thumb_t, thumb_home_t, dir, "thumbnails")
 +	gnome_cache_filetrans(thumb_t, thumb_home_t, file)
 +')
@@ -84231,10 +84270,24 @@ index 380902c..75545d6 100644
 +	postfix_rw_inherited_master_pipes(uux_t)
 +')
 diff --git a/uuidd.if b/uuidd.if
-index 6e48653..29e3648 100644
+index 6e48653..6abf74a 100644
 --- a/uuidd.if
 +++ b/uuidd.if
-@@ -180,6 +180,9 @@ interface(`uuidd_admin',`
+@@ -148,11 +148,12 @@ interface(`uuidd_read_pid_files',`
+ #
+ interface(`uuidd_stream_connect_manager',`
+ 	gen_require(`
+-		type uuidd_t, uuidd_var_run_t;
++		type uuidd_t, uuidd_var_run_t, uuidd_var_lib_t;
+ 	')
+ 
+ 	files_search_pids($1)
+ 	stream_connect_pattern($1, uuidd_var_run_t, uuidd_var_run_t, uuidd_t)
++	stream_connect_pattern($1, uuidd_var_lib_t, uuidd_var_lib_t, uuidd_t)
+ ')
+ 
+ ########################################
+@@ -180,6 +181,9 @@ interface(`uuidd_admin',`
  
  	allow $1 uuidd_t:process signal_perms;
  	ps_process_pattern($1, uuidd_t)
@@ -86320,7 +86373,7 @@ index 9dec06c..fa2c674 100644
 +	allow svirt_lxc_domain $1:process sigchld;
  ')
 diff --git a/virt.te b/virt.te
-index 1f22fba..64e638c 100644
+index 1f22fba..f42e134 100644
 --- a/virt.te
 +++ b/virt.te
 @@ -1,94 +1,98 @@
@@ -86526,7 +86579,7 @@ index 1f22fba..64e638c 100644
  ifdef(`enable_mcs',`
  	init_ranged_daemon_domain(virtd_t, virtd_exec_t, s0 - mcs_systemhigh)
  ')
-@@ -155,251 +165,82 @@ type virt_qmf_exec_t;
+@@ -155,290 +165,125 @@ type virt_qmf_exec_t;
  init_daemon_domain(virt_qmf_t, virt_qmf_exec_t)
  
  type virt_bridgehelper_t;
@@ -86616,9 +86669,7 @@ index 1f22fba..64e638c 100644
 -append_files_pattern(virt_domain, virt_var_lib_t, virt_var_lib_t)
 -
 -kernel_read_system_state(virt_domain)
-+# it was a part of auth_use_nsswitch
-+allow svirt_t self:netlink_route_socket r_netlink_socket_perms;
- 
+-
 -fs_getattr_xattr_fs(virt_domain)
 -
 -corecmd_exec_bin(virt_domain)
@@ -86736,16 +86787,14 @@ index 1f22fba..64e638c 100644
 -	fs_manage_dos_dirs(virt_domain)
 -	fs_manage_dos_files(virt_domain)
 -')
--
++# it was a part of auth_use_nsswitch
++allow svirt_t self:netlink_route_socket r_netlink_socket_perms;
+ 
 -optional_policy(`
 -	tunable_policy(`virt_use_xserver',`
 -		xserver_read_xdm_pid(virt_domain)
 -		xserver_stream_connect(virt_domain)
 -	')
--')
--
--optional_policy(`
--	dbus_read_lib_files(virt_domain)
 -')
 +corenet_udp_sendrecv_generic_if(svirt_t)
 +corenet_udp_sendrecv_generic_node(svirt_t)
@@ -86756,20 +86805,24 @@ index 1f22fba..64e638c 100644
 +corenet_tcp_connect_all_ports(svirt_t)
  
 -optional_policy(`
--	nscd_use(virt_domain)
+-	dbus_read_lib_files(virt_domain)
 -')
 +miscfiles_read_generic_certs(svirt_t)
  
  optional_policy(`
--	samba_domtrans_smbd(virt_domain)
+-	nscd_use(virt_domain)
 +	xen_rw_image_files(svirt_t)
  ')
  
  optional_policy(`
--	xen_rw_image_files(virt_domain)
+-	samba_domtrans_smbd(virt_domain)
 +	nscd_use(svirt_t)
  ')
  
+-optional_policy(`
+-	xen_rw_image_files(virt_domain)
+-')
+-
 -########################################
 +#######################################
  #
@@ -86787,11 +86840,11 @@ index 1f22fba..64e638c 100644
 -manage_dirs_pattern(svirt_t, svirt_home_t, svirt_home_t)
 -manage_files_pattern(svirt_t, svirt_home_t, svirt_home_t)
 -manage_sock_files_pattern(svirt_t, svirt_home_t, svirt_home_t)
--
--filetrans_pattern(svirt_t, virt_home_t, svirt_home_t, dir, "qemu")
 +allow svirt_tcg_t self:process { execmem execstack };
 +allow svirt_tcg_t self:netlink_route_socket r_netlink_socket_perms;
  
+-filetrans_pattern(svirt_t, virt_home_t, svirt_home_t, dir, "qemu")
+-
 -stream_connect_pattern(svirt_t, svirt_home_t, svirt_home_t, virtd_t)
 -
 -corenet_udp_sendrecv_generic_if(svirt_t)
@@ -86826,15 +86879,16 @@ index 1f22fba..64e638c 100644
  
  ########################################
  #
-@@ -407,38 +248,42 @@ corenet_tcp_connect_all_ports(svirt_t)
+ # virtd local policy
  #
  
- allow virtd_t self:capability { chown dac_override fowner ipc_lock kill mknod net_admin net_raw setpcap setuid setgid sys_admin sys_nice };
+-allow virtd_t self:capability { chown dac_override fowner ipc_lock kill mknod net_admin net_raw setpcap setuid setgid sys_admin sys_nice };
++allow virtd_t self:capability { chown dac_override fowner ipc_lock kill mknod net_admin net_raw setpcap setuid setgid sys_admin sys_nice sys_ptrace };
 +allow virtd_t self:capability2 compromise_kernel;
  allow virtd_t self:process { getcap getsched setcap sigkill signal signull execmem setexec setfscreate setsockcreate setsched };
 +ifdef(`hide_broken_symptoms',`
 +	# caused by some bogus kernel code
-+	dontaudit virtd_t self:capability { sys_module sys_ptrace };
++	dontaudit virtd_t self:capability { sys_module };
 +')
 +
  allow virtd_t self:fifo_file { manage_fifo_file_perms relabelfrom relabelto };

@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 30%{?dist}
+Release: 31%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -526,6 +526,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Apr 16 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-31
+- Fix description of deny_ptrace boolean
+- Remove allow for execmod lib_t for now
+- Allow quantum to connect to keystone port
+- Allow nova-console to talk with mysql over unix stream socket
+- Allow dirsrv to stream connect to uuidd
+- thumb_t needs to be able to create ~/.cache if it does not exist
+- virtd needs to be able to sys_ptrace when starting and stoping containers
+
 * Mon Apr 15 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-30
 - Allow alsa_t signal_perms, we probaly should search for any app that can execute something without transition and give it signal_perms...
 - Add dontaudit for mozilla_plugin_t looking at the xdm_t sockets
