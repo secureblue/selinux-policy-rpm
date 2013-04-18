@@ -1714,10 +1714,10 @@ index 0000000..a95a4ad
 +')
 +
 diff --git a/alsa.fc b/alsa.fc
-index 5de1e01..3aa9abb 100644
+index 5de1e01..e5ab7ff 100644
 --- a/alsa.fc
 +++ b/alsa.fc
-@@ -19,4 +19,6 @@ HOME_DIR/\.asoundrc	--	gen_context(system_u:object_r:alsa_home_t,s0)
+@@ -19,4 +19,8 @@ HOME_DIR/\.asoundrc	--	gen_context(system_u:object_r:alsa_home_t,s0)
  /usr/share/alsa/alsa\.conf	gen_context(system_u:object_r:alsa_etc_rw_t,s0)
  /usr/share/alsa/pcm(/.*)?	gen_context(system_u:object_r:alsa_etc_rw_t,s0)
  
@@ -1725,6 +1725,8 @@ index 5de1e01..3aa9abb 100644
 +/var/lib/alsa(/.*)?		gen_context(system_u:object_r:alsa_var_lib_t,s0)
 +
 +/usr/lib/systemd/system/alsa.*  --              gen_context(system_u:object_r:alsa_unit_file_t,s0)
++
++/var/run/alsactl\.pid		--	gen_context(system_u:object_r:alsa_var_run_t,s0)
 diff --git a/alsa.if b/alsa.if
 index 708b743..c2edd9a 100644
 --- a/alsa.if
@@ -1817,10 +1819,16 @@ index 708b743..c2edd9a 100644
 +	ps_process_pattern($1, alsa_t)
 +')
 diff --git a/alsa.te b/alsa.te
-index cda6d20..32d74d1 100644
+index cda6d20..89f2161 100644
 --- a/alsa.te
 +++ b/alsa.te
-@@ -24,6 +24,9 @@ files_type(alsa_var_lib_t)
+@@ -21,9 +21,15 @@ files_tmp_file(alsa_tmp_t)
+ type alsa_var_lib_t;
+ files_type(alsa_var_lib_t)
+ 
++type alsa_var_run_t;
++files_pid_file(alsa_var_run_t)
++
  type alsa_home_t;
  userdom_user_home_content(alsa_home_t)
  
@@ -1830,15 +1838,27 @@ index cda6d20..32d74d1 100644
  ########################################
  #
  # Local policy
-@@ -31,6 +34,7 @@ userdom_user_home_content(alsa_home_t)
+@@ -31,6 +37,7 @@ userdom_user_home_content(alsa_home_t)
  
  allow alsa_t self:capability { dac_read_search dac_override setgid setuid ipc_owner };
  dontaudit alsa_t self:capability sys_admin;
-+allow alsa_t self:process signal_perms;
++allow alsa_t self:process { getsched setsched signal_perms };
  allow alsa_t self:sem create_sem_perms;
  allow alsa_t self:shm create_shm_perms;
  allow alsa_t self:unix_stream_socket { accept listen };
-@@ -59,7 +63,6 @@ dev_read_sound(alsa_t)
+@@ -51,6 +58,11 @@ userdom_user_tmp_filetrans(alsa_t, alsa_tmp_t, { dir file })
+ manage_dirs_pattern(alsa_t, alsa_var_lib_t, alsa_var_lib_t)
+ manage_files_pattern(alsa_t, alsa_var_lib_t, alsa_var_lib_t)
+ 
++manage_files_pattern(alsa_t, alsa_var_run_t, alsa_var_run_t)
++manage_dirs_pattern(alsa_t, alsa_var_run_t, alsa_var_run_t)
++manage_lnk_files_pattern(alsa_t, alsa_var_run_t, alsa_var_run_t)
++files_pid_filetrans(alsa_t, alsa_var_run_t, { file dir })
++
+ kernel_read_system_state(alsa_t)
+ 
+ corecmd_exec_bin(alsa_t)
+@@ -59,7 +71,6 @@ dev_read_sound(alsa_t)
  dev_read_sysfs(alsa_t)
  dev_write_sound(alsa_t)
  
@@ -1846,7 +1866,7 @@ index cda6d20..32d74d1 100644
  files_search_var_lib(alsa_t)
  
  term_dontaudit_use_console(alsa_t)
-@@ -72,8 +75,6 @@ init_use_fds(alsa_t)
+@@ -72,8 +83,6 @@ init_use_fds(alsa_t)
  
  logging_send_syslog_msg(alsa_t)
  
@@ -50403,7 +50423,7 @@ index 43d50f9..7f77d32 100644
  
  ########################################
 diff --git a/pcscd.te b/pcscd.te
-index 96db654..d23cd25 100644
+index 96db654..ff3aadd 100644
 --- a/pcscd.te
 +++ b/pcscd.te
 @@ -24,8 +24,9 @@ init_daemon_run_dir(pcscd_var_run_t, "pcscd")
@@ -50443,6 +50463,14 @@ index 96db654..d23cd25 100644
  sysnet_dns_name_resolve(pcscd_t)
  
  optional_policy(`
+@@ -85,3 +82,7 @@ optional_policy(`
+ optional_policy(`
+ 	udev_read_db(pcscd_t)
+ ')
++
++optional_policy(`
++	virt_rw_svirt_dev(pcscd_t)
++')
 diff --git a/pegasus.fc b/pegasus.fc
 index dfd46e4..9515043 100644
 --- a/pegasus.fc
@@ -63626,14 +63654,16 @@ index f1512d6..93f1ee6 100644
  userdom_dontaudit_search_user_home_dirs(readahead_t)
  
 diff --git a/realmd.fc b/realmd.fc
-index 04babe3..02a1f34 100644
+index 04babe3..3b92679 100644
 --- a/realmd.fc
 +++ b/realmd.fc
-@@ -1 +1,3 @@
+@@ -1 +1,5 @@
 -/usr/lib/realmd/realmd	--	gen_context(system_u:object_r:realmd_exec_t,s0)
 +/usr/lib/realmd/realmd		--	gen_context(system_u:object_r:realmd_exec_t,s0)
 +
 +/var/cache/realmd(/.*)?			gen_context(system_u:object_r:realmd_var_cache_t,s0)
++
++/var/lib/ipa-client(/.*)?		gen_context(system_u:object_r:realmd_var_lib_t,s0)
 diff --git a/realmd.if b/realmd.if
 index bff31df..e38693b 100644
 --- a/realmd.if
@@ -63651,7 +63681,7 @@ index bff31df..e38693b 100644
  ## <param name="domain">
  ## <summary>
 diff --git a/realmd.te b/realmd.te
-index 9a8f052..cffb3ca 100644
+index 9a8f052..1d63c74 100644
 --- a/realmd.te
 +++ b/realmd.te
 @@ -1,4 +1,4 @@
@@ -63660,7 +63690,7 @@ index 9a8f052..cffb3ca 100644
  
  ########################################
  #
-@@ -7,29 +7,38 @@ policy_module(realmd, 1.0.2)
+@@ -7,43 +7,78 @@ policy_module(realmd, 1.0.2)
  
  type realmd_t;
  type realmd_exec_t;
@@ -63673,6 +63703,9 @@ index 9a8f052..cffb3ca 100644
 +
 +type realmd_var_cache_t;
 +files_type(realmd_var_cache_t)
++
++type realmd_var_lib_t;
++files_type(realmd_var_lib_t)
  
  ########################################
  #
@@ -63680,9 +63713,12 @@ index 9a8f052..cffb3ca 100644
 +# realmd local policy
  #
  
- allow realmd_t self:capability sys_nice;
+-allow realmd_t self:capability sys_nice;
++allow realmd_t self:capability { sys_nice };
++allow realmd_t self:capability2 block_suspend;
  allow realmd_t self:process setsched;
- 
++allow realmd_t self:key manage_key_perms;
++
 +manage_dirs_pattern(realmd_t, realmd_tmp_t, realmd_tmp_t)
 +manage_files_pattern(realmd_t, realmd_tmp_t, realmd_tmp_t)
 +files_tmp_filetrans(realmd_t, realmd_tmp_t, { dir file })
@@ -63690,7 +63726,12 @@ index 9a8f052..cffb3ca 100644
 +manage_files_pattern(realmd_t, realmd_var_cache_t, realmd_var_cache_t)
 +manage_dirs_pattern(realmd_t, realmd_var_cache_t, realmd_var_cache_t)
 +
++manage_dirs_pattern(realmd_t, realmd_var_lib_t, realmd_var_lib_t)
++manage_files_pattern(realmd_t, realmd_var_lib_t, realmd_var_lib_t)
++files_var_lib_filetrans(realmd_t, realmd_var_lib_t, dir)
+ 
  kernel_read_system_state(realmd_t)
++kernel_read_network_state(realmd_t)
  
  corecmd_exec_bin(realmd_t)
  corecmd_exec_shell(realmd_t)
@@ -63708,16 +63749,25 @@ index 9a8f052..cffb3ca 100644
  
  domain_use_interactive_fds(realmd_t)
  
-@@ -38,12 +47,20 @@ dev_read_urand(realmd_t)
+ dev_read_rand(realmd_t)
+ dev_read_urand(realmd_t)
  
- fs_getattr_all_fs(realmd_t)
+-fs_getattr_all_fs(realmd_t)
++files_manage_etc_files(realmd_t)
  
 -files_read_usr_files(realmd_t)
--
++fs_getattr_all_fs(realmd_t)
+ 
  auth_use_nsswitch(realmd_t)
  
++logging_manage_generic_logs(realmd_t)
  logging_send_syslog_msg(realmd_t)
  
++miscfiles_manage_generic_cert_files(realmd_t)
++
++seutil_domtrans_setfiles(realmd_t)
++seutil_read_file_contexts(realmd_t)
++
 +sysnet_dns_name_resolve(realmd_t)
 +systemd_exec_systemctl(realmd_t)
 +
@@ -63731,7 +63781,22 @@ index 9a8f052..cffb3ca 100644
  optional_policy(`
  	dbus_system_domain(realmd_t, realmd_exec_t)
  
-@@ -67,17 +84,25 @@ optional_policy(`
+@@ -63,21 +98,40 @@ optional_policy(`
+ optional_policy(`
+ 	kerberos_use(realmd_t)
+ 	kerberos_rw_keytab(realmd_t)
++	kerberos_rw_config(realmd_t)
++	kerberos_filetrans_named_content(realmd_t)
++')
++
++optional_policy(`
++	ntp_domtrans_ntpdate(realmd_t)
++')
++
++optional_policy(`
++	ssh_domtrans(realmd_t)
++	ssh_systemctl(realmd_t)
+ ')
  
  optional_policy(`
  	nis_exec_ypbind(realmd_t)
@@ -63760,7 +63825,7 @@ index 9a8f052..cffb3ca 100644
  ')
  
  optional_policy(`
-@@ -86,5 +111,26 @@ optional_policy(`
+@@ -86,5 +140,27 @@ optional_policy(`
  	sssd_manage_lib_files(realmd_t)
  	sssd_manage_public_files(realmd_t)
  	sssd_read_pid_files(realmd_t)
@@ -63772,11 +63837,14 @@ index 9a8f052..cffb3ca 100644
 +	xserver_read_state_xdm(realmd_t)
 +')
 +
++optional_policy(`
++	unconfined_domain(realmd_t)
++')
++
 +#####################################
 +#
 +# realmd consolehelper local policy
 +#
-+
 +
 +optional_policy(`
 +    userhelper_console_role_template(realmd, system_r, realmd_t)
@@ -63786,8 +63854,6 @@ index 9a8f052..cffb3ca 100644
 +
 +	unconfined_domain_noaudit(realmd_consolehelper_t)
  ')
-+	
-+
 diff --git a/remotelogin.fc b/remotelogin.fc
 index 327baf0..d8691bd 100644
 --- a/remotelogin.fc
@@ -72337,10 +72403,10 @@ index 0000000..577dfa7
 +')
 diff --git a/sandbox.te b/sandbox.te
 new file mode 100644
-index 0000000..3fc69d5
+index 0000000..b12aada
 --- /dev/null
 +++ b/sandbox.te
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,62 @@
 +policy_module(sandbox,1.0.0)
 +
 +attribute sandbox_domain;
@@ -72400,12 +72466,9 @@ index 0000000..3fc69d5
 +
 +fs_dontaudit_getattr_all_fs(sandbox_domain)
 +
-+
-+userdom_dontaudit_use_user_terminals(sandbox_domain)
++userdom_use_inherited_user_terminals(sandbox_domain)
 +
 +mta_dontaudit_read_spool_symlinks(sandbox_domain)
-+
-+
 diff --git a/sandboxX.fc b/sandboxX.fc
 new file mode 100644
 index 0000000..6caef63
@@ -72813,7 +72876,7 @@ index 0000000..1b21b7b
 +')
 diff --git a/sandboxX.te b/sandboxX.te
 new file mode 100644
-index 0000000..5a3d049
+index 0000000..81198c3
 --- /dev/null
 +++ b/sandboxX.te
 @@ -0,0 +1,463 @@
@@ -73062,7 +73125,7 @@ index 0000000..5a3d049
 +	udev_read_db(sandbox_x_domain)
 +')
 +
-+userdom_dontaudit_use_user_terminals(sandbox_x_domain)
++userdom_use_inherited_user_terminals(sandbox_x_domain)
 +userdom_read_user_home_content_symlinks(sandbox_x_domain)
 +userdom_search_user_home_content(sandbox_x_domain)
 +userdom_dontaudit_rw_user_tmp_pipes(sandbox_x_domain)
@@ -84742,7 +84805,7 @@ index c30da4c..014e40c 100644
 +/var/run/qemu-ga\.pid           --      gen_context(system_u:object_r:virt_qemu_ga_var_run_t,s0)
 +/var/log/qemu-ga\.log           --      gen_context(system_u:object_r:virt_qemu_ga_log_t,s0)
 diff --git a/virt.if b/virt.if
-index 9dec06c..fa2c674 100644
+index 9dec06c..a202ead 100644
 --- a/virt.if
 +++ b/virt.if
 @@ -1,120 +1,51 @@
@@ -86162,7 +86225,7 @@ index 9dec06c..fa2c674 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1091,95 +961,150 @@ interface(`virt_manage_virt_cache',`
+@@ -1091,95 +961,168 @@ interface(`virt_manage_virt_cache',`
  ##	</summary>
  ## </param>
  #
@@ -86361,16 +86424,34 @@ index 9dec06c..fa2c674 100644
 +	gen_require(`
 +		attribute svirt_lxc_domain;
 +	')
- 
--	files_search_locks($1)
--	admin_pattern($1, virt_lock_t)
++
 +	allow $1 svirt_lxc_domain:process transition;
 +	role $2 types svirt_lxc_domain;
 +	allow $1 svirt_lxc_domain:unix_dgram_socket sendto;
++
++	allow svirt_lxc_domain $1:process sigchld;
++')
+ 
+-	files_search_locks($1)
+-	admin_pattern($1, virt_lock_t)
++########################################
++## <summary>
++##	Read and write to svirt_image devices.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`virt_rw_svirt_dev',`
++	gen_require(`
++		type svirt_image_t;
++	')
  
 -	dev_list_all_dev_nodes($1)
 -	allow $1 virt_ptynode:chr_file rw_term_perms;
-+	allow svirt_lxc_domain $1:process sigchld;
++	allow $1 svirt_image_t:chr_file rw_file_perms;
  ')
 diff --git a/virt.te b/virt.te
 index 1f22fba..f42e134 100644

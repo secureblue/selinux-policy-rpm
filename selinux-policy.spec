@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 31%{?dist}
+Release: 32%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -526,6 +526,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Apr 17 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-32
+- Allow realmd to run ipa, really needs to be an unconfined_domain
+- Allow sandbox domains to use inherted terminals
+- Allow pscd to use devices labeled svirt_image_t in order to use cat cards.
+- Add label for new alsa pid
+- Alsa now uses a pid file and needs to setsched 
+- Fix oracleasmfs_t definition
+- Add support for sshd_unit_file_t
+- Add oracleasmfs_t
+- Allow unlabeled_t files to be stored on unlabeled_t filesystems
+
 * Tue Apr 16 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-31
 - Fix description of deny_ptrace boolean
 - Remove allow for execmod lib_t for now
