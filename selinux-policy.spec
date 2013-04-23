@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 32%{?dist}
+Release: 35%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -229,8 +229,12 @@ if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      /sbin/fixfiles -C ${FILE_CONTEXT}.pre restore 2> /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
 fi; \
-/sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null; \
-/sbin/restorecon -R /home/*/.cache /home/*/.config 2> /dev/null; \
+if /sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null;then \
+    continue; \
+fi; \
+if /sbin/restorecon -R /home/*/.cache /home/*/.config 2> /dev/null;then \
+    continue; \
+fi;
 
 %define preInstall() \
 if [ $1 -ne 1 ] && [ -s /etc/selinux/config ]; then \
@@ -526,6 +530,41 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Apr 23 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-35
+- Fix lockdev_manage_files()
+- Allow setroubleshootd to read var_lib_t to make email_alert working
+- Add lockdev_manage_files()
+- Call proper interface in virt.te
+- Allow gkeyring_domain to create /var/run/UID/config/dbus file
+- system dbus seems to be blocking suspend
+- Dontaudit attemps to sys_ptrace, which I believe gpsd does not need
+- When you enter a container from root, you generate avcs with a leaked file descriptor
+- Allow mpd getattr on file system directories
+- Make sure realmd creates content with the correct label
+- Allow systemd-tty-ask to write kmsg
+- Allow mgetty to use lockdev library for device locking
+- Fix selinuxuser_user_share_music boolean name to selinuxuser_share_music
+- When you enter a container from root, you generate avcs with a leaked file descriptor
+- Make sure init.fc files are labeled correctly at creation
+- File name trans vconsole.conf
+- Fix labeling for nagios plugins
+- label shared libraries in /opt/google/chrome as testrel_shlib_t
+
+* Thu Apr 18 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-34
+- Allow certmonger to dbus communicate with realmd 
+- Make realmd working
+
+* Thu Apr 18 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-33
+- Fix mozilla specification of homedir content
+- Allow certmonger to read network state
+- Allow tmpwatch to read tmp in /var/spool/{cups,lpd}
+- Label all nagios plugin as unconfined by default
+- Add httpd_serve_cobbler_files()
+- Allow mdadm to read /dev/sr0 and create tmp files
+- Allow certwatch to send mails
+- Fix labeling for nagios plugins
+- label shared libraries in /opt/google/chrome as testrel_shlib_t
+
 * Wed Apr 17 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-32
 - Allow realmd to run ipa, really needs to be an unconfined_domain
 - Allow sandbox domains to use inherted terminals
