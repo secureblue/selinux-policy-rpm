@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 35%{?dist}
+Release: 37%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -530,6 +530,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Apr 26 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-37
+- Allow lvm to create its own unit files
+- Label /var/lib/sepolgen as selinux_config_t
+- Add filetrans rules for tw devices
+- Add transition from cupsd_config_t to cupsd_t
+
+* Wed Apr 24 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-36
+- Add filetrans rules for tw devices
+- Cleanup bad transition lines
+
 * Tue Apr 23 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-35
 - Fix lockdev_manage_files()
 - Allow setroubleshootd to read var_lib_t to make email_alert working
