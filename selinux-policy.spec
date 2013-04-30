@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 37%{?dist}
+Release: 38%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -530,6 +530,29 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Apr 30 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-38
+- Allow thumbnails to share memory with apps which run thumbnails
+- Allow postfix-postqueue block_suspend
+- Add lib interfaces for smsd
+- Add support for nginx
+- Allow s2s running as jabberd_t to connect to jabber_interserver_port_t
+- Allow pki apache domain to create own tmp files and execute httpd_suexec
+- Allow procmail to manger user tmp files/dirs/lnk_files
+- Add virt_stream_connect_svirt() interface
+- Allow dovecot-auth to execute bin_t
+- Allow iscsid to request that kernel load a kernel module
+- Add labeling support for /var/lib/mod_security
+- Allow iw running as tuned_t to create netlink socket
+- Dontaudit sys_tty_config for thumb_t
+- Add labeling for nm-l2tp-service
+- Allow httpd running as certwatch_t to open tcp socket
+- Allow useradd to manager smsd lib files
+- Allow useradd_t to add homedirs in /var/lib
+- Fix typo in userdomain.te
+- Cleanup userdom_read_home_certs
+- Implement userdom_home_reader_certs_type to allow read certs also on encrypt /home with ecryptfs_t
+- Allow staff to stream connect to svirt_t to make gnome-boxes working
+
 * Fri Apr 26 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-37
 - Allow lvm to create its own unit files
 - Label /var/lib/sepolgen as selinux_config_t

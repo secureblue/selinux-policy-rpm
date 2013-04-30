@@ -2367,7 +2367,7 @@ index 99e3903..7270808 100644
  
  ########################################
 diff --git a/policy/modules/admin/usermanage.te b/policy/modules/admin/usermanage.te
-index d555767..fdd0567 100644
+index d555767..4165b4d 100644
 --- a/policy/modules/admin/usermanage.te
 +++ b/policy/modules/admin/usermanage.te
 @@ -5,18 +5,18 @@ policy_module(usermanage, 1.18.1)
@@ -2653,13 +2653,13 @@ index d555767..fdd0567 100644
  # on user home dir
  userdom_dontaudit_search_user_home_content(passwd_t)
 +userdom_stream_connect(passwd_t)
-+
-+optional_policy(`
-+	gnome_exec_keyringd(passwd_t)
-+')
  
  optional_policy(`
 -	nscd_run(passwd_t, passwd_roles)
++	gnome_exec_keyringd(passwd_t)
++')
++
++optional_policy(`
 +	#nscd_run(passwd_t, passwd_roles)
 +	nscd_domtrans(passwd_t)
  ')
@@ -2729,7 +2729,7 @@ index d555767..fdd0567 100644
  # for getting the number of groups
  kernel_read_kernel_sysctls(useradd_t)
  
-@@ -465,36 +513,35 @@ corecmd_exec_shell(useradd_t)
+@@ -465,36 +513,36 @@ corecmd_exec_shell(useradd_t)
  # Execute /usr/bin/{passwd,chfn,chsh} and /usr/sbin/{useradd,vipw}.
  corecmd_exec_bin(useradd_t)
  
@@ -2745,6 +2745,7 @@ index d555767..fdd0567 100644
  files_relabel_etc_files(useradd_t)
  files_read_etc_runtime_files(useradd_t)
 +files_manage_etc_files(useradd_t)
++files_rw_var_lib_dirs(useradd_t)
  
  fs_search_auto_mountpoints(useradd_t)
  fs_getattr_xattr_fs(useradd_t)
@@ -2777,7 +2778,7 @@ index d555767..fdd0567 100644
  auth_manage_shadow(useradd_t)
  auth_relabel_shadow(useradd_t)
  auth_etc_filetrans_shadow(useradd_t)
-@@ -505,33 +552,36 @@ init_rw_utmp(useradd_t)
+@@ -505,33 +553,36 @@ init_rw_utmp(useradd_t)
  logging_send_audit_msgs(useradd_t)
  logging_send_syslog_msg(useradd_t)
  
@@ -2828,7 +2829,7 @@ index d555767..fdd0567 100644
  optional_policy(`
  	apache_manage_all_user_content(useradd_t)
  ')
-@@ -542,7 +592,8 @@ optional_policy(`
+@@ -542,7 +593,8 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -2838,7 +2839,7 @@ index d555767..fdd0567 100644
  ')
  
  optional_policy(`
-@@ -550,6 +601,11 @@ optional_policy(`
+@@ -550,6 +602,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -2850,10 +2851,15 @@ index d555767..fdd0567 100644
  	tunable_policy(`samba_domain_controller',`
  		samba_append_log(useradd_t)
  	')
-@@ -559,3 +615,7 @@ optional_policy(`
+@@ -559,3 +616,12 @@ optional_policy(`
  	rpm_use_fds(useradd_t)
  	rpm_rw_pipes(useradd_t)
  ')
++
++optional_policy(`
++    smsd_manage_lib_files(useradd_t)
++    smsd_manage_lib_dirs(useradd_t)
++')
 +
 +optional_policy(`
 +	stapserver_manage_lib(useradd_t)
@@ -18190,7 +18196,7 @@ index 234a940..d340f20 100644
  ########################################
  ## <summary>
 diff --git a/policy/modules/roles/staff.te b/policy/modules/roles/staff.te
-index 5da7870..b66bc2a 100644
+index 5da7870..8bd910a 100644
 --- a/policy/modules/roles/staff.te
 +++ b/policy/modules/roles/staff.te
 @@ -8,12 +8,67 @@ policy_module(staff, 2.3.1)
@@ -18510,7 +18516,7 @@ index 5da7870..b66bc2a 100644
  		spamassassin_role(staff_r, staff_t)
  	')
  
-@@ -176,3 +363,20 @@ ifndef(`distro_redhat',`
+@@ -176,3 +363,21 @@ ifndef(`distro_redhat',`
  		wireshark_role(staff_r, staff_t)
  	')
  ')
@@ -18529,6 +18535,7 @@ index 5da7870..b66bc2a 100644
 +		allow staff_t self:fifo_file relabelfrom;
 +		dev_rw_kvm(staff_t)
 +		virt_manage_images(staff_t)
++        virt_stream_connect_svirt(staff_t)
 +	')
 +')
 diff --git a/policy/modules/roles/sysadm.if b/policy/modules/roles/sysadm.if
@@ -39203,7 +39210,7 @@ index db75976..65191bd 100644
 +
 +/var/run/user(/.*)?	gen_context(system_u:object_r:user_tmp_t,s0)
 diff --git a/policy/modules/system/userdomain.if b/policy/modules/system/userdomain.if
-index 3c5dba7..b44b1c9 100644
+index 3c5dba7..df7407b 100644
 --- a/policy/modules/system/userdomain.if
 +++ b/policy/modules/system/userdomain.if
 @@ -30,9 +30,11 @@ template(`userdom_base_user_template',`
@@ -41870,7 +41877,7 @@ index 3c5dba7..b44b1c9 100644
  ##	Create keys for all user domains.
  ## </summary>
  ## <param name="domain">
-@@ -3438,4 +4197,1393 @@ interface(`userdom_dbus_send_all_users',`
+@@ -3438,4 +4197,1390 @@ interface(`userdom_dbus_send_all_users',`
  	')
  
  	allow $1 userdomain:dbus send_msg;
@@ -42687,13 +42694,10 @@ index 3c5dba7..b44b1c9 100644
 +#
 +interface(`userdom_read_home_certs',`
 +	gen_require(`
-+		type home_cert_t;
++        attribute userdom_home_reader_certs_type;
 +	')
 +
-+	userdom_search_user_home_content($1)
-+	allow $1 home_cert_t:dir list_dir_perms;
-+	read_files_pattern($1, home_cert_t, home_cert_t)
-+	read_lnk_files_pattern($1, home_cert_t, home_cert_t)
++    typeattribute $1 userdom_home_reader_certs_type;
 +')
 +
 +########################################
@@ -43265,7 +43269,7 @@ index 3c5dba7..b44b1c9 100644
 +	filetrans_pattern($1, user_tmpfs_t, $2, $3, $4)
  ')
 diff --git a/policy/modules/system/userdomain.te b/policy/modules/system/userdomain.te
-index e2b538b..9e23738 100644
+index e2b538b..2582882 100644
 --- a/policy/modules/system/userdomain.te
 +++ b/policy/modules/system/userdomain.te
 @@ -7,48 +7,42 @@ policy_module(userdomain, 4.8.5)
@@ -43290,36 +43294,36 @@ index e2b538b..9e23738 100644
  ## <desc>
  ## <p>
 -## Allow regular users direct mouse access
+-## </p>
+-## </desc>
+-gen_tunable(user_direct_mouse, false)
+-
+-## <desc>
+-## <p>
+-## Allow users to read system messages.
 +## Allow user to r/w files on filesystems
 +## that do not have extended attributes (FAT, CDROM, FLOPPY)
  ## </p>
  ## </desc>
--gen_tunable(user_direct_mouse, false)
-+gen_tunable(selinuxuser_rw_noexattrfile, false)
- 
- ## <desc>
- ## <p>
--## Allow users to read system messages.
-+## Allow user music sharing
- ## </p>
- ## </desc>
 -gen_tunable(user_dmesg, false)
-+gen_tunable(selinuxuser_share_music, false)
++gen_tunable(selinuxuser_rw_noexattrfile, false)
  
  ## <desc>
  ## <p>
 -## Allow user to r/w files on filesystems
 -## that do not have extended attributes (FAT, CDROM, FLOPPY)
-+## Allow user  to use ssh chroot environment.
++## Allow user music sharing
  ## </p>
  ## </desc>
 -gen_tunable(user_rw_noexattrfile, false)
--
--## <desc>
--## <p>
++gen_tunable(selinuxuser_share_music, false)
+ 
+ ## <desc>
+ ## <p>
 -## Allow w to display everyone
--## </p>
--## </desc>
++## Allow user  to use ssh chroot environment.
+ ## </p>
+ ## </desc>
 -gen_tunable(user_ttyfile_stat, false)
 +gen_tunable(selinuxuser_use_ssh_chroot, false)
  
@@ -43328,10 +43332,11 @@ index e2b538b..9e23738 100644
  
  # all user domains
  attribute userdomain;
-@@ -58,6 +52,23 @@ attribute unpriv_userdomain;
+@@ -58,6 +52,24 @@ attribute unpriv_userdomain;
  
  attribute user_home_content_type;
  
++attribute userdom_home_reader_certs_type;
 +attribute userdom_home_reader_type;
 +attribute userdom_home_manager_type;
 +attribute userdom_filetrans_type;
@@ -43352,7 +43357,7 @@ index e2b538b..9e23738 100644
  type user_home_dir_t alias { staff_home_dir_t sysadm_home_dir_t secadm_home_dir_t auditadm_home_dir_t unconfined_home_dir_t };
  fs_associate_tmpfs(user_home_dir_t)
  files_type(user_home_dir_t)
-@@ -70,26 +81,207 @@ ubac_constrained(user_home_dir_t)
+@@ -70,26 +82,218 @@ ubac_constrained(user_home_dir_t)
  
  type user_home_t alias { staff_home_t sysadm_home_t secadm_home_t auditadm_home_t unconfined_home_t };
  typealias user_home_t alias { staff_untrusted_content_t sysadm_untrusted_content_t secadm_untrusted_content_t auditadm_untrusted_content_t unconfined_untrusted_content_t };
@@ -43434,6 +43439,17 @@ index e2b538b..9e23738 100644
 +
 +optional_policy(`
 +	xserver_filetrans_home_content(userdomain)
++')
++
++
++# rules for types which can read home certs
++allow userdom_home_reader_certs_type home_cert_t:dir list_dir_perms;
++read_files_pattern(userdom_home_reader_certs_type, home_cert_t, home_cert_t)
++read_lnk_files_pattern(userdom_home_reader_certs_type, home_cert_t, home_cert_t)
++userdom_search_user_home_content(userdom_home_reader_certs_type)
++
++tunable_policy(`use_ecryptfs_home_dirs',`
++    fs_read_ecryptfs_files(userdom_home_reader_certs_type)
 +')
 +
 +tunable_policy(`use_nfs_home_dirs',`
