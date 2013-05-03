@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 38%{?dist}
+Release: 39%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -530,6 +530,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri May 3 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-39
+- Allow tcpd to execute leafnode
+- Allow samba-net to read realmd cache files
+- Dontaudit sys_tty_config for alsactl
+- Fix allow rules for postfix_var_run
+- Allow cobblerd to read /etc/passwd
+- Allow pegasus to read exports
+- Allow systemd-timedate to read xdm state
+- Allow mout to stream connect to rpcbind
+- Add labeling just for /usr/share/pki/ca-trust-source instead of /usr/share/pki
+
 * Tue Apr 30 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-38
 - Allow thumbnails to share memory with apps which run thumbnails
 - Allow postfix-postqueue block_suspend

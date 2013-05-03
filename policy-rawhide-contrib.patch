@@ -1819,10 +1819,10 @@ index 708b743..c2edd9a 100644
 +	ps_process_pattern($1, alsa_t)
 +')
 diff --git a/alsa.te b/alsa.te
-index cda6d20..89f2161 100644
+index cda6d20..fbe259e 100644
 --- a/alsa.te
 +++ b/alsa.te
-@@ -21,9 +21,15 @@ files_tmp_file(alsa_tmp_t)
+@@ -21,16 +21,23 @@ files_tmp_file(alsa_tmp_t)
  type alsa_var_lib_t;
  files_type(alsa_var_lib_t)
  
@@ -1838,10 +1838,11 @@ index cda6d20..89f2161 100644
  ########################################
  #
  # Local policy
-@@ -31,6 +37,7 @@ userdom_user_home_content(alsa_home_t)
+ #
  
  allow alsa_t self:capability { dac_read_search dac_override setgid setuid ipc_owner };
- dontaudit alsa_t self:capability sys_admin;
+-dontaudit alsa_t self:capability sys_admin;
++dontaudit alsa_t self:capability { sys_tty_config sys_admin };
 +allow alsa_t self:process { getsched setsched signal_perms };
  allow alsa_t self:sem create_sem_perms;
  allow alsa_t self:shm create_shm_perms;
@@ -11646,7 +11647,7 @@ index c223f81..83d5104 100644
 -	admin_pattern($1, { httpd_cobbler_content_t httpd_cobbler_content_ra_t httpd_cobbler_content_rw_t })
  ')
 diff --git a/cobbler.te b/cobbler.te
-index 2a71346..bf24fca 100644
+index 2a71346..b3ad8cb 100644
 --- a/cobbler.te
 +++ b/cobbler.te
 @@ -81,6 +81,7 @@ manage_dirs_pattern(cobblerd_t, cobbler_var_lib_t, cobbler_var_lib_t)
@@ -11667,7 +11668,16 @@ index 2a71346..bf24fca 100644
  
  fs_getattr_all_fs(cobblerd_t)
  fs_read_iso9660_files(cobblerd_t)
-@@ -193,12 +192,11 @@ optional_policy(`
+@@ -128,6 +127,8 @@ selinux_get_enforce_mode(cobblerd_t)
+ 
+ term_use_console(cobblerd_t)
+ 
++auth_read_passwd(cobblerd_t)
++
+ logging_send_syslog_msg(cobblerd_t)
+ 
+ miscfiles_read_localization(cobblerd_t)
+@@ -193,12 +194,11 @@ optional_policy(`
  
  optional_policy(`
  	rsync_read_config(cobblerd_t)
@@ -50742,7 +50752,7 @@ index d2fc677..22b745a 100644
 +	logging_send_syslog_msg(pegasus_openlmi_$1_t)
  ')
 diff --git a/pegasus.te b/pegasus.te
-index 7bcf327..78d251c 100644
+index 7bcf327..36032a6 100644
 --- a/pegasus.te
 +++ b/pegasus.te
 @@ -1,17 +1,16 @@
@@ -50908,7 +50918,7 @@ index 7bcf327..78d251c 100644
  ')
  
  optional_policy(`
-@@ -151,16 +165,15 @@ optional_policy(`
+@@ -151,16 +165,19 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -50918,17 +50928,21 @@ index 7bcf327..78d251c 100644
  
  optional_policy(`
 -	samba_manage_config(pegasus_t)
-+	rpm_exec(pegasus_t)
++    rpc_read_exports(pegasus_t)
  ')
  
  optional_policy(`
 -	seutil_sigchld_newrole(pegasus_t)
 -	seutil_dontaudit_read_config(pegasus_t)
++	rpm_exec(pegasus_t)
++')
++
++optional_policy(`
 +	samba_manage_config(pegasus_t)
  ')
  
  optional_policy(`
-@@ -168,7 +181,7 @@ optional_policy(`
+@@ -168,7 +185,7 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -55178,7 +55192,7 @@ index 2e23946..589bbf2 100644
 +	postfix_config_filetrans($1, postfix_prng_t, file, "prng_exch")
  ')
 diff --git a/postfix.te b/postfix.te
-index 191a66f..c142af5 100644
+index 191a66f..056b316 100644
 --- a/postfix.te
 +++ b/postfix.te
 @@ -1,4 +1,4 @@
@@ -56055,7 +56069,7 @@ index 191a66f..c142af5 100644
 +
 +allow postfix_domain postfix_spool_t:dir list_dir_perms;
 +
-+allow postfix_domain postfix_var_run_t:file manage_file_perms;
++manage_files_pattern(postfix_t, postfix_var_run_t, postfix_var_run_t)
 +files_pid_filetrans(postfix_domain, postfix_var_run_t, file)
 +
 +kernel_read_network_state(postfix_domain)
@@ -63854,7 +63868,7 @@ index 04babe3..3b92679 100644
 +
 +/var/lib/ipa-client(/.*)?		gen_context(system_u:object_r:realmd_var_lib_t,s0)
 diff --git a/realmd.if b/realmd.if
-index bff31df..e38693b 100644
+index bff31df..041893c 100644
 --- a/realmd.if
 +++ b/realmd.if
 @@ -1,8 +1,9 @@
@@ -63869,6 +63883,93 @@ index bff31df..e38693b 100644
  ## </summary>
  ## <param name="domain">
  ## <summary>
+@@ -39,3 +40,86 @@ interface(`realmd_dbus_chat',`
+ 	allow $1 realmd_t:dbus send_msg;
+ 	allow realmd_t $1:dbus send_msg;
+ ')
++
++########################################
++## <summary>
++##	Search realmd cache directories.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`realmd_search_cache',`
++	gen_require(`
++		type realmd_cache_t;
++	')
++
++	allow $1 realmd_cache_t:dir search_dir_perms;
++	files_search_var($1)
++')
++
++########################################
++## <summary>
++##	Read realmd cache files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`realmd_read_cache_files',`
++	gen_require(`
++		type realmd_cache_t;
++	')
++
++	files_search_var($1)
++	read_files_pattern($1, realmd_cache_t, realmd_cache_t)
++')
++
++########################################
++## <summary>
++##	Create, read, write, and delete
++##	realmd cache files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`realmd_manage_cache_files',`
++	gen_require(`
++		type realmd_cache_t;
++	')
++
++	files_search_var($1)
++	manage_files_pattern($1, realmd_cache_t, realmd_cache_t)
++')
++
++########################################
++## <summary>
++##	Manage realmd cache dirs.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`realmd_manage_cache_dirs',`
++	gen_require(`
++		type realmd_cache_t;
++	')
++
++	files_search_var($1)
++	manage_dirs_pattern($1, realmd_cache_t, realmd_cache_t)
++')
++
++
++manage_dirs_pattern(realmd_t, realmd_cache_t, realmd_cache_t)
++manage_files_pattern(realmd_t, realmd_cache_t, realmd_cache_t)
++manage_lnk_files_pattern(realmd_t, realmd_cache_t, realmd_cache_t)
++files_var_filetrans(realmd_t, realmd_cache_t, { dir file lnk_file })
 diff --git a/realmd.te b/realmd.te
 index 9a8f052..c558c79 100644
 --- a/realmd.te
@@ -71284,7 +71385,7 @@ index aee75af..a6bab06 100644
 +	allow $1 samba_unit_file_t:service all_service_perms;
  ')
 diff --git a/samba.te b/samba.te
-index 57c034b..b4a043c 100644
+index 57c034b..7369a2c 100644
 --- a/samba.te
 +++ b/samba.te
 @@ -1,4 +1,4 @@
@@ -71555,9 +71656,14 @@ index 57c034b..b4a043c 100644
  ')
  
  optional_policy(`
-@@ -246,37 +237,42 @@ optional_policy(`
+@@ -245,38 +236,47 @@ optional_policy(`
+ ')
  
  optional_policy(`
++    realmd_read_cache_files(samba_net_t)
++')
++
++optional_policy(`
  	kerberos_use(samba_net_t)
 -	kerberos_etc_filetrans_keytab(samba_net_t, file)
 +	kerberos_etc_filetrans_keytab(samba_net_t)
@@ -71589,14 +71695,14 @@ index 57c034b..b4a043c 100644
 +allow smbd_t self:udp_socket create_socket_perms;
 +allow smbd_t self:unix_dgram_socket { create_socket_perms sendto };
 +allow smbd_t self:unix_stream_socket { create_stream_socket_perms connectto };
- 
--allow smbd_t { swat_t winbind_t smbcontrol_t nmbd_t }:process { signal signull };
++
 +allow smbd_t nmbd_t:process { signal signull };
  
--allow smbd_t samba_etc_t:file { rw_file_perms setattr_file_perms };
+-allow smbd_t { swat_t winbind_t smbcontrol_t nmbd_t }:process { signal signull };
 +allow smbd_t nmbd_var_run_t:file rw_file_perms;
 +stream_connect_pattern(smbd_t, nmbd_var_run_t, nmbd_var_run_t, nmbd_t)
-+
+ 
+-allow smbd_t samba_etc_t:file { rw_file_perms setattr_file_perms };
 +allow smbd_t samba_etc_t:file { rw_file_perms setattr };
  
  manage_dirs_pattern(smbd_t, samba_log_t, samba_log_t)
@@ -71610,7 +71716,7 @@ index 57c034b..b4a043c 100644
  
  manage_files_pattern(smbd_t, samba_secrets_t, samba_secrets_t)
  filetrans_pattern(smbd_t, samba_etc_t, samba_secrets_t, file)
-@@ -292,6 +288,8 @@ manage_lnk_files_pattern(smbd_t, samba_var_t, samba_var_t)
+@@ -292,6 +292,8 @@ manage_lnk_files_pattern(smbd_t, samba_var_t, samba_var_t)
  manage_sock_files_pattern(smbd_t, samba_var_t, samba_var_t)
  files_var_filetrans(smbd_t, samba_var_t, dir, "samba")
  
@@ -71619,7 +71725,7 @@ index 57c034b..b4a043c 100644
  manage_dirs_pattern(smbd_t, smbd_tmp_t, smbd_tmp_t)
  manage_files_pattern(smbd_t, smbd_tmp_t, smbd_tmp_t)
  files_tmp_filetrans(smbd_t, smbd_tmp_t, { file dir })
-@@ -301,11 +299,11 @@ manage_files_pattern(smbd_t, smbd_var_run_t, smbd_var_run_t)
+@@ -301,11 +303,11 @@ manage_files_pattern(smbd_t, smbd_var_run_t, smbd_var_run_t)
  manage_sock_files_pattern(smbd_t, smbd_var_run_t, smbd_var_run_t)
  files_pid_filetrans(smbd_t, smbd_var_run_t, { dir file })
  
@@ -71635,7 +71741,7 @@ index 57c034b..b4a043c 100644
  
  kernel_getattr_core_if(smbd_t)
  kernel_getattr_message_if(smbd_t)
-@@ -315,43 +313,33 @@ kernel_read_kernel_sysctls(smbd_t)
+@@ -315,43 +317,33 @@ kernel_read_kernel_sysctls(smbd_t)
  kernel_read_software_raid_state(smbd_t)
  kernel_read_system_state(smbd_t)
  
@@ -71690,7 +71796,7 @@ index 57c034b..b4a043c 100644
  fs_getattr_all_fs(smbd_t)
  fs_getattr_all_dirs(smbd_t)
  fs_get_xattr_fs_quotas(smbd_t)
-@@ -360,44 +348,54 @@ fs_getattr_rpc_dirs(smbd_t)
+@@ -360,44 +352,54 @@ fs_getattr_rpc_dirs(smbd_t)
  fs_list_inotifyfs(smbd_t)
  fs_get_all_fs_quotas(smbd_t)
  
@@ -71756,7 +71862,7 @@ index 57c034b..b4a043c 100644
  ')
  
  tunable_policy(`samba_domain_controller',`
-@@ -413,20 +411,10 @@ tunable_policy(`samba_domain_controller',`
+@@ -413,20 +415,10 @@ tunable_policy(`samba_domain_controller',`
  ')
  
  tunable_policy(`samba_enable_home_dirs',`
@@ -71779,7 +71885,7 @@ index 57c034b..b4a043c 100644
  tunable_policy(`samba_share_nfs',`
  	fs_manage_nfs_dirs(smbd_t)
  	fs_manage_nfs_files(smbd_t)
-@@ -435,6 +423,7 @@ tunable_policy(`samba_share_nfs',`
+@@ -435,6 +427,7 @@ tunable_policy(`samba_share_nfs',`
  	fs_manage_nfs_named_sockets(smbd_t)
  ')
  
@@ -71787,7 +71893,7 @@ index 57c034b..b4a043c 100644
  tunable_policy(`samba_share_fusefs',`
  	fs_manage_fusefs_dirs(smbd_t)
  	fs_manage_fusefs_files(smbd_t)
-@@ -442,17 +431,6 @@ tunable_policy(`samba_share_fusefs',`
+@@ -442,17 +435,6 @@ tunable_policy(`samba_share_fusefs',`
  	fs_search_fusefs(smbd_t)
  ')
  
@@ -71805,7 +71911,7 @@ index 57c034b..b4a043c 100644
  optional_policy(`
  	ccs_read_config(smbd_t)
  ')
-@@ -473,6 +451,11 @@ optional_policy(`
+@@ -473,6 +455,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -71817,7 +71923,7 @@ index 57c034b..b4a043c 100644
  	lpd_exec_lpr(smbd_t)
  ')
  
-@@ -493,9 +476,33 @@ optional_policy(`
+@@ -493,9 +480,33 @@ optional_policy(`
  	udev_read_db(smbd_t)
  ')
  
@@ -71852,7 +71958,7 @@ index 57c034b..b4a043c 100644
  #
  
  dontaudit nmbd_t self:capability sys_tty_config;
-@@ -506,9 +513,11 @@ allow nmbd_t self:msg { send receive };
+@@ -506,9 +517,11 @@ allow nmbd_t self:msg { send receive };
  allow nmbd_t self:msgq create_msgq_perms;
  allow nmbd_t self:sem create_sem_perms;
  allow nmbd_t self:shm create_shm_perms;
@@ -71867,7 +71973,7 @@ index 57c034b..b4a043c 100644
  
  manage_dirs_pattern(nmbd_t, { smbd_var_run_t nmbd_var_run_t }, nmbd_var_run_t)
  manage_files_pattern(nmbd_t, nmbd_var_run_t, nmbd_var_run_t)
-@@ -520,20 +529,15 @@ read_files_pattern(nmbd_t, samba_etc_t, samba_etc_t)
+@@ -520,20 +533,15 @@ read_files_pattern(nmbd_t, samba_etc_t, samba_etc_t)
  read_lnk_files_pattern(nmbd_t, samba_etc_t, samba_etc_t)
  
  manage_dirs_pattern(nmbd_t, samba_log_t, samba_log_t)
@@ -71891,7 +71997,7 @@ index 57c034b..b4a043c 100644
  
  kernel_getattr_core_if(nmbd_t)
  kernel_getattr_message_if(nmbd_t)
-@@ -542,52 +546,40 @@ kernel_read_network_state(nmbd_t)
+@@ -542,52 +550,40 @@ kernel_read_network_state(nmbd_t)
  kernel_read_software_raid_state(nmbd_t)
  kernel_read_system_state(nmbd_t)
  
@@ -71956,7 +72062,7 @@ index 57c034b..b4a043c 100644
  ')
  
  optional_policy(`
-@@ -600,17 +592,24 @@ optional_policy(`
+@@ -600,17 +596,24 @@ optional_policy(`
  
  ########################################
  #
@@ -71976,16 +72082,16 @@ index 57c034b..b4a043c 100644
 -read_files_pattern(smbcontrol_t, { nmbd_var_run_t smbd_var_run_t }, { nmbd_var_run_t smbd_var_run_t })
 +allow smbcontrol_t nmbd_t:process { signal signull };
 +read_files_pattern(smbcontrol_t, nmbd_var_run_t, nmbd_var_run_t)
- 
++
 +allow smbcontrol_t smbd_t:process { signal signull };
 +read_files_pattern(smbcontrol_t, smbd_var_run_t, smbd_var_run_t)
 +allow smbcontrol_t winbind_t:process { signal signull };
-+
+ 
 +files_search_var_lib(smbcontrol_t)
  samba_read_config(smbcontrol_t)
  samba_rw_var_files(smbcontrol_t)
  samba_search_var(smbcontrol_t)
-@@ -620,16 +619,12 @@ domain_use_interactive_fds(smbcontrol_t)
+@@ -620,16 +623,12 @@ domain_use_interactive_fds(smbcontrol_t)
  
  dev_read_urand(smbcontrol_t)
  
@@ -72003,7 +72109,7 @@ index 57c034b..b4a043c 100644
  
  optional_policy(`
  	ctdbd_stream_connect(smbcontrol_t)
-@@ -637,22 +632,23 @@ optional_policy(`
+@@ -637,22 +636,23 @@ optional_policy(`
  
  ########################################
  #
@@ -72035,7 +72141,7 @@ index 57c034b..b4a043c 100644
  
  allow smbmount_t samba_secrets_t:file manage_file_perms;
  
-@@ -661,26 +657,22 @@ manage_files_pattern(smbmount_t, samba_var_t, samba_var_t)
+@@ -661,26 +661,22 @@ manage_files_pattern(smbmount_t, samba_var_t, samba_var_t)
  manage_lnk_files_pattern(smbmount_t, samba_var_t, samba_var_t)
  files_var_filetrans(smbmount_t, samba_var_t, dir, "samba")
  
@@ -72071,7 +72177,7 @@ index 57c034b..b4a043c 100644
  
  fs_getattr_cifs(smbmount_t)
  fs_mount_cifs(smbmount_t)
-@@ -692,58 +684,77 @@ fs_read_cifs_files(smbmount_t)
+@@ -692,58 +688,77 @@ fs_read_cifs_files(smbmount_t)
  storage_raw_read_fixed_disk(smbmount_t)
  storage_raw_write_fixed_disk(smbmount_t)
  
@@ -72163,7 +72269,7 @@ index 57c034b..b4a043c 100644
  
  manage_dirs_pattern(swat_t, swat_tmp_t, swat_tmp_t)
  manage_files_pattern(swat_t, swat_tmp_t, swat_tmp_t)
-@@ -752,17 +763,13 @@ files_tmp_filetrans(swat_t, swat_tmp_t, { file dir })
+@@ -752,17 +767,13 @@ files_tmp_filetrans(swat_t, swat_tmp_t, { file dir })
  manage_files_pattern(swat_t, swat_var_run_t, swat_var_run_t)
  files_pid_filetrans(swat_t, swat_var_run_t, file)
  
@@ -72187,7 +72293,7 @@ index 57c034b..b4a043c 100644
  
  kernel_read_kernel_sysctls(swat_t)
  kernel_read_system_state(swat_t)
-@@ -770,36 +777,25 @@ kernel_read_network_state(swat_t)
+@@ -770,36 +781,25 @@ kernel_read_network_state(swat_t)
  
  corecmd_search_bin(swat_t)
  
@@ -72230,7 +72336,7 @@ index 57c034b..b4a043c 100644
  
  auth_domtrans_chk_passwd(swat_t)
  auth_use_nsswitch(swat_t)
-@@ -811,10 +807,11 @@ logging_send_syslog_msg(swat_t)
+@@ -811,10 +811,11 @@ logging_send_syslog_msg(swat_t)
  logging_send_audit_msgs(swat_t)
  logging_search_logs(swat_t)
  
@@ -72244,7 +72350,7 @@ index 57c034b..b4a043c 100644
  optional_policy(`
  	cups_read_rw_config(swat_t)
  	cups_stream_connect(swat_t)
-@@ -837,13 +834,15 @@ allow winbind_t self:capability { dac_override ipc_lock setuid sys_nice };
+@@ -837,13 +838,15 @@ allow winbind_t self:capability { dac_override ipc_lock setuid sys_nice };
  dontaudit winbind_t self:capability sys_tty_config;
  allow winbind_t self:process { signal_perms getsched setsched };
  allow winbind_t self:fifo_file rw_fifo_file_perms;
@@ -72264,7 +72370,7 @@ index 57c034b..b4a043c 100644
  
  allow winbind_t samba_etc_t:dir list_dir_perms;
  read_files_pattern(winbind_t, samba_etc_t, samba_etc_t)
-@@ -853,9 +852,7 @@ manage_files_pattern(winbind_t, samba_etc_t, samba_secrets_t)
+@@ -853,9 +856,7 @@ manage_files_pattern(winbind_t, samba_etc_t, samba_secrets_t)
  filetrans_pattern(winbind_t, samba_etc_t, samba_secrets_t, file)
  
  manage_dirs_pattern(winbind_t, samba_log_t, samba_log_t)
@@ -72275,7 +72381,7 @@ index 57c034b..b4a043c 100644
  manage_lnk_files_pattern(winbind_t, samba_log_t, samba_log_t)
  
  manage_dirs_pattern(winbind_t, samba_var_t, samba_var_t)
-@@ -866,23 +863,21 @@ files_var_filetrans(winbind_t, samba_var_t, dir, "samba")
+@@ -866,23 +867,21 @@ files_var_filetrans(winbind_t, samba_var_t, dir, "samba")
  
  rw_files_pattern(winbind_t, smbd_tmp_t, smbd_tmp_t)
  
@@ -72305,7 +72411,7 @@ index 57c034b..b4a043c 100644
  manage_sock_files_pattern(winbind_t, smbd_var_run_t, smbd_var_run_t)
  
  kernel_read_network_state(winbind_t)
-@@ -891,13 +886,17 @@ kernel_read_system_state(winbind_t)
+@@ -891,13 +890,17 @@ kernel_read_system_state(winbind_t)
  
  corecmd_exec_bin(winbind_t)
  
@@ -72326,7 +72432,7 @@ index 57c034b..b4a043c 100644
  corenet_tcp_connect_smbd_port(winbind_t)
  corenet_tcp_connect_epmap_port(winbind_t)
  corenet_tcp_connect_all_unreserved_ports(winbind_t)
-@@ -905,10 +904,6 @@ corenet_tcp_connect_all_unreserved_ports(winbind_t)
+@@ -905,10 +908,6 @@ corenet_tcp_connect_all_unreserved_ports(winbind_t)
  dev_read_sysfs(winbind_t)
  dev_read_urand(winbind_t)
  
@@ -72337,7 +72443,7 @@ index 57c034b..b4a043c 100644
  
  fs_getattr_all_fs(winbind_t)
  fs_search_auto_mountpoints(winbind_t)
-@@ -917,18 +912,24 @@ auth_domtrans_chk_passwd(winbind_t)
+@@ -917,18 +916,24 @@ auth_domtrans_chk_passwd(winbind_t)
  auth_use_nsswitch(winbind_t)
  auth_manage_cache(winbind_t)
  
@@ -72364,7 +72470,7 @@ index 57c034b..b4a043c 100644
  
  optional_policy(`
  	ctdbd_stream_connect(winbind_t)
-@@ -936,7 +937,12 @@ optional_policy(`
+@@ -936,7 +941,12 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -72377,7 +72483,7 @@ index 57c034b..b4a043c 100644
  ')
  
  optional_policy(`
-@@ -952,31 +958,29 @@ optional_policy(`
+@@ -952,31 +962,29 @@ optional_policy(`
  # Winbind helper local policy
  #
  
@@ -72415,7 +72521,7 @@ index 57c034b..b4a043c 100644
  
  optional_policy(`
  	apache_append_log(winbind_helper_t)
-@@ -990,25 +994,38 @@ optional_policy(`
+@@ -990,25 +998,38 @@ optional_policy(`
  
  ########################################
  #
@@ -80385,7 +80491,7 @@ index 6c06a84..0000000
 -	rpm_exec(stapserver_t)
 -')
 diff --git a/tcpd.te b/tcpd.te
-index f388db3..3c5c32e 100644
+index f388db3..1e1a075 100644
 --- a/tcpd.te
 +++ b/tcpd.te
 @@ -23,7 +23,6 @@ manage_dirs_pattern(tcpd_t, tcpd_tmp_t, tcpd_tmp_t)
@@ -80396,9 +80502,12 @@ index f388db3..3c5c32e 100644
  corenet_all_recvfrom_netlabel(tcpd_t)
  corenet_tcp_sendrecv_generic_if(tcpd_t)
  corenet_tcp_sendrecv_generic_node(tcpd_t)
-@@ -33,13 +32,10 @@ fs_getattr_xattr_fs(tcpd_t)
+@@ -31,15 +30,12 @@ corenet_tcp_sendrecv_all_ports(tcpd_t)
  
- corecmd_search_bin(tcpd_t)
+ fs_getattr_xattr_fs(tcpd_t)
+ 
+-corecmd_search_bin(tcpd_t)
++corecmd_exec_bin(tcpd_t)
  
 -files_read_etc_files(tcpd_t)
  files_dontaudit_search_var(tcpd_t)
