@@ -23993,7 +23993,7 @@ index 9eacb2c..229782f 100644
  	init_labeled_script_domtrans($1, { glance_api_initrc_exec_t glance_registry_initrc_exec_t })
  	domain_system_change_exemption($1)
 diff --git a/glance.te b/glance.te
-index e0a4f46..0a1aec6 100644
+index e0a4f46..16c0ddd 100644
 --- a/glance.te
 +++ b/glance.te
 @@ -7,8 +7,7 @@ policy_module(glance, 1.0.2)
@@ -24072,7 +24072,7 @@ index e0a4f46..0a1aec6 100644
  
  logging_send_syslog_msg(glance_registry_t)
  
-@@ -108,13 +110,20 @@ manage_files_pattern(glance_api_t, glance_tmp_t, glance_tmp_t)
+@@ -108,13 +110,21 @@ manage_files_pattern(glance_api_t, glance_tmp_t, glance_tmp_t)
  files_tmp_filetrans(glance_api_t, glance_tmp_t, { dir file })
  can_exec(glance_api_t, glance_tmp_t)
  
@@ -24087,6 +24087,7 @@ index e0a4f46..0a1aec6 100644
  corenet_sendrecv_glance_registry_client_packets(glance_api_t)
  corenet_tcp_connect_glance_registry_port(glance_api_t)
 +corenet_tcp_connect_mysqld_port(glance_api_t)
++corenet_tcp_connect_http_port(glance_api_t)
 +
 +corenet_tcp_connect_all_ephemeral_ports(glance_api_t)
 +
@@ -24278,7 +24279,7 @@ index 0000000..1ed97fe
 +
 diff --git a/glusterd.te b/glusterd.te
 new file mode 100644
-index 0000000..190dcb1
+index 0000000..735cc94
 --- /dev/null
 +++ b/glusterd.te
 @@ -0,0 +1,146 @@
@@ -24343,7 +24344,7 @@ index 0000000..190dcb1
 +allow glusterd_t self:process { setrlimit signal };
 +allow glusterd_t self:fifo_file rw_fifo_file_perms;
 +allow glusterd_t self:tcp_socket { accept listen };
-+allow glusterd_t self:unix_stream_socket { accept listen };
++allow glusterd_t self:unix_stream_socket { accept listen connectto };
 +
 +manage_dirs_pattern(glusterd_t, glusterd_conf_t, glusterd_conf_t)
 +manage_files_pattern(glusterd_t, glusterd_conf_t, glusterd_conf_t)
@@ -31941,7 +31942,7 @@ index d3e7fc9..f20248c 100644
 +	')
  ')
 diff --git a/keystone.te b/keystone.te
-index 3494d9b..124a2ab 100644
+index 3494d9b..a82637c 100644
 --- a/keystone.te
 +++ b/keystone.te
 @@ -21,10 +21,14 @@ files_type(keystone_var_lib_t)
@@ -31959,7 +31960,7 @@ index 3494d9b..124a2ab 100644
  
  allow keystone_t self:fifo_file rw_fifo_file_perms;
  allow keystone_t self:unix_stream_socket { accept listen };
-@@ -57,20 +61,25 @@ corenet_all_recvfrom_netlabel(keystone_t)
+@@ -57,20 +61,29 @@ corenet_all_recvfrom_netlabel(keystone_t)
  corenet_tcp_sendrecv_generic_if(keystone_t)
  corenet_tcp_sendrecv_generic_node(keystone_t)
  corenet_tcp_bind_generic_node(keystone_t)
@@ -31987,6 +31988,10 @@ index 3494d9b..124a2ab 100644
 +
 +optional_policy(`
 +	postgresql_stream_connect(keystone_t)
++')
++
++optional_policy(`
++    rpm_exec(keystone_t)
 +')
 diff --git a/kismet.if b/kismet.if
 index aa2a337..7ff229f 100644
@@ -55192,7 +55197,7 @@ index 2e23946..589bbf2 100644
 +	postfix_config_filetrans($1, postfix_prng_t, file, "prng_exch")
  ')
 diff --git a/postfix.te b/postfix.te
-index 191a66f..056b316 100644
+index 191a66f..a9c1d4b 100644
 --- a/postfix.te
 +++ b/postfix.te
 @@ -1,4 +1,4 @@
@@ -55864,7 +55869,7 @@ index 191a66f..056b316 100644
  
  init_sigchld_script(postfix_postqueue_t)
  init_use_script_fds(postfix_postqueue_t)
-@@ -647,67 +577,77 @@ optional_policy(`
+@@ -647,67 +577,78 @@ optional_policy(`
  
  ########################################
  #
@@ -55910,11 +55915,12 @@ index 191a66f..056b316 100644
 +allow postfix_showq_t self:tcp_socket create_socket_perms;
  
  allow postfix_showq_t postfix_master_t:unix_stream_socket { accept rw_socket_perms };
- 
++rw_files_pattern(postfix_showq_t, postfix_var_run_t, postfix_var_run_t)
++
 +allow postfix_showq_t postfix_spool_t:file read_file_perms;
 +
 +postfix_list_spool(postfix_showq_t)
-+
+ 
  allow postfix_showq_t postfix_spool_maildrop_t:dir list_dir_perms;
  allow postfix_showq_t postfix_spool_maildrop_t:file read_file_perms;
  allow postfix_showq_t postfix_spool_maildrop_t:lnk_file read_lnk_file_perms;
@@ -55960,7 +55966,7 @@ index 191a66f..056b316 100644
  ')
  
  optional_policy(`
-@@ -720,24 +660,27 @@ optional_policy(`
+@@ -720,24 +661,27 @@ optional_policy(`
  
  ########################################
  #
@@ -55994,7 +56000,7 @@ index 191a66f..056b316 100644
  fs_getattr_all_dirs(postfix_smtpd_t)
  fs_getattr_all_fs(postfix_smtpd_t)
  
-@@ -754,6 +697,7 @@ optional_policy(`
+@@ -754,6 +698,7 @@ optional_policy(`
  
  optional_policy(`
  	milter_stream_connect_all(postfix_smtpd_t)
@@ -56002,7 +56008,7 @@ index 191a66f..056b316 100644
  ')
  
  optional_policy(`
-@@ -764,31 +708,99 @@ optional_policy(`
+@@ -764,31 +709,99 @@ optional_policy(`
  	sasl_connect(postfix_smtpd_t)
  ')
  
@@ -63868,7 +63874,7 @@ index 04babe3..3b92679 100644
 +
 +/var/lib/ipa-client(/.*)?		gen_context(system_u:object_r:realmd_var_lib_t,s0)
 diff --git a/realmd.if b/realmd.if
-index bff31df..041893c 100644
+index bff31df..3b5faf0 100644
 --- a/realmd.if
 +++ b/realmd.if
 @@ -1,8 +1,9 @@
@@ -63883,7 +63889,7 @@ index bff31df..041893c 100644
  ## </summary>
  ## <param name="domain">
  ## <summary>
-@@ -39,3 +40,86 @@ interface(`realmd_dbus_chat',`
+@@ -39,3 +40,80 @@ interface(`realmd_dbus_chat',`
  	allow $1 realmd_t:dbus send_msg;
  	allow realmd_t $1:dbus send_msg;
  ')
@@ -63900,10 +63906,10 @@ index bff31df..041893c 100644
 +#
 +interface(`realmd_search_cache',`
 +	gen_require(`
-+		type realmd_cache_t;
++		type realmd_var_cache_t;
 +	')
 +
-+	allow $1 realmd_cache_t:dir search_dir_perms;
++	allow $1 realmd_var_cache_t:dir search_dir_perms;
 +	files_search_var($1)
 +')
 +
@@ -63919,11 +63925,11 @@ index bff31df..041893c 100644
 +#
 +interface(`realmd_read_cache_files',`
 +	gen_require(`
-+		type realmd_cache_t;
++		type realmd_var_cache_t;
 +	')
 +
 +	files_search_var($1)
-+	read_files_pattern($1, realmd_cache_t, realmd_cache_t)
++	read_files_pattern($1, realmd_var_cache_t, realmd_var_cache_t)
 +')
 +
 +########################################
@@ -63939,11 +63945,11 @@ index bff31df..041893c 100644
 +#
 +interface(`realmd_manage_cache_files',`
 +	gen_require(`
-+		type realmd_cache_t;
++		type realmd_var_cache_t;
 +	')
 +
 +	files_search_var($1)
-+	manage_files_pattern($1, realmd_cache_t, realmd_cache_t)
++	manage_files_pattern($1, realmd_var_cache_t, realmd_var_cache_t)
 +')
 +
 +########################################
@@ -63958,18 +63964,12 @@ index bff31df..041893c 100644
 +#
 +interface(`realmd_manage_cache_dirs',`
 +	gen_require(`
-+		type realmd_cache_t;
++		type realmd_var_cache_t;
 +	')
 +
 +	files_search_var($1)
-+	manage_dirs_pattern($1, realmd_cache_t, realmd_cache_t)
++	manage_dirs_pattern($1, realmd_var_cache_t, realmd_var_cache_t)
 +')
-+
-+
-+manage_dirs_pattern(realmd_t, realmd_cache_t, realmd_cache_t)
-+manage_files_pattern(realmd_t, realmd_cache_t, realmd_cache_t)
-+manage_lnk_files_pattern(realmd_t, realmd_cache_t, realmd_cache_t)
-+files_var_filetrans(realmd_t, realmd_cache_t, { dir file lnk_file })
 diff --git a/realmd.te b/realmd.te
 index 9a8f052..c558c79 100644
 --- a/realmd.te
@@ -85090,10 +85090,10 @@ index 0be8535..b96e329 100644
  
  optional_policy(`
 diff --git a/virt.fc b/virt.fc
-index c30da4c..014e40c 100644
+index c30da4c..d60e3e4 100644
 --- a/virt.fc
 +++ b/virt.fc
-@@ -1,52 +1,80 @@
+@@ -1,52 +1,81 @@
 -HOME_DIR/\.libvirt(/.*)?	gen_context(system_u:object_r:virt_home_t,s0)
 -HOME_DIR/\.libvirt/qemu(/.*)?	gen_context(system_u:object_r:svirt_home_t,s0)
 -HOME_DIR/\.virtinst(/.*)?	gen_context(system_u:object_r:virt_home_t,s0)
@@ -85212,6 +85212,7 @@ index c30da4c..014e40c 100644
 +
 +/usr/bin/qemu-ga                --      gen_context(system_u:object_r:virt_qemu_ga_exec_t,s0)
 +/var/run/qemu-ga\.pid           --      gen_context(system_u:object_r:virt_qemu_ga_var_run_t,s0)
++/var/run/qga\.state             --      gen_context(system_u:object_r:virt_qemu_ga_var_run_t,s0)
 +/var/log/qemu-ga\.log           --      gen_context(system_u:object_r:virt_qemu_ga_log_t,s0)
 diff --git a/virt.if b/virt.if
 index 9dec06c..6e25af1 100644
@@ -86882,7 +86883,7 @@ index 9dec06c..6e25af1 100644
 +	allow $1 svirt_image_t:chr_file rw_file_perms;
  ')
 diff --git a/virt.te b/virt.te
-index 1f22fba..832423f 100644
+index 1f22fba..9d71252 100644
 --- a/virt.te
 +++ b/virt.te
 @@ -1,94 +1,98 @@
@@ -87336,24 +87337,24 @@ index 1f22fba..832423f 100644
 -filetrans_pattern(svirt_t, virt_home_t, svirt_home_t, dir, "qemu")
 -
 -stream_connect_pattern(svirt_t, svirt_home_t, svirt_home_t, virtd_t)
--
--corenet_udp_sendrecv_generic_if(svirt_t)
--corenet_udp_sendrecv_generic_node(svirt_t)
--corenet_udp_sendrecv_all_ports(svirt_t)
--corenet_udp_bind_generic_node(svirt_t)
 +# it was a part of auth_use_nsswitch
 +allow svirt_t self:netlink_route_socket r_netlink_socket_perms;
  
+ corenet_udp_sendrecv_generic_if(svirt_t)
+ corenet_udp_sendrecv_generic_node(svirt_t)
+ corenet_udp_sendrecv_all_ports(svirt_t)
+ corenet_udp_bind_generic_node(svirt_t)
+-
 -corenet_all_recvfrom_unlabeled(svirt_t)
 -corenet_all_recvfrom_netlabel(svirt_t)
 -corenet_tcp_sendrecv_generic_if(svirt_t)
- corenet_udp_sendrecv_generic_if(svirt_t)
+-corenet_udp_sendrecv_generic_if(svirt_t)
 -corenet_tcp_sendrecv_generic_node(svirt_t)
- corenet_udp_sendrecv_generic_node(svirt_t)
+-corenet_udp_sendrecv_generic_node(svirt_t)
 -corenet_tcp_sendrecv_all_ports(svirt_t)
- corenet_udp_sendrecv_all_ports(svirt_t)
+-corenet_udp_sendrecv_all_ports(svirt_t)
 -corenet_tcp_bind_generic_node(svirt_t)
- corenet_udp_bind_generic_node(svirt_t)
+-corenet_udp_bind_generic_node(svirt_t)
 -
 -corenet_sendrecv_all_server_packets(svirt_t)
  corenet_udp_bind_all_ports(svirt_t)
@@ -87505,13 +87506,13 @@ index 1f22fba..832423f 100644
 -
 -stream_connect_pattern(virtd_t, virtd_lxc_var_run_t, virtd_lxc_var_run_t, virtd_lxc_t)
 -stream_connect_pattern(virtd_t, svirt_var_run_t, svirt_var_run_t, virt_domain)
--
--can_exec(virtd_t, virt_tmp_t)
 +manage_dirs_pattern(virtd_t, virt_lxc_var_run_t, virt_lxc_var_run_t)
 +manage_files_pattern(virtd_t, virt_lxc_var_run_t, virt_lxc_var_run_t)
 +filetrans_pattern(virtd_t, virt_var_run_t, virt_lxc_var_run_t, dir, "lxc")
 +stream_connect_pattern(virtd_t, virt_lxc_var_run_t, virt_lxc_var_run_t, virtd_lxc_t)
  
+-can_exec(virtd_t, virt_tmp_t)
+-
 -kernel_read_crypto_sysctls(virtd_t)
  kernel_read_system_state(virtd_t)
  kernel_read_network_state(virtd_t)
@@ -88115,7 +88116,7 @@ index 1f22fba..832423f 100644
  tunable_policy(`virt_use_nfs',`
  	fs_manage_nfs_dirs(virsh_t)
  	fs_manage_nfs_files(virsh_t)
-@@ -847,6 +872,10 @@ optional_policy(`
+@@ -847,14 +872,19 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -88126,8 +88127,9 @@ index 1f22fba..832423f 100644
  	rpm_exec(virsh_t)
  ')
  
-@@ -854,7 +883,7 @@ optional_policy(`
+ optional_policy(`
  	xen_manage_image_dirs(virsh_t)
++    xen_read_image_files(virsh_t)
  	xen_append_log(virsh_t)
  	xen_domtrans(virsh_t)
 -	xen_read_xenstored_pid_files(virsh_t)
@@ -88135,7 +88137,7 @@ index 1f22fba..832423f 100644
  	xen_stream_connect(virsh_t)
  	xen_stream_connect_xenstore(virsh_t)
  ')
-@@ -879,34 +908,44 @@ optional_policy(`
+@@ -879,34 +909,44 @@ optional_policy(`
  	kernel_read_xen_state(virsh_ssh_t)
  	kernel_write_xen_state(virsh_ssh_t)
  
@@ -88189,7 +88191,7 @@ index 1f22fba..832423f 100644
  
  manage_dirs_pattern(virtd_lxc_t, svirt_lxc_file_t, svirt_lxc_file_t)
  manage_files_pattern(virtd_lxc_t, svirt_lxc_file_t, svirt_lxc_file_t)
-@@ -916,12 +955,17 @@ manage_sock_files_pattern(virtd_lxc_t, svirt_lxc_file_t, svirt_lxc_file_t)
+@@ -916,12 +956,17 @@ manage_sock_files_pattern(virtd_lxc_t, svirt_lxc_file_t, svirt_lxc_file_t)
  manage_fifo_files_pattern(virtd_lxc_t, svirt_lxc_file_t, svirt_lxc_file_t)
  allow virtd_lxc_t svirt_lxc_file_t:dir_file_class_set { relabelto relabelfrom };
  allow virtd_lxc_t svirt_lxc_file_t:filesystem { relabelto relabelfrom };
@@ -88207,7 +88209,7 @@ index 1f22fba..832423f 100644
  
  corecmd_exec_bin(virtd_lxc_t)
  corecmd_exec_shell(virtd_lxc_t)
-@@ -933,10 +977,8 @@ dev_read_urand(virtd_lxc_t)
+@@ -933,10 +978,8 @@ dev_read_urand(virtd_lxc_t)
  
  domain_use_interactive_fds(virtd_lxc_t)
  
@@ -88218,7 +88220,7 @@ index 1f22fba..832423f 100644
  files_relabel_rootfs(virtd_lxc_t)
  files_mounton_non_security(virtd_lxc_t)
  files_mount_all_file_type_fs(virtd_lxc_t)
-@@ -944,6 +986,7 @@ files_unmount_all_file_type_fs(virtd_lxc_t)
+@@ -944,6 +987,7 @@ files_unmount_all_file_type_fs(virtd_lxc_t)
  files_list_isid_type_dirs(virtd_lxc_t)
  files_root_filetrans(virtd_lxc_t, svirt_lxc_file_t, dir_file_class_set)
  
@@ -88226,7 +88228,7 @@ index 1f22fba..832423f 100644
  fs_getattr_all_fs(virtd_lxc_t)
  fs_manage_tmpfs_dirs(virtd_lxc_t)
  fs_manage_tmpfs_chr_files(virtd_lxc_t)
-@@ -955,15 +998,11 @@ fs_rw_cgroup_files(virtd_lxc_t)
+@@ -955,15 +999,11 @@ fs_rw_cgroup_files(virtd_lxc_t)
  fs_unmount_all_fs(virtd_lxc_t)
  fs_relabelfrom_tmpfs(virtd_lxc_t)
  
@@ -88245,7 +88247,7 @@ index 1f22fba..832423f 100644
  
  term_use_generic_ptys(virtd_lxc_t)
  term_use_ptmx(virtd_lxc_t)
-@@ -973,21 +1012,36 @@ auth_use_nsswitch(virtd_lxc_t)
+@@ -973,21 +1013,36 @@ auth_use_nsswitch(virtd_lxc_t)
  
  logging_send_syslog_msg(virtd_lxc_t)
  
@@ -88290,7 +88292,7 @@ index 1f22fba..832423f 100644
  allow svirt_lxc_domain self:fifo_file manage_file_perms;
  allow svirt_lxc_domain self:sem create_sem_perms;
  allow svirt_lxc_domain self:shm create_shm_perms;
-@@ -995,18 +1049,16 @@ allow svirt_lxc_domain self:msgq create_msgq_perms;
+@@ -995,18 +1050,16 @@ allow svirt_lxc_domain self:msgq create_msgq_perms;
  allow svirt_lxc_domain self:unix_stream_socket { create_stream_socket_perms connectto };
  allow svirt_lxc_domain self:unix_dgram_socket { sendto create_socket_perms };
  
@@ -88317,7 +88319,7 @@ index 1f22fba..832423f 100644
  
  manage_dirs_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
  manage_files_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
-@@ -1015,17 +1067,14 @@ manage_sock_files_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
+@@ -1015,17 +1068,14 @@ manage_sock_files_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
  manage_fifo_files_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
  rw_chr_files_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
  rw_blk_files_pattern(svirt_lxc_domain, svirt_lxc_file_t, svirt_lxc_file_t)
@@ -88336,7 +88338,7 @@ index 1f22fba..832423f 100644
  kernel_dontaudit_search_kernel_sysctl(svirt_lxc_domain)
  
  corecmd_exec_all_executables(svirt_lxc_domain)
-@@ -1037,21 +1086,20 @@ files_dontaudit_getattr_all_pipes(svirt_lxc_domain)
+@@ -1037,21 +1087,20 @@ files_dontaudit_getattr_all_pipes(svirt_lxc_domain)
  files_dontaudit_getattr_all_sockets(svirt_lxc_domain)
  files_dontaudit_list_all_mountpoints(svirt_lxc_domain)
  files_dontaudit_write_etc_runtime_files(svirt_lxc_domain)
@@ -88363,7 +88365,7 @@ index 1f22fba..832423f 100644
  auth_dontaudit_read_login_records(svirt_lxc_domain)
  auth_dontaudit_write_login_records(svirt_lxc_domain)
  auth_search_pam_console_data(svirt_lxc_domain)
-@@ -1063,96 +1111,92 @@ init_dontaudit_write_utmp(svirt_lxc_domain)
+@@ -1063,96 +1112,92 @@ init_dontaudit_write_utmp(svirt_lxc_domain)
  
  libs_dontaudit_setattr_lib_files(svirt_lxc_domain)
  
@@ -88501,7 +88503,7 @@ index 1f22fba..832423f 100644
  allow virt_qmf_t self:tcp_socket create_stream_socket_perms;
  allow virt_qmf_t self:netlink_route_socket create_netlink_socket_perms;
  
-@@ -1165,12 +1209,12 @@ dev_read_sysfs(virt_qmf_t)
+@@ -1165,12 +1210,12 @@ dev_read_sysfs(virt_qmf_t)
  dev_read_rand(virt_qmf_t)
  dev_read_urand(virt_qmf_t)
  
@@ -88516,7 +88518,7 @@ index 1f22fba..832423f 100644
  sysnet_read_config(virt_qmf_t)
  
  optional_policy(`
-@@ -1183,9 +1227,8 @@ optional_policy(`
+@@ -1183,9 +1228,8 @@ optional_policy(`
  
  ########################################
  #
@@ -88527,7 +88529,7 @@ index 1f22fba..832423f 100644
  allow virt_bridgehelper_t self:process { setcap getcap };
  allow virt_bridgehelper_t self:capability { setpcap setgid setuid net_admin };
  allow virt_bridgehelper_t self:tcp_socket create_stream_socket_perms;
-@@ -1198,5 +1241,70 @@ kernel_read_network_state(virt_bridgehelper_t)
+@@ -1198,5 +1242,75 @@ kernel_read_network_state(virt_bridgehelper_t)
  
  corenet_rw_tun_tap_dev(virt_bridgehelper_t)
  
@@ -88547,7 +88549,7 @@ index 1f22fba..832423f 100644
 +
 +manage_files_pattern(virt_qemu_ga_t, virt_qemu_ga_var_run_t, virt_qemu_ga_var_run_t)
 +manage_dirs_pattern(virt_qemu_ga_t, virt_qemu_ga_var_run_t, virt_qemu_ga_var_run_t)
-+filetrans_pattern(virt_qemu_ga_t, virt_qemu_ga_var_run_t, virt_qemu_ga_var_run_t,{ dir file } )
++files_pid_filetrans(virt_qemu_ga_t, virt_qemu_ga_var_run_t, { dir file } )
 +
 +manage_files_pattern(virt_qemu_ga_t, virt_qemu_ga_log_t, virt_qemu_ga_log_t)
 +logging_log_filetrans(virt_qemu_ga_t, virt_qemu_ga_log_t, file )
@@ -88595,6 +88597,11 @@ index 1f22fba..832423f 100644
 +optional_policy(`
 +    shutdown_domtrans(virt_qemu_ga_t)
 +')
++
++#######################################
++#
++# tye for svirt sockets
++#
 +
 +type svirt_socket_t;
 +role system_r types svirt_socket_t;

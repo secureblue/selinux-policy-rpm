@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 39%{?dist}
+Release: 41%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -257,7 +257,7 @@ fi;
 . %{_sysconfdir}/selinux/config; \
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
-   (cd /etc/selinux/%2/modules/active/modules; rm -f shutdown.pp amavis.pp clamav.pp gnomeclock.pp matahari.pp xfs.pp kudzu.pp kerneloops.pp execmem.pp openoffice.pp ada.pp tzdata.pp hal.pp hotplug.pp howl.pp java.pp mono.pp moilscanner.pp gamin.pp audio_entropy.pp audioentropy.pp iscsid.pp polkit_auth.pp polkit.pp rtkit_daemon.pp ModemManager.pp telepathysofiasip.pp ethereal.pp passanger.pp qpidd.pp pyzor.pp razor.pp pki-selinux.pp phpfpm.pp consoletype.pp ctdbd.pp fcoemon.pp isnsd.pp rgmanager.pp corosync.pp aisexec.pp pacemaker.pp ) \
+   (cd /etc/selinux/%2/modules/active/modules; rm -f l2tpd.pp shutdown.pp amavis.pp clamav.pp gnomeclock.pp matahari.pp xfs.pp kudzu.pp kerneloops.pp execmem.pp openoffice.pp ada.pp tzdata.pp hal.pp hotplug.pp howl.pp java.pp mono.pp moilscanner.pp gamin.pp audio_entropy.pp audioentropy.pp iscsid.pp polkit_auth.pp polkit.pp rtkit_daemon.pp ModemManager.pp telepathysofiasip.pp ethereal.pp passanger.pp qpidd.pp pyzor.pp razor.pp pki-selinux.pp phpfpm.pp consoletype.pp ctdbd.pp fcoemon.pp isnsd.pp rgmanager.pp corosync.pp aisexec.pp pacemaker.pp ) \
    /usr/sbin/semodule -B -n -s %2; \
 else \
     touch /etc/selinux/%2/modules/active/modules/sandbox.disabled \
@@ -530,6 +530,19 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon May 6 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-41
+- Remove userdom_home_manager for xdm_t and move all rules to xserver.te directly
+- Add new xdm_write_home boolean to allow xdm_t to create files in HOME dirs with xdm_home_t
+- Allow postfix-showq to read/write unix.showq in /var/spool/postfix/pid
+- Allow virsh to read xen lock file
+- Allow qemu-ga to create files in /run with proper labeling
+- Allow glusterd to connect to own socket in /tmp
+- Allow glance-api to connect to http port to make glance image-create working
+- Allow keystonte_t to execute rpm
+
+* Fri May 3 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-40
+- Fix realmd cache interfaces
+
 * Fri May 3 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-39
 - Allow tcpd to execute leafnode
 - Allow samba-net to read realmd cache files
