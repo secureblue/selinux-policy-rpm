@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 41%{?dist}
+Release: 43%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -530,6 +530,50 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon May 10 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-43
+- Transition directories and files when in a user_tmp_t directory
+- Change certwatch to domtrans to apache instead of just execute
+- Allow virsh_t to read xen lib files
+- update policy rules for pegasus_openlmi_account_t
+- Add support for svnserve_tmp_t
+- Activate account openlmi policy
+- pegasus_openlmi_domain_template needs also require pegasus_t
+- One more fix for policykit.te
+- Call fs_list_cgroups_dirs() in policykit.te
+- Allow nagios service plugin to read mysql config files
+- Add labeling for /var/svn
+- Fix chrome.te
+- Fix pegasus_openlmi_domain_template() interfaces
+- Fix dev_rw_vfio_dev definiton, allow virtd_t to read tmpfs_t symlinks
+- Fix location of google-chrome data
+- Add support for chome_sandbox to store content in the homedir
+- Allow policykit to watch for changes in cgroups file system
+- Add boolean to allow  mozilla_plugin_t to use spice
+- Allow collectd to bind to udp port
+- Allow collected_t to read all of /proc
+- Should use netlink socket_perms
+- Should use netlink socket_perms
+- Allow glance domains to connect to apache ports
+- Allow apcupsd_t to manage its log files
+- Allow chrome objects to rw_inherited unix_stream_socket from callers
+- Allow staff_t to execute virtd_exec_t for running vms
+- nfsd_t needs to bind mountd port to make nfs-mountd.service working
+- Allow unbound net_admin capability because of setsockopt syscall
+- Fix fs_list_cgroup_dirs()
+- Label /usr/lib/nagios/plugins/utils.pm as bin_t
+- Remove uplicate definition of fs_read_cgroup_files()
+- Remove duplicate definition of fs_read_cgroup_files()
+- Add files_mountpoint_filetrans interface to be used by quotadb_t and snapperd
+- Additional interfaces needed to list and read cgroups config
+- Add port definition for collectd port
+- Add labels for /dev/ptp*
+- Allow staff_t to execute virtd_exec_t for running vms
+
+* Mon May 6 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-42
+- Allow samba-net to also read realmd tmp files
+- Allow NUT to use serial ports
+- realmd can be started by systemctl now
+
 * Mon May 6 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-41
 - Remove userdom_home_manager for xdm_t and move all rules to xserver.te directly
 - Add new xdm_write_home boolean to allow xdm_t to create files in HOME dirs with xdm_home_t
