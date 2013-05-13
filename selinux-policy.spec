@@ -92,6 +92,7 @@ SELinux policy development and man page package
 %{_usr}/share/selinux/devel/html/*html
 %{_usr}/share/selinux/devel/Makefile
 %{_usr}/share/selinux/devel/example.*
+%{_usr}/share/selinux/devel/policy.*
 
 %package doc
 Summary: SELinux policy documentation
@@ -106,7 +107,6 @@ SELinux policy documentation package
 %defattr(-,root,root,-)
 %doc %{_usr}/share/doc/%{name}-%{version}
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
-%{_usr}/share/selinux/devel/policy.*
 
 %define makeCmds() \
 make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024 bare \
