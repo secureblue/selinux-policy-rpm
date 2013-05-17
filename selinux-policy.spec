@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 44%{?dist}
+Release: 45%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -55,7 +55,7 @@ Source30: booleans.subs_dist
 Url: http://oss.tresys.com/repos/refpolicy/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
-BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2 gzip
+BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2 
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(post): /bin/awk /usr/bin/sha512sum
 
@@ -351,8 +351,6 @@ install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
 install -m 644 doc/policy.* %{buildroot}%{_usr}/share/selinux/devel/
 echo  "xdg-open file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
-gzip %{buildroot}/%{_usr}/share/selinux/devel/policy.xml 
-mv %{buildroot}/%{_usr}/share/selinux/devel/policy.xml.gz %{buildroot}/%{_usr}/share/selinux/devel/policy.xml
 /usr/bin/sepolicy manpage -a -p %{buildroot}/usr/share/man/man8/ -w -r %{buildroot}
 mkdir %{buildroot}%{_usr}/share/selinux/devel/html
 htmldir=`compgen -d %{buildroot}%{_usr}/share/man/man8/`
@@ -532,6 +530,24 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri May 17 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-45
+- Add additional fixes for #948073 bug
+- Allow sge_execd_t to also connect to sge ports
+- Allow openshift_cron_t to manage openshift_var_lib_t sym links
+- Allow openshift_cron_t to manage openshift_var_lib_t sym links
+- Allow sge_execd to bind sge ports. Allow kill capability and reads cgroup files
+- Remove pulseaudio filetrans pulseaudio_manage_home_dirs which is a part of pulseaudio_manage_home_files
+- Add networkmanager_stream_connect()
+- Make gnome-abrt wokring with staff_t
+- Fix openshift_manage_lib_files() interface
+- mdadm runs ps command which seems to getattr on random log files
+- Allow mozilla_plugin_t to create pulseaudit_home_t directories
+- Allow qemu-ga to shutdown virtual hosts
+- Add labelling for cupsd-browsed
+- Add web browser plugins to connect to aol ports
+- Allow nm-dhcp-helper to stream connect to NM
+- Add port definition for sge ports
+
 * Mon May 13 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-44
 - Make sure users and unconfined domains create .hushlogin with the correct label
 - Allow pegaus to chat with realmd over DBus
@@ -540,7 +556,7 @@ SELinux Reference policy mls base module.
 - Allow certwatch to read net_config_t when it executes apache
 - Allow readahead to create /run/systemd and then create its own directory with the correct label
 
-* Mon May 13 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-43
+* Fri May 10 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-43
 - Transition directories and files when in a user_tmp_t directory
 - Change certwatch to domtrans to apache instead of just execute
 - Allow virsh_t to read xen lib files
