@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 45%{?dist}
+Release: 46%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -530,6 +530,24 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed May 22 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-46
+- Dontaudit to getattr on dirs for dovecot-deliver
+- Allow raiudusd server connect to postgresql socket
+- Add kerberos support for radiusd
+- Allow saslauthd to connect to ldap port
+- Allow postfix to manage postfix_private_t files
+- Add chronyd support for #965457
+- Fix labeling for HOME_DIR/\.icedtea
+- CHange squid and snmpd to be allowed also write own logs
+- Fix labeling for /usr/libexec/qemu-ga
+- Allow virtd_t to use virt_lock_t
+- Allow also sealert to read the policy from the kernel
+- qemu-ga needs to execute scripts in /usr/libexec/qemu-ga and to use /tmp content
+- Dontaudit listing of users homedir by sendmail Seems like a leak
+- Allow passenger to transition to puppet master
+- Allow apache to connect to mythtv
+- Add definition for mythtv ports
+
 * Fri May 17 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-45
 - Add additional fixes for #948073 bug
 - Allow sge_execd_t to also connect to sge ports
