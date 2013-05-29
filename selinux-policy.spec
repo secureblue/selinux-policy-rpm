@@ -94,6 +94,10 @@ SELinux policy development and man page package
 %{_usr}/share/selinux/devel/example.*
 %{_usr}/share/selinux/devel/policy.*
 
+%post devel
+selinuxenabled && /usr/bin/sepolgen-ifgen 2>/dev/null 
+exit 0
+
 %package doc
 Summary: SELinux policy documentation
 Group: System Environment/Base
