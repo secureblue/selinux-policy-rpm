@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 46%{?dist}
+Release: 47%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -530,6 +530,64 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed May 29 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-47
+- Add transition rules to unconfined domains and to sysadm_t to create /etc/adjtime
+- with the proper label.
+- Update files_filetrans_named_content() interface to get right labeling for pam.d conf files
+- Allow systemd-timedated to create adjtime
+- Add clock_create_adjtime()
+- Additional fix ifconfing for #966106
+- Allow kernel_t to create boot.log with correct labeling
+- Remove unconfined_mplayer for which we don't have rules
+- Rename interfaces
+- Add userdom_manage_user_home_files/dirs interfaces
+- Fix files_dontaudit_read_all_non_security_files
+- Fix ipsec_manage_key_file()
+- Fix ipsec_filetrans_key_file()
+- Label /usr/bin/razor-lightdm-greeter as xdm_exec_t instead of spamc_exec_t
+- Fix labeling for ipse.secrets
+- Add interfaces for ipsec and labeling for ipsec.info and ipsec_setup.pid
+- Add files_dontaudit_read_all_non_security_files() interface
+- /var/log/syslog-ng should be labeled var_log_t
+- Make ifconfig_var_run_t a mountpoint
+- Add transition from ifconfig to dnsmasq
+- Allow ifconfig to execute bin_t/shell_exec_t
+- We want to have hwdb.bin labeled as etc_t
+- update logging_filetrans_named_content() interface
+- Allow systemd_timedate_t to manage /etc/adjtime
+- Allow NM to send signals to l2tpd
+- Update antivirus_can_scan_system boolean
+- Allow devicekit_disk_t to sys_config_tty
+- Run abrt-harvest programs as abrt_t, and allow abrt_t to list all filesystem directories
+- Make printing from vmware working
+- Allow php-cgi from php54 collection to access /var/lib/net-snmp/mib_indexes
+- Add virt_qemu_ga_data_t for qemu-ga
+- Make chrome and mozilla able to connect to same ports, add jboss_management_port_t to both
+- Fix typo in virt.te
+- Add virt_qemu_ga_unconfined_t for hook scripts
+- Make sure NetworkManager files get created with the correct label
+- Add mozilla_plugin_use_gps boolean
+- Fix cyrus to have support for net-snmp
+- Additional fixes for dnsmasq and quantum for #966106
+- Add plymouthd_create_log()
+- remove httpd_use_oddjob for which we don't have rules
+- Add missing rules for httpd_can_network_connect_cobbler
+- Add missing cluster_use_execmem boolean
+- Call userdom_manage_all_user_home_type_files/dirs
+- Additional fix for ftp_home_dir
+- Fix ftp_home_dir boolean
+- Allow squit to recv/send client squid packet
+- Fix nut.te to have nut_domain attribute
+- Add support for ejabberd; TODO: revisit jabberd and rabbit policy
+- Fix amanda policy
+- Add more fixes for domains which use libusb
+- Make domains which use libusb working correctly
+- Allow l2tpd to create ipsec key files with correct labeling and manage them
+- Fix cobbler_manage_lib_files/cobbler_read_lib_files to cover also lnk files
+- Allow rabbitmq-beam to bind generic node
+- Allow l2tpd to read ipse-mgmt pid files
+- more fixes for l2tpd, NM and pppd from #967072
+
 * Wed May 22 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-46
 - Dontaudit to getattr on dirs for dovecot-deliver
 - Allow raiudusd server connect to postgresql socket
