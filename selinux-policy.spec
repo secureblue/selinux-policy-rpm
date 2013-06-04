@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 47%{?dist}
+Release: 48%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -93,10 +93,6 @@ SELinux policy development and man page package
 %{_usr}/share/selinux/devel/Makefile
 %{_usr}/share/selinux/devel/example.*
 %{_usr}/share/selinux/devel/policy.*
-
-%post devel
-selinuxenabled && /usr/bin/sepolgen-ifgen 2>/dev/null 
-exit 0
 
 %package doc
 Summary: SELinux policy documentation
@@ -534,6 +530,30 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jun 3 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-48
+- Fix openshift_search_lib
+- Add support for abrt-uefioops-oops
+- Allow colord to getattr any file system
+- Allow chrome processes to look at each other
+- Allow sys_ptrace for abrt_t
+- Add new policy for gssproxy
+- Dontaudit leaked file descriptor writes from firewalld
+- openshift_net_type is interface not template
+- Dontaudit pppd to search gnome config
+- Update openshift_search_lib() interface
+- Add fs_list_pstorefs()
+- Fix label on libbcm_host.so since it is built incorrectly on raspberry pi, needs back port to F18
+- Better labels for raspberry pi devices
+- Allow init to create devpts_t directory
+- Temporarily label rasbery pi devices as memory_device_t, needs back port to f18
+- Allow sysadm_t to build kernels
+- Make sure mount creates /var/run/blkid with the correct label, needs back port to F18
+- Allow userdomains to stream connect to gssproxy
+- Dontaudit leaked file descriptor writes from firewalld
+- Allow xserver to read /dev/urandom
+- Add additional fixes for ipsec-mgmt
+- Make SSHing into an Openshift Enterprise Node working
+
 * Wed May 29 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-47
 - Add transition rules to unconfined domains and to sysadm_t to create /etc/adjtime
 - with the proper label.
