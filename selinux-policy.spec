@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 48%{?dist}
+Release: 51%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -530,6 +530,66 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jun 13 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-51
+- accountservice watches when accounts come and go in wtmp
+- /usr/java/jre1.7.0_21/bin/java needs to create netlink socket
+- Add httpd_use_sasl boolean
+- Allow net_admin for tuned_t
+- iscsid needs sys_module to auto-load kernel modules
+- Allow blueman to read bluetooth conf
+- Add nova_manage_lib_files() interface
+- Fix mplayer_filetrans_home_content()
+- Add mplayer_filetrans_home_content()
+- mozilla_plugin_config_roles need to be able to access mozilla_plugin_config_t
+- Revert "Allow thumb_t to append inherited xdm stream socket"
+- Add iscsi_filetrans_named_content() interface
+- Allow to create .mplayer with the correct labeling for unconfined
+- Allow iscsiadmin to create lock file with the correct labeling
+
+* Tue Jun 11 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-50
+- Allow wine to manage wine home content
+- Make amanda working with socket actiovation
+- Add labeling for /usr/sbin/iscsiadm
+- Add support for /var/run/gssproxy.sock
+- dnsmasq_t needs to read sysctl_net_t
+
+* Fri Jun 7 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-49
+- Fix courier_domain_template() interface
+- Allow blueman to write ip_forward
+- Allow mongodb to connect to mongodb port
+- Allow mongodb to connect to mongodb port
+- Allow java to bind jobss_debug port
+- Fixes for *_admin interfaces
+- Allow iscsid auto-load kernel modules needed for proper iSCSI functionality
+- Need to assign attribute for courier_domain to all courier_domains
+- Fail2ban reads /etc/passwd
+- postfix_virtual will create new files in postfix_spool_t
+- abrt triggers sys_ptrace by running pidof
+- Label ~/abc as mozilla_home_t, since java apps as plugin want to create it
+- Add passenger fixes needed by foreman
+- Remove dup interfaces
+- Add additional interfaces for quantum
+- Add new interfaces for dnsmasq
+- Allow  passenger to read localization and send signull to itself
+- Allow dnsmasq to stream connect to quantum
+- Add quantum_stream_connect()
+- Make sure that mcollective starts the service with the correct labeling
+- Add labels for ~/.manpath
+- Dontaudit attempts by svirt_t to getpw* calls
+- sandbox domains are trying to look at parent process data
+- Allow courior auth to create its pid file in /var/spool/courier subdir
+- Add fixes for beam to have it working with couchdb
+- Add labeling for /run/nm-xl2tpd.con
+- Allow apache to stream connect to thin
+- Add systemd support for amand
+- Make public types usable for fs mount points
+- Call correct mandb interface in domain.te
+- Allow iptables to r/w quantum inherited pipes and send sigchld
+- Allow ifconfig domtrans to iptables and execute ldconfig
+- Add labels for ~/.manpath
+- Allow systemd to read iscsi lib files
+- seunshare is trying to look at parent process data
+
 * Mon Jun 3 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-48
 - Fix openshift_search_lib
 - Add support for abrt-uefioops-oops
