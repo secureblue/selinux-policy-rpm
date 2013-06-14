@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 51%{?dist}
+Release: 52%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -530,6 +530,12 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jun 14 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-52
+- Add labeling for /dev/tgt
+- Dontaudit leak fd from firewalld for modprobe
+- Allow runuser running as rpm_script_t to create netlink_audit socket
+- Allow mdadm to read BIOS non-volatile RAM
+
 * Thu Jun 13 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-51
 - accountservice watches when accounts come and go in wtmp
 - /usr/java/jre1.7.0_21/bin/java needs to create netlink socket
