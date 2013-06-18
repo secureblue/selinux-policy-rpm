@@ -77,6 +77,7 @@ Group: System Environment/Base
 Requires(pre): selinux-policy = %{version}-%{release}
 Requires: m4 checkpolicy >= %{CHECKPOLICYVER}
 Requires: /usr/bin/make
+Requires(post): policycoreutils-devel >= %{POLICYCOREUTILSVER}
 
 %description devel
 SELinux policy development and man page package
@@ -93,6 +94,9 @@ SELinux policy development and man page package
 %{_usr}/share/selinux/devel/Makefile
 %{_usr}/share/selinux/devel/example.*
 %{_usr}/share/selinux/devel/policy.*
+
+%post devel
+selinuxenabled && /usr/bin/sepolgen-ifgen 2>/dev/null 
 
 %package doc
 Summary: SELinux policy documentation
