@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 52%{?dist}
+Release: 53%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -97,6 +97,7 @@ SELinux policy development and man page package
 
 %post devel
 selinuxenabled && /usr/bin/sepolgen-ifgen 2>/dev/null 
+exit 0
 
 %package doc
 Summary: SELinux policy documentation
@@ -534,6 +535,23 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jun 18 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-53
+- Make vdagent able to request loading kernel module
+- Add support for cloud-init make it as unconfined domain
+- Allow snmpd to run smartctl in fsadm_t domain
+- remove duplicate openshift_search_lib() interface
+- Allow mysqld to search openshift lib files
+- Allow openshift cgroup to interact with passedin file descriptors
+- Allow colord to list directories inthe users homedir
+- aide executes prelink to check files
+- Make sure cupsd_t creates content in /etc/cups with the correct label
+- Lest dontaudit apache read all domains, so passenger will not cause this avc
+- Allow gssd to connect to gssproxy
+- systemd-tmpfiles needs to be able to raise the level to fix labeling on /run/setrans in MLS
+- Allow systemd-tmpfiles to relabel also lock files
+- Allow useradd to add homdir in /var/lib/openshift
+- Allow setfiles and semanage to write output to /run/files
+
 * Fri Jun 14 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-52
 - Add labeling for /dev/tgt
 - Dontaudit leak fd from firewalld for modprobe
@@ -726,7 +744,7 @@ SELinux Reference policy mls base module.
 - Allow certwatch to read net_config_t when it executes apache
 - Allow readahead to create /run/systemd and then create its own directory with the correct label
 
-* Fri May 10 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-43
+* Mon May 13 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-43
 - Transition directories and files when in a user_tmp_t directory
 - Change certwatch to domtrans to apache instead of just execute
 - Allow virsh_t to read xen lib files

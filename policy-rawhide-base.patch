@@ -2373,7 +2373,7 @@ index 99e3903..7270808 100644
  
  ########################################
 diff --git a/policy/modules/admin/usermanage.te b/policy/modules/admin/usermanage.te
-index d555767..4165b4d 100644
+index d555767..4065a9a 100644
 --- a/policy/modules/admin/usermanage.te
 +++ b/policy/modules/admin/usermanage.te
 @@ -5,18 +5,18 @@ policy_module(usermanage, 1.18.1)
@@ -2814,10 +2814,10 @@ index d555767..4165b4d 100644
  userdom_use_unpriv_users_fds(useradd_t)
  # Add/remove user home directories
 -userdom_manage_user_home_dirs(useradd_t)
--userdom_home_filetrans_user_home_dir(useradd_t)
+ userdom_home_filetrans_user_home_dir(useradd_t)
 -userdom_manage_user_home_content_dirs(useradd_t)
 -userdom_manage_user_home_content_files(useradd_t)
- userdom_home_filetrans_user_home_dir(useradd_t)
+-userdom_home_filetrans_user_home_dir(useradd_t)
 -userdom_user_home_dir_filetrans_user_home_content(useradd_t, notdevfile_class_set)
 +userdom_manage_home_role(system_r, useradd_t)
 +userdom_delete_all_user_home_content(useradd_t)
@@ -2835,17 +2835,21 @@ index d555767..4165b4d 100644
  optional_policy(`
  	apache_manage_all_user_content(useradd_t)
  ')
-@@ -542,7 +593,8 @@ optional_policy(`
+@@ -542,7 +593,12 @@ optional_policy(`
  ')
  
  optional_policy(`
 -	nscd_run(useradd_t, useradd_roles)
 +	nscd_domtrans(useradd_t)
 +#	nscd_run(useradd_t, useradd_roles)
++')
++
++optional_policy(`
++    openshift_manage_lib_dirs(useradd_t)
  ')
  
  optional_policy(`
-@@ -550,6 +602,11 @@ optional_policy(`
+@@ -550,6 +606,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -2857,7 +2861,7 @@ index d555767..4165b4d 100644
  	tunable_policy(`samba_domain_controller',`
  		samba_append_log(useradd_t)
  	')
-@@ -559,3 +616,12 @@ optional_policy(`
+@@ -559,3 +620,12 @@ optional_policy(`
  	rpm_use_fds(useradd_t)
  	rpm_rw_pipes(useradd_t)
  ')
@@ -5637,7 +5641,7 @@ index b31c054..17e11e0 100644
 +/usr/lib/udev/devices/null	-c	gen_context(system_u:object_r:null_device_t,s0)
 +/usr/lib/udev/devices/zero	-c	gen_context(system_u:object_r:zero_device_t,s0)
 diff --git a/policy/modules/kernel/devices.if b/policy/modules/kernel/devices.if
-index 76f285e..0fc6f53 100644
+index 76f285e..7a424f4 100644
 --- a/policy/modules/kernel/devices.if
 +++ b/policy/modules/kernel/devices.if
 @@ -143,13 +143,32 @@ interface(`dev_relabel_all_dev_nodes',`
@@ -6330,18 +6334,105 @@ index 76f285e..0fc6f53 100644
  ##	</summary>
  ## </param>
  #
-@@ -2975,8 +3250,8 @@ interface(`dev_dontaudit_write_mtrr',`
- 		type mtrr_device_t;
- 	')
+@@ -2903,20 +3178,20 @@ interface(`dev_getattr_mtrr_dev',`
  
--	dontaudit $1 mtrr_device_t:file write;
--	dontaudit $1 mtrr_device_t:chr_file write;
+ ########################################
+ ## <summary>
+-##	Read the memory type range
++##	Write the memory type range
+ ##	registers (MTRR).  (Deprecated)
+ ## </summary>
+ ## <desc>
+ ##	<p>
+-##	Read the memory type range
++##	Write the memory type range
+ ##	registers (MTRR).  This interface has
+ ##	been deprecated, dev_rw_mtrr() should be
+ ##	used instead.
+ ##	</p>
+ ##	<p>
+ ##	The MTRR device ioctls can be used for
+-##	reading and writing; thus, read access to the
+-##	device cannot be separated from write access.
++##	reading and writing; thus, write access to the
++##	device cannot be separated from read access.
+ ##	</p>
+ ## </desc>
+ ## <param name="domain">
+@@ -2925,43 +3200,34 @@ interface(`dev_getattr_mtrr_dev',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`dev_read_mtrr',`
++interface(`dev_write_mtrr',`
+ 	refpolicywarn(`$0($*) has been replaced with dev_rw_mtrr().')
+ 	dev_rw_mtrr($1)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Write the memory type range
+-##	registers (MTRR).  (Deprecated)
++##	Do not audit attempts to write the memory type
++##	range registers (MTRR).
+ ## </summary>
+-## <desc>
+-##	<p>
+-##	Write the memory type range
+-##	registers (MTRR).  This interface has
+-##	been deprecated, dev_rw_mtrr() should be
+-##	used instead.
+-##	</p>
+-##	<p>
+-##	The MTRR device ioctls can be used for
+-##	reading and writing; thus, write access to the
+-##	device cannot be separated from read access.
+-##	</p>
+-## </desc>
+ ## <param name="domain">
+ ##	<summary>
+-##	Domain allowed access.
++##	Domain to not audit.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`dev_write_mtrr',`
+-	refpolicywarn(`$0($*) has been replaced with dev_rw_mtrr().')
+-	dev_rw_mtrr($1)
++interface(`dev_dontaudit_write_mtrr',`
++	gen_require(`
++		type mtrr_device_t;
++	')
++
 +	dontaudit $1 mtrr_device_t:file write_file_perms;
 +	dontaudit $1 mtrr_device_t:chr_file write_chr_file_perms;
  ')
  
  ########################################
-@@ -3144,6 +3419,42 @@ interface(`dev_create_null_dev',`
+ ## <summary>
+-##	Do not audit attempts to write the memory type
++##	Do not audit attempts to read the memory type
+ ##	range registers (MTRR).
+ ## </summary>
+ ## <param name="domain">
+@@ -2970,13 +3236,13 @@ interface(`dev_write_mtrr',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`dev_dontaudit_write_mtrr',`
++interface(`dev_dontaudit_read_mtrr',`
+ 	gen_require(`
+ 		type mtrr_device_t;
+ 	')
+ 
+-	dontaudit $1 mtrr_device_t:file write;
+-	dontaudit $1 mtrr_device_t:chr_file write;
++	dontaudit $1 mtrr_device_t:file { open read };
++	dontaudit $1 mtrr_device_t:chr_file { open read };
+ ')
+ 
+ ########################################
+@@ -3144,6 +3410,42 @@ interface(`dev_create_null_dev',`
  
  ########################################
  ## <summary>
@@ -6384,7 +6475,7 @@ index 76f285e..0fc6f53 100644
  ##	Do not audit attempts to get the attributes
  ##	of the BIOS non-volatile RAM device.
  ## </summary>
-@@ -3163,6 +3474,24 @@ interface(`dev_dontaudit_getattr_nvram_dev',`
+@@ -3163,6 +3465,24 @@ interface(`dev_dontaudit_getattr_nvram_dev',`
  
  ########################################
  ## <summary>
@@ -6409,7 +6500,7 @@ index 76f285e..0fc6f53 100644
  ##	Read and write BIOS non-volatile RAM.
  ## </summary>
  ## <param name="domain">
-@@ -3254,7 +3583,25 @@ interface(`dev_rw_printer',`
+@@ -3254,7 +3574,25 @@ interface(`dev_rw_printer',`
  
  ########################################
  ## <summary>
@@ -6436,7 +6527,7 @@ index 76f285e..0fc6f53 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3262,12 +3609,13 @@ interface(`dev_rw_printer',`
+@@ -3262,12 +3600,13 @@ interface(`dev_rw_printer',`
  ##	</summary>
  ## </param>
  #
@@ -6453,131 +6544,256 @@ index 76f285e..0fc6f53 100644
  ')
  
  ########################################
-@@ -3855,6 +4203,96 @@ interface(`dev_getattr_sysfs_dirs',`
+@@ -3855,7 +4194,7 @@ interface(`dev_getattr_sysfs_dirs',`
  
  ########################################
  ## <summary>
+-##	Search the sysfs directories.
 +##	Set the attributes of sysfs directories.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`dev_setattr_sysfs_dirs',`
-+	gen_require(`
-+		type sysfs_t;
-+	')
-+
-+	allow $1 sysfs_t:dir setattr_dir_perms;
-+')
-+
-+########################################
-+## <summary>
-+##	Get attributes of sysfs filesystems.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`dev_getattr_sysfs_fs',`
-+	gen_require(`
-+		type sysfs_t;
-+	')
-+
-+	allow $1 sysfs_t:filesystem getattr;
-+')
-+
-+########################################
-+## <summary>
-+##	Mount a filesystem on /sys
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allow access.
-+##	</summary>
-+## </param>
-+#
-+interface(`dev_mounton_sysfs',`
-+	gen_require(`
-+		type sysfs_t;
-+	')
-+
-+	allow $1 sysfs_t:dir mounton;
-+')
-+
-+########################################
-+## <summary>
-+##	Mount sysfs filesystems.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`dev_mount_sysfs_fs',`
-+	gen_require(`
-+		type sysfs_t;
-+	')
-+
-+	allow $1 sysfs_t:filesystem mount;
-+')
-+
-+########################################
-+## <summary>
-+##	Unmount sysfs filesystems.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`dev_unmount_sysfs_fs',`
-+	gen_require(`
-+		type sysfs_t;
-+	')
-+
-+	allow $1 sysfs_t:filesystem unmount;
-+')
-+
-+########################################
-+## <summary>
- ##	Search the sysfs directories.
  ## </summary>
  ## <param name="domain">
-@@ -3904,6 +4342,7 @@ interface(`dev_list_sysfs',`
+ ##	<summary>
+@@ -3863,53 +4202,53 @@ interface(`dev_getattr_sysfs_dirs',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`dev_search_sysfs',`
++interface(`dev_setattr_sysfs_dirs',`
+ 	gen_require(`
  		type sysfs_t;
  	')
  
-+	read_lnk_files_pattern($1, sysfs_t, sysfs_t)
- 	list_dirs_pattern($1, sysfs_t, sysfs_t)
+-	search_dirs_pattern($1, sysfs_t, sysfs_t)
++	allow $1 sysfs_t:dir setattr_dir_perms;
  ')
  
-@@ -3946,23 +4385,49 @@ interface(`dev_dontaudit_write_sysfs_dirs',`
+ ########################################
+ ## <summary>
+-##	Do not audit attempts to search sysfs.
++##	Get attributes of sysfs filesystems.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+-##	Domain to not audit.
++##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`dev_dontaudit_search_sysfs',`
++interface(`dev_getattr_sysfs_fs',`
+ 	gen_require(`
+ 		type sysfs_t;
+ 	')
+ 
+-	dontaudit $1 sysfs_t:dir search_dir_perms;
++	allow $1 sysfs_t:filesystem getattr;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	List the contents of the sysfs directories.
++##	Mount a filesystem on /sys
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+-##	Domain allowed access.
++##	Domain allow access.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`dev_list_sysfs',`
++interface(`dev_mounton_sysfs',`
+ 	gen_require(`
+ 		type sysfs_t;
+ 	')
+ 
+-	list_dirs_pattern($1, sysfs_t, sysfs_t)
++	allow $1 sysfs_t:dir mounton;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Write in a sysfs directories.
++##	Mount sysfs filesystems.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -3917,37 +4256,35 @@ interface(`dev_list_sysfs',`
+ ##	</summary>
+ ## </param>
+ #
+-# cjp: added for cpuspeed
+-interface(`dev_write_sysfs_dirs',`
++interface(`dev_mount_sysfs_fs',`
+ 	gen_require(`
+ 		type sysfs_t;
+ 	')
+ 
+-	allow $1 sysfs_t:dir write;
++	allow $1 sysfs_t:filesystem mount;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Do not audit attempts to write in a sysfs directory.
++##	Unmount sysfs filesystems.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+-##	Domain to not audit.
++##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`dev_dontaudit_write_sysfs_dirs',`
++interface(`dev_unmount_sysfs_fs',`
+ 	gen_require(`
+ 		type sysfs_t;
+ 	')
+ 
+-	dontaudit $1 sysfs_t:dir write;
++	allow $1 sysfs_t:filesystem unmount;
+ ')
  
  ########################################
  ## <summary>
 -##	Create, read, write, and delete sysfs
 -##	directories.
-+##	Read cpu online hardware state information.
++##	Search the sysfs directories.
  ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -3955,47 +4292,35 @@ interface(`dev_dontaudit_write_sysfs_dirs',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`dev_manage_sysfs_dirs',`
++interface(`dev_search_sysfs',`
+ 	gen_require(`
+ 		type sysfs_t;
+ 	')
+ 
+-	manage_dirs_pattern($1, sysfs_t, sysfs_t)
++	search_dirs_pattern($1, sysfs_t, sysfs_t)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Read hardware state information.
++##	Do not audit attempts to search sysfs.
+ ## </summary>
+-## <desc>
+-##	<p>
+-##	Allow the specified domain to read the contents of
+-##	the sysfs filesystem.  This filesystem contains
+-##	information, parameters, and other settings on the
+-##	hardware installed on the system.
+-##	</p>
+-## </desc>
+ ## <param name="domain">
+ ##	<summary>
+-##	Domain allowed access.
++##	Domain to not audit.
+ ##	</summary>
+ ## </param>
+-## <infoflow type="read" weight="10"/>
+ #
+-interface(`dev_read_sysfs',`
++interface(`dev_dontaudit_search_sysfs',`
+ 	gen_require(`
+ 		type sysfs_t;
+ 	')
+ 
+-	read_files_pattern($1, sysfs_t, sysfs_t)
+-	read_lnk_files_pattern($1, sysfs_t, sysfs_t)
+-
+-	list_dirs_pattern($1, sysfs_t, sysfs_t)
++	dontaudit $1 sysfs_t:dir search_dir_perms;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Allow caller to modify hardware state information.
++##	List the contents of the sysfs directories.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -4003,20 +4328,18 @@ interface(`dev_read_sysfs',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`dev_rw_sysfs',`
++interface(`dev_list_sysfs',`
+ 	gen_require(`
+ 		type sysfs_t;
+ 	')
+ 
+-	rw_files_pattern($1, sysfs_t, sysfs_t)
+ 	read_lnk_files_pattern($1, sysfs_t, sysfs_t)
+-
+ 	list_dirs_pattern($1, sysfs_t, sysfs_t)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Read and write the TPM device.
++##	Write in a sysfs directories.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -4024,21 +4347,210 @@ interface(`dev_rw_sysfs',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`dev_rw_tpm',`
++# cjp: added for cpuspeed
++interface(`dev_write_sysfs_dirs',`
+ 	gen_require(`
+-		type device_t, tpm_device_t;
++		type sysfs_t;
+ 	')
+ 
+-	rw_chr_files_pattern($1, device_t, tpm_device_t)
++	allow $1 sysfs_t:dir write;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Read from pseudo random number generator devices (e.g., /dev/urandom).
++##	Do not audit attempts to write in a sysfs directory.
+ ## </summary>
+-## <desc>
+-##	<p>
+-##	Allow the specified domain to read from pseudo random number
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`dev_dontaudit_write_sysfs_dirs',`
++	gen_require(`
++		type sysfs_t;
++	')
++
++	dontaudit $1 sysfs_t:dir write;
++')
++
++########################################
++## <summary>
++##	Read cpu online hardware state information.
++## </summary>
 +## <desc>
 +##	<p>
 +##	Allow the specified domain to read /sys/devices/system/cpu/online file.
 +##	</p>
 +## </desc>
- ## <param name="domain">
- ##	<summary>
- ##	Domain allowed access.
- ##	</summary>
- ## </param>
- #
--interface(`dev_manage_sysfs_dirs',`
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
 +interface(`dev_read_cpu_online',`
 +	gen_require(`
 +		type cpu_online_t;
@@ -6598,37 +6814,79 @@ index 76f285e..0fc6f53 100644
 +## </param>
 +#
 +interface(`dev_relabel_cpu_online',`
- 	gen_require(`
++	gen_require(`
 +		type cpu_online_t;
- 		type sysfs_t;
- 	')
- 
--	manage_dirs_pattern($1, sysfs_t, sysfs_t)
++		type sysfs_t;
++	')
++
 +	dev_search_sysfs($1)
 +	allow $1 cpu_online_t:file relabel_file_perms;
- ')
- 
++')
 +
- ########################################
- ## <summary>
- ##	Read hardware state information.
-@@ -4016,7 +4481,7 @@ interface(`dev_rw_sysfs',`
- 
- ########################################
- ## <summary>
--##	Read and write the TPM device.
++
++########################################
++## <summary>
++##	Read hardware state information.
++## </summary>
++## <desc>
++##	<p>
++##	Allow the specified domain to read the contents of
++##	the sysfs filesystem.  This filesystem contains
++##	information, parameters, and other settings on the
++##	hardware installed on the system.
++##	</p>
++## </desc>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <infoflow type="read" weight="10"/>
++#
++interface(`dev_read_sysfs',`
++	gen_require(`
++		type sysfs_t;
++	')
++
++	read_files_pattern($1, sysfs_t, sysfs_t)
++	read_lnk_files_pattern($1, sysfs_t, sysfs_t)
++
++	list_dirs_pattern($1, sysfs_t, sysfs_t)
++')
++
++########################################
++## <summary>
++##	Allow caller to modify hardware state information.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dev_rw_sysfs',`
++	gen_require(`
++		type sysfs_t;
++	')
++
++	rw_files_pattern($1, sysfs_t, sysfs_t)
++	read_lnk_files_pattern($1, sysfs_t, sysfs_t)
++
++	list_dirs_pattern($1, sysfs_t, sysfs_t)
++')
++
++########################################
++## <summary>
 +##	Relabel hardware state directories.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -4024,9 +4489,65 @@ interface(`dev_rw_sysfs',`
- ##	</summary>
- ## </param>
- #
--interface(`dev_rw_tpm',`
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
 +interface(`dev_relabel_sysfs_dirs',`
- 	gen_require(`
--		type device_t, tpm_device_t;
++	gen_require(`
 +		type sysfs_t;
 +	')
 +
@@ -6686,10 +6944,22 @@ index 76f285e..0fc6f53 100644
 +interface(`dev_rw_tpm',`
 +	gen_require(`
 +		type device_t, tpm_device_t;
- 	')
- 
- 	rw_chr_files_pattern($1, device_t, tpm_device_t)
-@@ -4113,6 +4634,25 @@ interface(`dev_write_urand',`
++	')
++
++	rw_chr_files_pattern($1, device_t, tpm_device_t)
++')
++
++########################################
++## <summary>
++##	Read from pseudo random number generator devices (e.g., /dev/urandom).
++## </summary>
++## <desc>
++##	<p>
++##	Allow the specified domain to read from pseudo random number
+ ##	generator devices (e.g., /dev/urandom).  Typically this is
+ ##	used in situations when a cryptographically secure random
+ ##	number is not necessarily needed.  One example is the Stack
+@@ -4113,6 +4625,25 @@ interface(`dev_write_urand',`
  
  ########################################
  ## <summary>
@@ -6715,7 +6985,7 @@ index 76f285e..0fc6f53 100644
  ##	Getattr generic the USB devices.
  ## </summary>
  ## <param name="domain">
-@@ -4409,9 +4949,9 @@ interface(`dev_rw_usbfs',`
+@@ -4409,9 +4940,9 @@ interface(`dev_rw_usbfs',`
  	read_lnk_files_pattern($1, usbfs_t, usbfs_t)
  ')
  
@@ -6727,7 +6997,7 @@ index 76f285e..0fc6f53 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -4419,17 +4959,17 @@ interface(`dev_rw_usbfs',`
+@@ -4419,17 +4950,17 @@ interface(`dev_rw_usbfs',`
  ##	</summary>
  ## </param>
  #
@@ -6750,7 +7020,7 @@ index 76f285e..0fc6f53 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -4437,12 +4977,12 @@ interface(`dev_getattr_video_dev',`
+@@ -4437,12 +4968,12 @@ interface(`dev_getattr_video_dev',`
  ##	</summary>
  ## </param>
  #
@@ -6766,7 +7036,7 @@ index 76f285e..0fc6f53 100644
  ')
  
  ########################################
-@@ -4539,6 +5079,134 @@ interface(`dev_write_video_dev',`
+@@ -4539,6 +5070,134 @@ interface(`dev_write_video_dev',`
  
  ########################################
  ## <summary>
@@ -6901,7 +7171,7 @@ index 76f285e..0fc6f53 100644
  ##	Allow read/write the vhost net device
  ## </summary>
  ## <param name="domain">
-@@ -4557,6 +5225,24 @@ interface(`dev_rw_vhost',`
+@@ -4557,6 +5216,24 @@ interface(`dev_rw_vhost',`
  
  ########################################
  ## <summary>
@@ -6926,7 +7196,7 @@ index 76f285e..0fc6f53 100644
  ##	Read and write VMWare devices.
  ## </summary>
  ## <param name="domain">
-@@ -4762,6 +5448,26 @@ interface(`dev_rw_xserver_misc',`
+@@ -4762,6 +5439,26 @@ interface(`dev_rw_xserver_misc',`
  
  ########################################
  ## <summary>
@@ -6953,7 +7223,7 @@ index 76f285e..0fc6f53 100644
  ##	Read and write to the zero device (/dev/zero).
  ## </summary>
  ## <param name="domain">
-@@ -4851,3 +5557,943 @@ interface(`dev_unconfined',`
+@@ -4851,3 +5548,943 @@ interface(`dev_unconfined',`
  
  	typeattribute $1 devices_unconfined_type;
  ')
@@ -8788,7 +9058,7 @@ index c2c6e05..be423a7 100644
 +/nsr(/.*)?			gen_context(system_u:object_r:var_t,s0)
 +/nsr/logs(/.*)?			gen_context(system_u:object_r:var_log_t,s0)
 diff --git a/policy/modules/kernel/files.if b/policy/modules/kernel/files.if
-index 64ff4d7..455cc6c 100644
+index 64ff4d7..fe6d89c 100644
 --- a/policy/modules/kernel/files.if
 +++ b/policy/modules/kernel/files.if
 @@ -19,6 +19,136 @@
@@ -10464,17 +10734,51 @@ index 64ff4d7..455cc6c 100644
  #
  interface(`files_relabel_all_lock_dirs',`
  	gen_require(`
-@@ -5774,8 +6714,7 @@ interface(`files_getattr_generic_locks',`
+@@ -5761,7 +6701,7 @@ interface(`files_relabel_all_lock_dirs',`
+ 
+ ########################################
+ ## <summary>
+-##	Get the attributes of generic lock files.
++##	Relabel to and from all lock file types.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -5769,13 +6709,33 @@ interface(`files_relabel_all_lock_dirs',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`files_getattr_generic_locks',`
++interface(`files_relabel_all_lock_files',`
+ 	gen_require(`
++		attribute lockfile;
  		type var_t, var_lock_t;
  	')
  
--	allow $1 var_t:dir search_dir_perms;
--	allow $1 var_lock_t:lnk_file read_lnk_file_perms;
+ 	allow $1 var_t:dir search_dir_perms;
+ 	allow $1 var_lock_t:lnk_file read_lnk_file_perms;
++	relabel_files_pattern($1, lockfile, lockfile)
++')
++
++########################################
++## <summary>
++##	Get the attributes of generic lock files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_getattr_generic_locks',`
++	gen_require(`
++		type var_t, var_lock_t;
++	')
++
 +	files_search_locks($1)
  	allow $1 var_lock_t:dir list_dir_perms;
  	getattr_files_pattern($1, var_lock_t, var_lock_t)
  ')
-@@ -5791,13 +6730,12 @@ interface(`files_getattr_generic_locks',`
+@@ -5791,13 +6751,12 @@ interface(`files_getattr_generic_locks',`
  ## </param>
  #
  interface(`files_delete_generic_locks',`
@@ -10492,7 +10796,7 @@ index 64ff4d7..455cc6c 100644
  ')
  
  ########################################
-@@ -5816,9 +6754,7 @@ interface(`files_manage_generic_locks',`
+@@ -5816,9 +6775,7 @@ interface(`files_manage_generic_locks',`
  		type var_t, var_lock_t;
  	')
  
@@ -10503,7 +10807,7 @@ index 64ff4d7..455cc6c 100644
  	manage_files_pattern($1, var_lock_t, var_lock_t)
  ')
  
-@@ -5860,8 +6796,7 @@ interface(`files_read_all_locks',`
+@@ -5860,8 +6817,7 @@ interface(`files_read_all_locks',`
  		type var_t, var_lock_t;
  	')
  
@@ -10513,7 +10817,7 @@ index 64ff4d7..455cc6c 100644
  	allow $1 lockfile:dir list_dir_perms;
  	read_files_pattern($1, lockfile, lockfile)
  	read_lnk_files_pattern($1, lockfile, lockfile)
-@@ -5883,8 +6818,7 @@ interface(`files_manage_all_locks',`
+@@ -5883,8 +6839,7 @@ interface(`files_manage_all_locks',`
  		type var_t, var_lock_t;
  	')
  
@@ -10523,7 +10827,7 @@ index 64ff4d7..455cc6c 100644
  	manage_dirs_pattern($1, lockfile, lockfile)
  	manage_files_pattern($1, lockfile, lockfile)
  	manage_lnk_files_pattern($1, lockfile, lockfile)
-@@ -5921,8 +6855,7 @@ interface(`files_lock_filetrans',`
+@@ -5921,8 +6876,7 @@ interface(`files_lock_filetrans',`
  		type var_t, var_lock_t;
  	')
  
@@ -10533,7 +10837,7 @@ index 64ff4d7..455cc6c 100644
  	filetrans_pattern($1, var_lock_t, $2, $3, $4)
  ')
  
-@@ -5961,7 +6894,7 @@ interface(`files_setattr_pid_dirs',`
+@@ -5961,7 +6915,7 @@ interface(`files_setattr_pid_dirs',`
  		type var_run_t;
  	')
  
@@ -10542,7 +10846,7 @@ index 64ff4d7..455cc6c 100644
  	allow $1 var_run_t:dir setattr;
  ')
  
-@@ -5981,10 +6914,48 @@ interface(`files_search_pids',`
+@@ -5981,10 +6935,48 @@ interface(`files_search_pids',`
  		type var_t, var_run_t;
  	')
  
@@ -10591,7 +10895,7 @@ index 64ff4d7..455cc6c 100644
  ########################################
  ## <summary>
  ##	Do not audit attempts to search
-@@ -6007,6 +6978,25 @@ interface(`files_dontaudit_search_pids',`
+@@ -6007,6 +6999,25 @@ interface(`files_dontaudit_search_pids',`
  
  ########################################
  ## <summary>
@@ -10617,7 +10921,7 @@ index 64ff4d7..455cc6c 100644
  ##	List the contents of the runtime process
  ##	ID directories (/var/run).
  ## </summary>
-@@ -6021,7 +7011,7 @@ interface(`files_list_pids',`
+@@ -6021,7 +7032,7 @@ interface(`files_list_pids',`
  		type var_t, var_run_t;
  	')
  
@@ -10626,7 +10930,7 @@ index 64ff4d7..455cc6c 100644
  	list_dirs_pattern($1, var_t, var_run_t)
  ')
  
-@@ -6040,7 +7030,7 @@ interface(`files_read_generic_pids',`
+@@ -6040,7 +7051,7 @@ interface(`files_read_generic_pids',`
  		type var_t, var_run_t;
  	')
  
@@ -10635,7 +10939,7 @@ index 64ff4d7..455cc6c 100644
  	list_dirs_pattern($1, var_t, var_run_t)
  	read_files_pattern($1, var_run_t, var_run_t)
  ')
-@@ -6060,7 +7050,7 @@ interface(`files_write_generic_pid_pipes',`
+@@ -6060,7 +7071,7 @@ interface(`files_write_generic_pid_pipes',`
  		type var_run_t;
  	')
  
@@ -10644,7 +10948,7 @@ index 64ff4d7..455cc6c 100644
  	allow $1 var_run_t:fifo_file write;
  ')
  
-@@ -6122,7 +7112,6 @@ interface(`files_pid_filetrans',`
+@@ -6122,7 +7133,6 @@ interface(`files_pid_filetrans',`
  	')
  
  	allow $1 var_t:dir search_dir_perms;
@@ -10652,7 +10956,32 @@ index 64ff4d7..455cc6c 100644
  	filetrans_pattern($1, var_run_t, $2, $3, $4)
  ')
  
-@@ -6164,7 +7153,7 @@ interface(`files_rw_generic_pids',`
+@@ -6151,6 +7161,24 @@ interface(`files_pid_filetrans_lock_dir',`
+ 
+ ########################################
+ ## <summary>
++##	rw generic pid files inherited from another process
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_rw_inherited_generic_pid_files',`
++	gen_require(`
++		type var_run_t;
++	')
++
++	allow $1 var_run_t:file rw_inherited_file_perms;
++')
++
++########################################
++## <summary>
+ ##	Read and write generic process ID files.
+ ## </summary>
+ ## <param name="domain">
+@@ -6164,7 +7192,7 @@ interface(`files_rw_generic_pids',`
  		type var_t, var_run_t;
  	')
  
@@ -10661,7 +10990,7 @@ index 64ff4d7..455cc6c 100644
  	list_dirs_pattern($1, var_t, var_run_t)
  	rw_files_pattern($1, var_run_t, var_run_t)
  ')
-@@ -6231,55 +7220,43 @@ interface(`files_dontaudit_ioctl_all_pids',`
+@@ -6231,55 +7259,43 @@ interface(`files_dontaudit_ioctl_all_pids',`
  
  ########################################
  ## <summary>
@@ -10724,7 +11053,7 @@ index 64ff4d7..455cc6c 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6287,42 +7264,35 @@ interface(`files_delete_all_pids',`
+@@ -6287,42 +7303,35 @@ interface(`files_delete_all_pids',`
  ##	</summary>
  ## </param>
  #
@@ -10774,7 +11103,7 @@ index 64ff4d7..455cc6c 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6330,18 +7300,18 @@ interface(`files_manage_all_pids',`
+@@ -6330,18 +7339,18 @@ interface(`files_manage_all_pids',`
  ##	</summary>
  ## </param>
  #
@@ -10798,7 +11127,7 @@ index 64ff4d7..455cc6c 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6349,37 +7319,40 @@ interface(`files_mounton_all_poly_members',`
+@@ -6349,37 +7358,40 @@ interface(`files_mounton_all_poly_members',`
  ##	</summary>
  ## </param>
  #
@@ -10850,7 +11179,7 @@ index 64ff4d7..455cc6c 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6387,18 +7360,17 @@ interface(`files_dontaudit_search_spool',`
+@@ -6387,18 +7399,17 @@ interface(`files_dontaudit_search_spool',`
  ##	</summary>
  ## </param>
  #
@@ -10873,7 +11202,7 @@ index 64ff4d7..455cc6c 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6406,18 +7378,18 @@ interface(`files_list_spool',`
+@@ -6406,18 +7417,18 @@ interface(`files_list_spool',`
  ##	</summary>
  ## </param>
  #
@@ -10897,7 +11226,7 @@ index 64ff4d7..455cc6c 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6425,19 +7397,18 @@ interface(`files_manage_generic_spool_dirs',`
+@@ -6425,19 +7436,18 @@ interface(`files_manage_generic_spool_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -10922,7 +11251,7 @@ index 64ff4d7..455cc6c 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6445,55 +7416,43 @@ interface(`files_read_generic_spool',`
+@@ -6445,45 +7455,312 @@ interface(`files_read_generic_spool',`
  ##	</summary>
  ## </param>
  #
@@ -10973,57 +11302,38 @@ index 64ff4d7..455cc6c 100644
 -		type var_t, var_spool_t;
 +		attribute pidfile;
 +		type var_t, var_run_t;
- 	')
- 
++	')
++
 +	files_search_pids($1)
- 	allow $1 var_t:dir search_dir_perms;
--	filetrans_pattern($1, var_spool_t, $2, $3, $4)
++	allow $1 var_t:dir search_dir_perms;
 +	allow $1 var_run_t:dir rmdir;
 +	allow $1 var_run_t:lnk_file delete_lnk_file_perms;
 +	delete_files_pattern($1, pidfile, pidfile)
 +	delete_fifo_files_pattern($1, pidfile, pidfile)
 +	delete_sock_files_pattern($1, pidfile, { pidfile var_run_t })
- ')
- 
- ########################################
- ## <summary>
--##	Allow access to manage all polyinstantiated
--##	directories on the system.
++')
++
++########################################
++## <summary>
 +##	Delete all process ID directories.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -6501,64 +7460,814 @@ interface(`files_spool_filetrans',`
- ##	</summary>
- ## </param>
- #
--interface(`files_polyinstantiate_all',`
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
 +interface(`files_delete_all_pid_dirs',`
- 	gen_require(`
--		attribute polydir, polymember, polyparent;
--		type poly_t;
++	gen_require(`
 +		attribute pidfile;
 +		type var_t, var_run_t;
- 	')
- 
--	# Need to give access to /selinux/member
--	selinux_compute_member($1)
--
--	# Need sys_admin capability for mounting
--	allow $1 self:capability { chown fsetid sys_admin fowner };
--
--	# Need to give access to the directories to be polyinstantiated
--	allow $1 polydir:dir { create open getattr search write add_name setattr mounton rmdir };
--
--	# Need to give access to the polyinstantiated subdirectories
--	allow $1 polymember:dir search_dir_perms;
++	')
++
 +	files_search_pids($1)
 +	allow $1 var_t:dir search_dir_perms;
 +	delete_dirs_pattern($1, pidfile, pidfile)
 +')
- 
--	# Need to give access to parent directories where original
--	# is remounted for polyinstantiation aware programs (like gdm)
++
 +########################################
 +## <summary>
 +##	Make the specified type a file
@@ -11275,89 +11585,13 @@ index 64ff4d7..455cc6c 100644
 +interface(`files_spool_filetrans',`
 +	gen_require(`
 +		type var_t, var_spool_t;
-+	')
-+
-+	allow $1 var_t:dir search_dir_perms;
-+	filetrans_pattern($1, var_spool_t, $2, $3, $4)
-+')
-+
-+########################################
-+## <summary>
-+##	Allow access to manage all polyinstantiated
-+##	directories on the system.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`files_polyinstantiate_all',`
-+	gen_require(`
-+		attribute polydir, polymember, polyparent;
-+		type poly_t;
-+	')
-+
-+	# Need to give access to /selinux/member
-+	selinux_compute_member($1)
-+
-+	# Need sys_admin capability for mounting
-+	allow $1 self:capability { chown fsetid sys_admin fowner };
-+
-+	# Need to give access to the directories to be polyinstantiated
-+	allow $1 polydir:dir { create open getattr search write add_name setattr mounton rmdir };
-+
-+	# Need to give access to the polyinstantiated subdirectories
-+	allow $1 polymember:dir search_dir_perms;
-+
-+	# Need to give access to parent directories where original
-+	# is remounted for polyinstantiation aware programs (like gdm)
- 	allow $1 polyparent:dir { getattr mounton };
+ 	')
  
--	# Need to give permission to create directories where applicable
--	allow $1 self:process setfscreate;
--	allow $1 polymember: dir { create setattr relabelto };
--	allow $1 polydir: dir { write add_name open };
--	allow $1 polyparent:dir { open read write remove_name add_name relabelfrom relabelto };
-+	# Need to give permission to create directories where applicable
-+	allow $1 self:process setfscreate;
-+	allow $1 polymember: dir { create setattr relabelto };
-+	allow $1 polydir: dir { write add_name open };
-+	allow $1 polyparent:dir { open read write remove_name add_name relabelfrom relabelto };
-+
-+	# Default type for mountpoints
-+	allow $1 poly_t:dir { create mounton };
-+	fs_unmount_xattr_fs($1)
-+
-+	fs_mount_tmpfs($1)
-+	fs_unmount_tmpfs($1)
-+
-+	ifdef(`distro_redhat',`
-+		# namespace.init
-+		files_search_tmp($1)
-+		files_search_home($1)
-+		corecmd_exec_bin($1)
-+		seutil_domtrans_setfiles($1)
-+	')
-+')
-+
-+########################################
-+## <summary>
-+##	Unconfined access to files.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`files_unconfined',`
-+	gen_require(`
-+		attribute files_unconfined_type;
-+	')
-+
-+	typeattribute $1 files_unconfined_type;
-+')
+ 	allow $1 var_t:dir search_dir_perms;
+@@ -6562,3 +7839,474 @@ interface(`files_unconfined',`
+ 
+ 	typeattribute $1 files_unconfined_type;
+ ')
 +
 +########################################
 +## <summary>
@@ -11483,15 +11717,10 @@ index 64ff4d7..455cc6c 100644
 +	gen_require(`
 +		attribute tmpfsfile;
 +	')
- 
--	# Default type for mountpoints
--	allow $1 poly_t:dir { create mounton };
--	fs_unmount_xattr_fs($1)
++
 +	allow $1 tmpfsfile:file { read write };
 +')
- 
--	fs_mount_tmpfs($1)
--	fs_unmount_tmpfs($1)
++
 +########################################
 +## <summary>
 +##	Do not audit attempts to read security files 
@@ -11506,13 +11735,7 @@ index 64ff4d7..455cc6c 100644
 +	gen_require(`
 +		attribute security_file_type;
 +	')
- 
--	ifdef(`distro_redhat',`
--		# namespace.init
--		files_search_tmp($1)
--		files_search_home($1)
--		corecmd_exec_bin($1)
--		seutil_domtrans_setfiles($1)
++
 +	dontaudit $1 security_file_type:file read_file_perms;
 +')
 +
@@ -11534,36 +11757,32 @@ index 64ff4d7..455cc6c 100644
 +interface(`files_rw_all_inherited_files',`
 +	gen_require(`
 +		attribute file_type;
- 	')
++	')
 +
 +	allow $1 { file_type $2 }:file rw_inherited_file_perms;
 +	allow $1 { file_type $2 }:fifo_file rw_inherited_fifo_file_perms;
 +	allow $1 { file_type $2 }:sock_file rw_inherited_sock_file_perms;
 +	allow $1 { file_type $2 }:chr_file rw_inherited_chr_file_perms;
- ')
- 
- ########################################
- ## <summary>
--##	Unconfined access to files.
++')
++
++########################################
++## <summary>
 +##	Allow any file point to be the entrypoint of this domain
- ## </summary>
- ## <param name="domain">
- ##	<summary>
- ##	Domain allowed access.
- ##	</summary>
- ## </param>
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
 +## <rolecap/>
- #
--interface(`files_unconfined',`
++#
 +interface(`files_entrypoint_all_files',`
- 	gen_require(`
--		attribute files_unconfined_type;
++	gen_require(`
 +		attribute file_type;
- 	')
++	')
 +	allow $1 file_type:file entrypoint;
 +')
- 
--	typeattribute $1 files_unconfined_type;
++
 +########################################
 +## <summary>
 +##	Do not audit attempts to rw inherited file perms
@@ -11758,7 +11977,7 @@ index 64ff4d7..455cc6c 100644
 +	')
 +	files_type($1)
 +	typeattribute $1 base_file_type;
- ')
++')
 +
 +########################################
 +## <summary>
@@ -32936,7 +33155,7 @@ index 3822072..1029e3b 100644
 +    userdom_admin_home_dir_filetrans($1, default_context_t, file, ".default_context")
 +')
 diff --git a/policy/modules/system/selinuxutil.te b/policy/modules/system/selinuxutil.te
-index ec01d0b..73ef1e8 100644
+index ec01d0b..64db314 100644
 --- a/policy/modules/system/selinuxutil.te
 +++ b/policy/modules/system/selinuxutil.te
 @@ -11,14 +11,17 @@ gen_require(`
@@ -33373,11 +33592,11 @@ index ec01d0b..73ef1e8 100644
 -auth_use_nsswitch(semanage_t)
 -
 -locallogin_use_fds(semanage_t)
+-
+-logging_send_syslog_msg(semanage_t)
 +# Admins are creating pp files in random locations
 +files_read_non_security_files(semanage_t)
  
--logging_send_syslog_msg(semanage_t)
--
 -miscfiles_read_localization(semanage_t)
 -
 -seutil_libselinux_linked(semanage_t)
@@ -33465,7 +33684,7 @@ index ec01d0b..73ef1e8 100644
  ')
  
  ########################################
-@@ -522,108 +599,178 @@ ifdef(`distro_ubuntu',`
+@@ -522,108 +599,181 @@ ifdef(`distro_ubuntu',`
  # Setfiles local policy
  #
  
@@ -33547,12 +33766,12 @@ index ec01d0b..73ef1e8 100644
 +	# pki is leaking
 +	pki_dontaudit_write_log(setfiles_t)
 +')
- 
--seutil_libselinux_linked(setfiles_t)
++
 +optional_policy(`
 +	xserver_append_xdm_tmp_files(setfiles_t)
 +')
-+
+ 
+-seutil_libselinux_linked(setfiles_t)
 +ifdef(`hide_broken_symptoms',`
 +
 +	optional_policy(`
@@ -33729,6 +33948,9 @@ index ec01d0b..73ef1e8 100644
 +
 +userdom_dontaudit_write_user_home_content_files(policy_manager_domain)
 +userdom_use_user_ptys(policy_manager_domain)
++
++files_rw_inherited_generic_pid_files(setfiles_domain)
++files_rw_inherited_generic_pid_files(seutil_semanage_domain)
 diff --git a/policy/modules/system/setrans.fc b/policy/modules/system/setrans.fc
 index bea4629..06e2834 100644
 --- a/policy/modules/system/setrans.fc
@@ -35732,10 +35954,10 @@ index 0000000..2e5b822
 +')
 diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
 new file mode 100644
-index 0000000..35c1a7d
+index 0000000..87474b2
 --- /dev/null
 +++ b/policy/modules/system/systemd.te
-@@ -0,0 +1,645 @@
+@@ -0,0 +1,647 @@
 +policy_module(systemd, 1.0.0)
 +
 +#######################################
@@ -36037,6 +36259,7 @@ index 0000000..35c1a7d
 +files_getattr_all_sockets(systemd_tmpfiles_t)
 +files_getattr_all_symlinks(systemd_tmpfiles_t)
 +files_relabel_all_lock_dirs(systemd_tmpfiles_t)
++files_relabel_all_lock_files(systemd_tmpfiles_t)
 +files_relabel_all_pid_dirs(systemd_tmpfiles_t)
 +files_relabel_all_pid_files(systemd_tmpfiles_t)
 +files_relabel_all_spool_dirs(systemd_tmpfiles_t)
@@ -36060,6 +36283,7 @@ index 0000000..35c1a7d
 +
 +mls_file_read_all_levels(systemd_tmpfiles_t)
 +mls_file_write_all_levels(systemd_tmpfiles_t)
++mls_file_upgrade(systemd_tmpfiles_t)
 +
 +selinux_get_enforce_mode(systemd_tmpfiles_t)
 +
