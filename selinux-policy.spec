@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 53%{?dist}
+Release: 54%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -535,6 +535,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jun 19 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-54
+- Don't audit access checks by sandbox xserver on xdb var_lib
+- Allow ntop to read usbmon devices
+- Add labeling for new polcykit authorizor
+- Dontaudit access checks from fail2ban_client
+- Don't audit access checks by sandbox xserver on xdb var_lib
+- Allow apps that connect to xdm stream to conenct to xdm_dbusd_t stream
+- Fix labeling for all /usr/bim/razor-lightdm-* binaries
+- Add filename trans for /dev/md126p1
+
 * Tue Jun 18 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-53
 - Make vdagent able to request loading kernel module
 - Add support for cloud-init make it as unconfined domain

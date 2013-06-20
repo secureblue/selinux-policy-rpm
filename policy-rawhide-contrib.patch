@@ -10904,7 +10904,7 @@ index 32e8265..0de4af3 100644
 +	allow $1 chronyd_unit_file_t:service all_service_perms;
  ')
 diff --git a/chronyd.te b/chronyd.te
-index 914ee2d..770ae51 100644
+index 914ee2d..1544e9b 100644
 --- a/chronyd.te
 +++ b/chronyd.te
 @@ -18,6 +18,9 @@ files_type(chronyd_keys_t)
@@ -10934,10 +10934,12 @@ index 914ee2d..770ae51 100644
  allow chronyd_t chronyd_keys_t:file read_file_perms;
  
  manage_dirs_pattern(chronyd_t, chronyd_tmpfs_t, chronyd_tmpfs_t)
-@@ -76,18 +83,17 @@ corenet_sendrecv_chronyd_server_packets(chronyd_t)
+@@ -76,18 +83,19 @@ corenet_sendrecv_chronyd_server_packets(chronyd_t)
  corenet_udp_bind_chronyd_port(chronyd_t)
  corenet_udp_sendrecv_chronyd_port(chronyd_t)
  
++domain_dontaudit_getsession_all_domains(chronyd_t)
++
 +dev_read_rand(chronyd_t)
 +dev_read_urand(chronyd_t)
 +
@@ -23011,7 +23013,7 @@ index 50d0084..6565422 100644
  
  	fail2ban_run_client($1, $2)
 diff --git a/fail2ban.te b/fail2ban.te
-index 0872e50..5d49b4f 100644
+index 0872e50..d336d7f 100644
 --- a/fail2ban.te
 +++ b/fail2ban.te
 @@ -65,7 +65,6 @@ kernel_read_system_state(fail2ban_t)
@@ -23056,7 +23058,15 @@ index 0872e50..5d49b4f 100644
  	iptables_domtrans(fail2ban_t)
  ')
  
-@@ -137,14 +137,12 @@ corecmd_exec_bin(fail2ban_client_t)
+@@ -129,6 +129,7 @@ allow fail2ban_client_t self:unix_stream_socket { create connect write read };
+ 
+ domtrans_pattern(fail2ban_client_t, fail2ban_exec_t, fail2ban_t)
+ 
++dontaudit fail2ban_client_t fail2ban_var_run_t:dir_file_class_set audit_access;
+ stream_connect_pattern(fail2ban_client_t, fail2ban_var_run_t, fail2ban_var_run_t, fail2ban_t)
+ 
+ kernel_read_system_state(fail2ban_client_t)
+@@ -137,14 +138,12 @@ corecmd_exec_bin(fail2ban_client_t)
  
  domain_use_interactive_fds(fail2ban_client_t)
  
@@ -27140,7 +27150,7 @@ index d03fd43..26023f7 100644
 +    type_transition $1 gkeyringd_exec_t:process $2;
  ')
 diff --git a/gnome.te b/gnome.te
-index 20f726b..6af4e62 100644
+index 20f726b..8e905be 100644
 --- a/gnome.te
 +++ b/gnome.te
 @@ -1,18 +1,36 @@
@@ -27368,7 +27378,7 @@ index 20f726b..6af4e62 100644
 +')
 +
 +optional_policy(`
-+ 	gnome_read_home_config(gnomesystemmm_t)
++ 	gnome_manage_home_config(gnomesystemmm_t)
 +')
 +
 +optional_policy(`
@@ -37396,11 +37406,104 @@ index 0000000..67b8b3d
 +tunable_policy(`mock_enable_homedirs',`
 +	userdom_read_user_home_content_files(mock_build_t)
 +')
+diff --git a/modemmanager.fc b/modemmanager.fc
+index a83894c..481dca3 100644
+--- a/modemmanager.fc
++++ b/modemmanager.fc
+@@ -1 +1,4 @@
+ /usr/sbin/modem-manager	--	gen_context(system_u:object_r:modemmanager_exec_t,s0)
++/usr/sbin/ModemManager	--	gen_context(system_u:object_r:modemmanager_exec_t,s0)
++
++/usr/lib/systemd/system/ModemManager.service		--	gen_context(system_u:object_r:modemmanager_unit_file_t,s0)
+diff --git a/modemmanager.if b/modemmanager.if
+index b1ac8b5..90ca430 100644
+--- a/modemmanager.if
++++ b/modemmanager.if
+@@ -21,6 +21,30 @@ interface(`modemmanager_domtrans',`
+ 
+ ########################################
+ ## <summary>
++##	Execute modemmanager server in the modemmanager domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`modemmanager_systemctl',`
++	gen_require(`
++		type modemmanager_t;
++		type modemmanager_unit_file_t;
++	')
++
++	systemd_exec_systemctl($1)
++        systemd_read_fifo_file_password_run($1)
++	allow $1 modemmanager_unit_file_t:file read_file_perms;
++	allow $1 modemmanager_unit_file_t:service manage_service_perms;
++
++	ps_process_pattern($1, modemmanager_t)
++')
++
++########################################
++## <summary>
+ ##	Send and receive messages from
+ ##	modemmanager over dbus.
+ ## </summary>
+@@ -39,3 +63,38 @@ interface(`modemmanager_dbus_chat',`
+ 	allow $1 modemmanager_t:dbus send_msg;
+ 	allow modemmanager_t $1:dbus send_msg;
+ ')
++
++########################################
++## <summary>
++##	All of the rules required to administrate
++##	an modemmanager environment
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	Role allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`modemmanager_admin',`
++	gen_require(`
++		type modemmanager_t;
++		type modemmanager_unit_file_t;
++	')
++
++	allow $1 modemmanager_t:process { ptrace signal_perms };
++	ps_process_pattern($1, modemmanager_t)
++
++	modemmanager_systemctl($1)
++	admin_pattern($1, modemmanager_unit_file_t)
++	allow $1 modemmanager_unit_file_t:service all_service_perms;
++	optional_policy(`
++		systemd_passwd_agent_exec($1)
++		systemd_read_fifo_file_passwd_run($1)
++	')
++')
 diff --git a/modemmanager.te b/modemmanager.te
-index cb4c13d..d744144 100644
+index cb4c13d..ab6fb25 100644
 --- a/modemmanager.te
 +++ b/modemmanager.te
-@@ -27,12 +27,12 @@ kernel_read_system_state(modemmanager_t)
+@@ -11,6 +11,9 @@ init_daemon_domain(modemmanager_t, modemmanager_exec_t)
+ typealias modemmanager_t alias ModemManager_t;
+ typealias modemmanager_exec_t alias ModemManager_exec_t;
+ 
++type modemmanager_unit_file_t;
++systemd_unit_file(modemmanager_unit_file_t)
++
+ ########################################
+ #
+ # Local policy
+@@ -27,12 +30,12 @@ kernel_read_system_state(modemmanager_t)
  dev_read_sysfs(modemmanager_t)
  dev_rw_modem(modemmanager_t)
  
@@ -47550,7 +47653,7 @@ index 0000000..7d839fe
 +	pulseaudio_setattr_home_dir(nsplugin_t)
 +')
 diff --git a/ntop.te b/ntop.te
-index 52757d8..638c3d2 100644
+index 52757d8..6ce5c69 100644
 --- a/ntop.te
 +++ b/ntop.te
 @@ -58,7 +58,6 @@ kernel_read_system_state(ntop_t)
@@ -47561,7 +47664,12 @@ index 52757d8..638c3d2 100644
  corenet_all_recvfrom_netlabel(ntop_t)
  corenet_tcp_sendrecv_generic_if(ntop_t)
  corenet_raw_sendrecv_generic_if(ntop_t)
-@@ -81,7 +80,6 @@ dev_rw_generic_usb_dev(ntop_t)
+@@ -78,10 +77,11 @@ corenet_tcp_sendrecv_http_port(ntop_t)
+ 
+ dev_read_sysfs(ntop_t)
+ dev_rw_generic_usb_dev(ntop_t)
++dev_read_usbmon_dev(ntop_t)
++dev_write_usbmon_dev(ntop_t)
  
  domain_use_interactive_fds(ntop_t)
  
@@ -49990,10 +50098,10 @@ index 0000000..bddd4b3
 +')
 diff --git a/openshift.te b/openshift.te
 new file mode 100644
-index 0000000..877c71a
+index 0000000..35f9df0
 --- /dev/null
 +++ b/openshift.te
-@@ -0,0 +1,546 @@
+@@ -0,0 +1,547 @@
 +policy_module(openshift,1.0.0)
 +
 +gen_require(`
@@ -50041,6 +50149,7 @@ index 0000000..877c71a
 +files_pid_file(openshift_var_run_t)
 +
 +type openshift_var_lib_t, openshift_file_type;
++userdom_user_home_content(openshift_var_lib_t)
 +files_poly(openshift_var_lib_t)
 +files_poly_parent(openshift_var_lib_t)
 +files_mountpoint(openshift_var_lib_t)
@@ -54227,10 +54336,10 @@ index a14b3bc..b196183 100644
  
  userdom_signal_unpriv_users(podsleuth_t)
 diff --git a/policykit.fc b/policykit.fc
-index 1d76c72..4718a93 100644
+index 1d76c72..eeb33d9 100644
 --- a/policykit.fc
 +++ b/policykit.fc
-@@ -1,23 +1,20 @@
+@@ -1,23 +1,21 @@
 -/usr/lib/polkit-1/polkitd	--	gen_context(system_u:object_r:policykit_exec_t,s0)
 -/usr/lib/polkit-1/polkit-agent-helper-1	--	gen_context(system_u:object_r:policykit_auth_exec_t,s0)
 -
@@ -54241,6 +54350,7 @@ index 1d76c72..4718a93 100644
 -/usr/lib/policykit-1/polkit-agent-helper-1	--	gen_context(system_u:object_r:policykit_auth_exec_t,s0)
 -/usr/lib/policykit-1/polkitd	--	gen_context(system_u:object_r:policykit_exec_t,s0)
 +/usr/lib/policykit/polkit-read-auth-helper --	gen_context(system_u:object_r:policykit_auth_exec_t,s0)
++/usr/bin/pkla-check-authorization 	   --	gen_context(system_u:object_r:policykit_auth_exec_t,s0)
 +/usr/lib/policykit/polkit-grant-helper.*   --	gen_context(system_u:object_r:policykit_grant_exec_t,s0)
 +/usr/lib/policykit/polkit-resolve-exe-helper.* -- gen_context(system_u:object_r:policykit_resolve_exec_t,s0)
 +/usr/lib/policykit/polkitd		--	gen_context(system_u:object_r:policykit_exec_t,s0)
@@ -74663,10 +74773,10 @@ index 0000000..5da5bff
 +')
 diff --git a/sandboxX.te b/sandboxX.te
 new file mode 100644
-index 0000000..81198c3
+index 0000000..cb720ee
 --- /dev/null
 +++ b/sandboxX.te
-@@ -0,0 +1,463 @@
+@@ -0,0 +1,465 @@
 +policy_module(sandboxX,1.0.0)
 +
 +dbus_stub()
@@ -74774,6 +74884,8 @@ index 0000000..81198c3
 +userdom_dontaudit_search_user_home_content(sandbox_xserver_t)
 +userdom_dontaudit_rw_user_tmp_pipes(sandbox_xserver_t)
 +
++xserver_read_xkb_libs(sandbox_xserver_t)
++xserver_dontaudit_xkb_libs_access(sandbox_xserver_t)
 +xserver_entry_type(sandbox_xserver_t)
 +
 +optional_policy(`
