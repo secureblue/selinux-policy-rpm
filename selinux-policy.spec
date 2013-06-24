@@ -435,6 +435,10 @@ SELinux Reference policy targeted base module.
 %postInstall $1 targeted
 exit 0
 
+%triggerin -- pcre
+selinuxenabled && semodule -nB
+exit 0
+
 %triggerpostun targeted -- selinux-policy-targeted < 3.12.1-7.fc19
 restorecon -R -p /home
 exit 0
