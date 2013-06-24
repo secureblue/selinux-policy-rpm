@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 54%{?dist}
+Release: 56%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -535,6 +535,42 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jun 24 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-56
+- Allow lvm_t to create default targets for filesystem handling
+- Fix labeling for razor-lightdm binaries
+- Allow insmod_t to read any file labeled var_lib_t
+- Add policy for pesign
+- Activate policy for cmpiLMI_Account-cimprovagt
+- Allow isnsd syscall=listen
+- /usr/libexec/pegasus/cimprovagt needs setsched caused by sched_setscheduler
+- Allow ctdbd to use udp/4379
+- gatherd wants sys_nice and setsched
+- Add support for texlive2012
+- Allow NM to read file_t (usb stick with no labels used to transfer keys for example)
+- Allow cobbler to execute apache with domain transition
+
+* Fri Jun 21 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-55
+- condor_collector uses tcp/9000
+- Label /usr/sbin/virtlockd as virtd_exec_t for now
+- Allow cobbler to execute ldconfig
+- Allow NM to execute ssh
+- Allow mdadm to read /dev/crash
+- Allow antivirus domains to connect to snmp port
+- Make amavisd-snmp working correctly
+- Allow nfsd_t to mounton nfsd_fs_t
+- Add initial snapper policy
+- We still need to have consolekit policy
+- Dontaudit firefox attempting to connect to the xserver_port_t if run within sandbox_web_t
+- Dontaudit sandbox apps attempting to open user_devpts_t
+- Allow dirsrv to read network state
+- Fix pki_read_tomcat_lib_files
+- Add labeling for /usr/libexec/nm-ssh-service
+- Add label cert_t for /var/lib/ipa/pki-ca/publish
+- Lets label /sys/fs/cgroup as cgroup_t for now, to keep labels consistant
+- Allow nfsd_t to mounton nfsd_fs_t
+- Dontaudit sandbox apps attempting to open user_devpts_t
+- Allow passwd_t to change role to system_r from unconfined_r
+
 * Wed Jun 19 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-54
 - Don't audit access checks by sandbox xserver on xdb var_lib
 - Allow ntop to read usbmon devices
