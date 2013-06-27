@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 56%{?dist}
+Release: 57%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -539,6 +539,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jun 26 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-57
+- Make DSPAM to act as a LDA working
+- Allow ntop to create netlink socket
+- Allow policykit to send a signal to policykit-auth
+- Allow stapserver to dbus chat with avahi/systemd-logind
+- Fix labeling on haproxy unit file
+- Clean up haproxy policy
+- A new policy for haproxy and placed it to rhcs.te
+- Add support for ldirectord and treat it with cluster_t
+- Make sure anaconda log dir is created with var_log_t
+
 * Mon Jun 24 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-56
 - Allow lvm_t to create default targets for filesystem handling
 - Fix labeling for razor-lightdm binaries

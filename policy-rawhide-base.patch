@@ -29915,7 +29915,7 @@ index b50c5fe..2faaaf2 100644
 +/var/webmin(/.*)?		gen_context(system_u:object_r:var_log_t,s0)
 +
 diff --git a/policy/modules/system/logging.if b/policy/modules/system/logging.if
-index 4e94884..5481f47 100644
+index 4e94884..55d2481 100644
 --- a/policy/modules/system/logging.if
 +++ b/policy/modules/system/logging.if
 @@ -233,7 +233,7 @@ interface(`logging_run_auditd',`
@@ -30011,11 +30011,18 @@ index 4e94884..5481f47 100644
  	gen_require(`
 -		type syslogd_t, devlog_t;
 +		attribute syslog_client_type;
-+	')
-+
+ 	')
+ 
+-	allow $1 devlog_t:lnk_file read_lnk_file_perms;
+-	allow $1 devlog_t:sock_file write_sock_file_perms;
 +	typeattribute $1 syslog_client_type;
 +')
-+
+ 
+-	# the type of socket depends on the syslog daemon
+-	allow $1 syslogd_t:unix_dgram_socket sendto;
+-	allow $1 syslogd_t:unix_stream_socket connectto;
+-	allow $1 self:unix_dgram_socket create_socket_perms;
+-	allow $1 self:unix_stream_socket create_socket_perms;
 +########################################
 +## <summary>
 +##	Connect to the syslog control unix stream socket.
@@ -30030,7 +30037,11 @@ index 4e94884..5481f47 100644
 +	gen_require(`
 +		type devlog_t;
 +	')
-+
+ 
+-	# If syslog is down, the glibc syslog() function
+-	# will write to the console.
+-	term_write_console($1)
+-	term_dontaudit_read_console($1)
 +	allow $1 devlog_t:sock_file manage_sock_file_perms;
 +	dev_filetrans($1, devlog_t, sock_file)
 +	init_pid_filetrans($1, devlog_t, sock_file, "syslog")
@@ -30067,18 +30078,11 @@ index 4e94884..5481f47 100644
 +interface(`logging_relabel_syslog_pid_socket',`
 +	gen_require(`
 +		type devlog_t;
- 	')
- 
--	allow $1 devlog_t:lnk_file read_lnk_file_perms;
--	allow $1 devlog_t:sock_file write_sock_file_perms;
++	')
++
 +	allow $1 syslogd_var_run_t:sock_file relabel_sock_file_perms;
 +')
- 
--	# the type of socket depends on the syslog daemon
--	allow $1 syslogd_t:unix_dgram_socket sendto;
--	allow $1 syslogd_t:unix_stream_socket connectto;
--	allow $1 self:unix_dgram_socket create_socket_perms;
--	allow $1 self:unix_stream_socket create_socket_perms;
++
 +########################################
 +## <summary>
 +##	Connect to the syslog control unix stream socket.
@@ -30093,11 +30097,7 @@ index 4e94884..5481f47 100644
 +	gen_require(`
 +		type syslogd_t, syslogd_var_run_t;
 +	')
- 
--	# If syslog is down, the glibc syslog() function
--	# will write to the console.
--	term_write_console($1)
--	term_dontaudit_read_console($1)
++
 +	files_search_pids($1)
 +	stream_connect_pattern($1, syslogd_var_run_t, syslogd_var_run_t, syslogd_t)
  ')
@@ -30288,7 +30288,7 @@ index 4e94884..5481f47 100644
  
  	init_labeled_script_domtrans($1, syslogd_initrc_exec_t)
  	domain_system_change_exemption($1)
-@@ -1085,3 +1323,33 @@ interface(`logging_admin',`
+@@ -1085,3 +1323,35 @@ interface(`logging_admin',`
  	logging_admin_audit($1, $2)
  	logging_admin_syslog($1, $2)
  ')
@@ -30321,6 +30321,8 @@ index 4e94884..5481f47 100644
 +    files_etc_filetrans($1, syslog_conf_t, file, "rsyslog.conf")
 +
 +	init_named_pid_filetrans($1, syslogd_var_run_t, dir, "journal")
++
++    logging_log_filetrans($1, var_log_t, dir, "anaconda")
 +')
 diff --git a/policy/modules/system/logging.te b/policy/modules/system/logging.te
 index 39ea221..7094526 100644
