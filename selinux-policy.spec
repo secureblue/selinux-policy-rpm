@@ -158,7 +158,7 @@ bzip2 -c %{buildroot}/%{_usr}/share/selinux/%1/base.pp  > %{buildroot}/%{_syscon
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/base.pp  \
 for i in %{buildroot}/%{_usr}/share/selinux/%1/*.pp; do bzip2 -c $i > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/`basename $i`; done \
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/*pp*  \
-touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.disabled \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.pp.disabled \
 /usr/sbin/semodule -s %1 -n -B -p %{buildroot}; \
 /usr/bin/sha512sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policy.sha512; \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts  \
@@ -188,7 +188,7 @@ rm -f %{buildroot}/%{_sysconfigdir}/selinux/%1/modules/active/policy.kern
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/homedir_template \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.disabled \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.pp.disabled \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.local \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.bin \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/seusers \
