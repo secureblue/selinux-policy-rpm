@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 57%{?dist}
+Release: 58%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -539,6 +539,20 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jun 28 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-58
+- Shrink the size of policy by moving to attributes, also add dridomain so that mozilla_plugin can follow selinuxuse_dri boolean. 
+- Allow bootloader to manage generic log files 
+- Allow ftp to bind to port 989 
+- Fix label of new gear directory 
+- Add support for new directory /var/lib/openshift/gears/ 
+- Add openshift_manage_lib_dirs() 
+- allow virtd domains to manage setrans_var_run_t 
+- Allow useradd to manage all openshift content 
+- Add support so that mozilla_plugin_t can use dri devices 
+- Allow chronyd to change the scheduler 
+- Allow apmd to shut downthe system 
+- Devicekit_disk_t needs to manage /etc/fstab
+
 * Wed Jun 26 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-57
 - Make DSPAM to act as a LDA working
 - Allow ntop to create netlink socket
