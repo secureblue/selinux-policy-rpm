@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 58%{?dist}
+Release: 59%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -539,6 +539,47 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jul 3 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-59
+- Add prosody policy written by Michael Scherer
+- Allow nagios plugins to read /sys info
+- ntpd needs to manage own log files
+- Add support for HOME_DIR/.IBMERS
+- Allow iptables commands to read firewalld config
+- Allow consolekit_t to read utmp
+- Fix filename transitions on .razor directory
+- Add additional fixes to make DSPAM with LDA working
+- Allow snort to read /etc/passwd
+- Allow fail2ban to communicate with firewalld over dbus
+- Dontaudit openshift_cgreoup_file_t read/write leaked dev
+- Allow nfsd to use mountd port
+- Call th proper interface
+- Allow openvswitch to read sys and execute plymouth
+- Allow tmpwatch to read /var/spool/cups/tmp
+- Add support for /usr/libexec/telepathy-rakia
+- Add systemd support for zoneminder
+- Allow mysql to create files/directories under /var/log/mysql
+- Allow zoneminder apache scripts to rw zoneminder tmpfs
+- Allow httpd to manage zoneminder lib files
+- Add zoneminder_run_sudo boolean to allow to start zoneminder
+- Allow zoneminder to send mails
+- gssproxy_t sock_file can be under /var/lib
+- Allow web domains to connect to whois port.
+- Allow sandbox_web_type to connect to the same ports as mozilla_plugin_t.
+- We really need to add an interface to corenet to define what a web_client_domain is and
+- then define chrome_sandbox_t, mozilla_plugin_t and sandbox_web_type to that domain.
+- Add labeling for cmpiLMI_LogicalFile-cimprovagt
+- Also make pegasus_openlmi_logicalfile_t as unconfined to have unconfined_domain attribute for filename trans rules
+- Update policy rules for pegasus_openlmi_logicalfile_t
+- Add initial types for logicalfile/unconfined OpenLMI providers
+- mailmanctl needs to read own log
+- Allow logwatch manage own lock files
+- Allow nrpe to read meminfo
+- Allow httpd to read certs located in pki-ca
+- Add pki_read_tomcat_cert() interface
+- Add support for nagios openshift plugins
+- Add port definition for redis port
+- fix selinuxuser_use_ssh_chroot boolean
+
 * Fri Jun 28 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-58
 - Shrink the size of policy by moving to attributes, also add dridomain so that mozilla_plugin can follow selinuxuse_dri boolean. 
 - Allow bootloader to manage generic log files 
