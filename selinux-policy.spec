@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 59%{?dist}
+Release: 62%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -539,6 +539,39 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jul 9 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-62
+- Fix definition of sandbox.disabled to sandbox.pp.disabled
+
+* Mon Jul 8 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-61
+- Allow mdamd to execute systemctl
+- Allow mdadm to read /dev/kvm
+- Allow ipsec_mgmt_t to read l2tpd pid content
+
+* Mon Jul 8 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-60
+- Allow nsd_t to read /dev/urand
+- Allow mdadm_t to read framebuffer
+- Allow rabbitmq_beam_t to read process info on rabbitmq_epmd_t
+- Allow mozilla_plugin_config_t to create tmp files
+- Cleanup openvswitch policy
+- Allow mozilla plugin to getattr on all executables
+- Allow l2tpd_t to create fifo_files in /var/run
+- Allow samba to touch/manage fifo_files or sock_files in a samba_share_t directory
+- Allow mdadm to connecto its own unix_stream_socket
+- FIXME: nagios changed locations to /log/nagios which is wrong. But we need to have this workaround for now.
+- Allow apache to access smokeping pid files
+- Allow rabbitmq_beam_t to getattr on all filesystems
+- Add systemd support for iodined
+- Allow nup_upsdrvctl_t to execute its entrypoint
+- Allow fail2ban_client to write to fail2ban_var_run_t, Also allow it to use nsswitch
+- add labeling for ~/.cache/libvirt-sandbox
+- Add interface to allow domains transitioned to by confined users to send sigchld to screen program
+- Allow sysadm_t to check the system status of files labeled etc_t, /etc/fstab
+- Allow systemd_localed to start /usr/lib/systemd/system/systemd-vconsole-setup.service
+- Allow an domain that has an entrypoint from a type to be allowed to execute the entrypoint without a transition,  I can see no case where this is  a bad thing, and elminiates a whole class of AVCs.
+- Allow staff to getsched all domains, required to run htop
+- Add port definition for redis port
+- fix selinuxuser_use_ssh_chroot boolean
+
 * Wed Jul 3 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-59
 - Add prosody policy written by Michael Scherer
 - Allow nagios plugins to read /sys info
