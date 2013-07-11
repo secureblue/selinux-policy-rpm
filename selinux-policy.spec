@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 62%{?dist}
+Release: 63%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -539,6 +539,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jul 11 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-63
+- Add mdadm fixes
+
 * Tue Jul 9 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-62
 - Fix definition of sandbox.disabled to sandbox.pp.disabled
 
