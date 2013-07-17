@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 63%{?dist}
+Release: 65%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -539,6 +539,30 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jul 17 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-65
+- Label /var/lib/ipa/pki-ca/publish as pki_tomcat_cert_t
+- Add labeling for /usr/libexec/kde4/polkit-kde-authentication-agent-1
+- Allow all domains that can domtrans to shutdown, to start the power services script to shutdown
+- consolekit needs to be able to shut down system
+- Move around interfaces
+- Remove nfsd_rw_t and nfsd_ro_t, they don't do anything
+- Add additional fixes for rabbitmq_beam to allow getattr on mountpoints
+- Allow gconf-defaults-m to read /etc/passwd
+- Fix pki_rw_tomcat_cert() interface to support lnk_files
+
+* Fri Jul 12 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-64
+- Add support for gluster ports
+- Make sure that all keys located in /etc/ssh/ are labeled correctly
+- Make sure apcuspd lock files get created with the correct label
+- Use getcap in gluster.te
+- Fix gluster policy
+- add additional fixes to allow beam.smp to interact with couchdb files
+- Additional fix for #974149
+- Allow gluster to user gluster ports
+- Allow glusterd to transition to rpcd_t and add additional fixes for #980683
+- Allow tgtd working when accessing to the passthrough device
+- Fix labeling for mdadm unit files
+
 * Thu Jul 11 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-63
 - Add mdadm fixes
 
