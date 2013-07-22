@@ -19,13 +19,12 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 65%{?dist}
+Release: 66%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-rawhide-base.patch
 patch1: policy-rawhide-contrib.patch
-patch2: policy_contrib-rawhide-roleattribute.patch
 Source1: modules-targeted-base.conf 
 Source31: modules-targeted-contrib.conf
 Source2: booleans-targeted.conf
@@ -539,6 +538,42 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jul 22 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-66
+- Allow systemd-tmpfile to handle tmp content in print spool dir
+- Allow systemd-sysctl to send system log messages
+- Add support for RTP media ports and fmpro-internal
+- Make auditd working if audit is configured to perform SINGLE action on disk error
+- Add interfaces to handle systemd units
+- Make systemd-notify working if pcsd is used
+- Add support for netlabel and label /usr/sbin/netlabelctl as iptables_exec_t
+- Instead of having all unconfined domains get all of the named transition rules,
+- Only allow unconfined_t, init_t, initrc_t and rpm_script_t by default.
+- Add definition for the salt ports
+- Allow xdm_t to create link files in xdm_var_run_t
+- Dontaudit reads of blk files or chr files leaked into ldconfig_t
+- Allow sys_chroot for useradd_t
+- Allow net_raw cap for ipsec_t
+- Allow sysadm_t to reload services
+- Add additional fixes to make strongswan working with a simple conf
+- Allow sysadm_t to enable/disable init_t services
+- Add additional glusterd perms
+- Allow apache to read lnk files in the /mnt directory
+- Allow glusterd to ask the kernel to load a module
+- Fix description of ftpd_use_fusefs boolean
+- Allow svirt_lxc_net_t to sys_chroot, modify policy to tighten up svirt_lxc_domain capabilties and process controls, but add them to svirt_lxc_net_t
+- Allow glusterds to request load a kernel module
+- Allow boinc to stream connect to xserver_t
+- Allow sblim domains to read /etc/passwd
+- Allow mdadm to read usb devices
+- Allow collectd to use ping plugin
+- Make foghorn working with SNMP
+- Allow sssd to read ldap certs
+- Allow haproxy to connect to RTP media ports
+- Add additional trans rules for aide_db
+- Add labeling for /usr/lib/pcsd/pcsd
+- Add labeling for /var/log/pcsd
+- Add support for pcs which is a corosync and pacemaker configuration tool
+
 * Wed Jul 17 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-65
 - Label /var/lib/ipa/pki-ca/publish as pki_tomcat_cert_t
 - Add labeling for /usr/libexec/kde4/polkit-kde-authentication-agent-1
