@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 66%{?dist}
+Release: 67%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -538,6 +538,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jul 26 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-67
+- Add support for cmpiLMI_Service-cimprovagt
+- Allow pegasus domtrans to rpm_t to make pycmpiLMI_Software-cimprovagt running as rpm_t
+- Label pycmpiLMI_Software-cimprovagt as rpm_exec_t
+- Add support for pycmpiLMI_Storage-cimprovagt
+- Add support for cmpiLMI_Networking-cimprovagt
+- Allow system_cronjob_t to create user_tmpfs_t to make pulseaudio working
+- Allow virtual machines and containers to run as user doains, needed for virt-sandbox
+- Allow buglist.cgi to read cpu info
+
 * Mon Jul 22 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-66
 - Allow systemd-tmpfile to handle tmp content in print spool dir
 - Allow systemd-sysctl to send system log messages

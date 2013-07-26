@@ -8272,7 +8272,7 @@ index 6529bd9..831344c 100644
 +allow devices_unconfined_type device_node:{ blk_file chr_file lnk_file } *;
  allow devices_unconfined_type mtrr_device_t:file *;
 diff --git a/policy/modules/kernel/domain.if b/policy/modules/kernel/domain.if
-index 6a1e4d1..1e738dd 100644
+index 6a1e4d1..47a42d5 100644
 --- a/policy/modules/kernel/domain.if
 +++ b/policy/modules/kernel/domain.if
 @@ -76,33 +76,8 @@ interface(`domain_type',`
@@ -8415,7 +8415,7 @@ index 6a1e4d1..1e738dd 100644
  ##	Unconfined access to domains.
  ## </summary>
  ## <param name="domain">
-@@ -1530,4 +1561,27 @@ interface(`domain_unconfined',`
+@@ -1530,4 +1561,45 @@ interface(`domain_unconfined',`
  	typeattribute $1 can_change_object_identity;
  	typeattribute $1 set_curr_context;
  	typeattribute $1 process_uncond_exempt;
@@ -8442,9 +8442,27 @@ index 6a1e4d1..1e738dd 100644
 +	')
 +
 +	dontaudit $1 domain:socket_class_set { read write };
++')
++
++########################################
++## <summary>
++##	Allow caller to transition to any domain
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`domain_transition_all',`
++	gen_require(`
++		attribute domain;
++	')
++
++	dontaudit $1 domain:process transition;
  ')
 diff --git a/policy/modules/kernel/domain.te b/policy/modules/kernel/domain.te
-index cf04cb5..ff7c2ff 100644
+index cf04cb5..bcaf613 100644
 --- a/policy/modules/kernel/domain.te
 +++ b/policy/modules/kernel/domain.te
 @@ -4,6 +4,29 @@ policy_module(domain, 1.11.0)
@@ -8551,16 +8569,17 @@ index cf04cb5..ff7c2ff 100644
  ')
  
  optional_policy(`
-@@ -133,6 +189,8 @@ optional_policy(`
+@@ -133,6 +189,9 @@ optional_policy(`
  optional_policy(`
  	xserver_dontaudit_use_xdm_fds(domain)
  	xserver_dontaudit_rw_xdm_pipes(domain)
 +	xserver_dontaudit_append_xdm_home_files(domain)
 +	xserver_dontaudit_write_log(domain)
++	xserver_dontaudit_xdm_rw_stream_sockets(domain)
  ')
  
  ########################################
-@@ -147,12 +205,18 @@ optional_policy(`
+@@ -147,12 +206,18 @@ optional_policy(`
  # Use/sendto/connectto sockets created by any domain.
  allow unconfined_domain_type domain:{ socket_class_set socket key_socket } *;
  
@@ -8580,7 +8599,7 @@ index cf04cb5..ff7c2ff 100644
  
  # Create/access any System V IPC objects.
  allow unconfined_domain_type domain:{ sem msgq shm } *;
-@@ -166,5 +230,295 @@ allow unconfined_domain_type domain:lnk_file { read_lnk_file_perms ioctl lock };
+@@ -166,5 +231,295 @@ allow unconfined_domain_type domain:lnk_file { read_lnk_file_perms ioctl lock };
  # act on all domains keys
  allow unconfined_domain_type domain:key *;
  
@@ -18362,10 +18381,10 @@ index 0000000..cf6582f
 +
 diff --git a/policy/modules/roles/unconfineduser.te b/policy/modules/roles/unconfineduser.te
 new file mode 100644
-index 0000000..9de7a1f
+index 0000000..3c3b9b3
 --- /dev/null
 +++ b/policy/modules/roles/unconfineduser.te
-@@ -0,0 +1,330 @@
+@@ -0,0 +1,331 @@
 +policy_module(unconfineduser, 1.0.0)
 +
 +########################################
@@ -18445,6 +18464,7 @@ index 0000000..9de7a1f
 +
 +unconfined_domain_noaudit(unconfined_t)
 +domain_named_filetrans(unconfined_t)
++domain_transition_all(unconfined_t)
 +
 +usermanage_run_passwd(unconfined_t, unconfined_r)
 +
@@ -20187,7 +20207,7 @@ index fe0c682..225aaa7 100644
 +	ps_process_pattern($1, sshd_t)
 +')
 diff --git a/policy/modules/services/ssh.te b/policy/modules/services/ssh.te
-index 5fc0391..994eec2 100644
+index 5fc0391..3448145 100644
 --- a/policy/modules/services/ssh.te
 +++ b/policy/modules/services/ssh.te
 @@ -6,43 +6,54 @@ policy_module(ssh, 2.3.3)
@@ -20297,11 +20317,13 @@ index 5fc0391..994eec2 100644
  manage_files_pattern(ssh_t, ssh_tmpfs_t, ssh_tmpfs_t)
  manage_lnk_files_pattern(ssh_t, ssh_tmpfs_t, ssh_tmpfs_t)
  manage_fifo_files_pattern(ssh_t, ssh_tmpfs_t, ssh_tmpfs_t)
-@@ -107,33 +120,39 @@ fs_tmpfs_filetrans(ssh_t, ssh_tmpfs_t, { dir file lnk_file sock_file fifo_file }
+@@ -107,33 +120,41 @@ fs_tmpfs_filetrans(ssh_t, ssh_tmpfs_t, { dir file lnk_file sock_file fifo_file }
  
  manage_dirs_pattern(ssh_t, ssh_home_t, ssh_home_t)
  manage_sock_files_pattern(ssh_t, ssh_home_t, ssh_home_t)
 -userdom_user_home_dir_filetrans(ssh_t, ssh_home_t, { dir sock_file })
++userdom_user_home_dir_filetrans(ssh_t, ssh_home_t, sock_file)
++userdom_user_home_dir_filetrans(ssh_t, ssh_home_t, dir, ".ssh")
 +userdom_read_all_users_keys(ssh_t)
 +userdom_stream_connect(ssh_t)
 +userdom_search_admin_dir(sshd_t)
@@ -20342,7 +20364,7 @@ index 5fc0391..994eec2 100644
  dev_read_urand(ssh_t)
  
  fs_getattr_all_fs(ssh_t)
-@@ -156,38 +175,42 @@ logging_read_generic_logs(ssh_t)
+@@ -156,38 +177,42 @@ logging_read_generic_logs(ssh_t)
  
  auth_use_nsswitch(ssh_t)
  
@@ -20404,7 +20426,7 @@ index 5fc0391..994eec2 100644
  ')
  
  optional_policy(`
-@@ -195,6 +218,7 @@ optional_policy(`
+@@ -195,6 +220,7 @@ optional_policy(`
  	xserver_domtrans_xauth(ssh_t)
  ')
  
@@ -20412,7 +20434,7 @@ index 5fc0391..994eec2 100644
  ##############################
  #
  # ssh_keysign_t local policy
-@@ -206,6 +230,7 @@ allow ssh_keysign_t self:unix_stream_socket create_socket_perms;
+@@ -206,6 +232,7 @@ allow ssh_keysign_t self:unix_stream_socket create_socket_perms;
  allow ssh_keysign_t sshd_key_t:file { getattr read };
  
  dev_read_urand(ssh_keysign_t)
@@ -20420,7 +20442,7 @@ index 5fc0391..994eec2 100644
  
  files_read_etc_files(ssh_keysign_t)
  
-@@ -223,33 +248,53 @@ optional_policy(`
+@@ -223,33 +250,54 @@ optional_policy(`
  # so a tunnel can point to another ssh tunnel
  allow sshd_t self:netlink_route_socket r_netlink_socket_perms;
  allow sshd_t self:key { search link write };
@@ -20447,6 +20469,7 @@ index 5fc0391..994eec2 100644
  
  # for X forwarding
  corenet_tcp_bind_xserver_port(sshd_t)
++corenet_tcp_bind_vnc_port(sshd_t)
  corenet_sendrecv_xserver_server_packets(sshd_t)
  
 +auth_exec_login_program(sshd_t)
@@ -20483,7 +20506,7 @@ index 5fc0391..994eec2 100644
  ')
  
  optional_policy(`
-@@ -257,11 +302,24 @@ optional_policy(`
+@@ -257,11 +305,24 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -20509,7 +20532,7 @@ index 5fc0391..994eec2 100644
  ')
  
  optional_policy(`
-@@ -269,6 +327,10 @@ optional_policy(`
+@@ -269,6 +330,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -20520,7 +20543,7 @@ index 5fc0391..994eec2 100644
  	rpm_use_script_fds(sshd_t)
  ')
  
-@@ -279,13 +341,69 @@ optional_policy(`
+@@ -279,13 +344,69 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -20590,7 +20613,7 @@ index 5fc0391..994eec2 100644
  ########################################
  #
  # ssh_keygen local policy
-@@ -294,19 +412,26 @@ optional_policy(`
+@@ -294,19 +415,26 @@ optional_policy(`
  # ssh_keygen_t is the type of the ssh-keygen program when run at install time
  # and by sysadm_t
  
@@ -20618,7 +20641,7 @@ index 5fc0391..994eec2 100644
  dev_read_urand(ssh_keygen_t)
  
  term_dontaudit_use_console(ssh_keygen_t)
-@@ -323,6 +448,12 @@ auth_use_nsswitch(ssh_keygen_t)
+@@ -323,6 +451,12 @@ auth_use_nsswitch(ssh_keygen_t)
  logging_send_syslog_msg(ssh_keygen_t)
  
  userdom_dontaudit_use_unpriv_user_fds(ssh_keygen_t)
@@ -20631,7 +20654,7 @@ index 5fc0391..994eec2 100644
  
  optional_policy(`
  	seutil_sigchld_newrole(ssh_keygen_t)
-@@ -331,3 +462,138 @@ optional_policy(`
+@@ -331,3 +465,138 @@ optional_policy(`
  optional_policy(`
  	udev_read_db(ssh_keygen_t)
  ')
@@ -29942,7 +29965,7 @@ index 0e3c2a9..ea9bd57 100644
 +	userdom_admin_home_dir_filetrans($1, local_login_home_t, file, ".hushlogin")
 +')
 diff --git a/policy/modules/system/locallogin.te b/policy/modules/system/locallogin.te
-index c04ac46..799d194 100644
+index c04ac46..ed59137 100644
 --- a/policy/modules/system/locallogin.te
 +++ b/policy/modules/system/locallogin.te
 @@ -13,9 +13,8 @@ auth_login_entry_type(local_login_t)
@@ -30066,7 +30089,7 @@ index c04ac46..799d194 100644
  	unconfined_shell_domtrans(local_login_t)
  ')
  
-@@ -215,37 +211,55 @@ allow sulogin_t self:sem create_sem_perms;
+@@ -215,37 +211,56 @@ allow sulogin_t self:sem create_sem_perms;
  allow sulogin_t self:msgq create_msgq_perms;
  allow sulogin_t self:msg { send receive };
  
@@ -30088,6 +30111,7 @@ index c04ac46..799d194 100644
 +auth_use_nsswitch(sulogin_t)
  
  init_getpgid_script(sulogin_t)
++init_getpgid(sulogin_t)
  
  logging_send_syslog_msg(sulogin_t)
  
@@ -30124,7 +30148,7 @@ index c04ac46..799d194 100644
  	init_getpgid(sulogin_t)
  ', `
  	allow sulogin_t self:process setexec;
-@@ -256,11 +270,3 @@ ifdef(`sulogin_no_pam', `
+@@ -256,11 +271,3 @@ ifdef(`sulogin_no_pam', `
  	selinux_compute_relabel_context(sulogin_t)
  	selinux_compute_user_contexts(sulogin_t)
  ')
@@ -31490,7 +31514,7 @@ index e8c59a5..d2df072 100644
  ')
  
 diff --git a/policy/modules/system/miscfiles.fc b/policy/modules/system/miscfiles.fc
-index 9fe8e01..a70c055 100644
+index 9fe8e01..83acb32 100644
 --- a/policy/modules/system/miscfiles.fc
 +++ b/policy/modules/system/miscfiles.fc
 @@ -9,11 +9,13 @@ ifdef(`distro_gentoo',`
@@ -31509,7 +31533,7 @@ index 9fe8e01..a70c055 100644
  
  ifdef(`distro_redhat',`
  /etc/sysconfig/clock	--	gen_context(system_u:object_r:locale_t,s0)
-@@ -37,14 +39,10 @@ ifdef(`distro_redhat',`
+@@ -37,24 +39,20 @@ ifdef(`distro_redhat',`
  
  /usr/lib/perl5/man(/.*)?	gen_context(system_u:object_r:man_t,s0)
  
@@ -31521,19 +31545,25 @@ index 9fe8e01..a70c055 100644
  /usr/man(/.*)?			gen_context(system_u:object_r:man_t,s0)
  
  /usr/share/ca-certificates(/.*)?	gen_context(system_u:object_r:cert_t,s0)
-+/usr/share/pki/ca-certificates(/.*)?	gen_context(system_u:object_r:cert_t,s0)
  /usr/share/fonts(/.*)?		gen_context(system_u:object_r:fonts_t,s0)
- /usr/share/X11/fonts(/.*)?	gen_context(system_u:object_r:fonts_t,s0)
+-/usr/share/X11/fonts(/.*)?	gen_context(system_u:object_r:fonts_t,s0)
  /usr/share/ghostscript/fonts(/.*)? gen_context(system_u:object_r:fonts_t,s0)
-@@ -53,6 +51,7 @@ ifdef(`distro_redhat',`
- /usr/share/X11/locale(/.*)?	gen_context(system_u:object_r:locale_t,s0)
- /usr/share/zoneinfo(/.*)?	gen_context(system_u:object_r:locale_t,s0)
- 
-+/usr/share/pki/ca-trust-source(/.*)?      	gen_context(system_u:object_r:cert_t,s0)
+ /usr/share/locale(/.*)?		gen_context(system_u:object_r:locale_t,s0)
+ /usr/share/man(/.*)?		gen_context(system_u:object_r:man_t,s0)
+-/usr/share/X11/locale(/.*)?	gen_context(system_u:object_r:locale_t,s0)
+-/usr/share/zoneinfo(/.*)?	gen_context(system_u:object_r:locale_t,s0)
+-
++/usr/share/pki/ca-certificates(/.*)?	gen_context(system_u:object_r:cert_t,s0)
++/usr/share/pki/ca-trust-source(/.*)?    gen_context(system_u:object_r:cert_t,s0)
  /usr/share/ssl/certs(/.*)?	gen_context(system_u:object_r:cert_t,s0)
  /usr/share/ssl/private(/.*)?	gen_context(system_u:object_r:cert_t,s0)
++/usr/share/X11/fonts(/.*)?	gen_context(system_u:object_r:fonts_t,s0)
++/usr/share/X11/locale(/.*)?	gen_context(system_u:object_r:locale_t,s0)
++/usr/share/zoneinfo(/.*)?	gen_context(system_u:object_r:locale_t,s0)
  
-@@ -77,7 +76,7 @@ ifdef(`distro_redhat',`
+ /usr/X11R6/lib/X11/fonts(/.*)?	gen_context(system_u:object_r:fonts_t,s0)
+ 
+@@ -77,7 +75,7 @@ ifdef(`distro_redhat',`
  
  /var/cache/fontconfig(/.*)?	gen_context(system_u:object_r:fonts_cache_t,s0)
  /var/cache/fonts(/.*)?		gen_context(system_u:object_r:tetex_data_t,s0)
@@ -31542,7 +31572,7 @@ index 9fe8e01..a70c055 100644
  
  /var/named/chroot/etc/pki(/.*)? gen_context(system_u:object_r:cert_t,s0)
  
-@@ -90,6 +89,7 @@ ifdef(`distro_debian',`
+@@ -90,6 +88,7 @@ ifdef(`distro_debian',`
  ')
  
  ifdef(`distro_redhat',`
@@ -31777,10 +31807,10 @@ index d6293de..8f8d80d 100644
  #
  # Base type for the tests directory.
 diff --git a/policy/modules/system/modutils.fc b/policy/modules/system/modutils.fc
-index 9933677..b155a0d 100644
+index 9933677..ca14c17 100644
 --- a/policy/modules/system/modutils.fc
 +++ b/policy/modules/system/modutils.fc
-@@ -23,3 +23,13 @@ ifdef(`distro_gentoo',`
+@@ -23,3 +23,15 @@ ifdef(`distro_gentoo',`
  /sbin/update-modules	--	gen_context(system_u:object_r:update_modules_exec_t,s0)
  
  /usr/bin/kmod		--	gen_context(system_u:object_r:insmod_exec_t,s0)
@@ -31794,6 +31824,8 @@ index 9933677..b155a0d 100644
 +/usr/sbin/update-modules	--	gen_context(system_u:object_r:update_modules_exec_t,s0)
 +
 +/usr/lib/modules/modprobe\.conf -- 	gen_context(system_u:object_r:modules_conf_t,s0)
++
++/var/run/tmpfiles.d/kmod.conf --	gen_context(system_u:object_r:insmod_var_run_t,s0)
 diff --git a/policy/modules/system/modutils.if b/policy/modules/system/modutils.if
 index 7449974..6375786 100644
 --- a/policy/modules/system/modutils.if
@@ -31900,7 +31932,7 @@ index 7449974..6375786 100644
 +	files_kernel_modules_filetrans($1, modules_dep_t, file, "modules.dep.bin")
 +')
 diff --git a/policy/modules/system/modutils.te b/policy/modules/system/modutils.te
-index 7a49e28..de1dcdd 100644
+index 7a49e28..82004c9 100644
 --- a/policy/modules/system/modutils.te
 +++ b/policy/modules/system/modutils.te
 @@ -5,7 +5,7 @@ policy_module(modutils, 1.13.3)
@@ -31912,13 +31944,16 @@ index 7a49e28..de1dcdd 100644
  
  type depmod_t;
  type depmod_exec_t;
-@@ -16,11 +16,12 @@ type insmod_t;
+@@ -16,11 +16,15 @@ type insmod_t;
  type insmod_exec_t;
  application_domain(insmod_t, insmod_exec_t)
  mls_file_write_all_levels(insmod_t)
 +mls_process_write_down(insmod_t)
  role system_r types insmod_t;
  
++type insmod_var_run_t;
++files_pid_file(insmod_var_run_t)
++
  # module loading config
  type modules_conf_t;
 -files_type(modules_conf_t)
@@ -31926,7 +31961,7 @@ index 7a49e28..de1dcdd 100644
  
  # module dependencies
  type modules_dep_t;
-@@ -29,12 +30,16 @@ files_type(modules_dep_t)
+@@ -29,12 +33,16 @@ files_type(modules_dep_t)
  type update_modules_t;
  type update_modules_exec_t;
  init_system_domain(update_modules_t, update_modules_exec_t)
@@ -31945,7 +31980,7 @@ index 7a49e28..de1dcdd 100644
  ########################################
  #
  # depmod local policy
-@@ -54,12 +59,15 @@ corecmd_search_bin(depmod_t)
+@@ -54,12 +62,15 @@ corecmd_search_bin(depmod_t)
  
  domain_use_interactive_fds(depmod_t)
  
@@ -31961,7 +31996,7 @@ index 7a49e28..de1dcdd 100644
  
  fs_getattr_xattr_fs(depmod_t)
  
-@@ -69,10 +77,12 @@ init_use_fds(depmod_t)
+@@ -69,10 +80,12 @@ init_use_fds(depmod_t)
  init_use_script_fds(depmod_t)
  init_use_script_ptys(depmod_t)
  
@@ -31975,7 +32010,7 @@ index 7a49e28..de1dcdd 100644
  
  ifdef(`distro_ubuntu',`
  	optional_policy(`
-@@ -80,12 +90,8 @@ ifdef(`distro_ubuntu',`
+@@ -80,12 +93,8 @@ ifdef(`distro_ubuntu',`
  	')
  ')
  
@@ -31990,7 +32025,7 @@ index 7a49e28..de1dcdd 100644
  ')
  
  optional_policy(`
-@@ -94,7 +100,6 @@ optional_policy(`
+@@ -94,7 +103,6 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -31998,7 +32033,7 @@ index 7a49e28..de1dcdd 100644
  	unconfined_domain(depmod_t)
  ')
  
-@@ -103,11 +108,12 @@ optional_policy(`
+@@ -103,11 +111,12 @@ optional_policy(`
  # insmod local policy
  #
  
@@ -32012,8 +32047,14 @@ index 7a49e28..de1dcdd 100644
  
  # Read module config and dependency information
  list_dirs_pattern(insmod_t, modules_conf_t, modules_conf_t)
-@@ -117,14 +123,18 @@ read_files_pattern(insmod_t, modules_dep_t, modules_dep_t)
+@@ -115,16 +124,24 @@ read_files_pattern(insmod_t, modules_conf_t, modules_conf_t)
+ list_dirs_pattern(insmod_t, modules_dep_t, modules_dep_t)
+ read_files_pattern(insmod_t, modules_dep_t, modules_dep_t)
  
++manage_dirs_pattern(insmod_t, insmod_var_run_t, insmod_var_run_t)
++manage_files_pattern(insmod_t, insmod_var_run_t, insmod_var_run_t)
++files_pid_filetrans(insmod_t, insmod_var_run_t, {dir file })
++
  can_exec(insmod_t, insmod_exec_t)
  
 +manage_files_pattern(insmod_t,insmod_tmpfs_t,insmod_tmpfs_t)
@@ -32032,7 +32073,7 @@ index 7a49e28..de1dcdd 100644
  # Rules for /proc/sys/kernel/tainted
  kernel_read_kernel_sysctls(insmod_t)
  kernel_rw_kernel_sysctl(insmod_t)
-@@ -142,6 +152,7 @@ dev_rw_agp(insmod_t)
+@@ -142,6 +159,7 @@ dev_rw_agp(insmod_t)
  dev_read_sound(insmod_t)
  dev_write_sound(insmod_t)
  dev_rw_apm_bios(insmod_t)
@@ -32040,7 +32081,7 @@ index 7a49e28..de1dcdd 100644
  
  domain_signal_all_domains(insmod_t)
  domain_use_interactive_fds(insmod_t)
-@@ -151,30 +162,38 @@ files_read_etc_runtime_files(insmod_t)
+@@ -151,30 +169,38 @@ files_read_etc_runtime_files(insmod_t)
  files_read_etc_files(insmod_t)
  files_read_usr_files(insmod_t)
  files_exec_etc_files(insmod_t)
@@ -32083,7 +32124,7 @@ index 7a49e28..de1dcdd 100644
  userdom_dontaudit_search_user_home_dirs(insmod_t)
  
  kernel_domtrans_to(insmod_t, insmod_exec_t)
-@@ -184,28 +203,33 @@ optional_policy(`
+@@ -184,28 +210,33 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -32107,24 +32148,24 @@ index 7a49e28..de1dcdd 100644
  optional_policy(`
 -	mount_domtrans(insmod_t)
 +	hal_write_log(insmod_t)
- ')
- 
- optional_policy(`
--	nis_use_ypbind(insmod_t)
++')
++
++optional_policy(`
 +	hotplug_search_config(insmod_t)
  ')
  
  optional_policy(`
--	nscd_use(insmod_t)
+-	nis_use_ypbind(insmod_t)
 +	kdump_manage_kdumpctl_tmp_files(insmod_t)
-+')
-+
-+optional_policy(`
+ ')
+ 
+ optional_policy(`
+-	nscd_use(insmod_t)
 +	mount_domtrans(insmod_t)
  ')
  
  optional_policy(`
-@@ -225,6 +249,7 @@ optional_policy(`
+@@ -225,6 +256,7 @@ optional_policy(`
  
  optional_policy(`
  	rpm_rw_pipes(insmod_t)
@@ -32132,7 +32173,7 @@ index 7a49e28..de1dcdd 100644
  ')
  
  optional_policy(`
-@@ -233,6 +258,10 @@ optional_policy(`
+@@ -233,6 +265,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -32143,7 +32184,7 @@ index 7a49e28..de1dcdd 100644
  	# cjp: why is this needed:
  	dev_rw_xserver_misc(insmod_t)
  
-@@ -291,11 +320,10 @@ init_use_script_ptys(update_modules_t)
+@@ -291,11 +327,10 @@ init_use_script_ptys(update_modules_t)
  
  logging_send_syslog_msg(update_modules_t)
  
@@ -36528,7 +36569,7 @@ index 0000000..1a254f8
 +')
 diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
 new file mode 100644
-index 0000000..13712f9
+index 0000000..6379489
 --- /dev/null
 +++ b/policy/modules/system/systemd.te
 @@ -0,0 +1,661 @@
@@ -36821,8 +36862,8 @@ index 0000000..13712f9
 +dev_relabel_all_sysfs(systemd_tmpfiles_t)
 +dev_relabel_cpu_online(systemd_tmpfiles_t)
 +dev_read_cpu_online(systemd_tmpfiles_t)
-+dev_manage_printer(systemd_tmpfiles_t)
-+dev_relabel_printer(systemd_tmpfiles_t)
++dev_manage_all_dev_nodes(systemd_tmpfiles_t)
++dev_relabel_all_dev_nodes(systemd_tmpfiles_t)
 +
 +domain_obj_id_change_exemption(systemd_tmpfiles_t)
 +
@@ -38573,7 +38614,7 @@ index db75976..65191bd 100644
 +
 +/var/run/user(/.*)?	gen_context(system_u:object_r:user_tmp_t,s0)
 diff --git a/policy/modules/system/userdomain.if b/policy/modules/system/userdomain.if
-index 3c5dba7..33a39dc 100644
+index 3c5dba7..89012c2 100644
 --- a/policy/modules/system/userdomain.if
 +++ b/policy/modules/system/userdomain.if
 @@ -30,9 +30,11 @@ template(`userdom_base_user_template',`
@@ -41257,7 +41298,7 @@ index 3c5dba7..33a39dc 100644
  ##	Create keys for all user domains.
  ## </summary>
  ## <param name="domain">
-@@ -3438,4 +4214,1455 @@ interface(`userdom_dbus_send_all_users',`
+@@ -3438,4 +4214,1454 @@ interface(`userdom_dbus_send_all_users',`
  	')
  
  	allow $1 userdomain:dbus send_msg;
@@ -42618,9 +42659,8 @@ index 3c5dba7..33a39dc 100644
 +	gen_require(`
 +		attribute userdom_home_manager_type;
 +	')
-+	typeattribute $1 userdom_home_manager_type;
 +
-+	userdom_filetrans_home_content($1)
++	typeattribute $1 userdom_home_manager_type;
 +')
 +
 +########################################
