@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 67%{?dist}
+Release: 68%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -538,6 +538,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jul 30 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-68
+- Allow xdm_t to act as a dbus client to itsel
+- Allow fetchmail to resolve host names
+- Allow gnupg apps to write to pcscd socket
+- Add labeling for cmpiLMI_Fan-cimprovagt
+- Allow net_admin for glusterd
+- Allow telepathy domain to create dconf with correct labeling in /home/userX/.cache/
+- Add pegasus_openlmi_system_t
+- Fix puppet_domtrans_master() to make all puppet calling working in passenger.te
+-httpd_t does access_check on certs
+
 * Fri Jul 26 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-67
 - Add support for cmpiLMI_Service-cimprovagt
 - Allow pegasus domtrans to rpm_t to make pycmpiLMI_Software-cimprovagt running as rpm_t
