@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 68%{?dist}
+Release: 69%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -538,6 +538,25 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jul 31 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-69
+- Add more aliases in pegasus.te
+- Add more fixes for *_admin interfaces
+- Add interface fixes
+- Allow nscd to stream connect to nmbd
+- Allow gnupg apps to write to pcscd socket
+- Add more fixes for openlmi provides. Fix naming and support for additionals
+- Allow fetchmail to resolve host names
+- Allow firewalld to interact also with lnk files labeled as firewalld_etc_rw_t
+- Add labeling for cmpiLMI_Fan-cimprovagt
+- Allow net_admin for glusterd
+- Allow telepathy domain to create dconf with correct labeling in /home/userX/.cache/
+- Add pegasus_openlmi_system_t
+- Fix puppet_domtrans_master() to make all puppet calling working in passenger.te
+- Fix corecmd_exec_chroot()
+- Fix logging_relabel_syslog_pid_socket interface
+- Fix typo in unconfineduser.te
+- Allow system_r to access unconfined_dbusd_t to run hp_chec
+
 * Tue Jul 30 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-68
 - Allow xdm_t to act as a dbus client to itsel
 - Allow fetchmail to resolve host names
