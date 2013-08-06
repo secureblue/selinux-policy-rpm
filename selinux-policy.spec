@@ -109,7 +109,7 @@ SELinux policy documentation package
 
 %files doc
 %defattr(-,root,root,-)
-%doc %{_usr}/share/doc/%{name}-%{version}
+%doc %{_usr}/share/doc/%{name}
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
 
 %define makeCmds() \
@@ -353,7 +353,7 @@ mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/
 install -m 644 selinux_config/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
 install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
 install -m 644 doc/policy.* %{buildroot}%{_usr}/share/selinux/devel/
-echo  "xdg-open file:///usr/share/doc/selinux-policy-%{version}/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
+echo  "xdg-open file:///usr/share/doc/selinux-policy/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 /usr/bin/sepolicy manpage -a -p %{buildroot}/usr/share/man/man8/ -w -r %{buildroot}
 mkdir %{buildroot}%{_usr}/share/selinux/devel/html
