@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 69%{?dist}
+Release: 70%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -538,6 +538,53 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Aug 8 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-70
+- selinux_set_enforce_mode needs to be used with type
+- Add append to the dontaudit for unix_stream_socket of xdm_t leak
+- Allow xdm_t to create symlinks in log direcotries
+- Allow login programs to read afs config
+- Label 10933 as a pop port, for dovecot
+- New policy to allow selinux_server.py to run as semanage_t as a dbus service
+- Add fixes to make netlabelctl working on MLS
+- AVC's required for running sepolicy gui as staff_t
+- Dontaudit attempts to read symlinks, sepolicy gui is likely to cause this type of AVC
+- New dbus server to be used with new gui
+- After modifying some files in /etc/mail, I saw this needed on the next boot
+- Loading a vm from /usr/tmp with virt-manager
+- Clean up oracleasm policy for Fedora
+- Add oracleasm policy written by rlopez@redhat.com
+- Make postfix_postdrop_t as mta_agent to allow domtrans to system mail if it is executed by apache
+- Add label for /var/crash
+- Allow fenced to domtrans to sanclok_t
+- Allow nagios to manage nagios spool files
+- Make tfptd as home_manager
+- Allow kdump to read kcore on MLS system
+- Allow mysqld-safe sys_nice/sys_resource caps
+- Allow apache to search automount tmp dirs if http_use_nfs is enabled
+- Allow crond to transition to named_t, for use with unbound
+- Allow crond to look at named_conf_t, for unbound
+- Allow mozilla_plugin_t to transition its home content
+- Allow dovecot_domain to read all system and network state
+- Allow httpd_user_script_t to call getpw
+- Allow semanage to read pid files
+- Dontaudit leaked file descriptors from user domain into thumb
+- Make PAM authentication working if it is enabled in ejabberd
+- Add fixes for rabbit to fix ##992920,#992931
+- Allow glusterd to mount filesystems
+- Loading a vm from /usr/tmp with virt-manager
+- Trying to load a VM I got an AVC from devicekit_disk for loopcontrol device
+- Add fix for pand service
+- shorewall touches own log
+- Allow nrpe to list /var
+- Mozilla_plugin_roles can not be passed into lpd_run_lpr
+- Allow afs domains to read afs_config files
+- Allow login programs to read afs config
+- Allow virt_domain to read virt_var_run_t symlinks
+- Allow smokeping to send its process signals
+- Allow fetchmail to setuid
+- Add kdump_manage_crash() interface
+- Allow abrt domain to write abrt.socket
+
 * Wed Jul 31 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-69
 - Add more aliases in pegasus.te
 - Add more fixes for *_admin interfaces
