@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 70%{?dist}
+Release: 71%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -538,6 +538,39 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Aug 21 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-71
+- Allow boinc to connect to  @/tmp/.X11-unix/X0
+- Allow beam.smp to connect to tcp/5984
+- Allow named to manage own log files
+- Add label for /usr/libexec/dcc/start-dccifd  and domtrans to dccifd_t
+- Add virt_transition_userdomain boolean decl
+- Allow httpd_t to sendto unix_dgram sockets on its children
+- Allow nova domains to execute ifconfig
+- bluetooth wants to create fifo_files in /tmp
+- exim needs to be able to manage mailman data
+- Allow sysstat to getattr on all file systems
+- Looks like bluetoothd has moved
+- Allow collectd to send ping packets
+- Allow svirt_lxc domains to getpgid
+- Remove virt-sandbox-service labeling as virsh_exec_t, since it no longer does virsh_t stuff
+- Allow frpintd_t to read /dev/urandom
+- Allow asterisk_t to create sock_file in /var/run
+- Allow usbmuxd to use netlink_kobject
+- sosreport needs to getattr on lots of devices, and needs access to netlink_kobject_uevent_socket
+- More cleanup of svirt_lxc policy
+- virtd_lxc_t now talks to dbus
+- Dontaudit leaked ptmx_t
+- Allow processes to use inherited fifo files
+- Allow openvpn_t to connect to squid ports
+- Allow prelink_cron_system_t to ask systemd to reloaddd miscfiles_dontaudit_access_check_cert()
+- Allow ssh_t to use /dev/ptmx
+- Make sure /run/pluto dir is created with correct labeling
+- Allow syslog to run shell and bin_t commands
+- Allow ip to relabel tun_sockets
+- Allow mount to create directories in files under /run
+- Allow processes to use inherited fifo files
+- Allow user roles to connect to the journal socket
+
 * Thu Aug 8 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-70
 - selinux_set_enforce_mode needs to be used with type
 - Add append to the dontaudit for unix_stream_socket of xdm_t leak
