@@ -12763,7 +12763,7 @@ index 3f6e4dc..88c4f19 100644
  
  mta_getattr_spool(comsat_t)
 diff --git a/condor.fc b/condor.fc
-index 23dc348..7cc536b 100644
+index 23dc348..c4450f7 100644
 --- a/condor.fc
 +++ b/condor.fc
 @@ -1,4 +1,5 @@
@@ -12772,6 +12772,15 @@ index 23dc348..7cc536b 100644
  
  /usr/sbin/condor_collector	--	gen_context(system_u:object_r:condor_collector_exec_t,s0)
  /usr/sbin/condor_master	--	gen_context(system_u:object_r:condor_master_exec_t,s0)
+@@ -8,6 +9,8 @@
+ /usr/sbin/condor_startd	--	gen_context(system_u:object_r:condor_startd_exec_t,s0)
+ /usr/sbin/condor_starter	--	gen_context(system_u:object_r:condor_startd_exec_t,s0)
+ 
++/etc/condor(/.*)?       gen_context(system_u:object_r:condor_etc_rw_t,s0)
++
+ /var/lib/condor(/.*)?	gen_context(system_u:object_r:condor_var_lib_t,s0)
+ 
+ /var/lib/condor/execute(/.*)?	gen_context(system_u:object_r:condor_var_lib_t,s0)
 diff --git a/condor.if b/condor.if
 index 3fe3cb8..5fe84a6 100644
 --- a/condor.if
@@ -13229,10 +13238,20 @@ index 3fe3cb8..5fe84a6 100644
 +	')
  ')
 diff --git a/condor.te b/condor.te
-index 3f2b672..95daaa7 100644
+index 3f2b672..39f85e7 100644
 --- a/condor.te
 +++ b/condor.te
-@@ -46,6 +46,9 @@ files_lock_file(condor_var_lock_t)
+@@ -34,6 +34,9 @@ files_tmp_file(condor_startd_tmp_t)
+ type condor_startd_tmpfs_t;
+ files_tmpfs_file(condor_startd_tmpfs_t)
+ 
++type condor_etc_rw_t;
++files_config_file(condor_etc_rw_t)
++
+ type condor_log_t;
+ logging_log_file(condor_log_t)
+ 
+@@ -46,6 +49,9 @@ files_lock_file(condor_var_lock_t)
  type condor_var_run_t;
  files_pid_file(condor_var_run_t)
  
@@ -13242,7 +13261,7 @@ index 3f2b672..95daaa7 100644
  condor_domain_template(collector)
  condor_domain_template(negotiator)
  condor_domain_template(procd)
-@@ -57,10 +60,15 @@ condor_domain_template(startd)
+@@ -57,15 +63,20 @@ condor_domain_template(startd)
  # Global local policy
  #
  
@@ -13257,16 +13276,22 @@ index 3f2b672..95daaa7 100644
 +allow condor_domain self:udp_socket create_socket_perms;
 +allow condor_domain self:unix_stream_socket create_stream_socket_perms;
 +allow condor_domain self:netlink_route_socket r_netlink_socket_perms;
++
++rw_files_pattern(condor_domain, condor_etc_rw_t, condor_etc_rw_t)
  
  manage_dirs_pattern(condor_domain, condor_log_t, condor_log_t)
- append_files_pattern(condor_domain, condor_log_t, condor_log_t)
-@@ -86,13 +94,12 @@ allow condor_domain condor_master_t:tcp_socket getattr;
+-append_files_pattern(condor_domain, condor_log_t, condor_log_t)
+-create_files_pattern(condor_domain, condor_log_t, condor_log_t)
+-getattr_files_pattern(condor_domain, condor_log_t, condor_log_t)
++manage_files_pattern(condor_domain, condor_log_t, condor_log_t)
+ logging_log_filetrans(condor_domain, condor_log_t, { dir file })
+ 
+ manage_dirs_pattern(condor_domain, condor_var_lib_t, condor_var_lib_t)
+@@ -86,13 +97,10 @@ allow condor_domain condor_master_t:tcp_socket getattr;
  
  kernel_read_kernel_sysctls(condor_domain)
  kernel_read_network_state(condor_domain)
 -kernel_read_system_state(condor_domain)
-+
-+
  
  corecmd_exec_bin(condor_domain)
  corecmd_exec_shell(condor_domain)
@@ -13276,18 +13301,19 @@ index 3f2b672..95daaa7 100644
  corenet_tcp_sendrecv_generic_if(condor_domain)
  corenet_tcp_sendrecv_generic_node(condor_domain)
  
-@@ -106,9 +113,7 @@ dev_read_rand(condor_domain)
+@@ -106,9 +114,9 @@ dev_read_rand(condor_domain)
  dev_read_sysfs(condor_domain)
  dev_read_urand(condor_domain)
  
 -logging_send_syslog_msg(condor_domain)
--
--miscfiles_read_localization(condor_domain)
 +auth_read_passwd(condor_domain)
+ 
+-miscfiles_read_localization(condor_domain)
++sysnet_dns_name_resolve(condor_domain)
  
  tunable_policy(`condor_tcp_network_connect',`
  	corenet_sendrecv_all_client_packets(condor_domain)
-@@ -125,7 +130,7 @@ optional_policy(`
+@@ -125,7 +133,7 @@ optional_policy(`
  # Master local policy
  #
  
@@ -13296,25 +13322,27 @@ index 3f2b672..95daaa7 100644
  
  allow condor_master_t condor_domain:process { sigkill signal };
  
-@@ -133,6 +138,8 @@ manage_dirs_pattern(condor_master_t, condor_master_tmp_t, condor_master_tmp_t)
+@@ -133,6 +141,10 @@ manage_dirs_pattern(condor_master_t, condor_master_tmp_t, condor_master_tmp_t)
  manage_files_pattern(condor_master_t, condor_master_tmp_t, condor_master_tmp_t)
  files_tmp_filetrans(condor_master_t, condor_master_tmp_t, { file dir })
  
 +can_exec(condor_master_t, condor_master_exec_t)
 +
++kernel_read_system_state(condor_master_t)
++
  corenet_udp_sendrecv_generic_if(condor_master_t)
  corenet_udp_sendrecv_generic_node(condor_master_t)
  corenet_tcp_bind_generic_node(condor_master_t)
-@@ -150,7 +157,7 @@ corenet_tcp_sendrecv_amqp_port(condor_master_t)
+@@ -152,6 +164,8 @@ domain_read_all_domains_state(condor_master_t)
  
- domain_read_all_domains_state(condor_master_t)
+ auth_use_nsswitch(condor_master_t)
  
--auth_use_nsswitch(condor_master_t)
-+auth_read_passwd(condor_master_t)
- 
++logging_send_syslog_msg(condor_master_t)
++
  optional_policy(`
  	mta_send_mail(condor_master_t)
-@@ -169,6 +176,8 @@ allow condor_collector_t condor_master_t:udp_socket rw_socket_perms;
+ 	mta_read_config(condor_master_t)
+@@ -169,6 +183,8 @@ allow condor_collector_t condor_master_t:udp_socket rw_socket_perms;
  
  kernel_read_network_state(condor_collector_t)
  
@@ -13323,7 +13351,7 @@ index 3f2b672..95daaa7 100644
  #####################################
  #
  # Negotiator local policy
-@@ -178,6 +187,8 @@ allow condor_negotiator_t self:capability { setuid setgid };
+@@ -178,6 +194,8 @@ allow condor_negotiator_t self:capability { setuid setgid };
  allow condor_negotiator_t condor_master_t:tcp_socket rw_stream_socket_perms;
  allow condor_negotiator_t condor_master_t:udp_socket getattr;
  
@@ -13332,7 +13360,17 @@ index 3f2b672..95daaa7 100644
  ######################################
  #
  # Procd local policy
-@@ -201,6 +212,8 @@ allow condor_schedd_t condor_master_t:udp_socket getattr;
+@@ -185,7 +203,8 @@ allow condor_negotiator_t condor_master_t:udp_socket getattr;
+ 
+ allow condor_procd_t self:capability { fowner chown kill dac_override sys_ptrace };
+ 
+-allow condor_procd_t condor_startd_t:process sigkill;
++allow condor_procd_t condor_domain:process sigkill;
++
+ 
+ domain_read_all_domains_state(condor_procd_t)
+ 
+@@ -201,6 +220,8 @@ allow condor_schedd_t condor_master_t:udp_socket getattr;
  
  allow condor_schedd_t condor_var_lock_t:dir manage_file_perms;
  
@@ -13341,7 +13379,7 @@ index 3f2b672..95daaa7 100644
  domtrans_pattern(condor_schedd_t, condor_procd_exec_t, condor_procd_t)
  domtrans_pattern(condor_schedd_t, condor_startd_exec_t, condor_startd_t)
  
-@@ -209,6 +222,8 @@ manage_files_pattern(condor_schedd_t, condor_schedd_tmp_t, condor_schedd_tmp_t)
+@@ -209,6 +230,8 @@ manage_files_pattern(condor_schedd_t, condor_schedd_tmp_t, condor_schedd_tmp_t)
  relabel_files_pattern(condor_schedd_t, condor_schedd_tmp_t, condor_schedd_tmp_t)
  files_tmp_filetrans(condor_schedd_t, condor_schedd_tmp_t, { file dir })
  
@@ -13350,7 +13388,7 @@ index 3f2b672..95daaa7 100644
  #####################################
  #
  # Startd local policy
-@@ -233,11 +248,10 @@ domain_read_all_domains_state(condor_startd_t)
+@@ -233,11 +256,10 @@ domain_read_all_domains_state(condor_startd_t)
  mcs_process_set_categories(condor_startd_t)
  
  init_domtrans_script(condor_startd_t)
@@ -13363,7 +13401,7 @@ index 3f2b672..95daaa7 100644
  optional_policy(`
  	ssh_basic_client_template(condor_startd, condor_startd_t, system_r)
  	ssh_domtrans(condor_startd_t)
-@@ -249,3 +263,7 @@ optional_policy(`
+@@ -249,3 +271,7 @@ optional_policy(`
  		kerberos_use(condor_startd_ssh_t)
  	')
  ')
@@ -25262,10 +25300,10 @@ index 0000000..1ed97fe
 +
 diff --git a/glusterd.te b/glusterd.te
 new file mode 100644
-index 0000000..7244e2c
+index 0000000..06e17e3
 --- /dev/null
 +++ b/glusterd.te
-@@ -0,0 +1,167 @@
+@@ -0,0 +1,169 @@
 +policy_module(glusterfs, 1.0.1)
 +
 +## <desc>
@@ -25393,6 +25431,8 @@ index 0000000..7244e2c
 +
 +dev_read_sysfs(glusterd_t)
 +dev_read_urand(glusterd_t)
++
++domain_read_all_domains_state(glusterd_t)
 +
 +domain_use_interactive_fds(glusterd_t)
 +
@@ -29487,6 +29527,76 @@ index e207823..4e0f8ba 100644
  userdom_dontaudit_use_unpriv_user_fds(howl_t)
  userdom_dontaudit_search_user_home_dirs(howl_t)
  
+diff --git a/hypervkvp.fc b/hypervkvp.fc
+new file mode 100644
+index 0000000..2a69ee4
+--- /dev/null
++++ b/hypervkvp.fc
+@@ -0,0 +1,3 @@
++/etc/rc\.d/init\.d/hypervkvpd	--	gen_context(system_u:object_r:hypervkvp_initrc_exec_t,s0)
++
++/usr/sbin/hv_kvp_daemon		--	gen_context(system_u:object_r:hypervkvp_exec_t,s0)
+diff --git a/hypervkvp.if b/hypervkvp.if
+new file mode 100644
+index 0000000..7743be5
+--- /dev/null
++++ b/hypervkvp.if
+@@ -0,0 +1,21 @@
++
++## <summary>policy for hypervkvp</summary>
++
++########################################
++## <summary>
++##	Execute TEMPLATE in the hypervkvp domin.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`hypervkvp_domtrans',`
++	gen_require(`
++		type hypervkvp_t, hypervkvp_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	domtrans_pattern($1, hypervkvp_exec_t, hypervkvp_t)
++')
+diff --git a/hypervkvp.te b/hypervkvp.te
+new file mode 100644
+index 0000000..fd3b26b
+--- /dev/null
++++ b/hypervkvp.te
+@@ -0,0 +1,28 @@
++policy_module(hypervkvp, 1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++type hypervkvp_t;
++type hypervkvp_exec_t;
++init_daemon_domain(hypervkvp_t, hypervkvp_exec_t)
++
++type hypervkvp_initrc_exec_t;
++init_script_file(hypervkvp_initrc_exec_t)
++
++########################################
++#
++# hypervkvp local policy
++#
++#
++
++allow hypervkvp_t self:fifo_file rw_fifo_file_perms;
++allow hypervkvp_t self:unix_stream_socket create_stream_socket_perms;
++
++logging_send_syslog_msg(hypervkvp_t)
++
++miscfiles_read_localization(hypervkvp_t)
++
++sysnet_dns_name_resolve(hypervkvp_t)
 diff --git a/i18n_input.te b/i18n_input.te
 index 3bed8fa..a738d7f 100644
 --- a/i18n_input.te
@@ -35685,6 +35795,163 @@ index b9270f7..15f3748 100644
 +optional_policy(`
 +	mozilla_plugin_dontaudit_rw_tmp_files(lpr_t)
  ')
+diff --git a/lsm.fc b/lsm.fc
+new file mode 100644
+index 0000000..711c04b
+--- /dev/null
++++ b/lsm.fc
+@@ -0,0 +1,5 @@
++/usr/bin/lsmd		--	gen_context(system_u:object_r:lsmd_exec_t,s0)
++
++/usr/lib/systemd/system/libstoragemgmt.*		--	gen_context(system_u:object_r:lsmd_unit_file_t,s0)
++
++/var/run/lsm(/.*)?	--	gen_context(system_u:object_r:lsmd_var_run_t,s0)
+diff --git a/lsm.if b/lsm.if
+new file mode 100644
+index 0000000..f3e94d7
+--- /dev/null
++++ b/lsm.if
+@@ -0,0 +1,103 @@
++
++## <summary>lsmd SELINUX policy </summary>
++
++########################################
++## <summary>
++##	Execute TEMPLATE in the lsmd domin.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`lsmd_domtrans',`
++	gen_require(`
++		type lsmd_t, lsmd_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	domtrans_pattern($1, lsmd_exec_t, lsmd_t)
++')
++########################################
++## <summary>
++##	Read lsmd PID files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`lsmd_read_pid_files',`
++	gen_require(`
++		type lsmd_var_run_t;
++	')
++
++	files_search_pids($1)
++	read_files_pattern($1, lsmd_var_run_t, lsmd_var_run_t)
++')
++
++########################################
++## <summary>
++##	Execute lsmd server in the lsmd domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed to transition.
++##	</summary>
++## </param>
++#
++interface(`lsmd_systemctl',`
++	gen_require(`
++		type lsmd_t;
++		type lsmd_unit_file_t;
++	')
++
++	systemd_exec_systemctl($1)
++        systemd_read_fifo_file_password_run($1)
++	allow $1 lsmd_unit_file_t:file read_file_perms;
++	allow $1 lsmd_unit_file_t:service manage_service_perms;
++
++	ps_process_pattern($1, lsmd_t)
++')
++
++
++########################################
++## <summary>
++##	All of the rules required to administrate
++##	an lsmd environment
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	Role allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`lsmd_admin',`
++	gen_require(`
++		type lsmd_t;
++		type lsmd_var_run_t;
++	type lsmd_unit_file_t;
++	')
++
++	allow $1 lsmd_t:process { ptrace signal_perms };
++	ps_process_pattern($1, lsmd_t)
++
++	files_search_pids($1)
++	admin_pattern($1, lsmd_var_run_t)
++
++	lsmd_systemctl($1)
++	admin_pattern($1, lsmd_unit_file_t)
++	allow $1 lsmd_unit_file_t:service all_service_perms;
++	optional_policy(`
++		systemd_passwd_agent_exec($1)
++		systemd_read_fifo_file_passwd_run($1)
++	')
++')
+diff --git a/lsm.te b/lsm.te
+new file mode 100644
+index 0000000..14fe4d7
+--- /dev/null
++++ b/lsm.te
+@@ -0,0 +1,31 @@
++policy_module(lsm, 1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++type lsmd_t;
++type lsmd_exec_t;
++init_daemon_domain(lsmd_t, lsmd_exec_t)
++
++type lsmd_var_run_t;
++files_pid_file(lsmd_var_run_t)
++
++type lsmd_unit_file_t;
++systemd_unit_file(lsmd_unit_file_t)
++
++########################################
++#
++# lsmd local policy
++#
++allow lsmd_t self:capability { setgid  };
++allow lsmd_t self:process { fork };
++allow lsmd_t self:unix_stream_socket create_stream_socket_perms;
++
++manage_dirs_pattern(lsmd_t, lsmd_var_run_t, lsmd_var_run_t)
++manage_files_pattern(lsmd_t, lsmd_var_run_t, lsmd_var_run_t)
++manage_lnk_files_pattern(lsmd_t, lsmd_var_run_t, lsmd_var_run_t)
++manage_sock_files_pattern(lsmd_t, lsmd_var_run_t, lsmd_var_run_t)
++
++logging_send_syslog_msg(lsmd_t)
 diff --git a/mailman.fc b/mailman.fc
 index 7fa381b..bbe6b01 100644
 --- a/mailman.fc
@@ -42853,7 +43120,7 @@ index 97370e4..92138ca 100644
 +	apache_search_sys_content(munin_t)
 +')
 diff --git a/mysql.fc b/mysql.fc
-index c48dc17..f93fa69 100644
+index c48dc17..6355fb4 100644
 --- a/mysql.fc
 +++ b/mysql.fc
 @@ -1,11 +1,24 @@
@@ -42889,7 +43156,7 @@ index c48dc17..f93fa69 100644
  /usr/bin/mysqld_safe	--	gen_context(system_u:object_r:mysqld_safe_exec_t,s0)
  /usr/bin/mysql_upgrade	--	gen_context(system_u:object_r:mysqld_exec_t,s0)
  
-@@ -13,13 +26,15 @@ HOME_DIR/\.my\.cnf	--	gen_context(system_u:object_r:mysqld_home_t,s0)
+@@ -13,13 +26,16 @@ HOME_DIR/\.my\.cnf	--	gen_context(system_u:object_r:mysqld_home_t,s0)
  
  /usr/sbin/mysqld(-max)?	--	gen_context(system_u:object_r:mysqld_exec_t,s0)
  /usr/sbin/mysqlmanager	--	gen_context(system_u:object_r:mysqlmanagerd_exec_t,s0)
@@ -42905,6 +43172,7 @@ index c48dc17..f93fa69 100644
 +/var/lib/mysql/mysql\.sock -s	gen_context(system_u:object_r:mysqld_var_run_t,s0)
  
 -/var/log/mysql.*	--	gen_context(system_u:object_r:mysqld_log_t,s0)
++/var/log/mariadb(/.*)?   gen_context(system_u:object_r:mysqld_log_t,s0)
 +/var/log/mysql.*		gen_context(system_u:object_r:mysqld_log_t,s0)
  
 -/var/run/mysqld.*	gen_context(system_u:object_r:mysqld_var_run_t,s0)
@@ -43444,7 +43712,7 @@ index 687af38..404ed6d 100644
 +	mysql_stream_connect($1)
  ')
 diff --git a/mysql.te b/mysql.te
-index 9f6179e..0f6abcb 100644
+index 9f6179e..94457fe 100644
 --- a/mysql.te
 +++ b/mysql.te
 @@ -1,4 +1,4 @@
@@ -43617,7 +43885,7 @@ index 9f6179e..0f6abcb 100644
  	seutil_sigchld_newrole(mysqld_t)
  ')
  
-@@ -153,29 +160,22 @@ optional_policy(`
+@@ -153,29 +160,23 @@ optional_policy(`
  
  #######################################
  #
@@ -43643,6 +43911,7 @@ index 9f6179e..0f6abcb 100644
  
 -allow mysqld_safe_t mysqld_log_t:file { append_file_perms create_file_perms setattr_file_perms };
 -logging_log_filetrans(mysqld_safe_t, mysqld_log_t, file)
++list_dirs_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
 +manage_files_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
  
  manage_files_pattern(mysqld_safe_t, mysqld_var_run_t, mysqld_var_run_t)
@@ -43653,7 +43922,7 @@ index 9f6179e..0f6abcb 100644
  
  kernel_read_system_state(mysqld_safe_t)
  kernel_read_kernel_sysctls(mysqld_safe_t)
-@@ -187,17 +187,21 @@ dev_list_sysfs(mysqld_safe_t)
+@@ -187,17 +188,21 @@ dev_list_sysfs(mysqld_safe_t)
  
  domain_read_all_domains_state(mysqld_safe_t)
  
@@ -43681,7 +43950,7 @@ index 9f6179e..0f6abcb 100644
  
  optional_policy(`
  	hostname_exec(mysqld_safe_t)
-@@ -205,7 +209,7 @@ optional_policy(`
+@@ -205,7 +210,7 @@ optional_policy(`
  
  ########################################
  #
@@ -43690,7 +43959,7 @@ index 9f6179e..0f6abcb 100644
  #
  
  allow mysqlmanagerd_t self:capability { dac_override kill };
-@@ -214,11 +218,12 @@ allow mysqlmanagerd_t self:fifo_file rw_fifo_file_perms;
+@@ -214,11 +219,12 @@ allow mysqlmanagerd_t self:fifo_file rw_fifo_file_perms;
  allow mysqlmanagerd_t self:tcp_socket create_stream_socket_perms;
  allow mysqlmanagerd_t self:unix_stream_socket create_stream_socket_perms;
  
@@ -43708,7 +43977,7 @@ index 9f6179e..0f6abcb 100644
  
  domtrans_pattern(mysqlmanagerd_t, mysqld_exec_t, mysqld_t)
  
-@@ -226,31 +231,20 @@ manage_files_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t)
+@@ -226,31 +232,20 @@ manage_files_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t)
  manage_sock_files_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t)
  filetrans_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t, { file sock_file })
  
@@ -67802,6 +68071,368 @@ index 9a8f052..3baa71a 100644
 +
 +	unconfined_domain_noaudit(realmd_consolehelper_t)
  ')
+diff --git a/redis.fc b/redis.fc
+new file mode 100644
+index 0000000..638d6b4
+--- /dev/null
++++ b/redis.fc
+@@ -0,0 +1,11 @@
++/etc/rc\.d/init\.d/redis	--	gen_context(system_u:object_r:redis_initrc_exec_t,s0)
++
++/usr/lib/systemd/system/redis.*		--	gen_context(system_u:object_r:redis_unit_file_t,s0)
++
++/usr/sbin/redis-server		--	gen_context(system_u:object_r:redis_exec_t,s0)
++
++/var/lib/redis(/.*)?		gen_context(system_u:object_r:redis_var_lib_t,s0)
++
++/var/log/redis(/.*)?		gen_context(system_u:object_r:redis_log_t,s0)
++
++/var/run/redis(/.*)?		gen_context(system_u:object_r:redis_var_run_t,s0)
+diff --git a/redis.if b/redis.if
+new file mode 100644
+index 0000000..72a2d7b
+--- /dev/null
++++ b/redis.if
+@@ -0,0 +1,271 @@
++
++## <summary>redis-server SELinux policy</summary>
++
++########################################
++## <summary>
++##	Execute TEMPLATE in the redis domin.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`redis_domtrans',`
++	gen_require(`
++		type redis_t, redis_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	domtrans_pattern($1, redis_exec_t, redis_t)
++')
++
++########################################
++## <summary>
++##	Execute redis server in the redis domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`redis_initrc_domtrans',`
++	gen_require(`
++		type redis_initrc_exec_t;
++	')
++
++	init_labeled_script_domtrans($1, redis_initrc_exec_t)
++')
++########################################
++## <summary>
++##	Read redis's log files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`redis_read_log',`
++	gen_require(`
++		type redis_log_t;
++	')
++
++	logging_search_logs($1)
++	read_files_pattern($1, redis_log_t, redis_log_t)
++')
++
++########################################
++## <summary>
++##	Append to redis log files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`redis_append_log',`
++	gen_require(`
++		type redis_log_t;
++	')
++
++	logging_search_logs($1)
++	append_files_pattern($1, redis_log_t, redis_log_t)
++')
++
++########################################
++## <summary>
++##	Manage redis log files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`redis_manage_log',`
++	gen_require(`
++		type redis_log_t;
++	')
++
++	logging_search_logs($1)
++	manage_dirs_pattern($1, redis_log_t, redis_log_t)
++	manage_files_pattern($1, redis_log_t, redis_log_t)
++	manage_lnk_files_pattern($1, redis_log_t, redis_log_t)
++')
++
++########################################
++## <summary>
++##	Search redis lib directories.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`redis_search_lib',`
++	gen_require(`
++		type redis_var_lib_t;
++	')
++
++	allow $1 redis_var_lib_t:dir search_dir_perms;
++	files_search_var_lib($1)
++')
++
++########################################
++## <summary>
++##	Read redis lib files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`redis_read_lib_files',`
++	gen_require(`
++		type redis_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++	read_files_pattern($1, redis_var_lib_t, redis_var_lib_t)
++')
++
++########################################
++## <summary>
++##	Manage redis lib files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`redis_manage_lib_files',`
++	gen_require(`
++		type redis_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++	manage_files_pattern($1, redis_var_lib_t, redis_var_lib_t)
++')
++
++########################################
++## <summary>
++##	Manage redis lib directories.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`redis_manage_lib_dirs',`
++	gen_require(`
++		type redis_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++	manage_dirs_pattern($1, redis_var_lib_t, redis_var_lib_t)
++')
++
++########################################
++## <summary>
++##	Read redis PID files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`redis_read_pid_files',`
++	gen_require(`
++		type redis_var_run_t;
++	')
++
++	files_search_pids($1)
++	read_files_pattern($1, redis_var_run_t, redis_var_run_t)
++')
++
++########################################
++## <summary>
++##	Execute redis server in the redis domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed to transition.
++##	</summary>
++## </param>
++#
++interface(`redis_systemctl',`
++	gen_require(`
++		type redis_t;
++		type redis_unit_file_t;
++	')
++
++	systemd_exec_systemctl($1)
++        systemd_read_fifo_file_password_run($1)
++	allow $1 redis_unit_file_t:file read_file_perms;
++	allow $1 redis_unit_file_t:service manage_service_perms;
++
++	ps_process_pattern($1, redis_t)
++')
++
++
++########################################
++## <summary>
++##	All of the rules required to administrate
++##	an redis environment
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	Role allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`redis_admin',`
++	gen_require(`
++		type redis_t;
++		type redis_initrc_exec_t;
++		type redis_log_t;
++		type redis_var_lib_t;
++		type redis_var_run_t;
++	type redis_unit_file_t;
++	')
++
++	allow $1 redis_t:process { ptrace signal_perms };
++	ps_process_pattern($1, redis_t)
++
++	redis_initrc_domtrans($1)
++	domain_system_change_exemption($1)
++	role_transition $2 redis_initrc_exec_t system_r;
++	allow $2 system_r;
++
++	logging_search_logs($1)
++	admin_pattern($1, redis_log_t)
++
++	files_search_var_lib($1)
++	admin_pattern($1, redis_var_lib_t)
++
++	files_search_pids($1)
++	admin_pattern($1, redis_var_run_t)
++
++	redis_systemctl($1)
++	admin_pattern($1, redis_unit_file_t)
++	allow $1 redis_unit_file_t:service all_service_perms;
++	optional_policy(`
++		systemd_passwd_agent_exec($1)
++		systemd_read_fifo_file_passwd_run($1)
++	')
++')
+diff --git a/redis.te b/redis.te
+new file mode 100644
+index 0000000..e5e9cf7
+--- /dev/null
++++ b/redis.te
+@@ -0,0 +1,62 @@
++policy_module(redis, 1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++type redis_t;
++type redis_exec_t;
++init_daemon_domain(redis_t, redis_exec_t)
++
++type redis_initrc_exec_t;
++init_script_file(redis_initrc_exec_t)
++
++type redis_log_t;
++logging_log_file(redis_log_t)
++
++type redis_var_lib_t;
++files_type(redis_var_lib_t)
++
++type redis_var_run_t;
++files_pid_file(redis_var_run_t)
++
++type redis_unit_file_t;
++systemd_unit_file(redis_unit_file_t)
++
++########################################
++#
++# redis local policy
++#
++
++allow redis_t self:process { setrlimit signal_perms };
++allow redis_t self:fifo_file rw_fifo_file_perms;
++allow redis_t self:unix_stream_socket create_stream_socket_perms;
++allow redis_t self:tcp_socket create_stream_socket_perms;
++
++manage_dirs_pattern(redis_t, redis_log_t, redis_log_t)
++manage_files_pattern(redis_t, redis_log_t, redis_log_t)
++manage_lnk_files_pattern(redis_t, redis_log_t, redis_log_t)
++
++manage_dirs_pattern(redis_t, redis_var_lib_t, redis_var_lib_t)
++manage_files_pattern(redis_t, redis_var_lib_t, redis_var_lib_t)
++manage_lnk_files_pattern(redis_t, redis_var_lib_t, redis_var_lib_t)
++
++manage_dirs_pattern(redis_t, redis_var_run_t, redis_var_run_t)
++manage_files_pattern(redis_t, redis_var_run_t, redis_var_run_t)
++manage_lnk_files_pattern(redis_t, redis_var_run_t, redis_var_run_t)
++
++kernel_read_system_state(redis_t)
++
++corenet_tcp_bind_generic_node(redis_t)
++corenet_tcp_bind_redis_port(redis_t)
++
++dev_read_sysfs(redis_t)
++dev_read_urand(redis_t)
++
++logging_send_syslog_msg(redis_t)
++
++miscfiles_read_localization(redis_t)
++
++sysnet_dns_name_resolve(redis_t)
++
 diff --git a/remotelogin.fc b/remotelogin.fc
 index 327baf0..d8691bd 100644
 --- a/remotelogin.fc
@@ -84046,10 +84677,10 @@ index c6aaac7..a5600a8 100644
  sysnet_dns_name_resolve(svnserve_t)
 diff --git a/swift.fc b/swift.fc
 new file mode 100644
-index 0000000..e5433ad
+index 0000000..744f0ce
 --- /dev/null
 +++ b/swift.fc
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,29 @@
 +/usr/bin/swift-account-auditor		--	gen_context(system_u:object_r:swift_exec_t,s0)
 +/usr/bin/swift-account-reaper		--	gen_context(system_u:object_r:swift_exec_t,s0)
 +/usr/bin/swift-account-replicator	--	gen_context(system_u:object_r:swift_exec_t,s0)
@@ -84069,7 +84700,8 @@ index 0000000..e5433ad
 +
 +/usr/lib/systemd/system/openstack-swift.*      --  gen_context(system_u:object_r:swift_unit_file_t,s0)
 +
-+/var/run/swift(/.*)?		gen_context(system_u:object_r:swift_var_run_t,s0)
++/var/cache/swift(/.*)?			--	gen_context(system_u:object_r:swift_var_cache_t,s0)
++/var/run/swift(/.*)?			--	gen_context(system_u:object_r:swift_var_run_t,s0)
 +
 +# This seems to be a de-facto standard when using swift.
 +/srv/node(/.*)?		gen_context(system_u:object_r:swift_data_t,s0)
@@ -84209,10 +84841,10 @@ index 0000000..015c2c9
 +')
 diff --git a/swift.te b/swift.te
 new file mode 100644
-index 0000000..2d5942c
+index 0000000..c7b2bf6
 --- /dev/null
 +++ b/swift.te
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,69 @@
 +policy_module(swift, 1.0.0)
 +
 +########################################
@@ -84223,6 +84855,9 @@ index 0000000..2d5942c
 +type swift_t;
 +type swift_exec_t;
 +init_daemon_domain(swift_t, swift_exec_t)
++
++type swift_var_cache_t;
++files_type(swift_var_cache_t)
 +
 +type swift_var_run_t;
 +files_pid_file(swift_var_run_t)
@@ -84244,6 +84879,11 @@ index 0000000..2d5942c
 +allow swift_t self:tcp_socket create_stream_socket_perms;
 +allow swift_t self:unix_stream_socket create_stream_socket_perms;
 +allow swift_t self:unix_dgram_socket create_socket_perms;
++
++manage_dirs_pattern(swift_t, swift_var_cache_t, swift_var_cache_t)
++manage_files_pattern(swift_t, swift_var_cache_t, swift_var_cache_t)
++manage_lnk_files_pattern(swift_t, swift_var_cache_t, swift_var_cache_t)
++files_var_filetrans(swift_t,swift_var_cache_t, { dir file })
 +
 +manage_dirs_pattern(swift_t, swift_var_run_t, swift_var_run_t)
 +manage_files_pattern(swift_t, swift_var_run_t, swift_var_run_t)
@@ -91080,7 +91720,7 @@ index 9dec06c..bdba959 100644
 +	allow $1 svirt_image_t:chr_file rw_file_perms;
  ')
 diff --git a/virt.te b/virt.te
-index 1f22fba..65dbdd3 100644
+index 1f22fba..cbd02ae 100644
 --- a/virt.te
 +++ b/virt.te
 @@ -1,94 +1,104 @@
@@ -91615,7 +92255,7 @@ index 1f22fba..65dbdd3 100644
  allow virtd_t self:fifo_file { manage_fifo_file_perms relabelfrom relabelto };
 -allow virtd_t self:unix_stream_socket { accept connectto listen };
 -allow virtd_t self:tcp_socket { accept listen };
-+allow virtd_t self:unix_stream_socket { connectto create_stream_socket_perms };
++allow virtd_t self:unix_stream_socket { connectto create_stream_socket_perms relabelfrom relabelto };
 +allow virtd_t self:tcp_socket create_stream_socket_perms;
  allow virtd_t self:tun_socket { create_socket_perms relabelfrom relabelto };
  allow virtd_t self:rawip_socket create_socket_perms;

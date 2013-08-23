@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 71%{?dist}
+Release: 72%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -538,6 +538,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Aug 23 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-72
+- Add policy for lsmd
+- Add support for /var/log/mariadb dir and allow mysqld_safe to list this directory
+- Update condor_master rules to allow read system state info and allow logging
+- Add labeling for /etc/condor and allow condor domain to write it (bug)
+- Allow condor domains to manage own logs
+- Allow glusterd to read domains state
+- Fix initial hypervkvp policy
+- Add policy for hypervkvpd
+- Fix redis.if summary
+
 * Wed Aug 21 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-71
 - Allow boinc to connect to  @/tmp/.X11-unix/X0
 - Allow beam.smp to connect to tcp/5984
