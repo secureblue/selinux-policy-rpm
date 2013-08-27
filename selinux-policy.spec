@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 72%{?dist}
+Release: 73%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -538,6 +538,29 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Aug 27 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-73
+0 
+- Allow rhsmcertd to read init state
+- Allow fsetid for pkcsslotd
+- Fix labeling for /usr/lib/systemd/system/pkcsslotd.service
+- Allow fetchmail to create own pid with correct labeling
+- Fix rhcs_domain_template()
+- Allow roles which can run mock to read mock lib files to view results
+- Allow rpcbind to use nsswitch
+- Fix lsm.if summary
+- Fix collectd_t can read /etc/passwd file
+- Label systemd unit files under dracut correctly
+- Add support for pam_mount to mount user's encrypted home When a user logs in and logs out using ssh
+- Add support for .Xauthority-n
+- Label umount.crypt as lvm_exec_t
+- Allow syslogd to search psad lib files
+- Allow ssh_t to use /dev/ptmx
+- Make sure /run/pluto dir is created with correct labeling
+- Allow syslog to run shell and bin_t commands
+- Allow ip to relabel tun_sockets
+- Allow mount to create directories in files under /run
+- Allow processes to use inherited fifo files
+
 * Fri Aug 23 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-72
 - Add policy for lsmd
 - Add support for /var/log/mariadb dir and allow mysqld_safe to list this directory

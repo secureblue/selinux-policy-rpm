@@ -1,8 +1,8 @@
 diff --git a/abrt.fc b/abrt.fc
-index e4f84de..4e4cbd4 100644
+index e4f84de..2fe1152 100644
 --- a/abrt.fc
 +++ b/abrt.fc
-@@ -1,30 +1,40 @@
+@@ -1,30 +1,41 @@
 -/etc/abrt(/.*)?	gen_context(system_u:object_r:abrt_etc_t,s0)
 -/etc/rc\.d/init\.d/abrt	--	gen_context(system_u:object_r:abrt_initrc_exec_t,s0)
 +/etc/abrt(/.*)?				gen_context(system_u:object_r:abrt_etc_t,s0)
@@ -22,6 +22,7 @@ index e4f84de..4e4cbd4 100644
 +/usr/sbin/abrtd			--	gen_context(system_u:object_r:abrt_exec_t,s0)
 +/usr/sbin/abrt-dbus		--	gen_context(system_u:object_r:abrt_exec_t,s0)
 +/usr/sbin/abrt-harvest.*	--	gen_context(system_u:object_r:abrt_exec_t,s0)
++/usr/sbin/abrt-upload-watch --  gen_context(system_u:object_r:abrt_upload_watch_exec_t,s0)
  
 -/usr/libexec/abrt-pyhook-helper	--	gen_context(system_u:object_r:abrt_helper_exec_t,s0)
  /usr/libexec/abrt-handle-event	--	gen_context(system_u:object_r:abrt_handle_event_exec_t,s0)
@@ -518,7 +519,7 @@ index 058d908..702b716 100644
 +')
 +
 diff --git a/abrt.te b/abrt.te
-index cc43d25..da5b191 100644
+index cc43d25..883dd05 100644
 --- a/abrt.te
 +++ b/abrt.te
 @@ -1,4 +1,4 @@
@@ -527,7 +528,7 @@ index cc43d25..da5b191 100644
  
  ########################################
  #
-@@ -6,105 +6,116 @@ policy_module(abrt, 1.3.4)
+@@ -6,105 +6,128 @@ policy_module(abrt, 1.3.4)
  #
  
  ## <desc>
@@ -549,6 +550,14 @@ index cc43d25..da5b191 100644
 -##	the abrt_handle_event_t domain to
 -##	handle ABRT event scripts.
 -##	</p>
++## <p>
++## Allow abrt-handle-upload to modify public files
++## used for public file transfer services in /var/spool/abrt-upload/.
++## </p>
++## </desc>
++gen_tunable(abrt_upload_watch_anon_write, true)
++
++## <desc>
 +##  <p>
 +##  Allow ABRT to run in abrt_handle_event_t domain
 +##  to handle ABRT event scripts
@@ -627,14 +636,14 @@ index cc43d25..da5b191 100644
 +ifdef(`enable_mcs',`
 +	init_ranged_daemon_domain(abrt_t, abrt_exec_t, s0 - mcs_systemhigh)
 +')
-+
-+#
-+# Support for ABRT retrace server
  
 -type abrt_retrace_worker_t, abrt_domain;
 -type abrt_retrace_worker_exec_t;
 -domain_type(abrt_retrace_worker_t)
 -domain_entry_file(abrt_retrace_worker_t, abrt_retrace_worker_exec_t)
++#
++# Support for ABRT retrace server
++
 +#
 +abrt_basic_types_template(abrt_retrace_worker)
 +application_domain(abrt_retrace_worker_t, abrt_retrace_worker_exec_t)
@@ -660,7 +669,10 @@ index cc43d25..da5b191 100644
 -ifdef(`enable_mcs',`
 -	init_ranged_daemon_domain(abrt_t, abrt_exec_t, s0 - mcs_systemhigh)
 -')
--
++# Support for abrt-upload-watch
++abrt_basic_types_template(abrt_upload_watch)
++init_daemon_domain(abrt_upload_watch_t, abrt_upload_watch_exec_t)
+ 
  ########################################
  #
 -# Local policy
@@ -689,7 +701,7 @@ index cc43d25..da5b191 100644
  manage_files_pattern(abrt_t, abrt_var_log_t, abrt_var_log_t)
  logging_log_filetrans(abrt_t, abrt_var_log_t, file)
  
-@@ -112,23 +123,25 @@ manage_dirs_pattern(abrt_t, abrt_tmp_t, abrt_tmp_t)
+@@ -112,23 +135,25 @@ manage_dirs_pattern(abrt_t, abrt_tmp_t, abrt_tmp_t)
  manage_files_pattern(abrt_t, abrt_tmp_t, abrt_tmp_t)
  manage_lnk_files_pattern(abrt_t, abrt_tmp_t, abrt_tmp_t)
  files_tmp_filetrans(abrt_t, abrt_tmp_t, { file dir })
@@ -718,7 +730,7 @@ index cc43d25..da5b191 100644
  kernel_request_load_module(abrt_t)
  kernel_rw_kernel_sysctl(abrt_t)
  
-@@ -137,16 +150,14 @@ corecmd_exec_shell(abrt_t)
+@@ -137,16 +162,14 @@ corecmd_exec_shell(abrt_t)
  corecmd_read_all_executables(abrt_t)
  
  corenet_all_recvfrom_netlabel(abrt_t)
@@ -737,7 +749,7 @@ index cc43d25..da5b191 100644
  
  dev_getattr_all_chr_files(abrt_t)
  dev_getattr_all_blk_files(abrt_t)
-@@ -163,29 +174,37 @@ files_getattr_all_files(abrt_t)
+@@ -163,29 +186,37 @@ files_getattr_all_files(abrt_t)
  files_read_config_files(abrt_t)
  files_read_etc_runtime_files(abrt_t)
  files_read_var_symlinks(abrt_t)
@@ -778,7 +790,7 @@ index cc43d25..da5b191 100644
  
  tunable_policy(`abrt_anon_write',`
  	miscfiles_manage_public_files(abrt_t)
-@@ -193,15 +212,11 @@ tunable_policy(`abrt_anon_write',`
+@@ -193,15 +224,11 @@ tunable_policy(`abrt_anon_write',`
  
  optional_policy(`
  	apache_list_modules(abrt_t)
@@ -795,7 +807,7 @@ index cc43d25..da5b191 100644
  ')
  
  optional_policy(`
-@@ -209,6 +224,16 @@ optional_policy(`
+@@ -209,6 +236,16 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -812,7 +824,7 @@ index cc43d25..da5b191 100644
  	policykit_domtrans_auth(abrt_t)
  	policykit_read_lib(abrt_t)
  	policykit_read_reload(abrt_t)
-@@ -220,6 +245,7 @@ optional_policy(`
+@@ -220,6 +257,7 @@ optional_policy(`
  	corecmd_exec_all_executables(abrt_t)
  ')
  
@@ -820,7 +832,7 @@ index cc43d25..da5b191 100644
  optional_policy(`
  	rpm_exec(abrt_t)
  	rpm_dontaudit_manage_db(abrt_t)
-@@ -230,6 +256,7 @@ optional_policy(`
+@@ -230,6 +268,7 @@ optional_policy(`
  	rpm_signull(abrt_t)
  ')
  
@@ -828,7 +840,7 @@ index cc43d25..da5b191 100644
  optional_policy(`
  	sendmail_domtrans(abrt_t)
  ')
-@@ -240,9 +267,17 @@ optional_policy(`
+@@ -240,9 +279,17 @@ optional_policy(`
  	sosreport_delete_tmp_files(abrt_t)
  ')
  
@@ -847,7 +859,7 @@ index cc43d25..da5b191 100644
  #
  
  allow abrt_handle_event_t self:fifo_file rw_fifo_file_perms;
-@@ -253,9 +288,13 @@ tunable_policy(`abrt_handle_event',`
+@@ -253,9 +300,13 @@ tunable_policy(`abrt_handle_event',`
  	can_exec(abrt_t, abrt_handle_event_exec_t)
  ')
  
@@ -862,7 +874,7 @@ index cc43d25..da5b191 100644
  #
  
  allow abrt_helper_t self:capability { chown setgid sys_nice };
-@@ -268,6 +307,7 @@ manage_dirs_pattern(abrt_helper_t, abrt_var_cache_t, abrt_var_cache_t)
+@@ -268,6 +319,7 @@ manage_dirs_pattern(abrt_helper_t, abrt_var_cache_t, abrt_var_cache_t)
  manage_files_pattern(abrt_helper_t, abrt_var_cache_t, abrt_var_cache_t)
  manage_lnk_files_pattern(abrt_helper_t, abrt_var_cache_t, abrt_var_cache_t)
  files_var_filetrans(abrt_helper_t, abrt_var_cache_t, { file dir })
@@ -870,7 +882,7 @@ index cc43d25..da5b191 100644
  
  read_files_pattern(abrt_helper_t, abrt_var_run_t, abrt_var_run_t)
  read_lnk_files_pattern(abrt_helper_t, abrt_var_run_t, abrt_var_run_t)
-@@ -276,15 +316,20 @@ corecmd_read_all_executables(abrt_helper_t)
+@@ -276,15 +328,20 @@ corecmd_read_all_executables(abrt_helper_t)
  
  domain_read_all_domains_state(abrt_helper_t)
  
@@ -891,7 +903,7 @@ index cc43d25..da5b191 100644
  	userdom_dontaudit_read_user_home_content_files(abrt_helper_t)
  	userdom_dontaudit_read_user_tmp_files(abrt_helper_t)
  	dev_dontaudit_read_all_blk_files(abrt_helper_t)
-@@ -292,11 +337,25 @@ ifdef(`hide_broken_symptoms',`
+@@ -292,11 +349,25 @@ ifdef(`hide_broken_symptoms',`
  	dev_dontaudit_write_all_chr_files(abrt_helper_t)
  	dev_dontaudit_write_all_blk_files(abrt_helper_t)
  	fs_dontaudit_rw_anon_inodefs_files(abrt_helper_t)
@@ -918,7 +930,7 @@ index cc43d25..da5b191 100644
  #
  
  allow abrt_retrace_coredump_t self:fifo_file rw_fifo_file_perms;
-@@ -314,10 +373,12 @@ corecmd_exec_shell(abrt_retrace_coredump_t)
+@@ -314,10 +385,12 @@ corecmd_exec_shell(abrt_retrace_coredump_t)
  
  dev_read_urand(abrt_retrace_coredump_t)
  
@@ -932,7 +944,7 @@ index cc43d25..da5b191 100644
  optional_policy(`
  	rpm_exec(abrt_retrace_coredump_t)
  	rpm_dontaudit_manage_db(abrt_retrace_coredump_t)
-@@ -330,10 +391,11 @@ optional_policy(`
+@@ -330,10 +403,11 @@ optional_policy(`
  
  #######################################
  #
@@ -946,7 +958,7 @@ index cc43d25..da5b191 100644
  allow abrt_retrace_worker_t self:fifo_file rw_fifo_file_perms;
  
  domtrans_pattern(abrt_retrace_worker_t, abrt_retrace_coredump_exec_t, abrt_retrace_coredump_t)
-@@ -352,46 +414,56 @@ corecmd_exec_shell(abrt_retrace_worker_t)
+@@ -352,46 +426,56 @@ corecmd_exec_shell(abrt_retrace_worker_t)
  
  dev_read_urand(abrt_retrace_worker_t)
  
@@ -1008,31 +1020,41 @@ index cc43d25..da5b191 100644
  
  read_files_pattern(abrt_watch_log_t, abrt_etc_t, abrt_etc_t)
  
-@@ -400,16 +472,18 @@ domtrans_pattern(abrt_watch_log_t, abrt_dump_oops_exec_t, abrt_dump_oops_t)
+@@ -400,16 +484,29 @@ domtrans_pattern(abrt_watch_log_t, abrt_dump_oops_exec_t, abrt_dump_oops_t)
  corecmd_exec_bin(abrt_watch_log_t)
  
  logging_read_all_logs(abrt_watch_log_t)
 +logging_send_syslog_msg(abrt_watch_log_t)
 +
-+optional_policy(`
-+	unconfined_domain(abrt_watch_log_t)
-+')
++#optional_policy(`
++#	unconfined_domain(abrt_watch_log_t)
++#')
  
  #######################################
  #
 -# Global local policy
-+# Local policy for all abrt domain
++# abrt-upload-watch local policy
  #
  
 -kernel_read_system_state(abrt_domain)
++corecmd_exec_bin(abrt_upload_watch_t)
+ 
+-files_read_etc_files(abrt_domain)
++tunable_policy(`abrt_upload_watch_anon_write',`
++    miscfiles_manage_public_files(abrt_upload_watch_t)
++')
++
++#######################################
++#
++# Local policy for all abrt domain
++#
+ 
+-logging_send_syslog_msg(abrt_domain)
 +allow abrt_domain abrt_var_run_t:sock_file write_sock_file_perms;
 +allow abrt_domain abrt_var_run_t:unix_stream_socket connectto;
  
- files_read_etc_files(abrt_domain)
--
--logging_send_syslog_msg(abrt_domain)
--
 -miscfiles_read_localization(abrt_domain)
++files_read_etc_files(abrt_domain)
 diff --git a/accountsd.fc b/accountsd.fc
 index f9d8d7a..0682710 100644
 --- a/accountsd.fc
@@ -8808,7 +8830,7 @@ index c723a0a..3e8a553 100644
 +	allow $1 bluetooth_unit_file_t:service all_service_perms;
  ')
 diff --git a/bluetooth.te b/bluetooth.te
-index 6f09d24..b1ec892 100644
+index 6f09d24..231de05 100644
 --- a/bluetooth.te
 +++ b/bluetooth.te
 @@ -49,6 +49,9 @@ files_type(bluetooth_var_lib_t)
@@ -8874,12 +8896,13 @@ index 6f09d24..b1ec892 100644
  miscfiles_read_fonts(bluetooth_t)
  miscfiles_read_hwdata(bluetooth_t)
  
-@@ -130,8 +142,12 @@ userdom_dontaudit_use_unpriv_user_fds(bluetooth_t)
+@@ -130,8 +142,13 @@ userdom_dontaudit_use_unpriv_user_fds(bluetooth_t)
  userdom_dontaudit_use_user_terminals(bluetooth_t)
  userdom_dontaudit_search_user_home_dirs(bluetooth_t)
  
 +# machine-info
 +systemd_hostnamed_read_config(bluetooth_t)
++systemd_dbus_chat_hostnamed(bluetooth_t)
 +
  optional_policy(`
  	dbus_system_bus_client(bluetooth_t)
@@ -8887,7 +8910,7 @@ index 6f09d24..b1ec892 100644
  
  	optional_policy(`
  		cups_dbus_chat(bluetooth_t)
-@@ -199,7 +215,6 @@ dev_read_urand(bluetooth_helper_t)
+@@ -199,7 +216,6 @@ dev_read_urand(bluetooth_helper_t)
  domain_read_all_domains_state(bluetooth_helper_t)
  
  files_read_etc_runtime_files(bluetooth_helper_t)
@@ -12455,7 +12478,7 @@ index 954309e..f4db2ca 100644
  ')
 +
 diff --git a/collectd.te b/collectd.te
-index 6471fa8..dbb3f45 100644
+index 6471fa8..dc0423c 100644
 --- a/collectd.te
 +++ b/collectd.te
 @@ -26,8 +26,14 @@ files_type(collectd_var_lib_t)
@@ -12483,7 +12506,7 @@ index 6471fa8..dbb3f45 100644
  
  manage_dirs_pattern(collectd_t, collectd_var_lib_t, collectd_var_lib_t)
  manage_files_pattern(collectd_t, collectd_var_lib_t, collectd_var_lib_t)
-@@ -46,23 +55,25 @@ files_var_lib_filetrans(collectd_t, collectd_var_lib_t, dir)
+@@ -46,23 +55,28 @@ files_var_lib_filetrans(collectd_t, collectd_var_lib_t, dir)
  manage_files_pattern(collectd_t, collectd_var_run_t, collectd_var_run_t)
  files_pid_filetrans(collectd_t, collectd_var_run_t, file)
  
@@ -12491,6 +12514,9 @@ index 6471fa8..dbb3f45 100644
 +kernel_read_all_sysctls(collectd_t)
 +kernel_read_all_proc(collectd_t)
 +kernel_list_all_proc(collectd_t)
++
++auth_getattr_passwd(collectd_t)
++auth_read_passwd(collectd_t)
  
 -kernel_read_network_state(collectd_t)
 -kernel_read_net_sysctls(collectd_t)
@@ -12516,7 +12542,7 @@ index 6471fa8..dbb3f45 100644
  
  logging_send_syslog_msg(collectd_t)
  
-@@ -75,16 +86,26 @@ tunable_policy(`collectd_tcp_network_connect',`
+@@ -75,16 +89,26 @@ tunable_policy(`collectd_tcp_network_connect',`
  ')
  
  optional_policy(`
@@ -23569,7 +23595,7 @@ index 79b9273..76b7ed5 100644
  logging_send_syslog_msg(fcoemon_t)
  
 diff --git a/fetchmail.fc b/fetchmail.fc
-index 2486e2a..ea07c4f 100644
+index 2486e2a..72143ee 100644
 --- a/fetchmail.fc
 +++ b/fetchmail.fc
 @@ -1,4 +1,5 @@
@@ -23578,6 +23604,12 @@ index 2486e2a..ea07c4f 100644
  
  /etc/fetchmailrc	--	gen_context(system_u:object_r:fetchmail_etc_t,s0)
  
+@@ -12,4 +13,4 @@ HOME_DIR/\.fetchmailrc	--	gen_context(system_u:object_r:fetchmail_home_t,s0)
+ 
+ /var/mail/\.fetchmail-UIDL-cache	--	gen_context(system_u:object_r:fetchmail_uidl_cache_t,s0)
+ 
+-/var/run/fetchmail/.*	--	gen_context(system_u:object_r:fetchmail_var_run_t,s0)
++/var/run/fetchmail.*	--	gen_context(system_u:object_r:fetchmail_var_run_t,s0)
 diff --git a/fetchmail.if b/fetchmail.if
 index c3f7916..cab3954 100644
 --- a/fetchmail.if
@@ -23603,7 +23635,7 @@ index c3f7916..cab3954 100644
  	admin_pattern($1, fetchmail_etc_t)
  
 diff --git a/fetchmail.te b/fetchmail.te
-index f0388cb..df501ec 100644
+index f0388cb..8e7f99e 100644
 --- a/fetchmail.te
 +++ b/fetchmail.te
 @@ -32,15 +32,13 @@ files_type(fetchmail_uidl_cache_t)
@@ -23623,18 +23655,20 @@ index f0388cb..df501ec 100644
  manage_dirs_pattern(fetchmail_t, fetchmail_log_t, fetchmail_log_t)
  append_files_pattern(fetchmail_t, fetchmail_log_t, fetchmail_log_t)
  create_files_pattern(fetchmail_t, fetchmail_log_t, fetchmail_log_t)
-@@ -54,6 +52,11 @@ manage_dirs_pattern(fetchmail_t, fetchmail_var_run_t, fetchmail_var_run_t)
- manage_files_pattern(fetchmail_t, fetchmail_var_run_t, fetchmail_var_run_t)
- files_pid_filetrans(fetchmail_t, fetchmail_var_run_t, dir)
+@@ -52,7 +50,12 @@ mta_spool_filetrans(fetchmail_t, fetchmail_uidl_cache_t, file)
  
+ manage_dirs_pattern(fetchmail_t, fetchmail_var_run_t, fetchmail_var_run_t)
+ manage_files_pattern(fetchmail_t, fetchmail_var_run_t, fetchmail_var_run_t)
+-files_pid_filetrans(fetchmail_t, fetchmail_var_run_t, dir)
++files_pid_filetrans(fetchmail_t, fetchmail_var_run_t, {file dir})
++
 +list_dirs_pattern(fetchmail_t, fetchmail_home_t, fetchmail_home_t)
 +read_files_pattern(fetchmail_t, fetchmail_home_t, fetchmail_home_t)
 +userdom_search_user_home_dirs(fetchmail_t)
 +userdom_search_admin_dir(fetchmail_t)
-+
+ 
  kernel_read_kernel_sysctls(fetchmail_t)
  kernel_list_proc(fetchmail_t)
- kernel_getattr_proc_files(fetchmail_t)
 @@ -63,7 +66,6 @@ kernel_dontaudit_read_system_state(fetchmail_t)
  corecmd_exec_bin(fetchmail_t)
  corecmd_exec_shell(fetchmail_t)
@@ -35808,12 +35842,12 @@ index 0000000..711c04b
 +/var/run/lsm(/.*)?	--	gen_context(system_u:object_r:lsmd_var_run_t,s0)
 diff --git a/lsm.if b/lsm.if
 new file mode 100644
-index 0000000..f3e94d7
+index 0000000..aaf4080
 --- /dev/null
 +++ b/lsm.if
 @@ -0,0 +1,103 @@
 +
-+## <summary>lsmd SELINUX policy </summary>
++## <summary>libStorageMgmt  plug-in  daemon </summary>
 +
 +########################################
 +## <summary>
@@ -37813,10 +37847,10 @@ index 0000000..8d0e473
 +/var/cache/mock(/.*)?		gen_context(system_u:object_r:mock_cache_t,s0)
 diff --git a/mock.if b/mock.if
 new file mode 100644
-index 0000000..895f325
+index 0000000..6568bfe
 --- /dev/null
 +++ b/mock.if
-@@ -0,0 +1,305 @@
+@@ -0,0 +1,310 @@
 +## <summary>policy for mock</summary>
 +
 +########################################
@@ -38063,9 +38097,14 @@ index 0000000..895f325
 +
 +	ps_process_pattern($2, mock_t)
 +	allow $2 mock_t:process signal_perms;
++
 +	tunable_policy(`deny_ptrace',`',`
 +		allow $2 mock_t:process ptrace;
 +	')
++
++    optional_policy(`
++        mock_read_lib_files($2)
++    ')
 +')
 +
 +#######################################
@@ -54762,17 +54801,19 @@ index 977b972..0000000
 -miscfiles_read_localization(pkcs_slotd_t)
 diff --git a/pkcsslotd.fc b/pkcsslotd.fc
 new file mode 100644
-index 0000000..38fa01d
+index 0000000..29d7c1c
 --- /dev/null
 +++ b/pkcsslotd.fc
-@@ -0,0 +1,7 @@
-+/usr/lib/systemd/system/pkcsslotd.service		--	gen_context(system_u:object_r:pkcsslotd_unit_file_t,s0)
+@@ -0,0 +1,9 @@
++/usr/lib/systemd/system/pkcsslotd.*		--	gen_context(system_u:object_r:pkcsslotd_unit_file_t,s0)
 +
 +/usr/sbin/pkcsslotd		--	gen_context(system_u:object_r:pkcsslotd_exec_t,s0)
 +
 +/var/lib/opencryptoki(/.*)?		gen_context(system_u:object_r:pkcsslotd_var_lib_t,s0)
 +
 +/var/lock/opencryptoki(/.*)?	gen_context(system_u:object_r:pkcsslotd_lock_t,s0)
++
++/var/run/pkcsslotd.*    --  gen_context(system_u:object_r:pkcsslotd_var_run_t,s0)
 diff --git a/pkcsslotd.if b/pkcsslotd.if
 new file mode 100644
 index 0000000..848ddc9
@@ -54936,10 +54977,10 @@ index 0000000..848ddc9
 +')
 diff --git a/pkcsslotd.te b/pkcsslotd.te
 new file mode 100644
-index 0000000..f788d35
+index 0000000..2ce92e0
 --- /dev/null
 +++ b/pkcsslotd.te
-@@ -0,0 +1,66 @@
+@@ -0,0 +1,67 @@
 +policy_module(pkcsslotd, 1.0.0)
 +
 +########################################
@@ -54974,7 +55015,7 @@ index 0000000..f788d35
 +# pkcsslotd local policy
 +#
 +
-+allow pkcsslotd_t self:capability { chown kill };
++allow pkcsslotd_t self:capability { fsetid chown kill };
 +
 +allow pkcsslotd_t self:fifo_file rw_fifo_file_perms;
 +allow pkcsslotd_t self:sem create_sem_perms;
@@ -54999,7 +55040,8 @@ index 0000000..f788d35
 +
 +manage_files_pattern(pkcsslotd_t, pkcsslotd_var_run_t, pkcsslotd_var_run_t)
 +manage_dirs_pattern(pkcsslotd_t, pkcsslotd_var_run_t,pkcsslotd_var_run_t)
-+files_pid_filetrans(pkcsslotd_t, pkcsslotd_var_run_t, { file  dir })
++manage_sock_files_pattern(pkcsslotd_t, pkcsslotd_var_run_t,pkcsslotd_var_run_t)
++files_pid_filetrans(pkcsslotd_t, pkcsslotd_var_run_t, { sock_file file  dir })
 +
 +domain_use_interactive_fds(pkcsslotd_t)
 +
@@ -69216,7 +69258,7 @@ index 47de2d6..98a4280 100644
 +/var/log/cluster/rgmanager\.log.*       --  gen_context(system_u:object_r:cluster_var_log_t,s0)
 +/var/log/pcsd(/.*)?     gen_context(system_u:object_r:cluster_var_log_t,s0)
 diff --git a/rhcs.if b/rhcs.if
-index 56bc01f..4699b1b 100644
+index 56bc01f..b8d154e 100644
 --- a/rhcs.if
 +++ b/rhcs.if
 @@ -1,19 +1,19 @@
@@ -69245,7 +69287,7 @@ index 56bc01f..4699b1b 100644
  	')
  
  	##############################
-@@ -43,11 +43,6 @@ template(`rhcs_domain_template',`
+@@ -43,33 +43,27 @@ template(`rhcs_domain_template',`
  	manage_files_pattern($1_t, $1_tmpfs_t, $1_tmpfs_t)
  	fs_tmpfs_filetrans($1_t, $1_tmpfs_t, { dir file })
  
@@ -69257,9 +69299,11 @@ index 56bc01f..4699b1b 100644
  	logging_log_filetrans($1_t, $1_var_log_t, { dir file sock_file })
  
  	manage_dirs_pattern($1_t, $1_var_run_t, $1_var_run_t)
-@@ -56,20 +51,19 @@ template(`rhcs_domain_template',`
+ 	manage_files_pattern($1_t, $1_var_run_t, $1_var_run_t)
+ 	manage_fifo_files_pattern($1_t, $1_var_run_t, $1_var_run_t)
  	manage_sock_files_pattern($1_t, $1_var_run_t, $1_var_run_t)
- 	files_pid_filetrans($1_t, $1_var_run_t, { dir file fifo_file })
+-	files_pid_filetrans($1_t, $1_var_run_t, { dir file fifo_file })
++	files_pid_filetrans($1_t, $1_var_run_t, { dir file sock_file fifo_file })
  
 -	optional_policy(`
 -		dbus_system_bus_client($1_t)
@@ -71147,7 +71191,7 @@ index 6dbc905..d803796 100644
 -	admin_pattern($1, rhsmcertd_lock_t)
  ')
 diff --git a/rhsmcertd.te b/rhsmcertd.te
-index 1cedd70..f8ae4cc 100644
+index 1cedd70..6508b1e 100644
 --- a/rhsmcertd.te
 +++ b/rhsmcertd.te
 @@ -30,7 +30,8 @@ files_pid_file(rhsmcertd_var_run_t)
@@ -71160,7 +71204,7 @@ index 1cedd70..f8ae4cc 100644
  allow rhsmcertd_t self:fifo_file rw_fifo_file_perms;
  allow rhsmcertd_t self:unix_stream_socket create_stream_socket_perms;
  
-@@ -52,21 +53,35 @@ files_pid_filetrans(rhsmcertd_t, rhsmcertd_var_run_t, { file dir })
+@@ -52,21 +53,37 @@ files_pid_filetrans(rhsmcertd_t, rhsmcertd_var_run_t, { file dir })
  kernel_read_network_state(rhsmcertd_t)
  kernel_read_system_state(rhsmcertd_t)
  
@@ -71183,6 +71227,8 @@ index 1cedd70..f8ae4cc 100644
  
 -miscfiles_read_localization(rhsmcertd_t)
 -miscfiles_read_generic_certs(rhsmcertd_t)
++init_read_state(rhsmcertd_t)
++
 +logging_send_syslog_msg(rhsmcertd_t)
 +
 +miscfiles_read_certs(rhsmcertd_t)
@@ -72877,7 +72923,7 @@ index 3b5e9ee..ff1163f 100644
 +	admin_pattern($1, rpcbind_var_run_t)
  ')
 diff --git a/rpcbind.te b/rpcbind.te
-index c49828c..a323332 100644
+index c49828c..56cb0c2 100644
 --- a/rpcbind.te
 +++ b/rpcbind.te
 @@ -42,7 +42,6 @@ kernel_read_system_state(rpcbind_t)
@@ -72896,7 +72942,7 @@ index c49828c..a323332 100644
  files_read_etc_runtime_files(rpcbind_t)
  
 -logging_send_syslog_msg(rpcbind_t)
-+auth_read_passwd(rpcbind_t)
++auth_use_nsswitch(rpcbind_t)
  
 -miscfiles_read_localization(rpcbind_t)
 +logging_send_syslog_msg(rpcbind_t)
