@@ -70,6 +70,25 @@ SELinux Base package
 %ghost %{_sysconfdir}/sysconfig/selinux
 %{_usr}/lib/tmpfiles.d/selinux-policy.conf
 
+%package sandbox
+Summary: SELinux policy sandbox
+Group: System Environment/Base
+Requires(pre): selinux-policy-base = %{version}-%{release}
+
+%description sandbox
+SELinux sandbox policy used for the policycoreutils-sandbox package
+
+%files sandbox
+%defattr(-,root,root,-)
+%verify(not md5 size mtime) /usr/share/selinux/packages/sandbox.pp
+
+%post sandbox
+semodule -n -i /usr/share/selinux/packages/sandbox.pp
+if /usr/sbin/selinuxenabled ; then
+    /usr/sbin/load_policy
+fi;
+exit 0
+
 %package devel
 Summary: SELinux policy devel
 Group: System Environment/Base
@@ -157,7 +176,8 @@ bzip2 -c %{buildroot}/%{_usr}/share/selinux/%1/base.pp  > %{buildroot}/%{_syscon
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/base.pp  \
 for i in %{buildroot}/%{_usr}/share/selinux/%1/*.pp; do bzip2 -c $i > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/`basename $i`; done \
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/*pp*  \
-touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.pp.disabled \
+mkdir -p %{buildroot}%{_usr}/share/selinux/packages \
+mv %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.pp %{buildroot}/usr/share/selinux/packages \
 /usr/sbin/semodule -s %1 -n -B -p %{buildroot}; \
 /usr/bin/sha512sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policy.sha512; \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts  \
@@ -187,7 +207,6 @@ rm -f %{buildroot}/%{_sysconfigdir}/selinux/%1/modules/active/policy.kern
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/homedir_template \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.pp.disabled \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.local \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.bin \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/seusers \
@@ -263,8 +282,6 @@ if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
    (cd /etc/selinux/%2/modules/active/modules; rm -f l2tpd.pp shutdown.pp amavis.pp clamav.pp gnomeclock.pp matahari.pp xfs.pp kudzu.pp kerneloops.pp execmem.pp openoffice.pp ada.pp tzdata.pp hal.pp hotplug.pp howl.pp java.pp mono.pp moilscanner.pp gamin.pp audio_entropy.pp audioentropy.pp iscsid.pp polkit_auth.pp polkit.pp rtkit_daemon.pp ModemManager.pp telepathysofiasip.pp ethereal.pp passanger.pp qpidd.pp pyzor.pp razor.pp pki-selinux.pp phpfpm.pp consoletype.pp ctdbd.pp fcoemon.pp isnsd.pp rgmanager.pp corosync.pp aisexec.pp pacemaker.pp ) \
    /usr/sbin/semodule -B -n -s %2; \
-else \
-    touch /etc/selinux/%2/modules/active/modules/sandbox.disabled \
 fi; \
 [ "${SELINUXTYPE}" == "%2" ] && selinuxenabled && load_policy; \
 if [ %1 -eq 1 ]; then \
@@ -360,7 +377,6 @@ mkdir %{buildroot}%{_usr}/share/selinux/devel/html
 htmldir=`compgen -d %{buildroot}%{_usr}/share/man/man8/`
 mv ${htmldir}/* %{buildroot}%{_usr}/share/selinux/devel/html
 rm -rf ${htmldir}
-mkdir %{buildroot}%{_usr}/share/selinux/packages/
 
 rm -rf selinux_config
 %clean
@@ -613,7 +629,7 @@ SELinux Reference policy mls base module.
 - Label 10933 as a pop port, for dovecot
 - New policy to allow selinux_server.py to run as semanage_t as a dbus service
 - Add fixes to make netlabelctl working on MLS
-- AVC's required for running sepolicy gui as staff_t
+- AVCs required for running sepolicy gui as staff_t
 - Dontaudit attempts to read symlinks, sepolicy gui is likely to cause this type of AVC
 - New dbus server to be used with new gui
 - After modifying some files in /etc/mail, I saw this needed on the next boot
