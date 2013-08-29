@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 73%{?dist}
+Release: 74%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -554,6 +554,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Aug 29 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-74
+- Add selinux-policy-sandbox pkg
+
 * Tue Aug 27 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-73
 0 
 - Allow rhsmcertd to read init state
