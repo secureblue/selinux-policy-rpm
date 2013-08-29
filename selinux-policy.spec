@@ -454,7 +454,11 @@ exit 0
 selinuxenabled && semodule -nB
 exit 0
 
-%triggerpostun targeted -- selinux-policy-targeted < 3.12.1-7.fc19
+%triggerpostun -- selinux-policy-targeted < 3.12.1-73
+rm -f /etc/selinux/*/modules/active/modules/sandbox.pp.disabled 
+exit 0
+
+%triggerpostun targeted -- selinux-policy-targeted < 3.12.1-7
 restorecon -R -p /home
 exit 0
 
