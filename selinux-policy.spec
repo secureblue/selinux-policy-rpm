@@ -83,10 +83,15 @@ SELinux sandbox policy used for the policycoreutils-sandbox package
 %verify(not md5 size mtime) /usr/share/selinux/packages/sandbox.pp
 
 %post sandbox
+rm -f /etc/selinux/*/modules/active/modules/sandbox.pp.disabled 2>/dev/null
 semodule -n -i /usr/share/selinux/packages/sandbox.pp
 if /usr/sbin/selinuxenabled ; then
     /usr/sbin/load_policy
 fi;
+exit 0
+
+%postun sandbox
+semodule -d sandbox 2>/dev/null
 exit 0
 
 %package devel
@@ -455,7 +460,7 @@ selinuxenabled && semodule -nB
 exit 0
 
 %triggerpostun -- selinux-policy-targeted < 3.12.1-74
-rm -f /etc/selinux/*/modules/active/modules/sandbox.pp.disabled 
+rm -f /etc/selinux/*/modules/active/modules/sandbox.pp.disabled 2>/dev/null
 exit 0
 
 %triggerpostun targeted -- selinux-policy-targeted < 3.12.1-7
