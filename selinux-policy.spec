@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 74%{?dist}
+Release: 75%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -563,6 +563,34 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Sep 3 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-75
+- Also sock_file trans rule is needed in lsm
+- Fix labeling for fetchmail pid files/dirs
+- Add additional fixes for abrt-upload-watch
+- Fix polipo.te
+- Fix transition rules in asterisk policy
+- Add fowner capability to networkmanager policy
+- Allow polipo to connect to tor ports
+- Cleanup lsmd.if
+- Cleanup openhpid policy
+- Fix kdump_read_crash() interface
+- Make more domains as init domain
+- Fix cupsd.te
+- Fix requires in rpm_rw_script_inherited_pipes
+- Fix interfaces in lsm.if
+- Allow munin service plugins to manage own tmpfs files/dirs
+- Allow virtd_t also relabel unix stream sockets for virt_image_type
+- Make ktalk as init domain
+- Fix to define ktalkd_unit_file_t correctly
+- Fix ktalk.fc
+- Add systemd support for talk-server
+- Allow glusterd to create sock_file in /run
+- Allow xdm_t to delete gkeyringd_tmp_t files on logout
+- Add fixes for hypervkvp policy
+- Add logwatch_can_sendmail boolean
+- Allow mysqld_safe_t to handle also symlinks in /var/log/mariadb
+- Allow xdm_t to delete gkeyringd_tmp_t files on logout
+
 * Thu Aug 29 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-74
 - Add selinux-policy-sandbox pkg
 
