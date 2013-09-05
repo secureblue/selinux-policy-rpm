@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 70%{?dist}
+Release: 76%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -69,6 +69,33 @@ SELinux Base package
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config
 %ghost %{_sysconfdir}/sysconfig/selinux
 %{_usr}/lib/tmpfiles.d/selinux-policy.conf
+%{_rpmconfigdir}/macros.d/selinux-policy.macros
+
+%package sandbox
+Summary: SELinux policy sandbox
+Group: System Environment/Base
+Requires(pre): selinux-policy-base = %{version}-%{release}
+
+%description sandbox
+SELinux sandbox policy used for the policycoreutils-sandbox package
+
+%files sandbox
+%defattr(-,root,root,-)
+%verify(not md5 size mtime) /usr/share/selinux/packages/sandbox.pp
+
+%post sandbox
+rm -f /etc/selinux/*/modules/active/modules/sandbox.pp.disabled 2>/dev/null
+semodule -n -i /usr/share/selinux/packages/sandbox.pp
+if /usr/sbin/selinuxenabled ; then
+    /usr/sbin/load_policy
+fi;
+exit 0
+
+%preun sandbox
+semodule -n -d sandbox 2>/dev/null
+if /usr/sbin/selinuxenabled ; then
+    /usr/sbin/load_policy
+fi;exit 0
 
 %package devel
 Summary: SELinux policy devel
@@ -157,7 +184,8 @@ bzip2 -c %{buildroot}/%{_usr}/share/selinux/%1/base.pp  > %{buildroot}/%{_syscon
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/base.pp  \
 for i in %{buildroot}/%{_usr}/share/selinux/%1/*.pp; do bzip2 -c $i > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/`basename $i`; done \
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/*pp*  \
-touch %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.pp.disabled \
+mkdir -p %{buildroot}%{_usr}/share/selinux/packages \
+mv %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.pp %{buildroot}/usr/share/selinux/packages \
 /usr/sbin/semodule -s %1 -n -B -p %{buildroot}; \
 /usr/bin/sha512sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policy.sha512; \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts  \
@@ -187,7 +215,6 @@ rm -f %{buildroot}/%{_sysconfigdir}/selinux/%1/modules/active/policy.kern
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/homedir_template \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.pp.disabled \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.local \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.bin \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/seusers \
@@ -236,7 +263,7 @@ fi; \
 if /sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null;then \
     continue; \
 fi; \
-if /sbin/restorecon -R /home/*/.cache /home/*/.config 2> /dev/null;then \
+if /sbin/restorecon -R /home/*/.config 2> /dev/null;then \
     continue; \
 fi;
 
@@ -263,8 +290,6 @@ if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
    (cd /etc/selinux/%2/modules/active/modules; rm -f l2tpd.pp shutdown.pp amavis.pp clamav.pp gnomeclock.pp matahari.pp xfs.pp kudzu.pp kerneloops.pp execmem.pp openoffice.pp ada.pp tzdata.pp hal.pp hotplug.pp howl.pp java.pp mono.pp moilscanner.pp gamin.pp audio_entropy.pp audioentropy.pp iscsid.pp polkit_auth.pp polkit.pp rtkit_daemon.pp ModemManager.pp telepathysofiasip.pp ethereal.pp passanger.pp qpidd.pp pyzor.pp razor.pp pki-selinux.pp phpfpm.pp consoletype.pp ctdbd.pp fcoemon.pp isnsd.pp rgmanager.pp corosync.pp aisexec.pp pacemaker.pp ) \
    /usr/sbin/semodule -B -n -s %2; \
-else \
-    touch /etc/selinux/%2/modules/active/modules/sandbox.disabled \
 fi; \
 [ "${SELINUXTYPE}" == "%2" ] && selinuxenabled && load_policy; \
 if [ %1 -eq 1 ]; then \
@@ -360,7 +385,9 @@ mkdir %{buildroot}%{_usr}/share/selinux/devel/html
 htmldir=`compgen -d %{buildroot}%{_usr}/share/man/man8/`
 mv ${htmldir}/* %{buildroot}%{_usr}/share/selinux/devel/html
 rm -rf ${htmldir}
-mkdir %{buildroot}%{_usr}/share/selinux/packages/
+
+mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
+echo '%%_selinux_policy_version %{version}-%{release}' > %{buildroot}%{_rpmconfigdir}/macros.d/selinux-policy.macros
 
 rm -rf selinux_config
 %clean
@@ -438,7 +465,11 @@ exit 0
 selinuxenabled && semodule -nB
 exit 0
 
-%triggerpostun targeted -- selinux-policy-targeted < 3.12.1-7.fc19
+%triggerpostun -- selinux-policy-targeted < 3.12.1-74
+rm -f /etc/selinux/*/modules/active/modules/sandbox.pp.disabled 2>/dev/null
+exit 0
+
+%triggerpostun targeted -- selinux-policy-targeted < 3.12.1-75
 restorecon -R -p /home
 exit 0
 
@@ -538,6 +569,117 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Sep 4 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-76
+- Cleanup related to init_domain()+inetd_domain fixes
+- Use just init_domain instead of init_daemon_domain in inetd_core_service_domain
+- svirt domains neeed to create kobject_uevint_sockets
+- Lots of new access required for sosreport
+- Allow tgtd_t to connect to isns ports
+- Allow init_t to transition to all inetd domains:
+- openct needs to be able to create netlink_object_uevent_sockets
+- Dontaudit leaks into ldconfig_t
+- Dontaudit su domains getattr on /dev devices, move su domains to attribute based calls
+- Move kernel_stream_connect into all Xwindow using users
+- Dontaudit inherited lock files in ifconfig o dhcpc_t
+
+* Tue Sep 3 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-75
+- Also sock_file trans rule is needed in lsm
+- Fix labeling for fetchmail pid files/dirs
+- Add additional fixes for abrt-upload-watch
+- Fix polipo.te
+- Fix transition rules in asterisk policy
+- Add fowner capability to networkmanager policy
+- Allow polipo to connect to tor ports
+- Cleanup lsmd.if
+- Cleanup openhpid policy
+- Fix kdump_read_crash() interface
+- Make more domains as init domain
+- Fix cupsd.te
+- Fix requires in rpm_rw_script_inherited_pipes
+- Fix interfaces in lsm.if
+- Allow munin service plugins to manage own tmpfs files/dirs
+- Allow virtd_t also relabel unix stream sockets for virt_image_type
+- Make ktalk as init domain
+- Fix to define ktalkd_unit_file_t correctly
+- Fix ktalk.fc
+- Add systemd support for talk-server
+- Allow glusterd to create sock_file in /run
+- Allow xdm_t to delete gkeyringd_tmp_t files on logout
+- Add fixes for hypervkvp policy
+- Add logwatch_can_sendmail boolean
+- Allow mysqld_safe_t to handle also symlinks in /var/log/mariadb
+- Allow xdm_t to delete gkeyringd_tmp_t files on logout
+
+* Thu Aug 29 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-74
+- Add selinux-policy-sandbox pkg
+
+* Tue Aug 27 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-73
+0 
+- Allow rhsmcertd to read init state
+- Allow fsetid for pkcsslotd
+- Fix labeling for /usr/lib/systemd/system/pkcsslotd.service
+- Allow fetchmail to create own pid with correct labeling
+- Fix rhcs_domain_template()
+- Allow roles which can run mock to read mock lib files to view results
+- Allow rpcbind to use nsswitch
+- Fix lsm.if summary
+- Fix collectd_t can read /etc/passwd file
+- Label systemd unit files under dracut correctly
+- Add support for pam_mount to mount user's encrypted home When a user logs in and logs out using ssh
+- Add support for .Xauthority-n
+- Label umount.crypt as lvm_exec_t
+- Allow syslogd to search psad lib files
+- Allow ssh_t to use /dev/ptmx
+- Make sure /run/pluto dir is created with correct labeling
+- Allow syslog to run shell and bin_t commands
+- Allow ip to relabel tun_sockets
+- Allow mount to create directories in files under /run
+- Allow processes to use inherited fifo files
+
+* Fri Aug 23 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-72
+- Add policy for lsmd
+- Add support for /var/log/mariadb dir and allow mysqld_safe to list this directory
+- Update condor_master rules to allow read system state info and allow logging
+- Add labeling for /etc/condor and allow condor domain to write it (bug)
+- Allow condor domains to manage own logs
+- Allow glusterd to read domains state
+- Fix initial hypervkvp policy
+- Add policy for hypervkvpd
+- Fix redis.if summary
+
+* Wed Aug 21 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-71
+- Allow boinc to connect to  @/tmp/.X11-unix/X0
+- Allow beam.smp to connect to tcp/5984
+- Allow named to manage own log files
+- Add label for /usr/libexec/dcc/start-dccifd  and domtrans to dccifd_t
+- Add virt_transition_userdomain boolean decl
+- Allow httpd_t to sendto unix_dgram sockets on its children
+- Allow nova domains to execute ifconfig
+- bluetooth wants to create fifo_files in /tmp
+- exim needs to be able to manage mailman data
+- Allow sysstat to getattr on all file systems
+- Looks like bluetoothd has moved
+- Allow collectd to send ping packets
+- Allow svirt_lxc domains to getpgid
+- Remove virt-sandbox-service labeling as virsh_exec_t, since it no longer does virsh_t stuff
+- Allow frpintd_t to read /dev/urandom
+- Allow asterisk_t to create sock_file in /var/run
+- Allow usbmuxd to use netlink_kobject
+- sosreport needs to getattr on lots of devices, and needs access to netlink_kobject_uevent_socket
+- More cleanup of svirt_lxc policy
+- virtd_lxc_t now talks to dbus
+- Dontaudit leaked ptmx_t
+- Allow processes to use inherited fifo files
+- Allow openvpn_t to connect to squid ports
+- Allow prelink_cron_system_t to ask systemd to reloaddd miscfiles_dontaudit_access_check_cert()
+- Allow ssh_t to use /dev/ptmx
+- Make sure /run/pluto dir is created with correct labeling
+- Allow syslog to run shell and bin_t commands
+- Allow ip to relabel tun_sockets
+- Allow mount to create directories in files under /run
+- Allow processes to use inherited fifo files
+- Allow user roles to connect to the journal socket
+
 * Thu Aug 8 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-70
 - selinux_set_enforce_mode needs to be used with type
 - Add append to the dontaudit for unix_stream_socket of xdm_t leak
@@ -546,7 +688,7 @@ SELinux Reference policy mls base module.
 - Label 10933 as a pop port, for dovecot
 - New policy to allow selinux_server.py to run as semanage_t as a dbus service
 - Add fixes to make netlabelctl working on MLS
-- AVC's required for running sepolicy gui as staff_t
+- AVCs required for running sepolicy gui as staff_t
 - Dontaudit attempts to read symlinks, sepolicy gui is likely to cause this type of AVC
 - New dbus server to be used with new gui
 - After modifying some files in /etc/mail, I saw this needed on the next boot
