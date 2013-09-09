@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 76%{?dist}
+Release: 77.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -69,7 +69,7 @@ SELinux Base package
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config
 %ghost %{_sysconfdir}/sysconfig/selinux
 %{_usr}/lib/tmpfiles.d/selinux-policy.conf
-%{_rpmconfigdir}/macros.d/selinux-policy.macros
+%{_rpmconfigdir}/macros.d/macros.selinux-policy
 
 %package sandbox
 Summary: SELinux policy sandbox
@@ -204,7 +204,6 @@ rm -f %{buildroot}/%{_sysconfigdir}/selinux/%1/modules/active/policy.kern
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/semanage.trans.LOCK \
 %dir %attr(700,root,root) %dir %{_sysconfdir}/selinux/%1/modules/active \
 %dir %{_sysconfdir}/selinux/%1/modules/active/modules \
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/commit_num \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/base.pp \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/file_contexts \
@@ -215,6 +214,7 @@ rm -f %{buildroot}/%{_sysconfigdir}/selinux/%1/modules/active/policy.kern
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/homedir_template \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
+%ghost %{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.local \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.bin \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/seusers \
@@ -276,7 +276,8 @@ if [ $1 -ne 1 ] && [ -s /etc/selinux/config ]; then \
      fi; \
      touch /etc/selinux/%1/.rebuild; \
      if [ -e /etc/selinux/%1/.policy.sha512 ]; then \
-        sha512=`sha512sum /etc/selinux/%1/modules/active/policy.kern | cut -d ' ' -f 1`; \
+        POLICY_FILE=`ls /etc/selinux/%1/policy/policy.* | sort | head -1` \
+        sha512=`sha512sum $POLICY_FILE | cut -d ' ' -f 1`; \
 	checksha512=`cat /etc/selinux/%1/.policy.sha512`; \
 	if [ "$sha512" == "$checksha512" ] ; then \
 		rm /etc/selinux/%1/.rebuild; \
@@ -387,7 +388,7 @@ mv ${htmldir}/* %{buildroot}%{_usr}/share/selinux/devel/html
 rm -rf ${htmldir}
 
 mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
-echo '%%_selinux_policy_version %{version}-%{release}' > %{buildroot}%{_rpmconfigdir}/macros.d/selinux-policy.macros
+echo '%%_selinux_policy_version %{version}-%{release}' > %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
 
 rm -rf selinux_config
 %clean
@@ -569,6 +570,30 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Sep 9 2013 Dan Walsh <dwalsh@redhat.com> 3.12.1-77.1
+- Fix nameing of rpm macro
+- Fix creating of checksum file off installed policy
+
+* Thu Sep 5 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-77
+- Split out rlogin ports from inetd
+- Treat files labeld as usr_t like bin_t when it comes to transitions
+- Allow staff_t to read login config
+- Allow ipsec_t to read .google authenticator data
+- Allow systemd running as git_systemd to bind git port
+- Fix mozilla_plugin_rw_tmpfs_files()
+- Call the correct interface - corenet_udp_bind_ktalkd_port()
+- Allow all domains that can read gnome_config to read kde config
+- Allow sandbox domain to read/write mozilla_plugin_tmpfs_t so pulseaudio will work
+- Allow mdadm to getattr any file system
+- Allow a confined domain to executes mozilla_exec_t via dbus
+- Allow cupsd_lpd_t to bind to the printer port
+- Dontaudit attempts to bind to ports < 1024 when nis is turned on
+- Allow apache domain to connect to gssproxy socket
+- Allow rlogind to bind to the rlogin_port
+- Allow telnetd to bind to the telnetd_port
+- Allow ktalkd to bind to the ktalkd_port
+- Allow cvs to bind to the cvs_port
+
 * Wed Sep 4 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-76
 - Cleanup related to init_domain()+inetd_domain fixes
 - Use just init_domain instead of init_daemon_domain in inetd_core_service_domain
