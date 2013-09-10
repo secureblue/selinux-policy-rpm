@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 72%{?dist}
+Release: 78%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -570,7 +570,7 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Tue Sep 10 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-72
+* Tue Sep 10 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-78
 - Allow block_suspend cap for samba-net
 - Allow t-mission-control to manage gabble cache files
 - Allow nslcd to read /sys/devices/system/cpu
