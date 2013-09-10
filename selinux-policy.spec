@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 77.1%{?dist}
+Release: 72%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -570,6 +570,33 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Sep 10 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-72
+- Allow block_suspend cap for samba-net
+- Allow t-mission-control to manage gabble cache files
+- Allow nslcd to read /sys/devices/system/cpu
+- Allow selinux_store to use symlinks
+- Allow xdm_t to transition to itself
+- Call neutron interfaces instead of quantum
+- Allow init to change targed role to make uncofined services (xrdp which now has own systemd unit file) working. We want them to have in unconfined_t
+- Make sure directories in /run get created with the correct label
+- Make sure /root/.pki gets created with the right label
+- try to remove labeling for motion from zoneminder_exec_t to bin_t
+- Allow inetd_t to execute shell scripts
+- Allow cloud-init to read all domainstate
+- Fix to use quantum port
+- Add interface netowrkmanager_initrc_domtrans
+- Fix boinc_execmem
+- Allow t-mission-control to read gabble cache home
+- Add labeling for ~/.cache/telepathy/avatars/gabble
+- Allow memcache to read sysfs data
+- Cleanup antivirus policy and add additional fixes
+- Add boolean boinc_enable_execstack
+- Add support for couchdb in rabbitmq policy
+- Add interface couchdb_search_pid_dirs
+- Allow firewalld to read NM state
+- Allow systemd running as git_systemd to bind git port
+- Fix mozilla_plugin_rw_tmpfs_files()
+
 * Mon Sep 9 2013 Dan Walsh <dwalsh@redhat.com> 3.12.1-77.1
 - Fix nameing of rpm macro
 - Fix creating of checksum file off installed policy
