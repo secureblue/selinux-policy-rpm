@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 78%{?dist}
+Release: 79%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -570,11 +570,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Tue Sep 10 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-78
+* Mon Sep 9 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-79
 - Allow block_suspend cap for samba-net
 - Allow t-mission-control to manage gabble cache files
 - Allow nslcd to read /sys/devices/system/cpu
 - Allow selinux_store to use symlinks
+
+* Mon Sep 9 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-78
 - Allow xdm_t to transition to itself
 - Call neutron interfaces instead of quantum
 - Allow init to change targed role to make uncofined services (xrdp which now has own systemd unit file) working. We want them to have in unconfined_t
@@ -596,10 +598,6 @@ SELinux Reference policy mls base module.
 - Allow firewalld to read NM state
 - Allow systemd running as git_systemd to bind git port
 - Fix mozilla_plugin_rw_tmpfs_files()
-
-* Mon Sep 9 2013 Dan Walsh <dwalsh@redhat.com> 3.12.1-77.1
-- Fix nameing of rpm macro
-- Fix creating of checksum file off installed policy
 
 * Thu Sep 5 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-77
 - Split out rlogin ports from inetd
