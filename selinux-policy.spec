@@ -189,7 +189,7 @@ mv %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.pp %{bu
 /usr/sbin/semodule -s %1 -n -B -p %{buildroot}; \
 /usr/bin/sha512sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policy.sha512; \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts  \
-rm -f %{buildroot}/%{_sysconfigdir}/selinux/%1/modules/active/policy.kern
+rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %nil
 
 %define fileList() \
