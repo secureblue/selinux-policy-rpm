@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 79%{?dist}
+Release: 80%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -570,6 +570,25 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Sep 12 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-80
+- Allow ldconfig to write to kdumpctl fifo files
+- allow neutron to connect to amqp ports
+- Allow kdump_manage_crash to list the kdump_crash_t directory
+- Allow glance-api to connect to amqp port
+- Allow virt_qemu_ga_t to read meminfo
+- Add antivirus_home_t type for antivirus date in HOMEDIRS
+- Allow mpd setcap which is needed by pulseaudio
+- Allow smbcontrol to create content in /var/lib/samba
+- Allow mozilla_exec_t to be used as a entrypoint to mozilla_domtrans_spec
+- Add additional labeling for qemu-ga/fsfreeze-hook.d scripts
+- amanda_exec_t needs to be executable file
+- Allow block_suspend cap for samba-net
+- Allow apps that read ipsec_mgmt_var_run_t to search ipsec_var_run_t
+- Allow init_t to run crash utility
+- Treat usr_t just like bin_t for transitions and executions
+- Add port definition of pka_ca to port 829 for openshift
+- Allow selinux_store to use symlinks
+
 * Mon Sep 9 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-79
 - Allow block_suspend cap for samba-net
 - Allow t-mission-control to manage gabble cache files
