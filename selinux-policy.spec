@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 80%{?dist}
+Release: 81%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -570,6 +570,23 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Sep 19 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-81
+- Dontaudit attempts by sosreport to read shadow_t
+- Allow browser sandbox plugins to connect to cups to print
+- Add new label mpd_home_t
+- Label /srv/www/logs as httpd_log_t
+- Add support for /var/lib/php/wsdlcache
+- Add zarafa_setrlimit boolean
+- Allow fetchmail to send mails
+- Add labels for apache logs under miq package
+- Allow irc_t to use tcp sockets
+- fix labels in puppet.if
+- Allow tcsd to read utmp file
+- Allow openshift_cron_t to run ssh-keygen in ssh_keygen_t to access host keys
+- Define svirt_socket_t as a domain_type
+- Take away transition from init_t to initrc_t when executing bin_t, allow init_t to run chk_passwd_t
+- Fix label on pam_krb5 helper apps
+
 * Thu Sep 12 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-80
 - Allow ldconfig to write to kdumpctl fifo files
 - allow neutron to connect to amqp ports

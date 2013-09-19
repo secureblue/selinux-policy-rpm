@@ -2957,10 +2957,10 @@ index 0000000..fd48ed9
 +	spamassassin_read_pid_files(antivirus_domain)
 +')
 diff --git a/apache.fc b/apache.fc
-index 550a69e..53e5708 100644
+index 550a69e..842225c 100644
 --- a/apache.fc
 +++ b/apache.fc
-@@ -1,161 +1,196 @@
+@@ -1,161 +1,199 @@
 -HOME_DIR/((www)|(web)|(public_html))(/.+)?	gen_context(system_u:object_r:httpd_user_content_t,s0)
 -HOME_DIR/((www)|(web)|(public_html))/cgi-bin(/.+)?	gen_context(system_u:object_r:httpd_user_script_exec_t,s0)
 +HOME_DIR/((www)|(web)|(public_html))(/.+)? gen_context(system_u:object_r:httpd_user_content_t,s0)
@@ -3024,6 +3024,7 @@ index 550a69e..53e5708 100644
  
 -/usr/.*\.cgi	--	gen_context(system_u:object_r:httpd_sys_script_exec_t,s0)
 +/srv/([^/]*/)?www(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
++/srv/([^/]*/)?www/logs(/.*)?        gen_context(system_u:object_r:httpd_log_t,s0)
 +/srv/gallery2(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
  
 -/usr/bin/htsslpass	--	gen_context(system_u:object_r:httpd_helper_exec_t,s0)
@@ -3166,6 +3167,8 @@ index 550a69e..53e5708 100644
 +/var/lib/mod_security(/.*)?     gen_context(system_u:object_r:httpd_var_lib_t,s0)
 +/var/lib/nginx(/.*)?            gen_context(system_u:object_r:httpd_var_lib_t,s0)
 +/var/lib/php/session(/.*)?		gen_context(system_u:object_r:httpd_var_run_t,s0)
++/var/lib/php/wsdlcache(/.*)?		gen_context(system_u:object_r:httpd_var_run_t,s0)
++
  /var/lib/squirrelmail/prefs(/.*)?	gen_context(system_u:object_r:httpd_squirrelmail_t,s0)
 -/var/lib/stickshift/.httpd.d(/.*)?	gen_context(system_u:object_r:httpd_config_t,s0)
 -/var/lib/svn(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
@@ -3230,6 +3233,7 @@ index 550a69e..53e5708 100644
 +/var/www/[^/]*/cgi-bin(/.*)?		gen_context(system_u:object_r:httpd_sys_script_exec_t,s0)
 +/var/www/cgi-bin(/.*)?			gen_context(system_u:object_r:httpd_sys_script_exec_t,s0)
 +/var/www/icons(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
++/var/www/miq/vmdb/log(/.*)?			gen_context(system_u:object_r:httpd_log_t,s0)
 +/var/www/perl(/.*)?			gen_context(system_u:object_r:httpd_sys_script_exec_t,s0)
  
 -/var/run/apache.*	gen_context(system_u:object_r:httpd_var_run_t,s0)
@@ -3292,7 +3296,6 @@ index 550a69e..53e5708 100644
 +/var/www/svn/conf(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
 +
 +/var/log/dirsrv/admin-serv(/.*)?	gen_context(system_u:object_r:httpd_log_t,s0)
-+
 +/var/run/dirsrv/admin-serv.*	gen_context(system_u:object_r:httpd_var_run_t,s0)
 +/opt/dirsrv/var/run/dirsrv/dsgw/cookies(/.*)?       gen_context(system_u:object_r:httpd_var_run_t,s0)
 diff --git a/apache.if b/apache.if
@@ -10778,10 +10781,10 @@ index 0000000..5977d96
 +')
 diff --git a/chrome.te b/chrome.te
 new file mode 100644
-index 0000000..25f2d55
+index 0000000..406f3a0
 --- /dev/null
 +++ b/chrome.te
-@@ -0,0 +1,238 @@
+@@ -0,0 +1,242 @@
 +policy_module(chrome,1.0.0)
 +
 +########################################
@@ -10955,6 +10958,10 @@ index 0000000..25f2d55
 +        fs_read_ecryptfs_files(chrome_sandbox_t)
 +		fs_dontaudit_append_ecryptfs_files(chrome_sandbox_t)
 +		fs_read_ecryptfs_symlinks(chrome_sandbox_t)
++')
++
++optional_policy(`
++	cups_stream_connect(chrome_sandbox_t)
 +')
 +
 +optional_policy(`
@@ -23744,7 +23751,7 @@ index c3f7916..cab3954 100644
  	admin_pattern($1, fetchmail_etc_t)
  
 diff --git a/fetchmail.te b/fetchmail.te
-index f0388cb..8e7f99e 100644
+index f0388cb..2e94f0e 100644
 --- a/fetchmail.te
 +++ b/fetchmail.te
 @@ -32,15 +32,13 @@ files_type(fetchmail_uidl_cache_t)
@@ -23786,7 +23793,7 @@ index f0388cb..8e7f99e 100644
  corenet_all_recvfrom_netlabel(fetchmail_t)
  corenet_tcp_sendrecv_generic_if(fetchmail_t)
  corenet_tcp_sendrecv_generic_node(fetchmail_t)
-@@ -84,15 +86,19 @@ fs_search_auto_mountpoints(fetchmail_t)
+@@ -84,15 +86,23 @@ fs_search_auto_mountpoints(fetchmail_t)
  
  domain_use_interactive_fds(fetchmail_t)
  
@@ -23802,6 +23809,10 @@ index f0388cb..8e7f99e 100644
 +
  userdom_dontaudit_use_unpriv_user_fds(fetchmail_t)
 -userdom_search_user_home_dirs(fetchmail_t)
++
++optional_policy(`
++    mta_send_mail(fetchmail_t)
++')
 +
 +optional_policy(`
 +	kerberos_use(fetchmail_t)
@@ -30375,7 +30386,7 @@ index ac00fb0..36ef2e5 100644
 +		userdom_user_home_dir_filetrans($1, irssi_home_t, dir, "irclogs")
  ')
 diff --git a/irc.te b/irc.te
-index ecad9c7..86d790f 100644
+index ecad9c7..e413e5a 100644
 --- a/irc.te
 +++ b/irc.te
 @@ -31,13 +31,35 @@ typealias irc_home_t alias { user_irc_home_t staff_irc_home_t sysadm_irc_home_t
@@ -30449,7 +30460,7 @@ index ecad9c7..86d790f 100644
  
  fs_getattr_all_fs(irc_t)
  fs_search_auto_mountpoints(irc_t)
-@@ -106,13 +120,15 @@ auth_use_nsswitch(irc_t)
+@@ -106,15 +120,18 @@ auth_use_nsswitch(irc_t)
  init_read_utmp(irc_t)
  init_dontaudit_lock_utmp(irc_t)
  
@@ -30466,8 +30477,11 @@ index ecad9c7..86d790f 100644
 +userdom_use_inherited_user_terminals(irc_t)
  
  tunable_policy(`irc_use_any_tcp_ports',`
++	allow irc_t self:tcp_socket create_stream_socket_perms;
  	corenet_sendrecv_all_server_packets(irc_t)
-@@ -122,18 +138,71 @@ tunable_policy(`irc_use_any_tcp_ports',`
+ 	corenet_tcp_bind_all_unreserved_ports(irc_t)
+ 	corenet_sendrecv_all_client_packets(irc_t)
+@@ -122,18 +139,71 @@ tunable_policy(`irc_use_any_tcp_ports',`
  	corenet_tcp_sendrecv_all_ports(irc_t)
  ')
  
@@ -39971,7 +39985,7 @@ index 6194b80..bb32d40 100644
  ')
 +
 diff --git a/mozilla.te b/mozilla.te
-index 6a306ee..2108bc7 100644
+index 6a306ee..a74ab9d 100644
 --- a/mozilla.te
 +++ b/mozilla.te
 @@ -1,4 +1,4 @@
@@ -40242,11 +40256,11 @@ index 6a306ee..2108bc7 100644
  miscfiles_dontaudit_setattr_fonts_dirs(mozilla_t)
  
 -userdom_use_user_ptys(mozilla_t)
-+userdom_use_inherited_user_ptys(mozilla_t)
- 
+-
 -userdom_manage_user_tmp_dirs(mozilla_t)
 -userdom_manage_user_tmp_files(mozilla_t)
--
++userdom_use_inherited_user_ptys(mozilla_t)
+ 
 -userdom_manage_user_home_content_dirs(mozilla_t)
 -userdom_manage_user_home_content_files(mozilla_t)
 -userdom_user_home_dir_filetrans_user_home_content(mozilla_t, { dir file })
@@ -40415,7 +40429,7 @@ index 6a306ee..2108bc7 100644
  ')
  
  optional_policy(`
-@@ -300,221 +324,184 @@ optional_policy(`
+@@ -300,259 +324,234 @@ optional_policy(`
  
  ########################################
  #
@@ -40498,12 +40512,12 @@ index 6a306ee..2108bc7 100644
  allow mozilla_plugin_t mozilla_plugin_rw_t:dir list_dir_perms;
 -allow mozilla_plugin_t mozilla_plugin_rw_t:file read_file_perms;
 -allow mozilla_plugin_t mozilla_plugin_rw_t:lnk_file read_lnk_file_perms;
--
--dgram_send_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t, mozilla_t)
--stream_connect_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t, mozilla_t)
 +read_lnk_files_pattern(mozilla_plugin_t, mozilla_plugin_rw_t, mozilla_plugin_rw_t)
 +read_files_pattern(mozilla_plugin_t, mozilla_plugin_rw_t, mozilla_plugin_rw_t)
  
+-dgram_send_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t, mozilla_t)
+-stream_connect_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t, mozilla_t)
+-
 -can_exec(mozilla_plugin_t, { mozilla_exec_t mozilla_plugin_home_t mozilla_plugin_tmp_t })
 +can_exec(mozilla_plugin_t, mozilla_exec_t)
  
@@ -40673,12 +40687,12 @@ index 6a306ee..2108bc7 100644
  
 -userdom_manage_user_tmp_dirs(mozilla_plugin_t)
 -userdom_manage_user_tmp_files(mozilla_plugin_t)
--
++systemd_read_logind_sessions_files(mozilla_plugin_t)
+ 
 -userdom_manage_user_home_content_dirs(mozilla_plugin_t)
 -userdom_manage_user_home_content_files(mozilla_plugin_t)
 -userdom_user_home_dir_filetrans_user_home_content(mozilla_plugin_t, { dir file })
-+systemd_read_logind_sessions_files(mozilla_plugin_t)
- 
+-
 -userdom_write_user_tmp_sockets(mozilla_plugin_t)
 +term_getattr_all_ttys(mozilla_plugin_t)
 +term_getattr_all_ptys(mozilla_plugin_t)
@@ -40702,14 +40716,22 @@ index 6a306ee..2108bc7 100644
 -ifndef(`enable_mls',`
 -	fs_list_dos(mozilla_plugin_t)
 -	fs_read_dos_files(mozilla_plugin_t)
--
++userdom_read_user_home_content_files(mozilla_plugin_t)
++userdom_read_user_home_content_symlinks(mozilla_plugin_t)
++userdom_read_home_certs(mozilla_plugin_t)
++userdom_read_home_audio_files(mozilla_plugin_t)
++userdom_exec_user_tmp_files(mozilla_plugin_t)
+ 
 -	fs_search_removable(mozilla_plugin_t)
 -	fs_read_removable_files(mozilla_plugin_t)
 -	fs_read_removable_symlinks(mozilla_plugin_t)
--
++userdom_home_manager(mozilla_plugin_t)
+ 
 -	fs_read_iso9660_files(mozilla_plugin_t)
--')
--
++tunable_policy(`mozilla_plugin_can_network_connect',`
++	corenet_tcp_connect_all_ports(mozilla_plugin_t)
+ ')
+ 
 -tunable_policy(`allow_execmem',`
 -	allow mozilla_plugin_t self:process execmem;
 -')
@@ -40717,43 +40739,46 @@ index 6a306ee..2108bc7 100644
 -tunable_policy(`mozilla_execstack',`
 -	allow mozilla_plugin_t self:process { execmem execstack };
 -')
-+userdom_read_user_home_content_files(mozilla_plugin_t)
-+userdom_read_user_home_content_symlinks(mozilla_plugin_t)
-+userdom_read_home_certs(mozilla_plugin_t)
-+userdom_read_home_audio_files(mozilla_plugin_t)
-+userdom_exec_user_tmp_files(mozilla_plugin_t)
- 
+-
 -tunable_policy(`use_nfs_home_dirs',`
 -	fs_manage_nfs_dirs(mozilla_plugin_t)
 -	fs_manage_nfs_files(mozilla_plugin_t)
 -	fs_manage_nfs_symlinks(mozilla_plugin_t)
--')
-+userdom_home_manager(mozilla_plugin_t)
++optional_policy(`
++	alsa_read_rw_config(mozilla_plugin_t)
++	alsa_read_home_files(mozilla_plugin_t)
+ ')
  
 -tunable_policy(`use_samba_home_dirs',`
 -	fs_manage_cifs_dirs(mozilla_plugin_t)
 -	fs_manage_cifs_files(mozilla_plugin_t)
 -	fs_manage_cifs_symlinks(mozilla_plugin_t)
-+tunable_policy(`mozilla_plugin_can_network_connect',`
-+	corenet_tcp_connect_all_ports(mozilla_plugin_t)
++optional_policy(`
++	apache_list_modules(mozilla_plugin_t)
  ')
  
  optional_policy(`
-@@ -523,36 +510,44 @@ optional_policy(`
+-	alsa_read_rw_config(mozilla_plugin_t)
+-	alsa_read_home_files(mozilla_plugin_t)
++	cups_stream_connect(mozilla_plugin_t)
  ')
  
  optional_policy(`
 -	automount_dontaudit_getattr_tmp_dirs(mozilla_plugin_t)
-+	apache_list_modules(mozilla_plugin_t)
++	dbus_system_bus_client(mozilla_plugin_t)
++	dbus_session_bus_client(mozilla_plugin_t)
++	dbus_connect_session_bus(mozilla_plugin_t)
++	dbus_read_lib_files(mozilla_plugin_t)
  ')
  
  optional_policy(`
 -	dbus_all_session_bus_client(mozilla_plugin_t)
 -	dbus_connect_all_session_bus(mozilla_plugin_t)
- 	dbus_system_bus_client(mozilla_plugin_t)
-+	dbus_session_bus_client(mozilla_plugin_t)
-+	dbus_connect_session_bus(mozilla_plugin_t)
-+	dbus_read_lib_files(mozilla_plugin_t)
+-	dbus_system_bus_client(mozilla_plugin_t)
++	gnome_manage_config(mozilla_plugin_t)
++	gnome_read_usr_config(mozilla_plugin_t)
++	gnome_filetrans_home_content(mozilla_plugin_t)
++	gnome_exec_gstreamer_home_files(mozilla_plugin_t)
  ')
  
  optional_policy(`
@@ -40761,13 +40786,6 @@ index 6a306ee..2108bc7 100644
 -	gnome_home_filetrans_gnome_home(mozilla_plugin_t, dir, ".gnome")
 -	gnome_home_filetrans_gnome_home(mozilla_plugin_t, dir, ".gnome2")
 -	gnome_home_filetrans_gnome_home(mozilla_plugin_t, dir, ".gnome2_private")
-+	gnome_manage_config(mozilla_plugin_t)
-+	gnome_read_usr_config(mozilla_plugin_t)
-+	gnome_filetrans_home_content(mozilla_plugin_t)
-+	gnome_exec_gstreamer_home_files(mozilla_plugin_t)
-+')
-+
-+optional_policy(`
 +	gpm_dontaudit_getattr_gpmctl(mozilla_plugin_t)
  ')
  
@@ -40797,7 +40815,7 @@ index 6a306ee..2108bc7 100644
  ')
  
  optional_policy(`
-@@ -560,7 +555,7 @@ optional_policy(`
+@@ -560,7 +559,7 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -40806,7 +40824,7 @@ index 6a306ee..2108bc7 100644
  ')
  
  optional_policy(`
-@@ -568,108 +563,128 @@ optional_policy(`
+@@ -568,108 +567,128 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -40993,10 +41011,16 @@ index 6a306ee..2108bc7 100644
 +    fs_manage_dos_files(mozilla_plugin_t)
  ')
 diff --git a/mpd.fc b/mpd.fc
-index 313ce52..6aa46d2 100644
+index 313ce52..ae93e07 100644
 --- a/mpd.fc
 +++ b/mpd.fc
-@@ -9,3 +9,5 @@
+@@ -1,3 +1,5 @@
++HOME_DIR/\.mpd(/.*)?    gen_context(system_u:object_r:mpd_home_t,s0)
++
+ /etc/mpd\.conf	--	gen_context(system_u:object_r:mpd_etc_t,s0)
+ 
+ /etc/rc\.d/init\.d/mpd	--	gen_context(system_u:object_r:mpd_initrc_exec_t,s0)
+@@ -9,3 +11,5 @@
  /var/lib/mpd/playlists(/.*)?	gen_context(system_u:object_r:mpd_data_t,s0)
  
  /var/log/mpd(/.*)?	gen_context(system_u:object_r:mpd_log_t,s0)
@@ -41048,13 +41072,16 @@ index 5fa77c7..2e01c7d 100644
  	domain_system_change_exemption($1)
  	role_transition $2 mpd_initrc_exec_t system_r;
 diff --git a/mpd.te b/mpd.te
-index 7c8afcc..29d8881 100644
+index 7c8afcc..41f4352 100644
 --- a/mpd.te
 +++ b/mpd.te
-@@ -62,18 +62,22 @@ files_type(mpd_var_lib_t)
+@@ -62,18 +62,25 @@ files_type(mpd_var_lib_t)
  type mpd_user_data_t;
  userdom_user_home_content(mpd_user_data_t) # customizable
  
++type mpd_home_t;
++userdom_user_home_content(mpd_home_t)
++
 +type mpd_var_run_t;
 +files_pid_file(mpd_var_run_t)
 +
@@ -41075,7 +41102,7 @@ index 7c8afcc..29d8881 100644
  
  allow mpd_t mpd_data_t:dir manage_dir_perms;
  allow mpd_t mpd_data_t:file manage_file_perms;
-@@ -104,13 +108,18 @@ manage_files_pattern(mpd_t, mpd_var_lib_t, mpd_var_lib_t)
+@@ -104,13 +111,22 @@ manage_files_pattern(mpd_t, mpd_var_lib_t, mpd_var_lib_t)
  manage_lnk_files_pattern(mpd_t, mpd_var_lib_t, mpd_var_lib_t)
  files_var_lib_filetrans(mpd_t, mpd_var_lib_t, dir)
  
@@ -41084,6 +41111,10 @@ index 7c8afcc..29d8881 100644
 +manage_sock_files_pattern(mpd_t, mpd_var_run_t, mpd_var_run_t)
 +manage_lnk_files_pattern(mpd_t, mpd_var_run_t, mpd_var_run_t)
 +files_pid_filetrans(mpd_t, mpd_var_run_t, { file dir sock_file })
++
++manage_files_pattern(mpd_t, mpd_home_t, mpd_home_t)
++manage_dirs_pattern(mpd_t, mpd_home_t, mpd_home_t)
++manage_lnk_files_pattern(mpd_t, mpd_home_t, mpd_home_t)
 +
  kernel_getattr_proc(mpd_t)
  kernel_read_system_state(mpd_t)
@@ -41095,7 +41126,7 @@ index 7c8afcc..29d8881 100644
  corenet_all_recvfrom_netlabel(mpd_t)
  corenet_tcp_sendrecv_generic_if(mpd_t)
  corenet_tcp_sendrecv_generic_node(mpd_t)
-@@ -139,9 +148,9 @@ dev_read_sound(mpd_t)
+@@ -139,9 +155,9 @@ dev_read_sound(mpd_t)
  dev_write_sound(mpd_t)
  dev_read_sysfs(mpd_t)
  
@@ -41106,7 +41137,7 @@ index 7c8afcc..29d8881 100644
  fs_list_inotifyfs(mpd_t)
  fs_rw_anon_inodefs_files(mpd_t)
  fs_search_auto_mountpoints(mpd_t)
-@@ -150,7 +159,9 @@ auth_use_nsswitch(mpd_t)
+@@ -150,7 +166,9 @@ auth_use_nsswitch(mpd_t)
  
  logging_send_syslog_msg(mpd_t)
  
@@ -41117,7 +41148,7 @@ index 7c8afcc..29d8881 100644
  
  tunable_policy(`mpd_enable_homedirs',`
  	userdom_search_user_home_dirs(mpd_t)
-@@ -191,7 +202,7 @@ optional_policy(`
+@@ -191,7 +209,7 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -41126,7 +41157,7 @@ index 7c8afcc..29d8881 100644
  ')
  
  optional_policy(`
-@@ -199,6 +210,16 @@ optional_policy(`
+@@ -199,6 +217,16 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -51833,7 +51864,7 @@ index 0000000..fdc4a03
 +')
 diff --git a/openshift.te b/openshift.te
 new file mode 100644
-index 0000000..9724884
+index 0000000..55c843c
 --- /dev/null
 +++ b/openshift.te
 @@ -0,0 +1,549 @@
@@ -52383,7 +52414,7 @@ index 0000000..9724884
 +')
 +
 +optional_policy(`
-+	ssh_exec_keygen(openshift_cron_t)
++	ssh_domtrans_keygen(openshift_cron_t)
 +	ssh_dontaudit_read_server_keys(openshift_cron_t)
 +')
 diff --git a/openvpn.fc b/openvpn.fc
@@ -53732,7 +53763,7 @@ index bf59ef7..c050b37 100644
 +	manage_dirs_pattern($1, passenger_tmp_t, passenger_tmp_t)
  ')
 diff --git a/passenger.te b/passenger.te
-index 4e114ff..6691677 100644
+index 4e114ff..1b1cb71 100644
 --- a/passenger.te
 +++ b/passenger.te
 @@ -1,4 +1,4 @@
@@ -53783,7 +53814,7 @@ index 4e114ff..6691677 100644
  
  manage_dirs_pattern(passenger_t, passenger_var_run_t, passenger_var_run_t)
  manage_files_pattern(passenger_t, passenger_var_run_t, passenger_var_run_t)
-@@ -45,19 +50,20 @@ manage_fifo_files_pattern(passenger_t, passenger_var_run_t, passenger_var_run_t)
+@@ -45,19 +50,22 @@ manage_fifo_files_pattern(passenger_t, passenger_var_run_t, passenger_var_run_t)
  manage_sock_files_pattern(passenger_t, passenger_var_run_t, passenger_var_run_t)
  files_pid_filetrans(passenger_t, passenger_var_run_t, { file dir sock_file })
  
@@ -53796,6 +53827,8 @@ index 4e114ff..6691677 100644
  
  kernel_read_system_state(passenger_t)
  kernel_read_kernel_sysctls(passenger_t)
++kernel_read_network_state(passenger_t)
++kernel_read_net_sysctls(passenger_t)
  
  corenet_all_recvfrom_netlabel(passenger_t)
 -corenet_all_recvfrom_unlabeled(passenger_t)
@@ -53809,7 +53842,7 @@ index 4e114ff..6691677 100644
  
  corecmd_exec_bin(passenger_t)
  corecmd_exec_shell(passenger_t)
-@@ -66,8 +72,6 @@ dev_read_urand(passenger_t)
+@@ -66,14 +74,14 @@ dev_read_urand(passenger_t)
  
  domain_read_all_domains_state(passenger_t)
  
@@ -53818,7 +53851,15 @@ index 4e114ff..6691677 100644
  auth_use_nsswitch(passenger_t)
  
  logging_send_syslog_msg(passenger_t)
-@@ -90,14 +94,21 @@ optional_policy(`
+ 
+ miscfiles_read_localization(passenger_t)
+ 
++sysnet_exec_ifconfig(passenger_t)
++
+ userdom_dontaudit_use_user_terminals(passenger_t)
+ 
+ optional_policy(`
+@@ -90,14 +98,21 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -63265,7 +63306,7 @@ index 4ecda09..8c0b242 100644
 +/var/log/puppet(/.*)?			gen_context(system_u:object_r:puppet_log_t,s0)
 +/var/run/puppet(/.*)?			gen_context(system_u:object_r:puppet_var_run_t,s0)
 diff --git a/puppet.if b/puppet.if
-index 7cb8b1f..46650f0 100644
+index 7cb8b1f..9422c90 100644
 --- a/puppet.if
 +++ b/puppet.if
 @@ -1,4 +1,32 @@
@@ -63293,11 +63334,11 @@ index 7cb8b1f..46650f0 100644
 +#
 +interface(`puppet_domtrans_master',`
 +	gen_require(`
-+		type puppetmaster_t, puppetmaster_t_exec_t;
++		type puppetmaster_t, puppetmaster_exec_t;
 +	')
 +
 +	corecmd_search_bin($1)
-+	domtrans_pattern($1, puppetmaster_t_exec_t, puppetmaster_t)
++	domtrans_pattern($1, puppetmaster_exec_t, puppetmaster_t)
 +')
  
  ########################################
@@ -63576,7 +63617,7 @@ index 7cb8b1f..46650f0 100644
  
 -	files_search_var_lib($1)
 -	admin_pattern($1, puppet_var_lib_t)
-+    logging_search_logs($1)
++    files_search_etc($1)
 +	list_dirs_pattern($1, puppet_etc_t, puppet_etc_t)
 +    read_files_pattern($1, puppet_etc_t, puppet_etc_t)
 +')
@@ -82749,7 +82790,7 @@ index 634c6b4..e1edfd9 100644
  
  ########################################
 diff --git a/sosreport.te b/sosreport.te
-index 703efa3..f9d6ed6 100644
+index 703efa3..9610be1 100644
 --- a/sosreport.te
 +++ b/sosreport.te
 @@ -19,6 +19,9 @@ files_tmp_file(sosreport_tmp_t)
@@ -82814,7 +82855,7 @@ index 703efa3..f9d6ed6 100644
  files_read_var_lib_files(sosreport_t)
  files_read_var_symlinks(sosreport_t)
  files_read_kernel_modules(sosreport_t)
-@@ -79,27 +95,41 @@ files_manage_etc_runtime_files(sosreport_t)
+@@ -79,27 +95,42 @@ files_manage_etc_runtime_files(sosreport_t)
  files_etc_filetrans_etc_runtime(sosreport_t, file)
  
  fs_getattr_all_fs(sosreport_t)
@@ -82833,6 +82874,7 @@ index 703efa3..f9d6ed6 100644
 +files_read_non_security_files(sosreport_t)
 +
  auth_use_nsswitch(sosreport_t)
++auth_dontaudit_read_shadow(sosreport_t)
  
  init_domtrans_script(sosreport_t)
 +init_getattr_initctl(sosreport_t)
@@ -82858,7 +82900,7 @@ index 703efa3..f9d6ed6 100644
  ')
  
  optional_policy(`
-@@ -111,6 +141,11 @@ optional_policy(`
+@@ -111,6 +142,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -86063,10 +86105,10 @@ index b42ec1d..91b8f71 100644
  	tcsd_initrc_domtrans($1)
  	domain_system_change_exemption($1)
 diff --git a/tcsd.te b/tcsd.te
-index ac8213a..20fa71f 100644
+index ac8213a..14da480 100644
 --- a/tcsd.te
 +++ b/tcsd.te
-@@ -41,10 +41,6 @@ corenet_tcp_sendrecv_tcs_port(tcsd_t)
+@@ -41,10 +41,8 @@ corenet_tcp_sendrecv_tcs_port(tcsd_t)
  dev_read_urand(tcsd_t)
  dev_rw_tpm(tcsd_t)
  
@@ -86074,9 +86116,11 @@ index ac8213a..20fa71f 100644
 -
  auth_use_nsswitch(tcsd_t)
  
- logging_send_syslog_msg(tcsd_t)
--
+-logging_send_syslog_msg(tcsd_t)
++init_read_utmp(tcsd_t)
+ 
 -miscfiles_read_localization(tcsd_t)
++logging_send_syslog_msg(tcsd_t)
 diff --git a/telepathy.fc b/telepathy.fc
 index c7de0cf..03fc880 100644
 --- a/telepathy.fc
@@ -92543,7 +92587,7 @@ index 9dec06c..4e31afe 100644
 +	allow $1 svirt_image_t:chr_file rw_file_perms;
  ')
 diff --git a/virt.te b/virt.te
-index 1f22fba..348df8f 100644
+index 1f22fba..50f7cf9 100644
 --- a/virt.te
 +++ b/virt.te
 @@ -1,94 +1,104 @@
@@ -94302,7 +94346,7 @@ index 1f22fba..348df8f 100644
  allow virt_bridgehelper_t self:process { setcap getcap };
  allow virt_bridgehelper_t self:capability { setpcap setgid setuid net_admin };
  allow virt_bridgehelper_t self:tcp_socket create_stream_socket_perms;
-@@ -1198,5 +1352,122 @@ kernel_read_network_state(virt_bridgehelper_t)
+@@ -1198,5 +1352,123 @@ kernel_read_network_state(virt_bridgehelper_t)
  
  corenet_rw_tun_tap_dev(virt_bridgehelper_t)
  
@@ -94419,6 +94463,7 @@ index 1f22fba..348df8f 100644
 +#
 +
 +type svirt_socket_t;
++domain_type(svirt_socket_t)
 +role system_r types svirt_socket_t;
 +allow virtd_t svirt_socket_t:unix_stream_socket { connectto create_stream_socket_perms };
 +allow virt_domain svirt_socket_t:unix_stream_socket { connectto create_stream_socket_perms };
@@ -97518,25 +97563,32 @@ index 36e32df..3d08962 100644
 +    manage_dirs_pattern($1, zarafa_var_lib_t, zarafa_var_lib_t)
  ')
 diff --git a/zarafa.te b/zarafa.te
-index a4479b1..7a9f1b6 100644
+index a4479b1..a40d580 100644
 --- a/zarafa.te
 +++ b/zarafa.te
-@@ -1,4 +1,4 @@
+@@ -1,13 +1,18 @@
 -policy_module(zarafa, 1.1.4)
 +policy_module(zarafa, 1.1.0)
  
  ########################################
  #
-@@ -6,8 +6,6 @@ policy_module(zarafa, 1.1.4)
+ # Declarations
  #
  
++## <desc>
++##  <p>
++## Allow zarafa domains to setrlimit/sys_rouserce.
++##  </p>
++## </desc>
++gen_tunable(zarafa_setrlimit, false)
++
  attribute zarafa_domain;
 -attribute zarafa_logfile;
 -attribute zarafa_pidfile;
  
  zarafa_domain_template(deliver)
  
-@@ -17,9 +15,6 @@ files_tmp_file(zarafa_deliver_tmp_t)
+@@ -17,9 +22,6 @@ files_tmp_file(zarafa_deliver_tmp_t)
  type zarafa_etc_t;
  files_config_file(zarafa_etc_t)
  
@@ -97546,7 +97598,7 @@ index a4479b1..7a9f1b6 100644
  zarafa_domain_template(gateway)
  zarafa_domain_template(ical)
  zarafa_domain_template(indexer)
-@@ -43,61 +38,74 @@ files_tmp_file(zarafa_var_lib_t)
+@@ -43,61 +45,74 @@ files_tmp_file(zarafa_var_lib_t)
  
  ########################################
  #
@@ -97641,7 +97693,7 @@ index a4479b1..7a9f1b6 100644
  manage_dirs_pattern(zarafa_server_t, zarafa_server_tmp_t, zarafa_server_tmp_t)
  manage_files_pattern(zarafa_server_t, zarafa_server_tmp_t, zarafa_server_tmp_t)
  files_tmp_filetrans(zarafa_server_t, zarafa_server_tmp_t, { file dir })
-@@ -109,70 +117,80 @@ files_var_lib_filetrans(zarafa_server_t, zarafa_var_lib_t, { file dir lnk_file }
+@@ -109,70 +124,85 @@ files_var_lib_filetrans(zarafa_server_t, zarafa_var_lib_t, { file dir lnk_file }
  
  stream_connect_pattern(zarafa_server_t, zarafa_indexer_var_run_t, zarafa_indexer_var_run_t, zarafa_indexer_t)
  
@@ -97703,14 +97755,14 @@ index a4479b1..7a9f1b6 100644
  #
 -# Zarafa domain local policy
 +# zarafa_gateway local policy
-+#
+ #
 +corenet_tcp_bind_pop_port(zarafa_gateway_t)
-+
+ 
 +#######################################
 +#
 +# zarafa-ical local policy
- #
- 
++#
++
 +corenet_tcp_bind_http_cache_port(zarafa_ical_t)
 +
 +######################################
@@ -97727,12 +97779,17 @@ index a4479b1..7a9f1b6 100644
 +# bad permission on /etc/zarafa
  allow zarafa_domain self:capability { kill dac_override chown setgid setuid };
 -allow zarafa_domain self:process { setrlimit signal };
-+allow zarafa_domain self:process { signal_perms setrlimit };
++allow zarafa_domain self:process { signal_perms };
  allow zarafa_domain self:fifo_file rw_fifo_file_perms;
 -allow zarafa_domain self:tcp_socket { accept listen };
 -allow zarafa_domain self:unix_stream_socket { accept listen };
 +allow zarafa_domain self:tcp_socket create_stream_socket_perms;
 +allow zarafa_domain self:unix_stream_socket create_stream_socket_perms;
++
++tunable_policy(`zarafa_setrlimit',`
++    allow zarafa_domain self:capability sys_resource;
++    allow zarafa_domain self:process setrlimit;
++')
  
  stream_connect_pattern(zarafa_domain, zarafa_server_var_run_t, zarafa_server_var_run_t, zarafa_server_t)
  
