@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 81%{?dist}
+Release: 82%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -570,6 +570,30 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Sep 25 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-82
+- wine_tmp is no longer needed
+- Allow setroubleshoot to look at /proc
+- Allow telepathy domains to dbus with systemd logind
+- Fix handling of fifo files of rpm
+- Allow mozilla_plugin to transition to itself
+- Allow certwatch to write to cert_t directories
+- New abrt application
+- Allow NetworkManager to set the kernel scheduler
+- Make wine_domain shared by all wine domains
+- Allow mdadm_t to read images labeled svirt_image_t
+- Allow amanda to read /dev/urand
+- ALlow my_print_default to read /dev/urand
+- Allow mdadm to write to kdumpctl fifo files
+- Allow nslcd to send signull to itself
+- Allow yppasswd to read /dev/urandom
+- Fix zarafa_setrlimit
+- Add support for /var/lib/php/wsdlcache
+- Add zarafa_setrlimit boolean
+- Allow fetchmail to send mails
+- Add additional alias for user_tmp_t because wine_tmp_t is no longer used
+- More handling of ther kernel keyring required by kerberos
+- New privs needed for init_t when running without transition to initrc_t over bin_t, and without unconfined domain installed
+
 * Thu Sep 19 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-81
 - Dontaudit attempts by sosreport to read shadow_t
 - Allow browser sandbox plugins to connect to cups to print
