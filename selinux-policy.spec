@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 82.1%{?dist}
+Release: 83%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -571,6 +571,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Sep 25 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-83
+- Do not build sanbox pkg on MLS 
+
 * Wed Sep 25 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-82
 - wine_tmp is no longer needed
 - Allow setroubleshoot to look at /proc
