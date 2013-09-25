@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 82%{?dist}
+Release: 82.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -185,7 +185,6 @@ rm -f %{buildroot}/%{_usr}/share/selinux/%1/base.pp  \
 for i in %{buildroot}/%{_usr}/share/selinux/%1/*.pp; do bzip2 -c $i > %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/`basename $i`; done \
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/*pp*  \
 mkdir -p %{buildroot}%{_usr}/share/selinux/packages \
-mv %{buildroot}/%{_sysconfdir}/selinux/%1/modules/active/modules/sandbox.pp %{buildroot}/usr/share/selinux/packages \
 /usr/sbin/semodule -s %1 -n -B -p %{buildroot}; \
 /usr/bin/sha512sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policy.sha512; \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts  \
@@ -348,6 +347,7 @@ cp %{SOURCE28} %{buildroot}/%{_usr}/share/selinux/targeted
 %makeCmds targeted mcs n allow
 %makeModulesConf targeted base contrib
 %installCmds targeted mcs n allow
+mv %{buildroot}/%{_sysconfdir}/selinux/targeted/modules/active/modules/sandbox.pp %{buildroot}/usr/share/selinux/packages
 %modulesList targeted 
 %endif
 
@@ -359,6 +359,7 @@ cp %{SOURCE28} %{buildroot}/%{_usr}/share/selinux/minimum
 %makeCmds minimum mcs n allow
 %makeModulesConf targeted base contrib
 %installCmds minimum mcs n allow
+rm -f %{buildroot}/%{_sysconfdir}/selinux/minimum/modules/active/modules/sandbox.pp
 %modulesList minimum
 %endif
 
