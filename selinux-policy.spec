@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 83%{?dist}
+Release: 84%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -571,6 +571,26 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Sep 30 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-84
+- Fix labeling for /usr/libexec/kde4/kcmdatetimehelper
+- Allow tuned to search all file system directories
+- Allow alsa_t to sys_nice, to get top performance for sound management
+- Add support for MySQL/PostgreSQL for amavis
+- Allow openvpn_t to manage openvpn_var_log_t files.
+- Allow dirsrv_t to create tmpfs_t directories
+- Allow dirsrv to create dirs in /dev/shm with dirsrv_tmpfs label
+- Dontaudit leaked unix_stream_sockets into gnome keyring
+- Allow telepathy domains to inhibit pipes on telepathy domains
+- Allow cloud-init to domtrans to rpm
+- Allow abrt daemon to manage abrt-watch tmp files
+- Allow abrt-upload-watcher to search /var/spool directory
+- Allow nsswitch domains to manage own process key
+- Fix labeling for mgetty.* logs
+- Allow systemd to dbus chat with upower
+- Allow ipsec to send signull to itself
+- Allow setgid cap for ipsec_t
+- Match upstream labeling
+
 * Wed Sep 25 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-83
 - Do not build sanbox pkg on MLS 
 
