@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 84%{?dist}
+Release: 85%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -571,6 +571,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Oct 2 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-85
+- Fix lxc labeling in config.tgz
+
 * Mon Sep 30 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-84
 - Fix labeling for /usr/libexec/kde4/kcmdatetimehelper
 - Allow tuned to search all file system directories
