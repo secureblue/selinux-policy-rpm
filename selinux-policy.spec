@@ -571,7 +571,7 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-- * Fri Oct 4 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-86
+* Fri Oct 4 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-86
 - Fix nscd_shm_use()
 - Add initial policy for /usr/sbin/hypervvssd in hypervkvp policy which should be renamed to hyperv. Also add hyperv_domain attribute to treat these HyperV services.
 - Add hypervkvp_unit_file_t type
