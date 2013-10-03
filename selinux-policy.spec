@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 85%{?dist}
+Release: 86%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -571,6 +571,38 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+- * Fri Oct 4 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-86
+- Fix nscd_shm_use()
+- Add initial policy for /usr/sbin/hypervvssd in hypervkvp policy which should be renamed to hyperv. Also add hyperv_domain attribute to treat these HyperV services.
+- Add hypervkvp_unit_file_t type
+- Add additional fixes forpegasus_openlmi_account_t
+- Allow mdadm to read /dev/urand
+- Allow pegasus_openlmi_storage_t to create mdadm.conf and write it
+- Add label/rules for /etc/mdadm.conf
+- Allow pegasus_openlmi_storage_t to transition to fsadm_t
+- Fixes for interface definition problems
+- Dontaudit dovecot-deliver to gettatr on all fs dirs
+- Allow domains to search data_home_t directories
+- Allow cobblerd to connect to mysql
+- Allow mdadm to r/w kdump lock files
+- Add support for kdump lock files
+- Label zarafa-search as zarafa-indexer
+- Openshift cgroup wants to read /etc/passwd
+- Add new sandbox domains for kvm
+- Allow mpd to interact with pulseaudio if mpd_enable_homedirs is turned on
+- Fix labeling for /usr/lib/systemd/system/lvm2.*
+- Add labeling for /usr/lib/systemd/system/lvm2.*
+- Fix typos to get a new build. We should not cover filename trans rules to prevent duplicate rules
+- Add sshd_keygen_t policy for sshd-keygen
+- Fix alsa_home_filetrans interface name and definition
+- Allow chown for ssh_keygen_t
+- Add fs_dontaudit_getattr_all_dirs()
+- Allow init_t to manage etc_aliases_t and read xserver_var_lib_t and chrony keys
+- Fix up patch to allow systemd to manage home content
+- Allow domains to send/recv unlabeled traffic if unlabelednet.pp is enabled
+- Allow getty to exec hostname to get info
+- Add systemd_home_t for ~/.local/share/systemd directory
+
 * Wed Oct 2 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-85
 - Fix lxc labeling in config.tgz
 
