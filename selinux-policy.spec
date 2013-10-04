@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 86%{?dist}
+Release: 87%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -571,6 +571,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Oct 4 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-87
+- init reload  from systemd_localed_t
+- Allow domains that communicate with systemd_logind_sessions to use systemd_logind_t fd
+- Allow systemd_localed_t to ask systemd to reload the locale.
+- Add systemd_runtime_unit_file_t type for unit files that systemd creates in memory
+- Allow readahead to read /dev/urand
+- Fix lots of avcs about tuned
+- Any file names xenstored in /var/log should be treated as xenstored_var_log_t
+- Allow tuned to inderact with hugepages
+- Allow condor domains to list etc rw dirs
+
 * Fri Oct 4 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-86
 - Fix nscd_shm_use()
 - Add initial policy for /usr/sbin/hypervvssd in hypervkvp policy which should be renamed to hyperv. Also add hyperv_domain attribute to treat these HyperV services.
