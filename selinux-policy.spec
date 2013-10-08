@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 87%{?dist}
+Release: 88%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -571,6 +571,30 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Oct 4 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-88
+- Add auth_exec_chkpwd interface
+- Fix port definition for ctdb ports
+- Allow systemd domains to read /dev/urand
+- Dontaudit attempts for mozilla_plugin to append to /dev/random
+- Add label for /var/run/charon.*
+- Add labeling for /usr/lib/systemd/system/lvm2.*dd policy for motion service
+- Fix for nagios_services plugins
+- Fix some bugs in zoneminder policy
+- add type defintion for ctdbd_var_t
+- Add support for /var/ctdb. Allow ctdb block_suspend and read /etc/passwd file
+- Allow net_admin/netlink_socket all hyperv_domain domains
+- Add labeling for zarafa-search.log and zarafa-search.pid
+- glusterd binds to random unreserved ports
+- Additional allow rules found by testing glusterfs
+- apcupsd needs to send a message to all users on the system so needs to look them up
+- Fix the label on ~/.juniper_networks
+- Dontaudit attempts for mozilla_plugin to append to /dev/random
+- Allow polipo_daemon to connect to flash ports
+- Allow gssproxy_t to create replay caches
+- Fix nscd_shm_use()
+- Add initial policy for /usr/sbin/hypervvssd in hypervkvp policy which should be renamed to hyperv. Also add hyperv_domain attribute to treat these HyperV services.
+- Add hypervkvp_unit_file_t type
+
 * Fri Oct 4 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-87
 - init reload  from systemd_localed_t
 - Allow domains that communicate with systemd_logind_sessions to use systemd_logind_t fd
