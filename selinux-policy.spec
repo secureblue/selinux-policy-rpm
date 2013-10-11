@@ -189,6 +189,7 @@ mkdir -p %{buildroot}%{_usr}/share/selinux/packages \
 /usr/bin/sha512sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policy.sha512; \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts  \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/policy.kern \
+ln -sf /etc/selinux/%1/policy/policy.%{POLICYVER}  %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %nil
 
 %define fileList() \
@@ -213,7 +214,7 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/homedir_template \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
-%ghost %{_sysconfdir}/selinux/%1/modules/active/policy.kern \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.local \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.bin \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/seusers \
