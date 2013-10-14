@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 88%{?dist}
+Release: 89%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -572,7 +572,33 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Tue Oct 4 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-88
+* Mon Oct 14 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-89
+- Fix gnome_read_generic_data_home_files()
+- allow openshift_cgroup_t to read/write inherited openshift file types
+- Remove httpd_cobbler_content * from cobbler_admin interface
+- Allow svirt sandbox domains to setattr on chr_file and blk_file svirt_sandbox_file_t, so sshd will work within a container
+- Allow httpd_t to read also git sys content symlinks
+- Allow init_t to read gnome home data
+- Dontaudit setroubleshoot_fixit_t execmem, since it does not seem to really need it.
+- Allow virsh to execute systemctl
+- Fix for nagios_services plugins
+- add type defintion for ctdbd_var_t
+- Add support for /var/ctdb. Allow ctdb block_suspend and read /etc/passwd file
+- Allow net_admin/netlink_socket all hyperv_domain domains
+- Add labeling for zarafa-search.log and zarafa-search.pid
+- Fix hypervkvp.te
+- Fix nscd_shm_use()
+- Add initial policy for /usr/sbin/hypervvssd in hypervkvp policy which should be renamed to hyperv. Also add hyperv_domain attribute to treat these HyperV services.
+- Add hypervkvp_unit_file_t type
+- Fix logging policy
+- Allow syslog to bind to tls ports
+- Update labeling for /dev/cdc-wdm
+- Allow to su_domain to read init states
+- Allow init_t to read gnome home data
+- Make sure if systemd_logind creates nologin file with the correct label
+- Clean up ipsec.te
+
+* Tue Oct 8 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-88
 - Add auth_exec_chkpwd interface
 - Fix port definition for ctdb ports
 - Allow systemd domains to read /dev/urand
