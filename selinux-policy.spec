@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 89%{?dist}
+Release: 90%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -572,6 +572,36 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Oct 17 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-90
+- Allow mailserver_domains to manage and transition to mailman data
+- Dontaudit attempts by mozilla plugin to relabel content, caused by using mv and cp commands
+- Allow mailserver_domains to manage and transition to mailman data
+- Allow svirt_domains to read sysctl_net_t
+- Allow thumb_t to use tmpfs inherited from the user
+- Allow mozilla_plugin to bind to the vnc port if running with spice
+- Add new attribute to discover confined_admins and assign confined admin to it
+- Fix zabbix to handle attributes in interfaces
+- Fix zabbix to read system states for all zabbix domains
+- Fix piranha_domain_template()
+- Allow ctdbd to create udp_socket. Allow ndmbd to access ctdbd var files.
+- Allow lldpad sys_rouserce cap due to #986870
+- Allow dovecot-auth to read nologin
+- Allow openlmi-networking to read /proc/net/dev
+- Allow smsd_t to execute scripts created on the fly labeled as smsd_spool_t
+- Add zabbix_domain attribute for zabbix domains to treat them together
+- Add labels for zabbix-poxy-* (#1018221)
+- Update openlmi-storage policy to reflect #1015067
+- Back port piranha tmpfs fixes from RHEL6
+- Update httpd_can_sendmail boolean to allow read/write postfix spool maildrop
+- Add postfix_rw_spool_maildrop_files interface
+- Call new userdom_admin_user_templat() also for sysadm_secadm.pp
+- Fix typo in userdom_admin_user_template()
+- Allow SELinux users to create coolkeypk11sE-Gate in /var/cache/coolkey
+- Add new attribute to discover confined_admins
+- Fix labeling for /etc/strongswan/ipsec.d
+- systemd_logind seems to pass fd to anyone who dbus communicates with it
+- Dontaudit leaked write descriptor to dmesg 
+
 * Mon Oct 14 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-89
 - Fix gnome_read_generic_data_home_files()
 - allow openshift_cgroup_t to read/write inherited openshift file types
