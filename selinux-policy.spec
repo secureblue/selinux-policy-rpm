@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 90%{?dist}
+Release: 91%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -572,6 +572,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Oct 17 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-91
+- Add rtas policy
+
 * Thu Oct 17 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-90
 - Allow mailserver_domains to manage and transition to mailman data
 - Dontaudit attempts by mozilla plugin to relabel content, caused by using mv and cp commands
