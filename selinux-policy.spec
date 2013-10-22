@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 91%{?dist}
+Release: 92%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -572,6 +572,20 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Oct 22 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-92
+- Allow sshd_t to read openshift content, needs backport to RHEL6.5
+- Label /usr/lib64/sasl2/libsasldb.so.3.0.0 as textrel_shlib_t
+- Make sur kdump lock is created with correct label if kdumpctl is executed
+- gnome interface calls should always be made within an optional_block
+- Allow syslogd_t to connect to the syslog_tls port
+- Add labeling for /var/run/charon.ctl socket
+- Add kdump_filetrans_named_content()
+- Allo setpgid for fenced_t
+- Allow setpgid and r/w cluster tmpfs for fenced_t
+- gnome calls should always be within optional blocks
+- wicd.pid should be labeled as networkmanager_var_run_t
+- Allow sys_resource for lldpad
+
 * Thu Oct 17 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-91
 - Add rtas policy
 
