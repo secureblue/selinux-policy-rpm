@@ -890,7 +890,7 @@ index 4705ab6..b7e7ea5 100644
 +## </desc>
 +gen_tunable(mount_anyfile, false)
 diff --git a/policy/mcs b/policy/mcs
-index 216b3d1..81bc8c4 100644
+index 216b3d1..275d3d9 100644
 --- a/policy/mcs
 +++ b/policy/mcs
 @@ -1,4 +1,6 @@
@@ -971,7 +971,17 @@ index 216b3d1..81bc8c4 100644
  
  mlsconstrain process { signal }
  	(( h1 dom h2 ) or ( t1 != mcs_constrained_type ));
-@@ -166,4 +165,23 @@ mlsconstrain db_language { drop getattr setattr relabelfrom execute }
+@@ -135,6 +134,9 @@ mlsconstrain { db_database db_schema db_table db_sequence db_view db_procedure d
+ mlsconstrain { db_tuple } { insert relabelto }
+ 	(( h1 dom h2 ) and ( l2 eq h2 ));
+ 
++mlsconstrain context contains
++	(( h1 dom h2 ) and ( l1 domby l2));
++
+ # Access control for any database objects based on MCS rules.
+ mlsconstrain db_database { drop getattr setattr relabelfrom access install_module load_module get_param set_param }
+ 	( h1 dom h2 );
+@@ -166,4 +168,23 @@ mlsconstrain db_language { drop getattr setattr relabelfrom execute }
  mlsconstrain db_blob { drop getattr setattr relabelfrom read write import export }
  	( h1 dom h2 );
  
@@ -5426,7 +5436,7 @@ index 8e0f9cd..b9f45b9 100644
  
  define(`create_packet_interfaces',``
 diff --git a/policy/modules/kernel/corenetwork.te.in b/policy/modules/kernel/corenetwork.te.in
-index 4edc40d..dc853a1 100644
+index 4edc40d..9455a13 100644
 --- a/policy/modules/kernel/corenetwork.te.in
 +++ b/policy/modules/kernel/corenetwork.te.in
 @@ -5,6 +5,7 @@ policy_module(corenetwork, 1.18.4)
@@ -5620,7 +5630,7 @@ index 4edc40d..dc853a1 100644
  network_port(matahari, tcp,49000,s0, udp,49000,s0)
  network_port(memcache, tcp,11211,s0, udp,11211,s0)
 -network_port(milter) # no defined portcon
-+network_port(milter, tcp, 8891, s0) # no defined portcon
++network_port(milter, tcp, 8891, s0, tcp, 8893, s0) # no defined portcon
  network_port(mmcc, tcp,5050,s0, udp,5050,s0)
 +network_port(mongod, tcp,27017-27019,s0, tcp, 28017-28019,s0)
  network_port(monopd, tcp,1234,s0)
@@ -18117,7 +18127,7 @@ index 0000000..bd83148
 +## <summary>No Interfaces</summary>
 diff --git a/policy/modules/roles/sysadm_secadm.te b/policy/modules/roles/sysadm_secadm.te
 new file mode 100644
-index 0000000..3175fd7
+index 0000000..63bc797
 --- /dev/null
 +++ b/policy/modules/roles/sysadm_secadm.te
 @@ -0,0 +1,25 @@
@@ -18133,7 +18143,7 @@ index 0000000..3175fd7
 +	role sysadm_r;
 +')
 +
-+userdom_admin_user_template(sysadm_t, sysadm_r)
++userdom_security_admin_template(sysadm_t, sysadm_r)
 +
 +#######################################
 +#
@@ -18781,10 +18791,10 @@ index 0000000..cf6582f
 +
 diff --git a/policy/modules/roles/unconfineduser.te b/policy/modules/roles/unconfineduser.te
 new file mode 100644
-index 0000000..36f6ee2
+index 0000000..539c163
 --- /dev/null
 +++ b/policy/modules/roles/unconfineduser.te
-@@ -0,0 +1,332 @@
+@@ -0,0 +1,328 @@
 +policy_module(unconfineduser, 1.0.0)
 +
 +########################################
@@ -19100,10 +19110,6 @@ index 0000000..36f6ee2
 +
 +optional_policy(`
 +	openshift_run(unconfined_usertype, unconfined_r)
-+')
-+
-+optional_policy(`
-+	usermanage_run_useradd(unconfined_t, unconfined_r)
 +')
 +
 +optional_policy(`
@@ -20611,7 +20617,7 @@ index fe0c682..225aaa7 100644
 +	ps_process_pattern($1, sshd_t)
 +')
 diff --git a/policy/modules/services/ssh.te b/policy/modules/services/ssh.te
-index 5fc0391..1386603 100644
+index 5fc0391..692569b 100644
 --- a/policy/modules/services/ssh.te
 +++ b/policy/modules/services/ssh.te
 @@ -6,43 +6,61 @@ policy_module(ssh, 2.3.3)
@@ -21101,7 +21107,7 @@ index 5fc0391..1386603 100644
  
  optional_policy(`
  	seutil_sigchld_newrole(ssh_keygen_t)
-@@ -331,3 +506,138 @@ optional_policy(`
+@@ -331,3 +506,140 @@ optional_policy(`
  optional_policy(`
  	udev_read_db(ssh_keygen_t)
  ')
@@ -21112,8 +21118,10 @@ index 5fc0391..1386603 100644
 +#
 +
 +allow ssh_dyntransition_domain self:capability { setuid sys_chroot setgid };
++allow ssh_dyntransition_domain  self:unix_dgram_socket create_socket_perms;
 +
 +allow ssh_dyntransition_domain self:fifo_file rw_fifo_file_perms;
++allow ssh_dyntransition_domain sshd_t:fd use;
 +
 +optional_policy(`
 +    ssh_rw_stream_sockets(ssh_dyntransition_domain)
@@ -26361,20 +26369,28 @@ index e4376aa..2c98c56 100644
 +	allow $1 getty_unit_file_t:service start;
 +')
 diff --git a/policy/modules/system/getty.te b/policy/modules/system/getty.te
-index fc38c9c..1c9f909 100644
+index fc38c9c..4740426 100644
 --- a/policy/modules/system/getty.te
 +++ b/policy/modules/system/getty.te
-@@ -27,6 +27,9 @@ files_tmp_file(getty_tmp_t)
+@@ -27,6 +27,17 @@ files_tmp_file(getty_tmp_t)
  type getty_var_run_t;
  files_pid_file(getty_var_run_t)
  
 +type getty_unit_file_t;
 +systemd_unit_file(getty_unit_file_t)
 +
++ifdef(`enable_mcs',`
++	init_ranged_daemon_domain(getty_t, getty_exec_t, s0 - mcs_systemhigh)
++')
++
++ifdef(`enable_mls',`
++	init_ranged_daemon_domain(getty_t, getty_exec_t, mls_systemhigh)
++')
++
  ########################################
  #
  # Getty local policy
-@@ -83,8 +86,11 @@ term_use_unallocated_ttys(getty_t)
+@@ -83,8 +94,11 @@ term_use_unallocated_ttys(getty_t)
  term_setattr_all_ttys(getty_t)
  term_setattr_unallocated_ttys(getty_t)
  term_setattr_console(getty_t)
@@ -26386,7 +26402,7 @@ index fc38c9c..1c9f909 100644
  
  init_rw_utmp(getty_t)
  init_use_script_ptys(getty_t)
-@@ -94,7 +100,6 @@ locallogin_domtrans(getty_t)
+@@ -94,7 +108,6 @@ locallogin_domtrans(getty_t)
  
  logging_send_syslog_msg(getty_t)
  
@@ -26394,7 +26410,7 @@ index fc38c9c..1c9f909 100644
  
  ifdef(`distro_gentoo',`
  	# Gentoo default /etc/issue makes agetty
-@@ -113,7 +118,7 @@ ifdef(`distro_ubuntu',`
+@@ -113,7 +126,7 @@ ifdef(`distro_ubuntu',`
  	')
  ')
  
@@ -26403,20 +26419,20 @@ index fc38c9c..1c9f909 100644
  	# Support logging in from /dev/console
  	term_use_console(getty_t)
  ',`
-@@ -121,11 +126,15 @@ tunable_policy(`console_login',`
+@@ -121,11 +134,15 @@ tunable_policy(`console_login',`
  ')
  
  optional_policy(`
 -	mta_send_mail(getty_t)
 +    hostname_exec(getty_t)
-+')
-+
-+optional_policy(`
-+    lockdev_manage_files(getty_t)
  ')
  
  optional_policy(`
 -	nscd_use(getty_t)
++    lockdev_manage_files(getty_t)
++')
++
++optional_policy(`
 +	mta_send_mail(getty_t)
  ')
  
@@ -39578,7 +39594,7 @@ index db75976..65191bd 100644
 +
 +/var/run/user(/.*)?	gen_context(system_u:object_r:user_tmp_t,s0)
 diff --git a/policy/modules/system/userdomain.if b/policy/modules/system/userdomain.if
-index 3c5dba7..9b2cdf7 100644
+index 3c5dba7..5b93224 100644
 --- a/policy/modules/system/userdomain.if
 +++ b/policy/modules/system/userdomain.if
 @@ -30,9 +30,11 @@ template(`userdom_base_user_template',`
@@ -42444,7 +42460,7 @@ index 3c5dba7..9b2cdf7 100644
  ##	Create keys for all user domains.
  ## </summary>
  ## <param name="domain">
-@@ -3438,4 +4299,1533 @@ interface(`userdom_dbus_send_all_users',`
+@@ -3438,4 +4299,1630 @@ interface(`userdom_dbus_send_all_users',`
  	')
  
  	allow $1 userdomain:dbus send_msg;
@@ -42665,7 +42681,7 @@ index 3c5dba7..9b2cdf7 100644
 +	')
 +
 +	allow $1 unpriv_userdomain:unix_dgram_socket sendto;
-+')
+ ')
 +
 +######################################
 +## <summary>
@@ -43977,7 +43993,104 @@ index 3c5dba7..9b2cdf7 100644
 +	ubac_constrained($1_t)
 +
 +	auth_use_nsswitch($1_t)
- ')
++')
++
++########################################
++## <summary>
++##	Allow user to run as a secadm
++## </summary>
++## <desc>
++##	<p>
++##	Create objects in a user home directory
++##	with an automatic type transition to
++##	a specified private type.
++##	</p>
++##	<p>
++##	This is a templated interface, and should only
++##	be called from a per-userdomain template.
++##	</p>
++## </desc>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	The role  of the object to create.
++##	</summary>
++## </param>
++#
++template(`userdom_security_admin_template',`
++	allow $1 self:capability { dac_read_search dac_override };
++
++	corecmd_exec_shell($1)
++
++	domain_obj_id_change_exemption($1)
++
++	dev_relabel_all_dev_nodes($1)
++
++	files_create_boot_flag($1)
++	files_create_default_dir($1)
++	files_root_filetrans_default($1, dir)
++
++	# Necessary for managing /boot/efi
++	fs_manage_dos_files($1)
++
++	mls_process_read_up($1)
++	mls_file_read_all_levels($1)
++	mls_file_upgrade($1)
++	mls_file_downgrade($1)
++
++	selinux_set_enforce_mode($1)
++	selinux_set_all_booleans($1)
++	selinux_set_parameters($1)
++	selinux_read_policy($1)
++
++	files_relabel_all_files($1)
++
++	auth_relabel_shadow($1)
++
++	init_exec($1)
++
++	logging_send_syslog_msg($1)
++	logging_read_audit_log($1)
++	logging_read_generic_logs($1)
++	logging_read_audit_config($1)
++
++	seutil_manage_bin_policy($1)
++	seutil_manage_default_contexts($1)
++	seutil_manage_file_contexts($1)
++	seutil_manage_module_store($1)
++	seutil_manage_config($1)
++	seutil_manage_login_config($1)
++	seutil_run_checkpolicy($1,$2)
++	seutil_run_loadpolicy($1,$2)
++	seutil_run_semanage($1,$2)
++	seutil_run_setsebool($1,$2)
++	seutil_run_setfiles($1, $2)
++
++	optional_policy(`
++		aide_run($1,$2)
++	')
++
++	optional_policy(`
++		consoletype_exec($1)
++	')
++
++	optional_policy(`	
++		ipsec_run_setkey($1,$2)
++	')
++
++	optional_policy(`
++		netlabel_run_mgmt($1,$2)
++	')
++
++	optional_policy(`
++		samhain_run($1, $2)
++	')
++')
++
 diff --git a/policy/modules/system/userdomain.te b/policy/modules/system/userdomain.te
 index e2b538b..e0c6eeb 100644
 --- a/policy/modules/system/userdomain.te

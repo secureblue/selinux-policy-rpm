@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 92%{?dist}
+Release: 93%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -572,6 +572,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Oct 24 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-93
+- Add back userdom_security_admin_template() interface and use it for sysadm_t if sysadm_secadm.pp
+
 * Tue Oct 22 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-92
 - Allow sshd_t to read openshift content, needs backport to RHEL6.5
 - Label /usr/lib64/sasl2/libsasldb.so.3.0.0 as textrel_shlib_t
