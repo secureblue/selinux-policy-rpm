@@ -230,6 +230,7 @@ ln -sf /etc/selinux/%1/policy/policy.%{POLICYVER}  %{buildroot}%{_sysconfdir}/se
 %config %{_sysconfdir}/selinux/%1/contexts/virtual_domain_context \
 %config %{_sysconfdir}/selinux/%1/contexts/virtual_image_context \
 %config %{_sysconfdir}/selinux/%1/contexts/lxc_contexts \
+%config %{_sysconfdir}/selinux/%1/contexts/sytemd_contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/sepgsql_contexts \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/default_type \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/failsafe_context \
