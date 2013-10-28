@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 93%{?dist}
+Release: 94%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -573,6 +573,23 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Oct 28 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-94
+- Allow sysadm_t to read login information
+- Allow systemd_tmpfiles to setattr on var_log_t directories
+- Udpdate Makefile to include systemd_contexts
+- Add systemd_contexts
+- Add fs_exec_hugetlbfs_files() interface
+- Add daemons_enable_cluster_mode boolean
+- Fix rsync_filetrans_named_content()
+- Add rhcs_read_cluster_pid_files() interface
+- Update rhcs.if with additional interfaces from RHEL6
+- Fix rhcs_domain_template() to not create run dirs with cluster_var_run_t
+- Allow glusterd_t to mounton glusterd_tmp_t
+- Allow glusterd to unmout al filesystems
+- Allow xenstored to read virt config
+- Add label for swift_server.lock and make add filetrans_named_content to make sure content gets created with the correct label
+- Allow mozilla_plugin_t to mmap hugepages as an executable
+
 * Thu Oct 24 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-93
 - Add back userdom_security_admin_template() interface and use it for sysadm_t if sysadm_secadm.pp
 
