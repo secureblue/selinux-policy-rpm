@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 94%{?dist}
+Release: 95%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -573,6 +573,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Oct 30 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-95
+- Fix alias decl in corenetwork.te.in
+- Add support for fuse.glusterfs
+- Add file transition rules for content created by f5link
+- Rename quantum_port information to neutron
+- Allow all antivirus domains to manage also own log dirs
+- Rename quantum_port information to neutron
+- Allow pegasus_openlmi_services_t to stream connect to sssd_t
+
 * Mon Oct 28 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-94
 - Allow sysadm_t to read login information
 - Allow systemd_tmpfiles to setattr on var_log_t directories

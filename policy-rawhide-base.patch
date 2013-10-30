@@ -5461,7 +5461,7 @@ index 8e0f9cd..b9f45b9 100644
  
  define(`create_packet_interfaces',``
 diff --git a/policy/modules/kernel/corenetwork.te.in b/policy/modules/kernel/corenetwork.te.in
-index 4edc40d..9455a13 100644
+index 4edc40d..cc71e95 100644
 --- a/policy/modules/kernel/corenetwork.te.in
 +++ b/policy/modules/kernel/corenetwork.te.in
 @@ -5,6 +5,7 @@ policy_module(corenetwork, 1.18.4)
@@ -5714,7 +5714,7 @@ index 4edc40d..9455a13 100644
  network_port(puppet, tcp, 8140, s0)
  network_port(pxe, udp,4011,s0)
  network_port(pyzor, udp,24441,s0)
-+network_port(quantum, tcp,9696,s0)
++network_port(neutron, tcp,9696,s0)
  network_port(radacct, udp,1646,s0, udp,1813,s0)
  network_port(radius, udp,1645,s0, udp,1812,s0)
  network_port(radsec, tcp,2083,s0)
@@ -5810,7 +5810,7 @@ index 4edc40d..9455a13 100644
  ',`
  typealias netif_t alias { lo_netif_t netif_lo_t };
  ')
-@@ -342,9 +400,24 @@ typealias netif_t alias { lo_netif_t netif_lo_t };
+@@ -342,9 +400,28 @@ typealias netif_t alias { lo_netif_t netif_lo_t };
  allow corenet_unconfined_type node_type:node *;
  allow corenet_unconfined_type netif_type:netif *;
  allow corenet_unconfined_type packet_type:packet *;
@@ -5837,6 +5837,10 @@ index 4edc40d..9455a13 100644
 +allow netlabel_peer_type netlabel_peer_t:{ tcp_socket udp_socket rawip_socket dccp_socket } recvfrom;
 +allow netlabel_peer_t netif_t:netif { rawip_recv egress ingress };
 +allow netlabel_peer_t node_t:node recvfrom;
++
++typealias  neutron_port_t alias quantum_port_t;
++typealias  neutron_server_packet_t alias quantum_server_packet_t;
++typealias  neutron_client_packet_t alias quantum_client_packet_t;
 diff --git a/policy/modules/kernel/corenetwork.te.m4 b/policy/modules/kernel/corenetwork.te.m4
 index 3f6e168..51ad69a 100644
 --- a/policy/modules/kernel/corenetwork.te.m4
@@ -14159,10 +14163,10 @@ index 8416beb..c6cd3eb 100644
 +	fs_tmpfs_filetrans($1, cgroup_t, lnk_file, "cpuacct")
 +')
 diff --git a/policy/modules/kernel/filesystem.te b/policy/modules/kernel/filesystem.te
-index 9e603f5..e0209df 100644
+index 9e603f5..1198b51 100644
 --- a/policy/modules/kernel/filesystem.te
 +++ b/policy/modules/kernel/filesystem.te
-@@ -32,7 +32,9 @@ fs_use_xattr gpfs gen_context(system_u:object_r:fs_t,s0);
+@@ -32,8 +32,11 @@ fs_use_xattr gpfs gen_context(system_u:object_r:fs_t,s0);
  fs_use_xattr jffs2 gen_context(system_u:object_r:fs_t,s0);
  fs_use_xattr jfs gen_context(system_u:object_r:fs_t,s0);
  fs_use_xattr lustre gen_context(system_u:object_r:fs_t,s0);
@@ -14170,9 +14174,11 @@ index 9e603f5..e0209df 100644
  fs_use_xattr xfs gen_context(system_u:object_r:fs_t,s0);
 +fs_use_xattr squashfs gen_context(system_u:object_r:fs_t,s0);
  fs_use_xattr zfs gen_context(system_u:object_r:fs_t,s0);
++fs_use_xattr fuse.glusterfs gen_context(system_u:object_r:fs_t,s0);
  
  # Use the allocating task SID to label inodes in the following filesystem
-@@ -53,6 +55,7 @@ type anon_inodefs_t;
+ # types, and label the filesystem itself with the specified context.
+@@ -53,6 +56,7 @@ type anon_inodefs_t;
  fs_type(anon_inodefs_t)
  files_mountpoint(anon_inodefs_t)
  genfscon anon_inodefs / gen_context(system_u:object_r:anon_inodefs_t,s0)
@@ -14180,7 +14186,7 @@ index 9e603f5..e0209df 100644
  
  type bdev_t;
  fs_type(bdev_t)
-@@ -63,12 +66,17 @@ fs_type(binfmt_misc_fs_t)
+@@ -63,12 +67,17 @@ fs_type(binfmt_misc_fs_t)
  files_mountpoint(binfmt_misc_fs_t)
  genfscon binfmt_misc / gen_context(system_u:object_r:binfmt_misc_fs_t,s0)
  
@@ -14199,7 +14205,7 @@ index 9e603f5..e0209df 100644
  fs_type(cgroup_t)
  files_type(cgroup_t)
  files_mountpoint(cgroup_t)
-@@ -89,6 +97,11 @@ fs_noxattr_type(ecryptfs_t)
+@@ -89,6 +98,11 @@ fs_noxattr_type(ecryptfs_t)
  files_mountpoint(ecryptfs_t)
  genfscon ecryptfs / gen_context(system_u:object_r:ecryptfs_t,s0)
  
@@ -14211,7 +14217,7 @@ index 9e603f5..e0209df 100644
  type futexfs_t;
  fs_type(futexfs_t)
  genfscon futexfs / gen_context(system_u:object_r:futexfs_t,s0)
-@@ -97,6 +110,7 @@ type hugetlbfs_t;
+@@ -97,6 +111,7 @@ type hugetlbfs_t;
  fs_type(hugetlbfs_t)
  files_mountpoint(hugetlbfs_t)
  fs_use_trans hugetlbfs gen_context(system_u:object_r:hugetlbfs_t,s0);
@@ -14219,7 +14225,7 @@ index 9e603f5..e0209df 100644
  
  type ibmasmfs_t;
  fs_type(ibmasmfs_t)
-@@ -119,12 +133,17 @@ genfscon mvfs / gen_context(system_u:object_r:mvfs_t,s0)
+@@ -119,12 +134,17 @@ genfscon mvfs / gen_context(system_u:object_r:mvfs_t,s0)
  
  type nfsd_fs_t;
  fs_type(nfsd_fs_t)
@@ -14237,7 +14243,7 @@ index 9e603f5..e0209df 100644
  type ramfs_t;
  fs_type(ramfs_t)
  files_mountpoint(ramfs_t)
-@@ -145,11 +164,6 @@ fs_type(spufs_t)
+@@ -145,11 +165,6 @@ fs_type(spufs_t)
  genfscon spufs / gen_context(system_u:object_r:spufs_t,s0)
  files_mountpoint(spufs_t)
  
@@ -14249,7 +14255,7 @@ index 9e603f5..e0209df 100644
  type sysv_t;
  fs_noxattr_type(sysv_t)
  files_mountpoint(sysv_t)
-@@ -167,6 +181,8 @@ type vxfs_t;
+@@ -167,6 +182,8 @@ type vxfs_t;
  fs_noxattr_type(vxfs_t)
  files_mountpoint(vxfs_t)
  genfscon vxfs / gen_context(system_u:object_r:vxfs_t,s0)
@@ -14258,7 +14264,7 @@ index 9e603f5..e0209df 100644
  
  #
  # tmpfs_t is the type for tmpfs filesystems
-@@ -176,6 +192,8 @@ fs_type(tmpfs_t)
+@@ -176,6 +193,8 @@ fs_type(tmpfs_t)
  files_type(tmpfs_t)
  files_mountpoint(tmpfs_t)
  files_poly_parent(tmpfs_t)
@@ -14267,7 +14273,7 @@ index 9e603f5..e0209df 100644
  
  # Use a transition SID based on the allocating task SID and the
  # filesystem SID to label inodes in the following filesystem types,
-@@ -255,6 +273,8 @@ genfscon udf / gen_context(system_u:object_r:iso9660_t,s0)
+@@ -255,6 +274,8 @@ genfscon udf / gen_context(system_u:object_r:iso9660_t,s0)
  type removable_t;
  allow removable_t noxattrfs:filesystem associate;
  fs_noxattr_type(removable_t)
@@ -14276,7 +14282,7 @@ index 9e603f5..e0209df 100644
  files_mountpoint(removable_t)
  
  #
-@@ -274,6 +294,7 @@ genfscon ncpfs / gen_context(system_u:object_r:nfs_t,s0)
+@@ -274,6 +295,7 @@ genfscon ncpfs / gen_context(system_u:object_r:nfs_t,s0)
  genfscon reiserfs / gen_context(system_u:object_r:nfs_t,s0)
  genfscon panfs / gen_context(system_u:object_r:nfs_t,s0)
  genfscon gadgetfs / gen_context(system_u:object_r:nfs_t,s0)
@@ -35461,7 +35467,7 @@ index 346a7cc..42a48b6 100644
 +/var/run/netns(/.*)?		gen_context(system_u:object_r:ifconfig_var_run_t,s0)
 +/etc/firestarter/firestarter\.sh gen_context(system_u:object_r:dhcpc_helper_exec_t,s0)
 diff --git a/policy/modules/system/sysnetwork.if b/policy/modules/system/sysnetwork.if
-index 6944526..b82ccf1 100644
+index 6944526..0bd8d93 100644
 --- a/policy/modules/system/sysnetwork.if
 +++ b/policy/modules/system/sysnetwork.if
 @@ -38,11 +38,30 @@ interface(`sysnet_domtrans_dhcpc',`
@@ -35736,7 +35742,7 @@ index 6944526..b82ccf1 100644
  	corenet_tcp_sendrecv_generic_if($1)
  	corenet_udp_sendrecv_generic_if($1)
  	corenet_tcp_sendrecv_generic_node($1)
-@@ -766,3 +918,74 @@ interface(`sysnet_use_portmap',`
+@@ -766,3 +918,76 @@ interface(`sysnet_use_portmap',`
  
  	sysnet_read_config($1)
  ')
@@ -35804,6 +35810,8 @@ index 6944526..b82ccf1 100644
 +
 +	files_etc_filetrans($1, net_conf_t, file, "resolv.conf")
 +	files_etc_filetrans($1, net_conf_t, file, "resolv.conf.tmp")
++	files_etc_filetrans($1, net_conf_t, file, "resolv.conf.fp-tmp")
++	files_etc_filetrans($1, net_conf_t, file, "resolv.conf.fp-saved")
 +	files_etc_filetrans($1, net_conf_t, file, "denyhosts")
 +	files_etc_filetrans($1, net_conf_t, file, "hosts")
 +	files_etc_filetrans($1, net_conf_t, file, "hosts.deny")
