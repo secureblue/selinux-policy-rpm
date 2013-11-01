@@ -573,7 +573,7 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Fri Oct 1 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-96
+* Fri Nov 1 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-96
 - Add missing permission checks for nscd
 
 * Wed Oct 30 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-95
