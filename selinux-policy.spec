@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 95%{?dist}
+Release: 96%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -573,6 +573,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Oct 1 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-96
+- Add missing permission checks for nscd
+
 * Wed Oct 30 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-95
 - Fix alias decl in corenetwork.te.in
 - Add support for fuse.glusterfs
