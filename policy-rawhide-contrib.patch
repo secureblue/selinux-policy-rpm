@@ -23143,7 +23143,7 @@ index 8e5ee54..6e11edb 100644
 -
  sysnet_dns_name_resolve(drbd_t)
 diff --git a/dspam.fc b/dspam.fc
-index 5eddac5..c08c8f6 100644
+index 5eddac5..3ea0423 100644
 --- a/dspam.fc
 +++ b/dspam.fc
 @@ -5,8 +5,13 @@
@@ -23160,7 +23160,7 @@ index 5eddac5..c08c8f6 100644
 +/var/www/dspam/.*\.cgi 	--	gen_context(system_u:object_r:httpd_dspam_script_exec_t,s0)
 +/var/www/dspam(/.*?)		gen_context(system_u:object_r:httpd_dspam_content_t,s0)
 +
-+/var/lib/dspam/data(/.*)?			gen_context(system_u:object_r:httpd_dspam_content_rw_t,s0)
++/var/lib/dspam/data(/.*)?			gen_context(system_u:object_r:httpd_dspam_rw_content_t,s0)
 diff --git a/dspam.if b/dspam.if
 index 18f2452..a446210 100644
 --- a/dspam.if
@@ -25999,10 +25999,10 @@ index 0000000..1ed97fe
 +
 diff --git a/glusterd.te b/glusterd.te
 new file mode 100644
-index 0000000..d6a2e10
+index 0000000..ac74fc9
 --- /dev/null
 +++ b/glusterd.te
-@@ -0,0 +1,187 @@
+@@ -0,0 +1,188 @@
 +policy_module(glusterfs, 1.0.1)
 +
 +## <desc>
@@ -26176,6 +26176,7 @@ index 0000000..d6a2e10
 +	fs_manage_noxattr_fs_files(glusterd_t) 
 +	files_manage_non_security_dirs(glusterd_t)
 +	files_manage_non_security_files(glusterd_t)
++    files_relabel_base_file_types(glusterd_t)
 +')
 +
 +optional_policy(`
@@ -55250,7 +55251,7 @@ index d2fc677..ded726f 100644
  ')
 +
 diff --git a/pegasus.te b/pegasus.te
-index 7bcf327..c19ce47 100644
+index 7bcf327..2254bf5 100644
 --- a/pegasus.te
 +++ b/pegasus.te
 @@ -1,17 +1,16 @@
@@ -55623,7 +55624,7 @@ index 7bcf327..c19ce47 100644
  logging_send_syslog_msg(pegasus_t)
  
 -miscfiles_read_localization(pegasus_t)
-+mount_exec(pegasus_t)
++mount_domtrans(pegasus_t)
 +
 +sysnet_read_config(pegasus_t)
 +sysnet_domtrans_ifconfig(pegasus_t)
@@ -90822,7 +90823,7 @@ index e29db63..061fb98 100644
  	domain_system_change_exemption($1)
  	role_transition $2 tuned_initrc_exec_t system_r;
 diff --git a/tuned.te b/tuned.te
-index 7116181..935ec1d 100644
+index 7116181..6b315d8 100644
 --- a/tuned.te
 +++ b/tuned.te
 @@ -21,6 +21,9 @@ files_config_file(tuned_rw_etc_t)
@@ -90887,7 +90888,7 @@ index 7116181..935ec1d 100644
  dev_getattr_all_blk_files(tuned_t)
  dev_getattr_all_chr_files(tuned_t)
  dev_read_urand(tuned_t)
-+dev_read_cpuid(tuned_t)
++dev_rw_cpu_microcode(tuned_t)
  dev_rw_sysfs(tuned_t)
  dev_rw_netcontrol(tuned_t)
  
@@ -96701,23 +96702,25 @@ index 9329eae..824e86f 100644
 -	seutil_use_newrole_fds(vpnc_t)
 -')
 diff --git a/watchdog.fc b/watchdog.fc
-index eecd0e0..50248a7 100644
+index eecd0e0..8d9b2f6 100644
 --- a/watchdog.fc
 +++ b/watchdog.fc
-@@ -2,6 +2,8 @@
+@@ -2,6 +2,10 @@
  
  /usr/sbin/watchdog	--	gen_context(system_u:object_r:watchdog_exec_t,s0)
  
++/usr/libexec/watchdog/scripts(/.*)?       gen_context(system_u:object_r:watchdog_unconfined_exec_t,s0)
++
 +/var/cache/watchdog(/.*)?   gen_context(system_u:object_r:watchdog_cache_t,s0)
 +
  /var/log/watchdog.*	gen_context(system_u:object_r:watchdog_log_t,s0)
  
  /var/run/watchdog\.pid	--	gen_context(system_u:object_r:watchdog_var_run_t,s0)
 diff --git a/watchdog.te b/watchdog.te
-index 29f79e8..1d43690 100644
+index 29f79e8..45b3926 100644
 --- a/watchdog.te
 +++ b/watchdog.te
-@@ -12,6 +12,9 @@ init_daemon_domain(watchdog_t, watchdog_exec_t)
+@@ -12,12 +12,18 @@ init_daemon_domain(watchdog_t, watchdog_exec_t)
  type watchdog_initrc_exec_t;
  init_script_file(watchdog_initrc_exec_t)
  
@@ -96727,21 +96730,31 @@ index 29f79e8..1d43690 100644
  type watchdog_log_t;
  logging_log_file(watchdog_log_t)
  
-@@ -29,8 +32,12 @@ allow watchdog_t self:process { setsched signal_perms };
+ type watchdog_var_run_t;
+ files_pid_file(watchdog_var_run_t)
+ 
++type watchdog_unconfined_exec_t;
++application_executable_file(watchdog_unconfined_exec_t)
++
+ ########################################
+ #
+ # Local policy
+@@ -29,8 +35,12 @@ allow watchdog_t self:process { setsched signal_perms };
  allow watchdog_t self:fifo_file rw_fifo_file_perms;
  allow watchdog_t self:tcp_socket { accept listen };
  
+-allow watchdog_t watchdog_log_t:file { append_file_perms create_file_perms setattr_file_perms };
+-logging_log_filetrans(watchdog_t, watchdog_log_t, file)
 +manage_files_pattern(watchdog_t, watchdog_cache_t, watchdog_cache_t)
 +manage_dirs_pattern(watchdog_t, watchdog_cache_t, watchdog_cache_t)
 +
- allow watchdog_t watchdog_log_t:file { append_file_perms create_file_perms setattr_file_perms };
--logging_log_filetrans(watchdog_t, watchdog_log_t, file)
++manage_files_pattern(watchdog_t,watchdog_log_t,watchdog_log_t)
 +manage_dirs_pattern(watchdog_t,watchdog_log_t,watchdog_log_t)
 +logging_log_filetrans(watchdog_t, watchdog_log_t,{dir file})
  
  manage_files_pattern(watchdog_t, watchdog_var_run_t, watchdog_var_run_t)
  files_pid_filetrans(watchdog_t, watchdog_var_run_t, file)
-@@ -63,7 +70,6 @@ domain_signull_all_domains(watchdog_t)
+@@ -63,7 +73,6 @@ domain_signull_all_domains(watchdog_t)
  domain_signal_all_domains(watchdog_t)
  domain_kill_all_domains(watchdog_t)
  
@@ -96749,7 +96762,7 @@ index 29f79e8..1d43690 100644
  files_manage_etc_runtime_files(watchdog_t)
  files_etc_filetrans_etc_runtime(watchdog_t, file)
  
-@@ -75,8 +81,6 @@ auth_append_login_records(watchdog_t)
+@@ -75,8 +84,6 @@ auth_append_login_records(watchdog_t)
  
  logging_send_syslog_msg(watchdog_t)
  
@@ -96758,6 +96771,35 @@ index 29f79e8..1d43690 100644
  sysnet_dns_name_resolve(watchdog_t)
  
  userdom_dontaudit_use_unpriv_user_fds(watchdog_t)
+@@ -97,3 +104,28 @@ optional_policy(`
+ optional_policy(`
+ 	udev_read_db(watchdog_t)
+ ')
++
++########################################
++#
++# watchdog_unconfined_script_t local policy
++#
++
++optional_policy(`
++	type watchdog_unconfined_t;
++	domain_type(watchdog_unconfined_t)
++
++	domain_entry_file(watchdog_unconfined_t, watchdog_unconfined_exec_t)
++	role system_r types watchdog_unconfined_t;
++
++	domtrans_pattern(watchdog_t, watchdog_unconfined_exec_t, watchdog_unconfined_t)
++
++	allow watchdog_t watchdog_unconfined_exec_t:dir search_dir_perms;
++	allow watchdog_t watchdog_unconfined_exec_t:dir read_file_perms;
++	allow watchdog_t watchdog_unconfined_exec_t:file ioctl;
++
++	init_domtrans_script(watchdog_unconfined_t)
++
++	optional_policy(`
++		unconfined_domain(watchdog_unconfined_t)
++	')
++')
 diff --git a/wdmd.fc b/wdmd.fc
 index 66f11f7..e051997 100644
 --- a/wdmd.fc

@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 97%{?dist}
+Release: 98%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -573,6 +573,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Nov 6 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-98
+- Add files_relabel_base_file_types() interface
+- Allow netlabel-config to read passwd
+- update gluster_export_all_rw boolean to allow relabel all base file types caused by lsetxattr()
+- Allow x86_energy_perf  tool to modify the MSR
+- Fix /var/lib/dspam/data labeling
+- Allow pegasus to domtrans to mount_t
+- Add labeling for unconfined scripts in /usr/libexec/watchdog/scripts
+- Add support for unconfined watchdog scripts
+- Allow watchdog to manage own log files
+
 * Wed Nov 6 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-97
 - Add label only for redhat.repo instead of /etc/yum.repos.d. But probably we will need to switch for the directory.
 - Label /etc/yum.repos.d as system_conf_t
