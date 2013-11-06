@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 96%{?dist}
+Release: 97%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -573,6 +573,44 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Nov 6 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-97
+- Add label only for redhat.repo instead of /etc/yum.repos.d. But probably we will need to switch for the directory.
+- Label /etc/yum.repos.d as system_conf_t
+- Use sysnet_filetrans_named_content in udev.te instead of generic transition for net_conf_t
+- Allow dac_override for sysadm_screen_t
+- Allow init_t to read ipsec_conf_t as we had it for initrc_t. Needed by ipsec unit file.
+- Allow netlabel-config to read meminfo
+- Add interface to allow docker to mounton file_t
+- Add new interface to exec unlabeled files
+- Allow lvm to use docker semaphores
+- Setup transitons for .xsessions-errors.old
+- Change labels of files in /var/lib/*/.ssh to transition properly
+- Allow staff_t and user_t to look at logs using journalctl
+- pluto wants to manage own log file
+- Allow pluto running as ipsec_t to create pluto.log
+- Fix alias decl in corenetwork.te.in
+- Add support for fuse.glusterfs
+- Allow dmidecode to read/write /run/lock/subsys/rhsmcertd
+- Allow rhsmcertd to manage redhat.repo which is now labeled as system.conf. Allow rhsmcertd to manage all log files.
+- Additional access for docker
+- Added more rules to sblim policy
+- Fix kdumpgui_run_bootloader boolean
+- Allow dspam to connect to lmtp port
+- Included sfcbd service into sblim policy
+- rhsmcertd wants to manaage /etc/pki/consumer dir
+- Add kdumpgui_run_bootloader boolean
+- Add support for /var/cache/watchdog
+- Remove virt_domain attribute for virt_qemu_ga_unconfined_t
+- Fixes for handling libvirt containes
+- Dontaudit attempts by mysql_safe to write content into /
+- Dontaudit attempts by system_mail to modify network config
+- Allow dspam to bind to lmtp ports
+- Add new policy to allow staff_t and user_t to look at logs using journalctl
+- Allow apache cgi scripts to list sysfs
+- Dontaudit attempts to write/delete user_tmp_t files
+- Allow all antivirus domains to manage also own log dirs
+- Allow pegasus_openlmi_services_t to stream connect to sssd_t
+
 * Fri Nov 1 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-96
 - Add missing permission checks for nscd
 
