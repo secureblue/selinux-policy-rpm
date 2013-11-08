@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 98%{?dist}
+Release: 99%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -573,6 +573,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Nov 8 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-99
+- Add support for yubikey in homedir
+- Add support for upd/3052 port
+- Allow apcupsd to use PowerChute Network Shutdown
+- Allow lsmd to execute various lsmplugins
+- Add labeling also for /etc/watchdog\.d where are watchdog scripts located too
+- Update gluster_export_all_rw boolean to allow relabel all base file types
+- Allow x86_energy_perf  tool to modify the MSR
+- Fix /var/lib/dspam/data labeling
+
 * Wed Nov 6 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-98
 - Add files_relabel_base_file_types() interface
 - Allow netlabel-config to read passwd
