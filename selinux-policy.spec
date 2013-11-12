@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.12.1
-Release: 99%{?dist}
+Release: 100%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -573,6 +573,22 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Nov 12 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-100
+- Fix passenger_stream_connect interface
+- setroubleshoot_fixit wants to read network state
+- Allow procmail_t to connect to dovecot stream sockets
+- Allow cimprovagt service providers to read network states
+- Add labeling for /var/run/mariadb
+- pwauth uses lastlog() to update system's lastlog
+- Allow account provider to read login records
+- Add support for texlive2013
+- More fixes for user config files to make crond_t running in userdomain
+- Add back disable/reload/enable permissions for system class
+- Fix manage_service_perms macro
+- Allow passwd_t to connect to gnome keyring to change password
+- Update mls config files to have cronjobs in the user domains
+- Remove access checks that systemd does not actually do
+
 * Fri Nov 8 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-99
 - Add support for yubikey in homedir
 - Add support for upd/3052 port
