@@ -573,6 +573,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Nov 13 2013 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-1
+- Update to upstream
+
 * Tue Nov 12 2013 Miroslav Grepl <mgrepl@redhat.com> 3.12.1-100
 - Fix passenger_stream_connect interface
 - setroubleshoot_fixit wants to read network state
