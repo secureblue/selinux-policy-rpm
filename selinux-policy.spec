@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -573,6 +573,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Nov 14 2013 Dan Walsh<dwalsh@redhat.com> 3.13.1-2
+- Fix config.tgz to include lxc_contexts and systemd_contexts
+
 * Wed Nov 13 2013 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-1
 - Update to upstream
 
