@@ -19,12 +19,13 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-rawhide-base.patch
 patch1: policy-rawhide-contrib.patch
+patch2: policy-rawhide-contrib-apache-content.patch
 Source1: modules-targeted-base.conf 
 Source31: modules-targeted-contrib.conf
 Source2: booleans-targeted.conf
@@ -315,6 +316,7 @@ Based off of reference policy: Checked out revision  2.20091117
 %prep 
 %setup -n serefpolicy-contrib-%{version} -q -b 29
 %patch1 -p1
+%patch2 -p1
 contrib_path=`pwd`
 %setup -n serefpolicy-%{version} -q
 %patch -p1
@@ -573,6 +575,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Nov 14 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-3
+- Add policy-rawhide-contrib-apache-content.patch to re-write apache_content_template() by dwalsh
+
 * Thu Nov 14 2013 Dan Walsh<dwalsh@redhat.com> 3.13.1-2
 - Fix config.tgz to include lxc_contexts and systemd_contexts
 
