@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -575,6 +575,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Nov 18 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-4
+- Fix gnome_role_template() interface
+
 * Thu Nov 14 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-3
 - Add policy-rawhide-contrib-apache-content.patch to re-write apache_content_template() by dwalsh
 
