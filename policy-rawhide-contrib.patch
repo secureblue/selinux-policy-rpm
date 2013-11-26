@@ -22695,7 +22695,7 @@ index d5badb7..b093baa 100644
 +	admin_pattern($1, dovecot_passwd_t)
  ')
 diff --git a/dovecot.te b/dovecot.te
-index 0aabc7e..ec5bd5d 100644
+index 0aabc7e..71459e8 100644
 --- a/dovecot.te
 +++ b/dovecot.te
 @@ -7,12 +7,10 @@ policy_module(dovecot, 1.16.1)
@@ -23021,7 +23021,7 @@ index 0aabc7e..ec5bd5d 100644
  	mysql_stream_connect(dovecot_auth_t)
  	mysql_read_config(dovecot_auth_t)
  	mysql_tcp_connect(dovecot_auth_t)
-@@ -277,53 +290,78 @@ optional_policy(`
+@@ -277,53 +290,79 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -23085,6 +23085,7 @@ index 0aabc7e..ec5bd5d 100644
 -logging_search_logs(dovecot_deliver_t)
 +files_search_tmp(dovecot_deliver_t)
 +files_dontaudit_getattr_all_dirs(dovecot_deliver_t)
++files_search_all_mountpoints(dovecot_deliver_t)
  
 -tunable_policy(`use_nfs_home_dirs',`
 -	fs_manage_nfs_dirs(dovecot_deliver_t)
@@ -23119,7 +23120,7 @@ index 0aabc7e..ec5bd5d 100644
  	mta_read_queue(dovecot_deliver_t)
  ')
  
-@@ -332,5 +370,6 @@ optional_policy(`
+@@ -332,5 +371,6 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -25821,7 +25822,7 @@ index 1e29af1..6c64f55 100644
 +		userdom_user_home_dir_filetrans($1, git_user_content_t, dir, "public_git")
 +')
 diff --git a/git.te b/git.te
-index dc49c71..2609364 100644
+index dc49c71..654dbc5 100644
 --- a/git.te
 +++ b/git.te
 @@ -49,14 +49,6 @@ gen_tunable(git_session_users, false)
@@ -25882,7 +25883,17 @@ index dc49c71..2609364 100644
  corenet_all_recvfrom_unlabeled(git_system_t)
  corenet_all_recvfrom_netlabel(git_system_t)
  corenet_tcp_sendrecv_generic_if(git_system_t)
-@@ -266,12 +261,9 @@ tunable_policy(`git_cgi_use_nfs',`
+@@ -176,6 +171,9 @@ logging_send_syslog_msg(git_system_t)
+ 
+ tunable_policy(`git_system_enable_homedirs',`
+ 	userdom_search_user_home_dirs(git_system_t)
++	list_dirs_pattern(httpd_git_script_t, git_user_content_t, git_user_content_t)
++	read_files_pattern(git_system_t, git_user_content_t, git_user_content_t)
++
+ ')
+ 
+ tunable_policy(`git_system_enable_homedirs && use_nfs_home_dirs',`
+@@ -266,12 +264,9 @@ tunable_policy(`git_cgi_use_nfs',`
  
  allow git_daemon self:fifo_file rw_fifo_file_perms;
  
@@ -37169,12 +37180,14 @@ index 39d3164..4b1b70c 100644
 +	mozilla_plugin_dontaudit_rw_tmp_files(lpr_t)
  ')
 diff --git a/lsm.fc b/lsm.fc
-index c455730..4b40274 100644
+index c455730..6e14667 100644
 --- a/lsm.fc
 +++ b/lsm.fc
-@@ -1,3 +1,5 @@
+@@ -1,3 +1,7 @@
  /usr/bin/lsmd	--	gen_context(system_u:object_r:lsmd_exec_t,s0)
  
++/usr/bin/.*_lsmplugin    --  gen_context(system_u:object_r:lsmd_plugin_exec_t,s0)
++
 +/usr/lib/systemd/system/libstoragemgmt.*		--	gen_context(system_u:object_r:lsmd_unit_file_t,s0)
 +
  /var/run/lsm(/.*)?	gen_context(system_u:object_r:lsmd_var_run_t,s0)
@@ -37289,26 +37302,55 @@ index d314333..da30c5d 100644
 +	')
  ')
 diff --git a/lsm.te b/lsm.te
-index 4ec0eea..bc7d239 100644
+index 4ec0eea..dc93265 100644
 --- a/lsm.te
 +++ b/lsm.te
-@@ -12,6 +12,9 @@ init_daemon_domain(lsmd_t, lsmd_exec_t)
+@@ -12,6 +12,17 @@ init_daemon_domain(lsmd_t, lsmd_exec_t)
  type lsmd_var_run_t;
  files_pid_file(lsmd_var_run_t)
  
 +type lsmd_unit_file_t;
 +systemd_unit_file(lsmd_unit_file_t)
 +
++type lsmd_plugin_t;
++type lsmd_plugin_exec_t;
++application_domain(lsmd_plugin_t, lsmd_plugin_exec_t)
++role system_r types lsmd_plugin_t;
++
++type lsmd_plugin_tmp_t;
++files_tmp_file(lsmd_plugin_tmp_t)
++
  ########################################
  #
  # Local policy
-@@ -26,4 +29,6 @@ manage_lnk_files_pattern(lsmd_t, lsmd_var_run_t, lsmd_var_run_t)
+@@ -26,4 +37,27 @@ manage_lnk_files_pattern(lsmd_t, lsmd_var_run_t, lsmd_var_run_t)
  manage_sock_files_pattern(lsmd_t, lsmd_var_run_t, lsmd_var_run_t)
  files_pid_filetrans(lsmd_t, lsmd_var_run_t, { dir file sock_file })
  
 +corecmd_exec_bin(lsmd_t)
 +
  logging_send_syslog_msg(lsmd_t)
++
++########################################
++#
++# Local lsmd plugin policy
++#
++
++domtrans_pattern(lsmd_t, lsmd_plugin_exec_t, lsmd_plugin_t)
++
++allow lsmd_t lsmd_plugin_exec_t:file read_file_perms;
++
++manage_files_pattern(lsmd_plugin_t, lsmd_plugin_tmp_t, lsmd_plugin_tmp_t)
++manage_dirs_pattern(lsmd_plugin_t, lsmd_plugin_tmp_t, lsmd_plugin_tmp_t)
++files_tmp_filetrans(lsmd_plugin_t, lsmd_plugin_tmp_t, { file dir })
++
++kernel_read_system_state(lsmd_plugin_t)
++
++dev_read_urand(lsmd_plugin_t)
++
++corecmd_exec_bin(lsmd_plugin_t)
++
++sysnet_read_config(lsmd_plugin_t)
 diff --git a/mailman.fc b/mailman.fc
 index 995d0a5..3d40d59 100644
 --- a/mailman.fc
@@ -52958,10 +53000,10 @@ index 0000000..cf03270
 +')
 diff --git a/openshift.te b/openshift.te
 new file mode 100644
-index 0000000..0a6f091
+index 0000000..3c4beaf
 --- /dev/null
 +++ b/openshift.te
-@@ -0,0 +1,556 @@
+@@ -0,0 +1,558 @@
 +policy_module(openshift,1.0.0)
 +
 +gen_require(`
@@ -53104,6 +53146,8 @@ index 0000000..0a6f091
 +allow openshift_domain self:shm create_shm_perms;
 +allow openshift_domain self:sem create_sem_perms;
 +dontaudit openshift_domain self:dir write;
++dontaudit openshift_domain self:rawip_socket create_socket_perms;
++
 +dontaudit openshift_t self:unix_stream_socket recvfrom;
 +dontaudit openshift_domain self:netlink_tcpdiag_socket create;
 +dontaudit openshift_domain self:netlink_route_socket nlmsg_write;
@@ -55322,10 +55366,10 @@ index 1fb1964..f92c71a 100644
 +	virt_rw_svirt_dev(pcscd_t)
 +')
 diff --git a/pegasus.fc b/pegasus.fc
-index dfd46e4..31122bd 100644
+index dfd46e4..87bda41 100644
 --- a/pegasus.fc
 +++ b/pegasus.fc
-@@ -1,15 +1,26 @@
+@@ -1,15 +1,25 @@
 -/etc/Pegasus(/.*)?	gen_context(system_u:object_r:pegasus_conf_t,s0)
 +
 +/etc/Pegasus(/.*)?			gen_context(system_u:object_r:pegasus_conf_t,s0)
@@ -55349,13 +55393,12 @@ index dfd46e4..31122bd 100644
 +/var/lib/openlmi-storage(/.*)?       gen_context(system_u:object_r:pegasus_openlmi_storage_lib_t,s0)
  
 -/usr/share/Pegasus/mof(/.*)?/.*\.mof	gen_context(system_u:object_r:pegasus_mof_t,s0)
-+#openlmi agents
 +/usr/libexec/pegasus/cmpiLMI_Account-cimprovagt --  gen_context(system_u:object_r:pegasus_openlmi_account_exec_t,s0)
 +/usr/libexec/pegasus/cmpiLMI_Fan-cimprovagt     --  gen_context(system_u:object_r:pegasus_openlmi_system_exec_t,s0)
 +/usr/libexec/pegasus/cmpiLMI_LogicalFile-cimprovagt --  gen_context(system_u:object_r:pegasus_openlmi_logicalfile_exec_t,s0)
 +/usr/libexec/pegasus/cmpiLMI_Networking-cimprovagt --  gen_context(system_u:object_r:pegasus_openlmi_system_exec_t,s0)
 +/usr/libexec/pegasus/cmpiLMI_PowerManagement-cimprovagt --  gen_context(system_u:object_r:pegasus_openlmi_system_exec_t,s0)
-+/usr/libexec/pegasus/cmpiLMI_Realmd-cimprovagt      --  gen_context(system_u:object_r:pegasus_openlmi_services_exec_t,s0)
++/usr/libexec/pegasus/cmpiLMI_Realmd-cimprovagt      --  gen_context(system_u:object_r:pegasus_openlmi_admin_exec_t,s0)
 +/usr/libexec/pegasus/cmpiLMI_Service-cimprovagt     --  gen_context(system_u:object_r:pegasus_openlmi_admin_exec_t,s0)
 +
 +
@@ -55461,7 +55504,7 @@ index d2fc677..ded726f 100644
  ')
 +
 diff --git a/pegasus.te b/pegasus.te
-index 608f454..dfb2fb4 100644
+index 608f454..357597f 100644
 --- a/pegasus.te
 +++ b/pegasus.te
 @@ -5,13 +5,12 @@ policy_module(pegasus, 1.9.0)
@@ -55480,7 +55523,7 @@ index 608f454..dfb2fb4 100644
  type pegasus_cache_t;
  files_type(pegasus_cache_t)
  
-@@ -30,20 +29,269 @@ files_type(pegasus_mof_t)
+@@ -30,20 +29,277 @@ files_type(pegasus_mof_t)
  type pegasus_var_run_t;
  files_pid_file(pegasus_var_run_t)
  
@@ -55661,6 +55704,14 @@ index 608f454..dfb2fb4 100644
 +
 +optional_policy(`
 +    dbus_system_bus_client(pegasus_openlmi_admin_t)
++    
++    optional_policy(`
++        init_dbus_chat(pegasus_openlmi_admin_t)
++    ')
++')
++
++optional_policy(`
++    sssd_search_lib(pegasus_openlmi_admin_t)
 +')
 +
 +######################################
@@ -55755,7 +55806,7 @@ index 608f454..dfb2fb4 100644
  allow pegasus_t pegasus_conf_t:lnk_file read_lnk_file_perms;
  
  manage_dirs_pattern(pegasus_t, pegasus_cache_t, pegasus_cache_t)
-@@ -54,22 +302,22 @@ files_var_filetrans(pegasus_t, pegasus_cache_t, { dir file lnk_file })
+@@ -54,22 +310,22 @@ files_var_filetrans(pegasus_t, pegasus_cache_t, { dir file lnk_file })
  manage_dirs_pattern(pegasus_t, pegasus_data_t, pegasus_data_t)
  manage_files_pattern(pegasus_t, pegasus_data_t, pegasus_data_t)
  manage_lnk_files_pattern(pegasus_t, pegasus_data_t, pegasus_data_t)
@@ -55786,7 +55837,7 @@ index 608f454..dfb2fb4 100644
  
  kernel_read_network_state(pegasus_t)
  kernel_read_kernel_sysctls(pegasus_t)
-@@ -80,27 +328,21 @@ kernel_read_net_sysctls(pegasus_t)
+@@ -80,27 +336,21 @@ kernel_read_net_sysctls(pegasus_t)
  kernel_read_xen_state(pegasus_t)
  kernel_write_xen_state(pegasus_t)
  
@@ -55819,7 +55870,7 @@ index 608f454..dfb2fb4 100644
  
  corecmd_exec_bin(pegasus_t)
  corecmd_exec_shell(pegasus_t)
-@@ -114,9 +356,11 @@ files_getattr_all_dirs(pegasus_t)
+@@ -114,9 +364,11 @@ files_getattr_all_dirs(pegasus_t)
  
  auth_use_nsswitch(pegasus_t)
  auth_domtrans_chk_passwd(pegasus_t)
@@ -55831,7 +55882,7 @@ index 608f454..dfb2fb4 100644
  
  files_list_var_lib(pegasus_t)
  files_read_var_lib_files(pegasus_t)
-@@ -128,18 +372,29 @@ init_stream_connect_script(pegasus_t)
+@@ -128,18 +380,29 @@ init_stream_connect_script(pegasus_t)
  logging_send_audit_msgs(pegasus_t)
  logging_send_syslog_msg(pegasus_t)
  
@@ -55867,7 +55918,7 @@ index 608f454..dfb2fb4 100644
  ')
  
  optional_policy(`
-@@ -151,16 +406,24 @@ optional_policy(`
+@@ -151,16 +414,24 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -55896,7 +55947,7 @@ index 608f454..dfb2fb4 100644
  ')
  
  optional_policy(`
-@@ -168,7 +431,7 @@ optional_policy(`
+@@ -168,7 +439,7 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -68584,20 +68635,22 @@ index 6d162e4..889c0ed 100644
  userdom_dontaudit_search_user_home_dirs(radvd_t)
  
 diff --git a/raid.fc b/raid.fc
-index 5806046..5578653 100644
+index 5806046..d83ec27 100644
 --- a/raid.fc
 +++ b/raid.fc
-@@ -3,6 +3,9 @@
+@@ -3,6 +3,11 @@
  
  /etc/rc\.d/init\.d/mdmonitor	--	gen_context(system_u:object_r:mdadm_initrc_exec_t,s0)
  
++/etc/mdadm\.conf    --  gen_context(system_u:object_r:mdadm_conf_t,s0)
++
 +/usr/lib/systemd/system/mdmon@.* --  gen_context(system_u:object_r:mdadm_unit_file_t,s0)
 +/usr/lib/systemd/system/mdmonitor.* --  gen_context(system_u:object_r:mdadm_unit_file_t,s0)
 +
  /sbin/iprdump	--	gen_context(system_u:object_r:mdadm_exec_t,s0)
  /sbin/iprinit	--	gen_context(system_u:object_r:mdadm_exec_t,s0)
  /sbin/iprupdate	--	gen_context(system_u:object_r:mdadm_exec_t,s0)
-@@ -16,6 +19,7 @@
+@@ -16,6 +21,7 @@
  /usr/sbin/iprupdate	--	gen_context(system_u:object_r:mdadm_exec_t,s0)
  /usr/sbin/mdadm	--	gen_context(system_u:object_r:mdadm_exec_t,s0)
  /usr/sbin/mdmpd	--	gen_context(system_u:object_r:mdadm_exec_t,s0)
@@ -80894,7 +80947,7 @@ index 98c9e0a..df51942 100644
  	files_search_pids($1)
  	admin_pattern($1, sblim_var_run_t)
 diff --git a/sblim.te b/sblim.te
-index 299756b..947d6b9 100644
+index 299756b..1c63069 100644
 --- a/sblim.te
 +++ b/sblim.te
 @@ -7,13 +7,11 @@ policy_module(sblim, 1.1.0)
@@ -80931,7 +80984,7 @@ index 299756b..947d6b9 100644
  ######################################
  #
  # Common sblim domain local policy
-@@ -32,11 +39,18 @@ manage_dirs_pattern(sblim_domain, sblim_var_run_t, sblim_var_run_t)
+@@ -32,31 +39,36 @@ manage_dirs_pattern(sblim_domain, sblim_var_run_t, sblim_var_run_t)
  manage_files_pattern(sblim_domain, sblim_var_run_t, sblim_var_run_t)
  manage_sock_files_pattern(sblim_domain, sblim_var_run_t, sblim_var_run_t)
  
@@ -80953,9 +81006,11 @@ index 299756b..947d6b9 100644
  corenet_tcp_sendrecv_generic_if(sblim_domain)
  corenet_tcp_sendrecv_generic_node(sblim_domain)
  
-@@ -44,19 +58,15 @@ corenet_tcp_sendrecv_repository_port(sblim_domain)
+ corenet_tcp_sendrecv_repository_port(sblim_domain)
  
  dev_read_sysfs(sblim_domain)
++dev_read_rand(sblim_domain)
++dev_read_urand(sblim_domain)
  
 -logging_send_syslog_msg(sblim_domain)
 -
@@ -80976,7 +81031,7 @@ index 299756b..947d6b9 100644
  allow sblim_gatherd_t self:fifo_file rw_fifo_file_perms;
  allow sblim_gatherd_t self:unix_stream_socket { accept listen };
  
-@@ -84,6 +94,8 @@ storage_raw_read_removable_device(sblim_gatherd_t)
+@@ -84,6 +96,8 @@ storage_raw_read_removable_device(sblim_gatherd_t)
  
  init_read_utmp(sblim_gatherd_t)
  
@@ -80985,7 +81040,7 @@ index 299756b..947d6b9 100644
  sysnet_dns_name_resolve(sblim_gatherd_t)
  
  term_getattr_pty_fs(sblim_gatherd_t)
-@@ -103,8 +115,9 @@ optional_policy(`
+@@ -103,8 +117,9 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -80996,7 +81051,7 @@ index 299756b..947d6b9 100644
  ')
  
  optional_policy(`
-@@ -117,6 +130,32 @@ optional_policy(`
+@@ -117,6 +132,32 @@ optional_policy(`
  # Reposd local policy
  #
  

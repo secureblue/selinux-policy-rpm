@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -575,6 +575,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Nov 26 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-7
+- Add lsmd_plugin_t for lsm plugins
+- Allow dovecot-deliver to search mountpoints
+- Add labeling for /etc/mdadm.conf
+- Allow opelmi admin providers to dbus chat with init_t
+- Allow sblim domain to read /dev/urandom and /dev/random
+- Add back exec_content boolean for secadm, logadm, auditadm
+- Allow sulogin to getattr on /proc/kcore
+
 * Tue Nov 26 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-6
 - Add filename transition also for servicelog.db-journal
 - Add files_dontaudit_access_check_root()
