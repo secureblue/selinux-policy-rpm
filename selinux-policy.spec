@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -575,6 +575,65 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Nov 26 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-6
+- Add filename transition also for servicelog.db-journal
+- Add files_dontaudit_access_check_root()
+- Add lvm_dontaudit_access_check_lock() interface
+- Allow mount to manage mount_var_run_t files/dirs
+- Allow updapwd_t to ignore mls levels for writign shadow_t at a lower level
+- Make sure boot.log is created with the correct label
+- call logging_relabel_all_log_dirs() in systemd.te
+- Allow systemd_tmpfiles to relabel log directories
+- Allow staff_t to run frequency command
+- Allow staff_t to read xserver_log file
+- This reverts commit c0f9f125291f189271cbbca033f87131dab1e22f.
+- Label hsperfdata_root as tmp_t
+- Add plymouthd_create_log()
+- Dontaudit leaks from openshift domains into mail domains, needs back port to RHEL6
+- Allow sssd to request the kernel loads modules
+- Allow gpg_agent to use ssh-add
+- Allow gpg_agent to use ssh-add
+- Dontaudit access check on /root for myslqd_safe_t
+- Add glusterd_brick_t files type
+- Allow ctdb to getattr on al filesystems
+- Allow abrt to stream connect to syslog
+- Allow dnsmasq to list dnsmasq.d directory
+- Watchdog opens the raw socket
+- Allow watchdog to read network state info
+- Dontaudit access check on lvm lock dir
+- Allow sosreport to send signull to setroubleshootd
+- Add setroubleshoot_signull() interface
+- Fix ldap_read_certs() interface
+- Allow sosreport all signal perms
+- Allow sosreport to run systemctl
+- Allow sosreport to dbus chat with rpm
+- Allow zabbix_agentd to read all domain state
+- Allow sblim_sfcbd_t to read from /dev/random and /dev/urandom
+- Allow smoltclient to execute ldconfig
+- Allow sosreport to request the kernel to load a module
+- Clean up rtas.if
+- Clean up docker.if
+- drop /var/lib/glpi/files labeling in cron.fc
+- Added new policy for rasdaemon
+- Add apache labeling for glpi
+- Allow pegasus to transition to dmidecode
+- Make sure boot.log is created with the correct label
+- Fix typo in openshift.te
+- remove dup bumblebee_systemctl()
+- Allow watchdog to read /etc/passwd
+- Allow condor domains to read/write condor_master udp_socket
+- Allow openshift_cron_t to append to openshift log files, label /var/log/openshift
+- Add back file_pid_filetrans for /var/run/dlm_controld
+- Allow smbd_t to use inherited tmpfs content
+- Allow mcelog to use the /dev/cpu device
+- sosreport runs rpcinfo
+- sosreport runs subscription-manager
+- Allow setpgid for sosreport
+- Allow browser plugins to connect to bumblebee
+- New policy for bumblebee and freqset
+- Add new policy for mip6d daemon
+- Add new policy for opensm daemon
+
 * Mon Nov 18 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-5
 - Add back /dev/shm labeling
 
