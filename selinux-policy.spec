@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -575,6 +575,25 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Dec 3 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-8
+- Add back fixes for gnome_role_template()
+- Label /usr/sbin/htcacheclean as httpd_exec_t
+- Add missing alias for pegasus_openlmi_service_exec_t
+- Added support for rdisc unit file
+- Added new policy for ninfod
+- Added new policy for openwsman
+- Add antivirus_db_t labeling for /var/lib/clamav-unofficial-sigs
+- Allow runuser running as logrotate connections to system DBUS
+- Add connectto perm for NM unix stream socket
+- Allow watchdog to be executed from cron
+- Allow cloud_init to transition to rpm_script_t
+- Allow lsmd_plugin_t send system log messages
+- Label /var/log/up2date as rpm_log_t and allow sosreport to manage rpm log/pid/cache files which is a part of ABRT policy for sosreport running as abrt_t
+- Added new capabilities for mip6d policy
+- Label bcache devices as fixed_disk_device_t
+- Allow systemctl running in ipsec_mgmt_t to access /usr/lib/systemd/system/ipsec.service
+- label /usr/lib/systemd/system/ipsec.service as ipsec_mgmt_unit_file_t
+
 * Tue Nov 26 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-7
 - Add lsmd_plugin_t for lsm plugins
 - Allow dovecot-deliver to search mountpoints
