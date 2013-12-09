@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -575,6 +575,48 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Dec 9 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-9
+- DRM master and input event devices are used by  the TakeDevice API
+- Clean up bumblebee policy
+- Update pegasus_openlmi_storage_t policy
+- opensm policy clean up
+- openwsman policy clean up
+- ninfod policy clean up
+- Allow conman to connect to freeipmi services and clean up conman policy
+- Allow conmand just bind on 7890 port
+- Add freeipmi_stream_connect() interface
+- Allow logwatch read madm.conf to support RAID setup
+- Add raid_read_conf_files() interface
+- Allow up2date running as rpm_t create up2date log file with rpm_log_t labeling
+- add rpm_named_filetrans_log_files() interface
+- Added policy for conmand
+- Allow dkim-milter to create files/dirs in /tmp
+- update freeipmi policy
+- Add policy for freeipmi services
+- Added rdisc_admin and rdisc_systemctl interfaces
+- Fix aliases in pegasus.te
+- Allow chrome sandbox to read generic cache files in homedir
+- Dontaudit mandb searching all mountpoints
+- Make sure wine domains create .wine with the correct label
+- Add proper aliases for pegasus_openlmi_services_exec_t and pegasus_openlmi_services_t
+- Allow windbind the kill capability
+- DRM master and input event devices are used by  the TakeDevice API
+- add dev_rw_inherited_dri() and dev_rw_inherited_input_dev()
+- Added support for default conman port
+- Add interfaces for ipmi devices
+- Make sure wine domains create .wine with the correct label
+- Allow manage dirs in kernel_manage_debugfs interface.
+- Allow systemctl running in ipsec_mgmt_t to access /usr/lib/systemd/system/ipsec.service
+- Label /usr/lib/systemd/system/ipsec.service as ipsec_mgmt_unit_file_t
+- Fix userdom_confined_admin_template()
+- Add back exec_content boolean for secadm, logadm, auditadm
+- Fix files_filetrans_system_db_named_files() interface
+- Allow sulogin to getattr on /proc/kcore
+- Add filename transition also for servicelog.db-journal
+- Add files_dontaudit_access_check_root()
+- Add lvm_dontaudit_access_check_lock() interface
+- Allow mount to manage mount_var_run_t files/dirs
+
 * Tue Dec 3 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-8
 - Add back fixes for gnome_role_template()
 - Label /usr/sbin/htcacheclean as httpd_exec_t
