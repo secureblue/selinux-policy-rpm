@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -252,7 +252,8 @@ ln -sf /etc/selinux/%1/policy/policy.%{POLICYVER}  %{buildroot}%{_sysconfdir}/se
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/guest_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/xguest_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/user_u \
-%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u 
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u \ 
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/sysadm_u 
 
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
@@ -575,6 +576,27 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Dec 13 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-10
+- Allow freeipmi_ipmidetectd_t to use freeipmi port
+- Update freeipmi_domain_template()
+- Allow journalctl running as ABRT to read /run/log/journal
+- Allow NM to read dispatcher.d directory
+- Update freeipmi policy
+- Type transitions with a filename not allowed inside conditionals
+- Allow tor to bind to hplip port
+- Make new type to texlive files in homedir
+- Allow zabbix_agent to transition to dmidecode
+- Add rules for docker
+- Allow sosreport to send signull to unconfined_t
+- Add virt_noatsecure and virt_rlimitinh interfaces
+- Fix labeling in thumb.fc to add support for /usr/lib64/tumbler-1/tumblerddd support for freeipmi port
+- Add sysadm_u_default_contexts
+- Add logging_read_syslog_pid()
+- Fix userdom_manage_home_texlive() interface
+- Make new type to texlive files in homedir
+- Add filename transitions for /run and /lock links
+- Allow virtd to inherit rlimit information
+
 * Mon Dec 9 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-9
 - DRM master and input event devices are used by  the TakeDevice API
 - Clean up bumblebee policy
