@@ -252,8 +252,7 @@ ln -sf /etc/selinux/%1/policy/policy.%{POLICYVER}  %{buildroot}%{_sysconfdir}/se
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/guest_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/xguest_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/user_u \
-%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u \ 
-%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/sysadm_u 
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u 
 
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
@@ -483,6 +482,7 @@ exit 0
 %files targeted
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/unconfined_u
+%config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/sysadm_u 
 %fileList targeted
 %{_usr}/share/selinux/targeted/modules-base.lst
 %{_usr}/share/selinux/targeted/modules-contrib.lst
