@@ -540,6 +540,8 @@ exit 0
 %files minimum
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
+%config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/sysadm_u 
+%fileList targeted
 %fileList minimum
 %{_usr}/share/selinux/minimum/modules-base.lst
 %{_usr}/share/selinux/minimum/modules-contrib.lst
