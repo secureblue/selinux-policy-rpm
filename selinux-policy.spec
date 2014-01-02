@@ -518,7 +518,7 @@ done
 for p in $basepackages apache.pp dbus.pp inetd.pp kerberos.pp mta.pp nis.pp; do
 	rm -f /etc/selinux/minimum/modules/active/modules/$p.disabled
 done
-/usr/sbin/semanage -S minimum -i - << __eof
+/usr/sbin/semanage import -S minimum -f - << __eof
 login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
 login -m  -s unconfined_u -r s0-s0:c0.c1023 root
 __eof
