@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -576,6 +576,62 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jan 6 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-11
+- passwd to create gnome-keyring passwd socket
+- systemd_systemctl needs sys_admin capability
+- Allow cobbler to search dhcp_etc_t directory
+- Allow sytemd_tmpfiles_t to delete all directories
+- allow sshd to write to all process levels in order to change passwd when running at a level
+- Allow updpwd_t to downgrade /etc/passwd file to s0, if it is not running with this range
+- Allow apcuspd_t to status and start the power unit file
+- Allow udev to manage kdump unit file
+- Added new interface modutils_dontaudit_exec_insmod
+- Add labeling for /var/lib/servicelog/servicelog.db-journal
+- Allow init_t to create tmpfs_t lnk_file
+- Add label for ~/.cvsignore
+- Allow fprintd_t to send syslog messages
+- Add  zabbix_var_lib_t for /var/lib/zabbixsrv, also allow zabix to connect to smtp port
+- Allow mozilla plugin to chat with policykit, needed for spice
+- Allow gssprozy to change user and gid, as well as read user keyrings
+- Allow sandbox apps to attempt to set and get capabilties
+- Label upgrades directory under /var/www as httpd_sys_rw_content_t, add other filetrans rules to label content correctly
+- allow modemmanger to read /dev/urand
+- Allow polipo to connect to http_cache_ports
+- Allow cron jobs to manage apache var lib content
+- Allow yppassword to manage the passwd_file_t
+- Allow showall_t to send itself signals
+- Allow cobbler to restart dhcpc, dnsmasq and bind services
+- Allow rsync_t to manage all non auth files
+- Allow certmonger to manage home cert files
+- Allow user_mail_domains to write certain files to the /root and ~/ directories
+- Allow apcuspd_t to status and start the power unit file
+- Allow cgroupdrulesengd to create content in cgoups directories
+- Add new access for mythtv
+- Allow irc_t to execute shell and bin-t files:
+- Allow smbd_t to signull cluster
+- Allow sssd to read systemd_login_var_run_t
+- Allow gluster daemon to create fifo files in glusterd_brick_t and sock_file in glusterd_var_lib_t
+- Add label for /var/spool/cron.aquota.user
+- Allow sandbox_x domains to use work with the mozilla plugin semaphore
+- Added new policy for speech-dispatcher
+- Added dontaudit rule for insmod_exec_t  in rasdaemon policy
+- Updated rasdaemon policy
+- Allow virt_domains to read cert files
+- Allow system_mail_t to transition to postfix_postdrop_t
+- Clean up mirrormanager policy
+- Allow subscription-manager running as sosreport_t to manage rhsmcertd
+- Remove ability to do mount/sys_admin by default in virt_sandbox domains
+- New rules required to run docker images within libivrt
+- Fixed bumblebee_admin() and mip6d_admin()
+- Add log support for sensord
+- Add label for ~/.cvsignore
+- Change mirrormanager to be run by cron
+- Add mirrormanager policy
+- Additional fixes for docker.te
+- Allow cobblerd to read/write undionly.kpxe located in /var/lib/tftpboot
+- Add tftp_write_rw_content/tftp_read_rw_content interfaces
+- Allow amanda to do backups over UDP
+
 * Thu Dec 13 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-10
 - Allow freeipmi_ipmidetectd_t to use freeipmi port
 - Update freeipmi_domain_template()
