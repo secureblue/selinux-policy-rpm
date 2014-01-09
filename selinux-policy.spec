@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -576,6 +576,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jan 9 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-12
+- Add gluster fixes
+- Remove ability to transition to unconfined_t from confined domains
+- Additional allow rules to get libvirt-lxc containers working with docker
+
 * Mon Jan 6 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-11
 - passwd to create gnome-keyring passwd socket
 - systemd_systemctl needs sys_admin capability
