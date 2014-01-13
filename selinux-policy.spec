@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -576,7 +576,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Mon Jan 9 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-12
+* Mon Jan 13 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-13
+- Remove file_t from the system and realias it with unlabeled_t
+
+* Thu Jan 9 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-12
 - Add gluster fixes
 - Remove ability to transition to unconfined_t from confined domains
 - Additional allow rules to get libvirt-lxc containers working with docker
