@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -579,6 +579,31 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jan 20 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-15
+- Add cron unconfined role support for uncofined SELinux user
+- Call kernel_rw_usermodehelper_state() in init.te
+- Call corenet_udp_bind_all_ports() in milter.te
+- Allow fence_virtd to connect to zented port
+- Fix header for mirrormanager_admin()
+- Allow dkim-milter to bind udp ports
+- Allow milter domains to send signull itself
+- Allow block_suspend for yum running as mock_t
+- Allow beam.smp to manage couchdb files
+- Add couchdb_manage_files()
+- Add labeling for /var/log/php_errors.log
+- Allow bumblebee to stream connect to xserver
+- Allow bumblebee to send a signal to xserver
+- gnome-thumbnail to stream connect to bumblebee
+- Fix calling usermodehelper to use _state in interface name
+- Allow xkbcomp running as bumblebee_t to execute  bin_t
+- Allow logrotate to read squid.conf
+- Additional rules to get docker and lxc to play well with SELinux
+- Call kernel_read_usermodhelper/kernel_rw_usermodhelper
+- Make rpm_transition_script accept a role
+- Added new policy for pcp
+- Allow bumbleed to connect to xserver port
+- Allow pegasus_openlmi_storage_t to read hwdata
+
 * Fri Jan 17 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-14
 - Make rpm_transition_script accept a role
 - Clean up pcp.te
