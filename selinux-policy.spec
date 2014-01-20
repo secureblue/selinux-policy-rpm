@@ -117,6 +117,7 @@ SELinux policy development and man page package
 %{_usr}/share/selinux/devel/include/*
 %dir %{_usr}/share/selinux/devel/html
 %{_usr}/share/selinux/devel/html/*html
+%{_usr}/share/selinux/devel/html/*css
 %{_usr}/share/selinux/devel/Makefile
 %{_usr}/share/selinux/devel/example.*
 %{_usr}/share/selinux/devel/policy.*
@@ -388,6 +389,8 @@ chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 mkdir %{buildroot}%{_usr}/share/selinux/devel/html
 htmldir=`compgen -d %{buildroot}%{_usr}/share/man/man8/`
 mv ${htmldir}/* %{buildroot}%{_usr}/share/selinux/devel/html
+mv %{buildroot}%{_usr}/share/man/man8/index.html %{buildroot}%{_usr}/share/selinux/devel/html
+mv %{buildroot}%{_usr}/share/man/man8/style.css %{buildroot}%{_usr}/share/selinux/devel/html
 rm -rf ${htmldir}
 
 mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
