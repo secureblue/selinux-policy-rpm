@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 13%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -117,6 +117,7 @@ SELinux policy development and man page package
 %{_usr}/share/selinux/devel/include/*
 %dir %{_usr}/share/selinux/devel/html
 %{_usr}/share/selinux/devel/html/*html
+%{_usr}/share/selinux/devel/html/*css
 %{_usr}/share/selinux/devel/Makefile
 %{_usr}/share/selinux/devel/example.*
 %{_usr}/share/selinux/devel/policy.*
@@ -388,6 +389,8 @@ chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 mkdir %{buildroot}%{_usr}/share/selinux/devel/html
 htmldir=`compgen -d %{buildroot}%{_usr}/share/man/man8/`
 mv ${htmldir}/* %{buildroot}%{_usr}/share/selinux/devel/html
+mv %{buildroot}%{_usr}/share/man/man8/index.html %{buildroot}%{_usr}/share/selinux/devel/html
+mv %{buildroot}%{_usr}/share/man/man8/style.css %{buildroot}%{_usr}/share/selinux/devel/html
 rm -rf ${htmldir}
 
 mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
@@ -576,6 +579,86 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jan 20 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-15
+- Add cron unconfined role support for uncofined SELinux user
+- Call kernel_rw_usermodehelper_state() in init.te
+- Call corenet_udp_bind_all_ports() in milter.te
+- Allow fence_virtd to connect to zented port
+- Fix header for mirrormanager_admin()
+- Allow dkim-milter to bind udp ports
+- Allow milter domains to send signull itself
+- Allow block_suspend for yum running as mock_t
+- Allow beam.smp to manage couchdb files
+- Add couchdb_manage_files()
+- Add labeling for /var/log/php_errors.log
+- Allow bumblebee to stream connect to xserver
+- Allow bumblebee to send a signal to xserver
+- gnome-thumbnail to stream connect to bumblebee
+- Fix calling usermodehelper to use _state in interface name
+- Allow xkbcomp running as bumblebee_t to execute  bin_t
+- Allow logrotate to read squid.conf
+- Additional rules to get docker and lxc to play well with SELinux
+- Call kernel_read_usermodhelper/kernel_rw_usermodhelper
+- Make rpm_transition_script accept a role
+- Added new policy for pcp
+- Allow bumbleed to connect to xserver port
+- Allow pegasus_openlmi_storage_t to read hwdata
+
+* Fri Jan 17 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-14
+- Make rpm_transition_script accept a role
+- Clean up pcp.te
+- Added new policy for pcp
+- Allow bumbleed to connect to xserver port
+- Added support for named-sdb in bind policy
+- Allow NetworkManager to signal and sigkill init scripts
+- Allow pegasus_openlmi_storage_t to read hwdata
+- Fix rhcs_rw_cluster_tmpfs()
+- Allow fenced_t to bind on zented udp port
+- Fix mirrormanager_read_lib_files()
+- Allow mirromanager scripts running as httpd_t to manage mirrormanager pid files
+- Dontaudit read/write to init stream socket for lsmd_plugin_t
+- Allow automount to read nfs link files
+- Allow lsm plugins to read/write lsmd stream socket
+- Allow svirt_lxc domains to umount dockersocket filesytem
+- Allow gnome keyring domains to create gnome config dirs
+- Allow rpm scritplets to create /run/gather with correct labeling
+- Add sblim_filetrans_named_content() interface
+- Allow ctdb to create sock files in /var/run/ctdb
+- Add also labeling for /var/run/ctdb
+- Add missing labeling for /var/lib/ctdb
+- ALlow tuned to manage syslog.conf. Should be fixed in tuned. #1030446
+- Dontaudit hypervkvp to search homedirs
+- Dontaudit hypervkvp to search admin homedirs
+- Allow hypervkvp to execute bin_t and ifconfig in the caller domain
+- Dontaudit xguest_t to read ABRT conf files
+- Add abrt_dontaudit_read_config()
+- Allow namespace-init to getattr on fs
+- Add thumb_role() also for xguest
+- Add filename transitions to create .spamassassin with correct labeling
+- Allow apache domain to read mirrormanager pid files
+- Allow domains to read/write shm and sem owned by mozilla_plugin_t
+- Allow alsactl to send a generic signal to kernel_t
+- Allow plymouthd to read run/udev/queue.bin
+- Allow sys_chroot for NM required by iodine service
+- Change glusterd to allow mounton all non security
+- Labeled ~/.nv/GLCache as being gstreamer output
+- Restrict the ability to set usermodehelpers and proc security settings.
+- Limit the ability to write to the files that configure kernel i
+- usermodehelpers and security-sensitive proc settings to the init domain. i
+- Permissive domains can also continue to set these values.
+- The current list is not exhaustive, just an initial set.
+- Not all of these files will exist on all kernels/devices.
+- Controlling access to certain kernel usermodehelpers, e.g. cgroup
+- release_agent, will require kernel changes to support and cannot be
+- addressed here.
+- Ideas come from Stephen Smalley and seandroid
+- Make rpm_transition_script accept a role
+- Make rpm_transition_script accept a role
+- Allow NetworkManager to signal and sigkill init scripts
+- Allow init_t to work on transitient and snapshot unit files
+- Add logging_manage_syslog_config()
+- Update sysnet_dns_name_resolve() to allow connect to dnssec port
+
 * Mon Jan 13 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-13
 - Remove file_t from the system and realias it with unlabeled_t
 
