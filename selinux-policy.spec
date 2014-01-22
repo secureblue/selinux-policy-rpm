@@ -456,7 +456,6 @@ Obsoletes: mod_fcgid-selinux <= %{version}-%{release}
 Obsoletes: cachefilesd-selinux <= 0.10-1
 Conflicts:  seedit
 Conflicts:  389-ds-base < 1.2.7, 389-admin < 1.1.12
-Conflicts:	pki-selinux < 10-0.0-0.45.b1
 
 %description targeted
 SELinux Reference policy targeted base module.
