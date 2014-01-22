@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -579,6 +579,26 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jan 22 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-16
+- New access needed to allow docker + lxc +SELinux to work together
+- Allow apache to write to the owncloud data directory in /var/www/html...
+- Cleanup sandbox X AVC's
+- Allow consolekit to create log dir
+- Add support for icinga CGI scripts
+- Add support for icinga
+- Allow kdumpctl_t to create kdump lock file
+- Allow kdump to create lnk lock file
+- Allow ABRT write core_pattern
+- Allwo ABRT to read core_pattern
+- Add policy for Geoclue. Geoclue is a D-Bus service that provides location information
+- Allow nscd_t block_suspen capability
+- Allow unconfined domain types to manage own transient unit file
+- Allow systemd domains to handle transient init unit files
+- No longer need the rpm_script_roles line since rpm_transition_script now does this for us
+- Add/fix interfaces for usermodehelper_t
+- Add interfaces to handle transient
+- Fixes for new usermodehelper and proc_securit_t types, added to increase security on /proc and /sys file systems
+
 * Mon Jan 20 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-15
 - Add cron unconfined role support for uncofined SELinux user
 - Call kernel_rw_usermodehelper_state() in init.te

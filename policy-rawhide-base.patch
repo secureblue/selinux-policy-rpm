@@ -8705,7 +8705,7 @@ index 6a1e4d1..84e8030 100644
 +	dontaudit $1 domain:dir_file_class_set audit_access;
  ')
 diff --git a/policy/modules/kernel/domain.te b/policy/modules/kernel/domain.te
-index cf04cb5..4182845 100644
+index cf04cb5..dfb34a3 100644
 --- a/policy/modules/kernel/domain.te
 +++ b/policy/modules/kernel/domain.te
 @@ -4,6 +4,29 @@ policy_module(domain, 1.11.0)
@@ -8822,7 +8822,7 @@ index cf04cb5..4182845 100644
  ')
  
  ########################################
-@@ -147,12 +206,18 @@ optional_policy(`
+@@ -147,12 +206,21 @@ optional_policy(`
  # Use/sendto/connectto sockets created by any domain.
  allow unconfined_domain_type domain:{ socket_class_set socket key_socket } *;
  
@@ -8833,6 +8833,9 @@ index cf04cb5..4182845 100644
  
 +allow unconfined_domain_type unconfined_domain_type:dbus send_msg;
 +
++# Allow manage transient unit files
++allow unconfined_domain_type self:service manage_service_perms;
++
  # Act upon any other process.
 -allow unconfined_domain_type domain:process ~{ transition dyntransition execmem execstack execheap };
 +allow unconfined_domain_type domain:process ~{ ptrace transition dyntransition execmem execstack execheap };
@@ -8842,7 +8845,7 @@ index cf04cb5..4182845 100644
  
  # Create/access any System V IPC objects.
  allow unconfined_domain_type domain:{ sem msgq shm } *;
-@@ -166,5 +231,318 @@ allow unconfined_domain_type domain:lnk_file { read_lnk_file_perms ioctl lock };
+@@ -166,5 +234,318 @@ allow unconfined_domain_type domain:lnk_file { read_lnk_file_perms ioctl lock };
  # act on all domains keys
  allow unconfined_domain_type domain:key *;
  
@@ -14897,7 +14900,7 @@ index 7be4ddf..d5ef507 100644
 +/sys/class/net/ib.* 		gen_context(system_u:object_r:sysctl_net_t,s0)
 +/sys/kernel/uevent_helper --	gen_context(system_u:object_r:usermodehelper_t,s0)
 diff --git a/policy/modules/kernel/kernel.if b/policy/modules/kernel/kernel.if
-index e100d88..3910ec4 100644
+index e100d88..6f745f0 100644
 --- a/policy/modules/kernel/kernel.if
 +++ b/policy/modules/kernel/kernel.if
 @@ -286,7 +286,7 @@ interface(`kernel_rw_unix_dgram_sockets',`
@@ -15312,7 +15315,7 @@ index e100d88..3910ec4 100644
  ##	Unconfined access to kernel module resources.
  ## </summary>
  ## <param name="domain">
-@@ -2972,5 +3151,525 @@ interface(`kernel_unconfined',`
+@@ -2972,5 +3151,565 @@ interface(`kernel_unconfined',`
  	')
  
  	typeattribute $1 kern_unconfined;
@@ -15660,12 +15663,8 @@ index e100d88..3910ec4 100644
 +## </summary>
 +## <desc>
 +##	<p>
-+##	Allow the specified domain to read the securitying
-+##	state information. This includes several pieces
-+##	of securitying information, such as security interface
-+##	names, securityfilter (iptables) statistics, protocol
-+##	information, routes, and remote procedure call (RPC)
-+##	information.
++##	Allow the specified domain to read the security
++##	state information. 
 +##	</p>
 +## </desc>
 +## <param name="domain">
@@ -15685,6 +15684,32 @@ index e100d88..3910ec4 100644
 +	read_lnk_files_pattern($1, { proc_t proc_security_t }, proc_security_t)
 +
 +	list_dirs_pattern($1, proc_t, proc_security_t)
++')
++
++########################################
++## <summary>
++##	Write the security state information.
++## </summary>
++## <desc>
++##	<p>
++##	Allow the specified domain to write the security
++##	state information. 
++##	</p>
++## </desc>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <infoflow type="write" weight="10"/>
++## <rolecap/>
++#
++interface(`kernel_write_security_state',`
++	gen_require(`
++		type proc_t, proc_security_t;
++	')
++
++	write_files_pattern($1, { proc_t proc_security_t }, proc_security_t)
 +')
 +
 +########################################
@@ -15725,27 +15750,6 @@ index e100d88..3910ec4 100644
 +	rw_files_pattern($1, { proc_t proc_security_t }, proc_security_t)
 +
 +	list_dirs_pattern($1, proc_t, proc_security_t)
-+')
-+
-+########################################
-+## <summary>
-+##	Read and write usermodehelper state
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+## <rolecap/>
-+#
-+interface(`kernel_rw_usermodehelper_state',`
-+	gen_require(`
-+		type proc_t, usermodehelper_t;
-+	')
-+
-+	dev_search_sysfs($1)
-+	rw_files_pattern($1, proc_t, usermodehelper_t)
-+	list_dirs_pattern($1, proc_t, usermodehelper_t)
 +')
 +
 +########################################
@@ -15838,6 +15842,45 @@ index e100d88..3910ec4 100644
 +	read_lnk_files_pattern($1, { proc_t usermodehelper_t }, usermodehelper_t)
 +
 +	list_dirs_pattern($1, proc_t, usermodehelper_t)
++')
++
++########################################
++## <summary>
++##	Read and write usermodehelper state
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`kernel_rw_usermodehelper_state',`
++	gen_require(`
++		type proc_t, usermodehelper_t;
++	')
++
++	dev_search_sysfs($1)
++	rw_files_pattern($1, proc_t, usermodehelper_t)
++	list_dirs_pattern($1, proc_t, usermodehelper_t)
++')
++
++########################################
++## <summary>
++##      Relabel to usermodehelper context .
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`kernel_relabelto_usermodehelper',`
++	gen_require(`
++		type usermodehelper_t;
++	')
++
++	allow $1 usermodehelper_t:file relabelto;
  ')
 diff --git a/policy/modules/kernel/kernel.te b/policy/modules/kernel/kernel.te
 index 8dbab4c..4b6c9ad 100644
@@ -19854,10 +19897,10 @@ index 0000000..cf6582f
 +
 diff --git a/policy/modules/roles/unconfineduser.te b/policy/modules/roles/unconfineduser.te
 new file mode 100644
-index 0000000..ca62aef
+index 0000000..dbb8afa
 --- /dev/null
 +++ b/policy/modules/roles/unconfineduser.te
-@@ -0,0 +1,339 @@
+@@ -0,0 +1,332 @@
 +policy_module(unconfineduser, 1.0.0)
 +
 +########################################
@@ -20153,7 +20196,6 @@ index 0000000..ca62aef
 +')
 +
 +optional_policy(`
-+#	rpm_run(unconfined_t, unconfined_r)
 +	# Allow SELinux aware applications to request rpm_script execution
 +	rpm_transition_script(unconfined_t, unconfined_r)
 +	rpm_dbus_chat(unconfined_t)
@@ -20186,14 +20228,8 @@ index 0000000..ca62aef
 +optional_policy(`
 +	xserver_run(unconfined_t, unconfined_r)
 +	xserver_manage_home_fonts(unconfined_t)
++	xserver_xsession_entry_type(unconfined_t)
 +')
-+
-+
-+gen_require(`
-+    attribute_role  rpm_script_roles;
-+')
-+
-+roleattribute unconfined_r rpm_script_roles;
 +
 +gen_user(unconfined_u, user, unconfined_r system_r, s0, s0 - mls_systemhigh, mcs_allcats)
 +
@@ -27754,7 +27790,7 @@ index bc0ffc8..8de430d 100644
  ')
 +/var/run/systemd(/.*)?		gen_context(system_u:object_r:init_var_run_t,s0)
 diff --git a/policy/modules/system/init.if b/policy/modules/system/init.if
-index 79a45f6..e1589ac 100644
+index 79a45f6..9a14d49 100644
 --- a/policy/modules/system/init.if
 +++ b/policy/modules/system/init.if
 @@ -1,5 +1,21 @@
@@ -28736,7 +28772,7 @@ index 79a45f6..e1589ac 100644
  ########################################
  ## <summary>
  ##	Allow the specified domain to connect to daemon with a tcp socket
-@@ -1840,3 +2359,360 @@ interface(`init_udp_recvfrom_all_daemons',`
+@@ -1840,3 +2359,432 @@ interface(`init_udp_recvfrom_all_daemons',`
  	')
  	corenet_udp_recvfrom_labeled($1, daemon)
  ')
@@ -29074,6 +29110,78 @@ index 79a45f6..e1589ac 100644
 +	')
 +
 +	allow $1 init_t:system undefined;
++')
++
++########################################
++## <summary>
++##	Tell init to do an unknown access.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`init_start_transient_unit',`
++	gen_require(`
++		type init_t;
++	')
++
++	allow $1 init_t:service start;
++')
++
++########################################
++## <summary>
++##	Tell init to do an unknown access.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`init_stop_transient_unit',`
++	gen_require(`
++		type init_t;
++	')
++
++	allow $1 init_t:service stop;
++')
++
++########################################
++## <summary>
++##	Tell init to do an unknown access.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`init_reload_transient_unit',`
++	gen_require(`
++		type init_t;
++	')
++
++	allow $1 init_t:service reload;
++')
++
++########################################
++## <summary>
++##	Tell init to do an unknown access.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`init_status_transient_unit',`
++	gen_require(`
++		type init_t;
++	')
++
++	allow $1 init_t:service status;
 +')
 +
 +########################################
@@ -38962,10 +39070,10 @@ index 0000000..1d9bdfd
 +')
 diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
 new file mode 100644
-index 0000000..2109915
+index 0000000..e9b0d55
 --- /dev/null
 +++ b/policy/modules/system/systemd.te
-@@ -0,0 +1,653 @@
+@@ -0,0 +1,659 @@
 +policy_module(systemd, 1.0.0)
 +
 +#######################################
@@ -39234,6 +39342,7 @@ index 0000000..2109915
 +
 +kernel_read_network_state(systemd_tmpfiles_t)
 +kernel_request_load_module(systemd_tmpfiles_t)
++kernel_relabelto_usermodehelper(systemd_tmpfiles_t)
 +
 +dev_write_kmsg(systemd_tmpfiles_t)
 +dev_rw_sysfs(systemd_tmpfiles_t)
@@ -39583,6 +39692,7 @@ index 0000000..2109915
 +
 +kernel_dgram_send(systemd_sysctl_t)
 +kernel_rw_all_sysctls(systemd_sysctl_t)
++kernel_write_security_state(systemd_sysctl_t)
 +
 +files_read_system_conf_files(systemd_sysctl_t)
 +
@@ -39607,6 +39717,10 @@ index 0000000..2109915
 +files_read_usr_files(systemd_domain)
 +
 +init_search_pid_dirs(systemd_domain)
++init_start_transient_unit(systemd_domain)
++init_stop_transient_unit(systemd_domain)
++init_status_transient_unit(systemd_domain)
++init_reload_transient_unit(systemd_domain)
 +
 +logging_stream_connect_syslog(systemd_domain)
 +
