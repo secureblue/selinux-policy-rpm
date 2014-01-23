@@ -23192,20 +23192,28 @@ index 0000000..3061ae5
 +')
 diff --git a/docker.te b/docker.te
 new file mode 100644
-index 0000000..fa972c0
+index 0000000..236e417
 --- /dev/null
 +++ b/docker.te
-@@ -0,0 +1,188 @@
+@@ -0,0 +1,218 @@
 +policy_module(docker, 1.0.0)
 +
 +########################################
 +#
 +# Declarations
 +#
++## <desc>
++## <p>
++## Allow docker to transition to unconfined conateiners
++## </p>
++## </desc>
++gen_tunable(docker_transition_unconfined, false)
 +
 +type docker_t;
 +type docker_exec_t;
 +init_daemon_domain(docker_t, docker_exec_t)
++domain_subj_id_change_exemption(docker_t)
++domain_role_change_exemption(docker_t)
 +
 +type docker_var_lib_t;
 +files_type(docker_var_lib_t)
@@ -23235,10 +23243,12 @@ index 0000000..fa972c0
 +#
 +# docker local policy
 +#
-+allow docker_t self:capability { chown fowner fsetid mknod net_admin };
++allow docker_t self:capability { chown fowner fsetid mknod net_admin net_bind_service };
 +allow docker_t self:process { getattr signal_perms };
 +allow docker_t self:fifo_file rw_fifo_file_perms;
 +allow docker_t self:unix_stream_socket create_stream_socket_perms;
++allow docker_t self:tcp_socket create_stream_socket_perms;
++allow docker_t self:udp_socket create_socket_perms;
 +allow docker_t self:capability2 block_suspend;
 +
 +manage_dirs_pattern(docker_t, docker_lock_t, docker_lock_t)
@@ -23287,7 +23297,16 @@ index 0000000..fa972c0
 +corecmd_exec_shell(docker_t)
 +
 +corenet_tcp_bind_generic_node(docker_t)
++corenet_tcp_sendrecv_generic_if(docker_t)
++corenet_tcp_sendrecv_generic_node(docker_t)
++corenet_tcp_sendrecv_generic_port(docker_t)
++corenet_tcp_bind_all_ports(docker_t)
 +corenet_tcp_connect_http_port(docker_t)
++corenet_udp_sendrecv_generic_if(docker_t)
++corenet_udp_sendrecv_generic_node(docker_t)
++corenet_udp_sendrecv_all_ports(docker_t)
++corenet_udp_bind_generic_node(docker_t)
++corenet_udp_bind_all_ports(docker_t)
 +
 +files_read_etc_files(docker_t)
 +
@@ -23305,6 +23324,8 @@ index 0000000..fa972c0
 +miscfiles_read_localization(docker_t)
 +
 +mount_domtrans(docker_t)
++
++seutil_read_default_contexts(docker_t)
 +
 +sysnet_dns_name_resolve(docker_t)
 +sysnet_exec_ifconfig(docker_t)
@@ -23345,17 +23366,21 @@ index 0000000..fa972c0
 +dev_rw_loop_control(docker_t)
 +dev_rw_lvm_control(docker_t)
 +
++files_getattr_isid_type_dirs(docker_t)
 +files_manage_isid_type_dirs(docker_t)
 +files_manage_isid_type_files(docker_t)
 +files_manage_isid_type_symlinks(docker_t)
 +files_manage_isid_type_chr_files(docker_t)
++files_manage_isid_type_blk_files(docker_t)
 +files_exec_isid_files(docker_t)
 +files_mounton_isid(docker_t)
 +files_mounton_non_security(docker_t)
++files_mounton_isid_type_chr_file(docker_t)
 +
 +fs_mount_all_fs(docker_t)
 +fs_unmount_all_fs(docker_t)
 +fs_remount_all_fs(docker_t)
++files_mounton_isid(docker_t)
 +fs_manage_cgroup_dirs(docker_t)
 +fs_manage_cgroup_files(docker_t)
 +fs_relabelfrom_xattr_fs(docker_t)
@@ -23383,6 +23408,11 @@ index 0000000..fa972c0
 +	# for lxc
 +	virt_transition_svirt_sandbox(docker_t, system_r)
 +	virt_mounton_sandbox_file(docker_t)
++')
++
++tunable_policy(`docker_transition_unconfined',`
++	unconfined_transition(docker_t, docker_share_t)
++	unconfined_transition(docker_t, docker_var_lib_t)
 +')
 diff --git a/dovecot.fc b/dovecot.fc
 index c880070..4448055 100644
@@ -42195,7 +42225,7 @@ index b1ac8b5..9b22bea 100644
 +	')
 +')
 diff --git a/modemmanager.te b/modemmanager.te
-index d15eb5b..66a422b 100644
+index d15eb5b..6af07aa 100644
 --- a/modemmanager.te
 +++ b/modemmanager.te
 @@ -11,6 +11,9 @@ init_daemon_domain(modemmanager_t, modemmanager_exec_t)
@@ -42208,9 +42238,12 @@ index d15eb5b..66a422b 100644
  ########################################
  #
  # Local policy
-@@ -25,14 +28,14 @@ allow modemmanager_t self:netlink_kobject_uevent_socket create_socket_perms;
+@@ -24,15 +27,17 @@ allow modemmanager_t self:netlink_kobject_uevent_socket create_socket_perms;
+ 
  kernel_read_system_state(modemmanager_t)
  
++corecmd_exec_bin(modemmanager_t)
++
  dev_read_sysfs(modemmanager_t)
 +dev_read_urand(modemmanager_t)
  dev_rw_modem(modemmanager_t)
@@ -42666,10 +42699,10 @@ index 0000000..b694afc
 +')
 +
 diff --git a/mozilla.fc b/mozilla.fc
-index 6ffaba2..cb1e8b0 100644
+index 6ffaba2..7995fce 100644
 --- a/mozilla.fc
 +++ b/mozilla.fc
-@@ -1,38 +1,67 @@
+@@ -1,38 +1,68 @@
 -HOME_DIR/\.galeon(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
 -HOME_DIR/\.mozilla(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
 -HOME_DIR/\.mozilla/plugins(/.*)?	gen_context(system_u:object_r:mozilla_plugin_home_t,s0)
@@ -42762,6 +42795,7 @@ index 6ffaba2..cb1e8b0 100644
 +/usr/lib/firefox[^/]*/mozilla-.* -- gen_context(system_u:object_r:mozilla_exec_t,s0)
 +/usr/lib/[^/]*firefox[^/]*/firefox-bin -- gen_context(system_u:object_r:mozilla_exec_t,s0)
 +/usr/lib/[^/]*firefox[^/]*/firefox -- gen_context(system_u:object_r:mozilla_exec_t,s0)
++/usr/lib/firefox/plugin-container   --  gen_context(system_u:object_r:mozilla_exec_t,s0)
 +
 +/usr/lib/xulrunner[^/]*/plugin-container		--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)
 +
@@ -81260,7 +81294,7 @@ index 50d07fb..bada62f 100644
 +	allow $1 samba_unit_file_t:service all_service_perms;
  ')
 diff --git a/samba.te b/samba.te
-index 2b7c441..a96f064 100644
+index 2b7c441..d06a165 100644
 --- a/samba.te
 +++ b/samba.te
 @@ -6,100 +6,80 @@ policy_module(samba, 1.16.3)
@@ -81898,7 +81932,7 @@ index 2b7c441..a96f064 100644
  
  kernel_getattr_core_if(nmbd_t)
  kernel_getattr_message_if(nmbd_t)
-@@ -548,52 +565,41 @@ kernel_read_network_state(nmbd_t)
+@@ -548,52 +565,42 @@ kernel_read_network_state(nmbd_t)
  kernel_read_software_raid_state(nmbd_t)
  kernel_read_system_state(nmbd_t)
  
@@ -81961,10 +81995,11 @@ index 2b7c441..a96f064 100644
 +optional_policy(`
 +	ctdbd_stream_connect(nmbd_t)
 +    ctdbd_manage_var_files(nmbd_t)
++    ctdbd_manage_lib_files(nmbd_t)
  ')
  
  optional_policy(`
-@@ -606,16 +612,22 @@ optional_policy(`
+@@ -606,16 +613,22 @@ optional_policy(`
  
  ########################################
  #
@@ -81991,7 +82026,7 @@ index 2b7c441..a96f064 100644
  
  manage_files_pattern(smbcontrol_t, samba_var_t, samba_var_t)
  
-@@ -627,16 +639,11 @@ domain_use_interactive_fds(smbcontrol_t)
+@@ -627,16 +640,11 @@ domain_use_interactive_fds(smbcontrol_t)
  
  dev_read_urand(smbcontrol_t)
  
@@ -82009,7 +82044,7 @@ index 2b7c441..a96f064 100644
  
  optional_policy(`
  	ctdbd_stream_connect(smbcontrol_t)
-@@ -644,22 +651,23 @@ optional_policy(`
+@@ -644,22 +652,23 @@ optional_policy(`
  
  ########################################
  #
@@ -82041,7 +82076,7 @@ index 2b7c441..a96f064 100644
  
  allow smbmount_t samba_secrets_t:file manage_file_perms;
  
-@@ -668,26 +676,22 @@ manage_files_pattern(smbmount_t, samba_var_t, samba_var_t)
+@@ -668,26 +677,22 @@ manage_files_pattern(smbmount_t, samba_var_t, samba_var_t)
  manage_lnk_files_pattern(smbmount_t, samba_var_t, samba_var_t)
  files_var_filetrans(smbmount_t, samba_var_t, dir, "samba")
  
@@ -82077,7 +82112,7 @@ index 2b7c441..a96f064 100644
  
  fs_getattr_cifs(smbmount_t)
  fs_mount_cifs(smbmount_t)
-@@ -699,58 +703,77 @@ fs_read_cifs_files(smbmount_t)
+@@ -699,58 +704,77 @@ fs_read_cifs_files(smbmount_t)
  storage_raw_read_fixed_disk(smbmount_t)
  storage_raw_write_fixed_disk(smbmount_t)
  
@@ -82169,7 +82204,7 @@ index 2b7c441..a96f064 100644
  
  manage_dirs_pattern(swat_t, swat_tmp_t, swat_tmp_t)
  manage_files_pattern(swat_t, swat_tmp_t, swat_tmp_t)
-@@ -759,17 +782,13 @@ files_tmp_filetrans(swat_t, swat_tmp_t, { file dir })
+@@ -759,17 +783,13 @@ files_tmp_filetrans(swat_t, swat_tmp_t, { file dir })
  manage_files_pattern(swat_t, swat_var_run_t, swat_var_run_t)
  files_pid_filetrans(swat_t, swat_var_run_t, file)
  
@@ -82193,7 +82228,7 @@ index 2b7c441..a96f064 100644
  
  kernel_read_kernel_sysctls(swat_t)
  kernel_read_system_state(swat_t)
-@@ -777,36 +796,25 @@ kernel_read_network_state(swat_t)
+@@ -777,36 +797,25 @@ kernel_read_network_state(swat_t)
  
  corecmd_search_bin(swat_t)
  
@@ -82236,7 +82271,7 @@ index 2b7c441..a96f064 100644
  
  auth_domtrans_chk_passwd(swat_t)
  auth_use_nsswitch(swat_t)
-@@ -818,10 +826,11 @@ logging_send_syslog_msg(swat_t)
+@@ -818,10 +827,11 @@ logging_send_syslog_msg(swat_t)
  logging_send_audit_msgs(swat_t)
  logging_search_logs(swat_t)
  
@@ -82250,7 +82285,7 @@ index 2b7c441..a96f064 100644
  optional_policy(`
  	cups_read_rw_config(swat_t)
  	cups_stream_connect(swat_t)
-@@ -840,17 +849,20 @@ optional_policy(`
+@@ -840,17 +850,20 @@ optional_policy(`
  # Winbind local policy
  #
  
@@ -82276,7 +82311,7 @@ index 2b7c441..a96f064 100644
  
  allow winbind_t samba_etc_t:dir list_dir_perms;
  read_files_pattern(winbind_t, samba_etc_t, samba_etc_t)
-@@ -860,9 +872,7 @@ manage_files_pattern(winbind_t, samba_etc_t, samba_secrets_t)
+@@ -860,9 +873,7 @@ manage_files_pattern(winbind_t, samba_etc_t, samba_secrets_t)
  filetrans_pattern(winbind_t, samba_etc_t, samba_secrets_t, file)
  
  manage_dirs_pattern(winbind_t, samba_log_t, samba_log_t)
@@ -82287,7 +82322,7 @@ index 2b7c441..a96f064 100644
  manage_lnk_files_pattern(winbind_t, samba_log_t, samba_log_t)
  
  manage_dirs_pattern(winbind_t, samba_var_t, samba_var_t)
-@@ -873,23 +883,21 @@ files_var_filetrans(winbind_t, samba_var_t, dir, "samba")
+@@ -873,23 +884,21 @@ files_var_filetrans(winbind_t, samba_var_t, dir, "samba")
  
  rw_files_pattern(winbind_t, smbd_tmp_t, smbd_tmp_t)
  
@@ -82317,7 +82352,7 @@ index 2b7c441..a96f064 100644
  manage_sock_files_pattern(winbind_t, smbd_var_run_t, smbd_var_run_t)
  
  kernel_read_network_state(winbind_t)
-@@ -898,13 +906,17 @@ kernel_read_system_state(winbind_t)
+@@ -898,13 +907,17 @@ kernel_read_system_state(winbind_t)
  
  corecmd_exec_bin(winbind_t)
  
@@ -82338,7 +82373,7 @@ index 2b7c441..a96f064 100644
  corenet_tcp_connect_smbd_port(winbind_t)
  corenet_tcp_connect_epmap_port(winbind_t)
  corenet_tcp_connect_all_unreserved_ports(winbind_t)
-@@ -912,10 +924,6 @@ corenet_tcp_connect_all_unreserved_ports(winbind_t)
+@@ -912,10 +925,6 @@ corenet_tcp_connect_all_unreserved_ports(winbind_t)
  dev_read_sysfs(winbind_t)
  dev_read_urand(winbind_t)
  
@@ -82349,7 +82384,7 @@ index 2b7c441..a96f064 100644
  
  fs_getattr_all_fs(winbind_t)
  fs_search_auto_mountpoints(winbind_t)
-@@ -924,26 +932,39 @@ auth_domtrans_chk_passwd(winbind_t)
+@@ -924,26 +933,39 @@ auth_domtrans_chk_passwd(winbind_t)
  auth_use_nsswitch(winbind_t)
  auth_manage_cache(winbind_t)
  
@@ -82391,7 +82426,7 @@ index 2b7c441..a96f064 100644
  ')
  
  optional_policy(`
-@@ -959,31 +980,29 @@ optional_policy(`
+@@ -959,31 +981,29 @@ optional_policy(`
  # Winbind helper local policy
  #
  
@@ -82429,7 +82464,7 @@ index 2b7c441..a96f064 100644
  
  optional_policy(`
  	apache_append_log(winbind_helper_t)
-@@ -997,25 +1016,38 @@ optional_policy(`
+@@ -997,25 +1017,38 @@ optional_policy(`
  
  ########################################
  #
@@ -96104,7 +96139,7 @@ index a4f20bc..6351bcb 100644
 +/var/log/qemu-ga\.log.*           --      gen_context(system_u:object_r:virt_qemu_ga_log_t,s0)
 +/var/log/qemu-ga(/.*)?		gen_context(system_u:object_r:virt_qemu_ga_log_t,s0)
 diff --git a/virt.if b/virt.if
-index facdee8..fc7901b 100644
+index facdee8..15562ad 100644
 --- a/virt.if
 +++ b/virt.if
 @@ -1,120 +1,51 @@
@@ -97721,7 +97756,7 @@ index facdee8..fc7901b 100644
 +		attribute svirt_sandbox_domain;
 +	')
 +
-+	allow $1 svirt_sandbox_domain:process transition;
++	allow $1 svirt_sandbox_domain:process { transition signal_perms };
 +	role $2 types svirt_sandbox_domain;
 +	allow $1 svirt_sandbox_domain:unix_dgram_socket sendto;
 +

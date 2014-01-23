@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -578,6 +578,18 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jan 23 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-17
+- init calling needs to be optional in domain.te
+- Allow docker and mount on devpts chr_file
+- Allow docker to transition to unconfined_t if boolean set
+- Label also /usr/libexec/WebKitPluginProcess as mozilla_plugin_exec_t
+- Fix type in docker.te
+- Add mozilla_plugin_exec_t labeling for /usr/lib/firefox/plugin-container
+- Allow docker to use the network and build images
+- Allow docker to read selinux files for labeling, and mount on devpts chr_file
+- Allow domains that transition to svirt_sandbox to send it signals
+- Allow docker to transition to unconfined_t if boolean set
+
 * Wed Jan 22 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-16
 - New access needed to allow docker + lxc +SELinux to work together
 - Allow apache to write to the owncloud data directory in /var/www/html...
