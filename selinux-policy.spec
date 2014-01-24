@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 15%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -456,7 +456,6 @@ Obsoletes: mod_fcgid-selinux <= %{version}-%{release}
 Obsoletes: cachefilesd-selinux <= 0.10-1
 Conflicts:  seedit
 Conflicts:  389-ds-base < 1.2.7, 389-admin < 1.1.12
-Conflicts:	pki-selinux < 10-0.0-0.45.b1
 
 %description targeted
 SELinux Reference policy targeted base module.
@@ -579,6 +578,38 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jan 23 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-17
+- init calling needs to be optional in domain.te
+- Allow docker and mount on devpts chr_file
+- Allow docker to transition to unconfined_t if boolean set
+- Label also /usr/libexec/WebKitPluginProcess as mozilla_plugin_exec_t
+- Fix type in docker.te
+- Add mozilla_plugin_exec_t labeling for /usr/lib/firefox/plugin-container
+- Allow docker to use the network and build images
+- Allow docker to read selinux files for labeling, and mount on devpts chr_file
+- Allow domains that transition to svirt_sandbox to send it signals
+- Allow docker to transition to unconfined_t if boolean set
+
+* Wed Jan 22 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-16
+- New access needed to allow docker + lxc +SELinux to work together
+- Allow apache to write to the owncloud data directory in /var/www/html...
+- Cleanup sandbox X AVC's
+- Allow consolekit to create log dir
+- Add support for icinga CGI scripts
+- Add support for icinga
+- Allow kdumpctl_t to create kdump lock file
+- Allow kdump to create lnk lock file
+- Allow ABRT write core_pattern
+- Allwo ABRT to read core_pattern
+- Add policy for Geoclue. Geoclue is a D-Bus service that provides location information
+- Allow nscd_t block_suspen capability
+- Allow unconfined domain types to manage own transient unit file
+- Allow systemd domains to handle transient init unit files
+- No longer need the rpm_script_roles line since rpm_transition_script now does this for us
+- Add/fix interfaces for usermodehelper_t
+- Add interfaces to handle transient
+- Fixes for new usermodehelper and proc_securit_t types, added to increase security on /proc and /sys file systems
+
 * Mon Jan 20 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-15
 - Add cron unconfined role support for uncofined SELinux user
 - Call kernel_rw_usermodehelper_state() in init.te
