@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -578,6 +578,20 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jan 24 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-18
+- Add haproxy_connect_any boolean
+- Allow haproxy also to use http cache port by default
+- Fix /usr/lib/firefox/plugin-container decl
+- Allow haproxy to work as simple HTTP proxy. HAProxy For TCP And HTTP Based Applications
+- Label also /usr/libexec/WebKitPluginProcess as mozilla_plugin_exec_t
+- Fix type in docker.te
+- Fix bs_filetrans_named_content() to have support for /usr/lib/debug directory
+- Adding a new service script to enable setcheckreqprot
+- Add interface to getattr on an isid_type for any type of file
+- Allow initrc_t domtrans to authconfig if unconfined is enabled
+type in docker.te
+- Add mozilla_plugin_exec_t labeling for /usr/lib/firefox/plugin-container
+
 * Thu Jan 23 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-17
 - init calling needs to be optional in domain.te
 - Allow docker and mount on devpts chr_file
