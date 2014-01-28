@@ -768,7 +768,7 @@ type in docker.te
 - Add tftp_write_rw_content/tftp_read_rw_content interfaces
 - Allow amanda to do backups over UDP
 
-* Thu Dec 13 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-10
+* Fri Dec 13 2013 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-10
 - Allow freeipmi_ipmidetectd_t to use freeipmi port
 - Update freeipmi_domain_template()
 - Allow journalctl running as ABRT to read /run/log/journal
