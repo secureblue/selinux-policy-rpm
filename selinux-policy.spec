@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 18%{?dist}
+Release: 19%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -578,6 +578,45 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jan 28 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-19
+- Add net_admin also for systemd_passwd_agent_t
+- Allow Associate usermodehelper_t to sysfs filesystem
+- Allow gdm to create /var/gdm with correct labeling
+- Allow domains to append rkhunterl lib files. #1057982
+- Allow systemd_tmpfiles_t net_admin to communicate with journald
+- update libs_filetrans_named_content() to have support for /usr/lib/debug directory
+- Adding a new service script to enable setcheckreqprot
+- Add interface to getattr on an isid_type for any type of file
+- Allow initrc_t domtrans to authconfig if unconfined is enabled
+- Add labeling for snapper.log
+- Allow tumbler to execute dbusd-daemon in thumb_t
+- Add dbus_exec_dbusd()
+- Add snapperd_data_t type
+- Add additional fixes for snapperd
+- FIx bad calling in samba.te
+- Allow smbd to create tmpfs
+- Allow rhsmcertd-worker send signull to rpm process
+- Allow net_admin capability and send system log msgs
+- Allow lldpad send dgram to NM
+- Add networkmanager_dgram_send()
+- rkhunter_var_lib_t is correct type
+- Allow openlmi-storage to read removable devices
+- Allow system cron jobs to manage rkhunter lib files
+- Add rkhunter_manage_lib_files()
+- Fix ftpd_use_fusefs boolean to allow manage also symlinks
+- Allow smbcontrob block_suspend cap2
+- Allow slpd to read network and system state info
+- Allow NM domtrans to iscsid_t if iscsiadm is executed
+- Allow slapd to send a signal itself
+- Allow sslget running as pki_ra_t to contact port 8443, the secure port of the CA.
+- Fix plymouthd_create_log() interface
+- Add rkhunter policy with files type definition for /var/lib/rkhunter until it is fixed in rkhunter package
+- Allow postfix and cyrus-imapd to work out of box
+- Remove logwatch_can_sendmail which is no longer used
+- Allow fcoemon to talk with unpriv user domain using unix_stream_socket
+- snapperd is D-Bus service
+- Allow OpenLMI PowerManagement to call 'systemctl --force reboot'
+
 * Fri Jan 24 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-18
 - Add haproxy_connect_any boolean
 - Allow haproxy also to use http cache port by default
