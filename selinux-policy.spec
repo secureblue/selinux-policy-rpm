@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 19%{?dist}
+Release: 20%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -578,6 +578,14 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jan 30 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-20
+- Allow passwd_t to use ipc_lock, so that it can change the password in gnome-keyring
+- Allow geoclue to create temporary files/dirs in /tmp
+- Add httpd_dontaudit_search_dirs boolean
+- Add support for winbind.service
+- ALlow also fail2ban-client to read apache logs
+- Allow vmtools to getattr on all fs
+
 * Tue Jan 28 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-19
 - Add net_admin also for systemd_passwd_agent_t
 - Allow Associate usermodehelper_t to sysfs filesystem
