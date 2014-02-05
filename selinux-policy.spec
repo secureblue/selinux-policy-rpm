@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 21%{?dist}
+Release: 22%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -578,6 +578,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Feb 5 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-22
+- Fix /dev/vfio/vfio labeling
+
 * Wed Feb 5 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-21
 - Add kernel_mounton_messages() interface
 - init wants to manage lock files for iscsi
