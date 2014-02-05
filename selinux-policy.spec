@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 20%{?dist}
+Release: 21%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -578,6 +578,30 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Feb 5 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-21
+- Add kernel_mounton_messages() interface
+- init wants to manage lock files for iscsi
+- Add support for dey_sapi port
+- Fixes needed for docker
+- Allow epmd to manage /var/log/rabbitmq/startup_err file
+- Allow beam.smp connect to amqp port
+- drbdadm executes drbdmeta
+- Added osad policy
+- Allow postfix to deliver to procmail
+- Allow vmtools to execute /usr/bin/lsb_release
+- Allow geoclue to read /etc/passwd
+- Allow docker to write system net ctrls
+- Add support for rhnsd unit file
+- Add dbus_chat_session_bus() interface
+- Add dbus_stream_connect_session_bus() interface
+- Fix pcp.te
+- Fix logrotate_use_nfs boolean
+- Add lot of pcp fixes found in RHEL7
+- fix labeling for pmie for pcp pkg
+- Change thumb_t to be allowed to chat/connect with session bus type
+- Add logrotate_use_nfs boolean
+- Allow setroubleshootd to read rpc sysctl
+
 * Thu Jan 30 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-20
 - Allow passwd_t to use ipc_lock, so that it can change the password in gnome-keyring
 - Allow geoclue to create temporary files/dirs in /tmp
