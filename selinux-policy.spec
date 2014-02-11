@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 22%{?dist}
+Release: 23%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -578,6 +578,40 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Feb 11 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-23
+- Addopt corenet rules for unbound-anchor to rpm_script_t
+- Allow runuser to send send audit messages.
+- Allow postfix-local to search .forward in munin lib dirs
+- Allow udisks to connect to D-Bus
+- Allow spamd to connect to spamd port
+- Fix syntax error in snapper.te
+- Dontaudit osad to search gconf home files
+- Allow rhsmcertd to manage /etc/sysconf/rhn director
+- Fix pcp labeling to accept /usr/bin for all daemon binaries
+- Fix mcelog_read_log() interface
+- Allow iscsid to manage iscsi lib files
+- Allow snapper domtrans to lvm_t. Add support for /etc/snapper and allow snapperd to manage it.
+- Make tuned_t as unconfined domain for RHEL7.0
+- Allow ABRT to read puppet certs
+- Add sys_time capability for virt-ga
+- Allow gemu-ga to domtrans to hwclock_t
+- Allow additional access for virt_qemu_ga_t processes to read system clock and send audit messages
+- Fix some AVCs in pcp policy
+- Add to bacula capability setgid and setuid and allow to bind to bacula ports
+- Changed label from rhnsd_rw_conf_t to rhnsd_conf_t
+- Add access rhnsd and osad to /etc/sysconfig/rhn
+- drbdadm executes drbdmeta
+- Fixes needed for docker
+- Allow epmd to manage /var/log/rabbitmq/startup_err file
+- Allow beam.smp connect to amqp port
+- Modify xdm_write_home to allow create also links as xdm_home_t if the boolean is on true
+- Allow init_t to manage pluto.ctl because of init_t instead of initrc_t
+- Allow systemd_tmpfiles_t to manage all non security files on the system
+- Added labels for bacula ports
+- Fix label on /dev/vfio/vfio
+- Add kernel_mounton_messages() interface
+- init wants to manage lock files for iscsi
+
 * Wed Feb 5 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-22
 - Fix /dev/vfio/vfio labeling
 
