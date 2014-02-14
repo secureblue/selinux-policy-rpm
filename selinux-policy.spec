@@ -69,6 +69,8 @@ SELinux Base package
 %ghost %config(noreplace) %{_sysconfdir}/selinux/config
 %ghost %{_sysconfdir}/sysconfig/selinux
 %{_usr}/lib/tmpfiles.d/selinux-policy.conf
+%attr(0755, root, root) %dir %{_rpmconfigdir}
+%attr(0755, root, root) %dir %{_rpmconfigdir}/macros.d
 %{_rpmconfigdir}/macros.d/macros.selinux-policy
 
 %package sandbox
