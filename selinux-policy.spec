@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 23%{?dist}
+Release: 24%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -578,7 +578,36 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Mon Feb 11 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-23
+* Fri Feb 14 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-24
+- Dontaudit rendom domains listing /proc and hittping system_map_t
+- devicekit_power sends out a signal to all processes on the message bus when power is going down
+- Modify xdm_write_home to allow create also links as xdm_home_t if the boolean is on true
+- systemd_tmpfiles_t needs to _setcheckreqprot
+- Add unconfined_server to be run by init_t when it executes files labeled bin_t, or usr_t, allow all domains to communicate with it
+- Fixed snapperd policy
+- Fixed broken interfaces
+- Should use rw_socket_perms rather then sock_file on a unix_stream_socket
+- Fixed bugsfor pcp policy
+- pcscd seems to be using policy kit and looking at domains proc data that transition to it
+- Allow dbus_system_domains to be started by init
+- Fixed some interfaces
+- Addopt corenet rules for unbound-anchor to rpm_script_t
+- Allow runuser to send send audit messages.
+- Allow postfix-local to search .forward in munin lib dirs
+- Allow udisks to connect to D-Bus
+- Allow spamd to connect to spamd port
+- Fix syntax error in snapper.te
+- Dontaudit osad to search gconf home files
+- Allow rhsmcertd to manage /etc/sysconf/rhn director
+- Fix pcp labeling to accept /usr/bin for all daemon binaries
+- Fix mcelog_read_log() interface
+- Allow iscsid to manage iscsi lib files
+- Allow snapper domtrans to lvm_t. Add support for /etc/snapper and allow snapperd to manage it.
+- Allow ABRT to read puppet certs
+- Allow virtd_lxc_t to specify the label of a socket
+- New version of docker requires more access
+
+* Mon Feb 10 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-23
 - Addopt corenet rules for unbound-anchor to rpm_script_t
 - Allow runuser to send send audit messages.
 - Allow postfix-local to search .forward in munin lib dirs

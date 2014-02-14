@@ -8720,7 +8720,7 @@ index 6a1e4d1..84e8030 100644
 +	dontaudit $1 domain:dir_file_class_set audit_access;
  ')
 diff --git a/policy/modules/kernel/domain.te b/policy/modules/kernel/domain.te
-index cf04cb5..23627f4 100644
+index cf04cb5..0b3704b 100644
 --- a/policy/modules/kernel/domain.te
 +++ b/policy/modules/kernel/domain.te
 @@ -4,6 +4,29 @@ policy_module(domain, 1.11.0)
@@ -8761,7 +8761,7 @@ index cf04cb5..23627f4 100644
  
  # Transitions only allowed from domains to other domains
  neverallow domain ~domain:process { transition dyntransition };
-@@ -86,23 +110,45 @@ neverallow ~{ domain unlabeled_t } *:process *;
+@@ -86,23 +110,46 @@ neverallow ~{ domain unlabeled_t } *:process *;
  allow domain self:dir list_dir_perms;
  allow domain self:lnk_file { read_lnk_file_perms lock ioctl };
  allow domain self:file rw_file_perms;
@@ -8798,6 +8798,7 @@ index cf04cb5..23627f4 100644
 +files_read_inherited_tmp_files(domain)
 +files_append_inherited_tmp_files(domain)
 +files_read_all_base_ro_files(domain)
++files_dontaduit_getattr_kernel_symbol_table(domain)
 +
 +# All executables should be able to search the directory they are in
 +corecmd_search_bin(domain)
@@ -8808,7 +8809,7 @@ index cf04cb5..23627f4 100644
  
  ifdef(`hide_broken_symptoms',`
  	# This check is in the general socket
-@@ -121,8 +167,18 @@ tunable_policy(`global_ssp',`
+@@ -121,8 +168,18 @@ tunable_policy(`global_ssp',`
  ')
  
  optional_policy(`
@@ -8827,7 +8828,7 @@ index cf04cb5..23627f4 100644
  ')
  
  optional_policy(`
-@@ -133,6 +189,9 @@ optional_policy(`
+@@ -133,6 +190,9 @@ optional_policy(`
  optional_policy(`
  	xserver_dontaudit_use_xdm_fds(domain)
  	xserver_dontaudit_rw_xdm_pipes(domain)
@@ -8837,7 +8838,7 @@ index cf04cb5..23627f4 100644
  ')
  
  ########################################
-@@ -147,12 +206,18 @@ optional_policy(`
+@@ -147,12 +207,18 @@ optional_policy(`
  # Use/sendto/connectto sockets created by any domain.
  allow unconfined_domain_type domain:{ socket_class_set socket key_socket } *;
  
@@ -8857,7 +8858,7 @@ index cf04cb5..23627f4 100644
  
  # Create/access any System V IPC objects.
  allow unconfined_domain_type domain:{ sem msgq shm } *;
-@@ -166,5 +231,334 @@ allow unconfined_domain_type domain:lnk_file { read_lnk_file_perms ioctl lock };
+@@ -166,5 +232,342 @@ allow unconfined_domain_type domain:lnk_file { read_lnk_file_perms ioctl lock };
  # act on all domains keys
  allow unconfined_domain_type domain:key *;
  
@@ -9124,6 +9125,10 @@ index cf04cb5..23627f4 100644
 +	cron_rw_system_job_pipes(domain)
 +')
 +
++optional_policy(`
++	devicekit_dbus_chat_power(domain)
++')
++
 +ifdef(`hide_broken_symptoms',`
 +	dontaudit domain self:udp_socket listen;
 +	allow domain domain:key { link search };
@@ -9191,6 +9196,10 @@ index cf04cb5..23627f4 100644
 +	tunable_policy(`fips_mode',`
 +		prelink_exec(domain)
 +	')
++')
++
++optional_policy(`
++	unconfined_server_stream_connect(domain)
 +')
 diff --git a/policy/modules/kernel/files.fc b/policy/modules/kernel/files.fc
 index b876c48..27f60c6 100644
@@ -9443,7 +9452,7 @@ index b876c48..27f60c6 100644
 +/nsr(/.*)?			gen_context(system_u:object_r:var_t,s0)
 +/nsr/logs(/.*)?			gen_context(system_u:object_r:var_log_t,s0)
 diff --git a/policy/modules/kernel/files.if b/policy/modules/kernel/files.if
-index f962f76..fa8cdcb 100644
+index f962f76..1517625 100644
 --- a/policy/modules/kernel/files.if
 +++ b/policy/modules/kernel/files.if
 @@ -19,6 +19,136 @@
@@ -11449,7 +11458,32 @@ index f962f76..fa8cdcb 100644
  ')
  
  ########################################
-@@ -5241,6 +6319,24 @@ interface(`files_list_var',`
+@@ -5112,6 +6190,24 @@ interface(`files_create_kernel_symbol_table',`
+ 
+ ########################################
+ ## <summary>
++##	Dontaudit getattr attempts on the system.map file
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`files_dontaduit_getattr_kernel_symbol_table',`
++	gen_require(`
++		type system_map_t;
++	')
++
++	dontaudit $1 system_map_t:file getattr;
++')
++
++########################################
++## <summary>
+ ##	Read system.map in the /boot directory.
+ ## </summary>
+ ## <param name="domain">
+@@ -5241,6 +6337,24 @@ interface(`files_list_var',`
  
  ########################################
  ## <summary>
@@ -11474,7 +11508,7 @@ index f962f76..fa8cdcb 100644
  ##	Create, read, write, and delete directories
  ##	in the /var directory.
  ## </summary>
-@@ -5527,6 +6623,25 @@ interface(`files_rw_var_lib_dirs',`
+@@ -5527,6 +6641,25 @@ interface(`files_rw_var_lib_dirs',`
  
  ########################################
  ## <summary>
@@ -11500,7 +11534,7 @@ index f962f76..fa8cdcb 100644
  ##	Create objects in the /var/lib directory
  ## </summary>
  ## <param name="domain">
-@@ -5596,6 +6711,25 @@ interface(`files_read_var_lib_symlinks',`
+@@ -5596,6 +6729,25 @@ interface(`files_read_var_lib_symlinks',`
  	read_lnk_files_pattern($1, { var_t var_lib_t }, var_lib_t)
  ')
  
@@ -11526,7 +11560,7 @@ index f962f76..fa8cdcb 100644
  # cjp: the next two interfaces really need to be fixed
  # in some way.  They really neeed their own types.
  
-@@ -5641,7 +6775,7 @@ interface(`files_manage_mounttab',`
+@@ -5641,7 +6793,7 @@ interface(`files_manage_mounttab',`
  
  ########################################
  ## <summary>
@@ -11535,7 +11569,7 @@ index f962f76..fa8cdcb 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -5649,12 +6783,13 @@ interface(`files_manage_mounttab',`
+@@ -5649,12 +6801,13 @@ interface(`files_manage_mounttab',`
  ##	</summary>
  ## </param>
  #
@@ -11551,7 +11585,7 @@ index f962f76..fa8cdcb 100644
  ')
  
  ########################################
-@@ -5672,6 +6807,7 @@ interface(`files_search_locks',`
+@@ -5672,6 +6825,7 @@ interface(`files_search_locks',`
  		type var_t, var_lock_t;
  	')
  
@@ -11559,7 +11593,7 @@ index f962f76..fa8cdcb 100644
  	allow $1 var_lock_t:lnk_file read_lnk_file_perms;
  	search_dirs_pattern($1, var_t, var_lock_t)
  ')
-@@ -5698,7 +6834,26 @@ interface(`files_dontaudit_search_locks',`
+@@ -5698,7 +6852,26 @@ interface(`files_dontaudit_search_locks',`
  
  ########################################
  ## <summary>
@@ -11587,7 +11621,7 @@ index f962f76..fa8cdcb 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -5706,13 +6861,12 @@ interface(`files_dontaudit_search_locks',`
+@@ -5706,13 +6879,12 @@ interface(`files_dontaudit_search_locks',`
  ##	</summary>
  ## </param>
  #
@@ -11604,7 +11638,7 @@ index f962f76..fa8cdcb 100644
  ')
  
  ########################################
-@@ -5731,7 +6885,7 @@ interface(`files_rw_lock_dirs',`
+@@ -5731,7 +6903,7 @@ interface(`files_rw_lock_dirs',`
  		type var_t, var_lock_t;
  	')
  
@@ -11613,7 +11647,7 @@ index f962f76..fa8cdcb 100644
  	rw_dirs_pattern($1, var_t, var_lock_t)
  ')
  
-@@ -5764,7 +6918,6 @@ interface(`files_create_lock_dirs',`
+@@ -5764,7 +6936,6 @@ interface(`files_create_lock_dirs',`
  ##	Domain allowed access.
  ##	</summary>
  ## </param>
@@ -11621,7 +11655,7 @@ index f962f76..fa8cdcb 100644
  #
  interface(`files_relabel_all_lock_dirs',`
  	gen_require(`
-@@ -5779,7 +6932,7 @@ interface(`files_relabel_all_lock_dirs',`
+@@ -5779,7 +6950,7 @@ interface(`files_relabel_all_lock_dirs',`
  
  ########################################
  ## <summary>
@@ -11630,7 +11664,7 @@ index f962f76..fa8cdcb 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -5787,13 +6940,33 @@ interface(`files_relabel_all_lock_dirs',`
+@@ -5787,13 +6958,33 @@ interface(`files_relabel_all_lock_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -11665,7 +11699,7 @@ index f962f76..fa8cdcb 100644
  	allow $1 var_lock_t:dir list_dir_perms;
  	getattr_files_pattern($1, var_lock_t, var_lock_t)
  ')
-@@ -5809,13 +6982,12 @@ interface(`files_getattr_generic_locks',`
+@@ -5809,13 +7000,12 @@ interface(`files_getattr_generic_locks',`
  ## </param>
  #
  interface(`files_delete_generic_locks',`
@@ -11683,7 +11717,7 @@ index f962f76..fa8cdcb 100644
  ')
  
  ########################################
-@@ -5834,9 +7006,7 @@ interface(`files_manage_generic_locks',`
+@@ -5834,9 +7024,7 @@ interface(`files_manage_generic_locks',`
  		type var_t, var_lock_t;
  	')
  
@@ -11694,7 +11728,7 @@ index f962f76..fa8cdcb 100644
  	manage_files_pattern($1, var_lock_t, var_lock_t)
  ')
  
-@@ -5878,8 +7048,7 @@ interface(`files_read_all_locks',`
+@@ -5878,8 +7066,7 @@ interface(`files_read_all_locks',`
  		type var_t, var_lock_t;
  	')
  
@@ -11704,7 +11738,7 @@ index f962f76..fa8cdcb 100644
  	allow $1 lockfile:dir list_dir_perms;
  	read_files_pattern($1, lockfile, lockfile)
  	read_lnk_files_pattern($1, lockfile, lockfile)
-@@ -5901,8 +7070,7 @@ interface(`files_manage_all_locks',`
+@@ -5901,8 +7088,7 @@ interface(`files_manage_all_locks',`
  		type var_t, var_lock_t;
  	')
  
@@ -11714,7 +11748,7 @@ index f962f76..fa8cdcb 100644
  	manage_dirs_pattern($1, lockfile, lockfile)
  	manage_files_pattern($1, lockfile, lockfile)
  	manage_lnk_files_pattern($1, lockfile, lockfile)
-@@ -5939,8 +7107,7 @@ interface(`files_lock_filetrans',`
+@@ -5939,8 +7125,7 @@ interface(`files_lock_filetrans',`
  		type var_t, var_lock_t;
  	')
  
@@ -11724,7 +11758,7 @@ index f962f76..fa8cdcb 100644
  	filetrans_pattern($1, var_lock_t, $2, $3, $4)
  ')
  
-@@ -5979,7 +7146,7 @@ interface(`files_setattr_pid_dirs',`
+@@ -5979,7 +7164,7 @@ interface(`files_setattr_pid_dirs',`
  		type var_run_t;
  	')
  
@@ -11733,7 +11767,7 @@ index f962f76..fa8cdcb 100644
  	allow $1 var_run_t:dir setattr;
  ')
  
-@@ -5999,10 +7166,48 @@ interface(`files_search_pids',`
+@@ -5999,22 +7184,60 @@ interface(`files_search_pids',`
  		type var_t, var_run_t;
  	')
  
@@ -11742,16 +11776,23 @@ index f962f76..fa8cdcb 100644
  	search_dirs_pattern($1, var_t, var_run_t)
  ')
  
+-########################################
 +######################################
-+## <summary>
+ ## <summary>
+-##	Do not audit attempts to search
+-##	the /var/run directory.
 +## Add and remove entries from pid directories.
-+## </summary>
-+## <param name="domain">
+ ## </summary>
+ ## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
 +## <summary>
 +## Domain allowed access.
 +## </summary>
-+## </param>
-+#
+ ## </param>
+ #
+-interface(`files_dontaudit_search_pids',`
 +interface(`files_rw_pid_dirs',`
 +    gen_require(`
 +        type var_run_t;
@@ -11779,21 +11820,30 @@ index f962f76..fa8cdcb 100644
 +        allow $1 var_run_t:dir create_dir_perms;
 +')
 +
- ########################################
- ## <summary>
- ##	Do not audit attempts to search
-@@ -6025,12 +7230,31 @@ interface(`files_dontaudit_search_pids',`
++########################################
++## <summary>
++##	Do not audit attempts to search
++##	the /var/run directory.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`files_dontaudit_search_pids',`
+ 	gen_require(`
+ 		type var_run_t;
+ 	')
+@@ -6025,6 +7248,25 @@ interface(`files_dontaudit_search_pids',`
  
  ########################################
  ## <summary>
--##	List the contents of the runtime process
--##	ID directories (/var/run).
 +##	Do not audit attempts to search
 +##	the all /var/run directory.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
--##	Domain allowed access.
++## </summary>
++## <param name="domain">
++##	<summary>
 +##	Domain to not audit.
 +##	</summary>
 +## </param>
@@ -11808,16 +11858,10 @@ index f962f76..fa8cdcb 100644
 +
 +########################################
 +## <summary>
-+##	List the contents of the runtime process
-+##	ID directories (/var/run).
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
- ##	</summary>
- ## </param>
- #
-@@ -6039,7 +7263,7 @@ interface(`files_list_pids',`
+ ##	List the contents of the runtime process
+ ##	ID directories (/var/run).
+ ## </summary>
+@@ -6039,7 +7281,7 @@ interface(`files_list_pids',`
  		type var_t, var_run_t;
  	')
  
@@ -11826,7 +11870,7 @@ index f962f76..fa8cdcb 100644
  	list_dirs_pattern($1, var_t, var_run_t)
  ')
  
-@@ -6058,7 +7282,7 @@ interface(`files_read_generic_pids',`
+@@ -6058,7 +7300,7 @@ interface(`files_read_generic_pids',`
  		type var_t, var_run_t;
  	')
  
@@ -11835,7 +11879,7 @@ index f962f76..fa8cdcb 100644
  	list_dirs_pattern($1, var_t, var_run_t)
  	read_files_pattern($1, var_run_t, var_run_t)
  ')
-@@ -6078,7 +7302,7 @@ interface(`files_write_generic_pid_pipes',`
+@@ -6078,7 +7320,7 @@ interface(`files_write_generic_pid_pipes',`
  		type var_run_t;
  	')
  
@@ -11844,7 +11888,7 @@ index f962f76..fa8cdcb 100644
  	allow $1 var_run_t:fifo_file write;
  ')
  
-@@ -6140,7 +7364,6 @@ interface(`files_pid_filetrans',`
+@@ -6140,7 +7382,6 @@ interface(`files_pid_filetrans',`
  	')
  
  	allow $1 var_t:dir search_dir_perms;
@@ -11852,7 +11896,7 @@ index f962f76..fa8cdcb 100644
  	filetrans_pattern($1, var_run_t, $2, $3, $4)
  ')
  
-@@ -6169,6 +7392,24 @@ interface(`files_pid_filetrans_lock_dir',`
+@@ -6169,6 +7410,24 @@ interface(`files_pid_filetrans_lock_dir',`
  
  ########################################
  ## <summary>
@@ -11877,7 +11921,7 @@ index f962f76..fa8cdcb 100644
  ##	Read and write generic process ID files.
  ## </summary>
  ## <param name="domain">
-@@ -6182,7 +7423,7 @@ interface(`files_rw_generic_pids',`
+@@ -6182,7 +7441,7 @@ interface(`files_rw_generic_pids',`
  		type var_t, var_run_t;
  	')
  
@@ -11886,7 +11930,7 @@ index f962f76..fa8cdcb 100644
  	list_dirs_pattern($1, var_t, var_run_t)
  	rw_files_pattern($1, var_run_t, var_run_t)
  ')
-@@ -6249,55 +7490,43 @@ interface(`files_dontaudit_ioctl_all_pids',`
+@@ -6249,55 +7508,43 @@ interface(`files_dontaudit_ioctl_all_pids',`
  
  ########################################
  ## <summary>
@@ -11949,7 +11993,7 @@ index f962f76..fa8cdcb 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6305,42 +7534,35 @@ interface(`files_delete_all_pids',`
+@@ -6305,42 +7552,35 @@ interface(`files_delete_all_pids',`
  ##	</summary>
  ## </param>
  #
@@ -11999,7 +12043,7 @@ index f962f76..fa8cdcb 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6348,18 +7570,18 @@ interface(`files_manage_all_pids',`
+@@ -6348,18 +7588,18 @@ interface(`files_manage_all_pids',`
  ##	</summary>
  ## </param>
  #
@@ -12023,7 +12067,7 @@ index f962f76..fa8cdcb 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6367,37 +7589,40 @@ interface(`files_mounton_all_poly_members',`
+@@ -6367,37 +7607,40 @@ interface(`files_mounton_all_poly_members',`
  ##	</summary>
  ## </param>
  #
@@ -12075,7 +12119,7 @@ index f962f76..fa8cdcb 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6405,18 +7630,17 @@ interface(`files_dontaudit_search_spool',`
+@@ -6405,18 +7648,17 @@ interface(`files_dontaudit_search_spool',`
  ##	</summary>
  ## </param>
  #
@@ -12098,7 +12142,7 @@ index f962f76..fa8cdcb 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6424,18 +7648,18 @@ interface(`files_list_spool',`
+@@ -6424,18 +7666,18 @@ interface(`files_list_spool',`
  ##	</summary>
  ## </param>
  #
@@ -12122,7 +12166,7 @@ index f962f76..fa8cdcb 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6443,19 +7667,18 @@ interface(`files_manage_generic_spool_dirs',`
+@@ -6443,19 +7685,18 @@ interface(`files_manage_generic_spool_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -12147,7 +12191,7 @@ index f962f76..fa8cdcb 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6463,55 +7686,130 @@ interface(`files_read_generic_spool',`
+@@ -6463,55 +7704,43 @@ interface(`files_read_generic_spool',`
  ##	</summary>
  ## </param>
  #
@@ -12175,46 +12219,101 @@ index f962f76..fa8cdcb 100644
  ##	</summary>
  ## </param>
 -## <param name="file">
+-##	<summary>
+-##	Type to which the created node will be transitioned.
+-##	</summary>
+-## </param>
+-## <param name="class">
+-##	<summary>
+-##	Object class(es) (single or set including {}) for which this
+-##	the transition will occur.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
 +## <rolecap/>
-+#
+ #
+-interface(`files_spool_filetrans',`
 +interface(`files_delete_all_pids',`
-+	gen_require(`
+ 	gen_require(`
+-		type var_t, var_spool_t;
 +		attribute pidfile;
 +		type var_t, var_run_t;
-+	')
-+
+ 	')
+ 
 +	files_search_pids($1)
-+	allow $1 var_t:dir search_dir_perms;
+ 	allow $1 var_t:dir search_dir_perms;
+-	filetrans_pattern($1, var_spool_t, $2, $3, $4)
 +	allow $1 var_run_t:dir rmdir;
 +	allow $1 var_run_t:lnk_file delete_lnk_file_perms;
 +	delete_files_pattern($1, pidfile, pidfile)
 +	delete_fifo_files_pattern($1, pidfile, pidfile)
 +	delete_sock_files_pattern($1, pidfile, { pidfile var_run_t })
-+')
-+
-+########################################
-+## <summary>
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Allow access to manage all polyinstantiated
+-##	directories on the system.
 +##	Delete all process ID directories.
-+## </summary>
-+## <param name="domain">
+ ## </summary>
+ ## <param name="domain">
  ##	<summary>
--##	Type to which the created node will be transitioned.
-+##	Domain allowed access.
+@@ -6519,53 +7748,68 @@ interface(`files_spool_filetrans',`
  ##	</summary>
  ## </param>
--## <param name="class">
-+#
+ #
+-interface(`files_polyinstantiate_all',`
 +interface(`files_delete_all_pid_dirs',`
-+	gen_require(`
+ 	gen_require(`
+-		attribute polydir, polymember, polyparent;
+-		type poly_t;
 +		attribute pidfile;
 +		type var_t, var_run_t;
-+	')
-+
+ 	')
+ 
+-	# Need to give access to /selinux/member
+-	selinux_compute_member($1)
+-
+-	# Need sys_admin capability for mounting
+-	allow $1 self:capability { chown fsetid sys_admin fowner };
+-
+-	# Need to give access to the directories to be polyinstantiated
+-	allow $1 polydir:dir { create open getattr search write add_name setattr mounton rmdir };
+-
+-	# Need to give access to the polyinstantiated subdirectories
+-	allow $1 polymember:dir search_dir_perms;
+-
+-	# Need to give access to parent directories where original
+-	# is remounted for polyinstantiation aware programs (like gdm)
+-	allow $1 polyparent:dir { getattr mounton };
+-
+-	# Need to give permission to create directories where applicable
+-	allow $1 self:process setfscreate;
+-	allow $1 polymember: dir { create setattr relabelto };
+-	allow $1 polydir: dir { write add_name open };
+-	allow $1 polyparent:dir { open read write remove_name add_name relabelfrom relabelto };
+-
+-	# Default type for mountpoints
+-	allow $1 poly_t:dir { create mounton };
+-	fs_unmount_xattr_fs($1)
+-
+-	fs_mount_tmpfs($1)
+-	fs_unmount_tmpfs($1)
 +	files_search_pids($1)
 +	allow $1 var_t:dir search_dir_perms;
 +	delete_dirs_pattern($1, pidfile, pidfile)
 +')
-+
+ 
+-	ifdef(`distro_redhat',`
+-		# namespace.init
+-		files_search_tmp($1)
+-		files_search_home($1)
+-		corecmd_exec_bin($1)
+-		seutil_domtrans_setfiles($1)
 +########################################
 +## <summary>
 +##	Make the specified type a file
@@ -12247,129 +12346,80 @@ index f962f76..fa8cdcb 100644
 +##	</p>
 +## </desc>
 +## <param name="file_type">
- ##	<summary>
--##	Object class(es) (single or set including {}) for which this
--##	the transition will occur.
++##	<summary>
 +##	Type of the file to be used as a
 +##	spool file.
- ##	</summary>
- ## </param>
--## <param name="name" optional="true">
++##	</summary>
++## </param>
 +## <infoflow type="none"/>
 +#
 +interface(`files_spool_file',`
 +	gen_require(`
 +		attribute spoolfile;
-+	')
+ 	')
 +
 +	files_type($1)
 +	typeattribute $1 spoolfile;
-+')
-+
-+########################################
-+## <summary>
-+##	Create all spool sockets
-+## </summary>
-+## <param name="domain">
- ##	<summary>
--##	The name of the object being created.
-+##	Domain allowed access.
- ##	</summary>
- ## </param>
- #
--interface(`files_spool_filetrans',`
-+interface(`files_create_all_spool_sockets',`
- 	gen_require(`
--		type var_t, var_spool_t;
-+		attribute spoolfile;
- 	')
- 
--	allow $1 var_t:dir search_dir_perms;
--	filetrans_pattern($1, var_spool_t, $2, $3, $4)
-+	allow $1 spoolfile:sock_file create_sock_file_perms;
- ')
- 
- ########################################
- ## <summary>
--##	Allow access to manage all polyinstantiated
--##	directories on the system.
-+##	Delete all spool sockets
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -6519,64 +7817,767 @@ interface(`files_spool_filetrans',`
- ##	</summary>
- ## </param>
- #
--interface(`files_polyinstantiate_all',`
-+interface(`files_delete_all_spool_sockets',`
- 	gen_require(`
--		attribute polydir, polymember, polyparent;
--		type poly_t;
-+		attribute spoolfile;
- 	')
- 
--	# Need to give access to /selinux/member
--	selinux_compute_member($1)
--
--	# Need sys_admin capability for mounting
--	allow $1 self:capability { chown fsetid sys_admin fowner };
--
--	# Need to give access to the directories to be polyinstantiated
--	allow $1 polydir:dir { create open getattr search write add_name setattr mounton rmdir };
--
--	# Need to give access to the polyinstantiated subdirectories
--	allow $1 polymember:dir search_dir_perms;
--
--	# Need to give access to parent directories where original
--	# is remounted for polyinstantiation aware programs (like gdm)
--	allow $1 polyparent:dir { getattr mounton };
--
--	# Need to give permission to create directories where applicable
--	allow $1 self:process setfscreate;
--	allow $1 polymember: dir { create setattr relabelto };
--	allow $1 polydir: dir { write add_name open };
--	allow $1 polyparent:dir { open read write remove_name add_name relabelfrom relabelto };
--
--	# Default type for mountpoints
--	allow $1 poly_t:dir { create mounton };
--	fs_unmount_xattr_fs($1)
--
--	fs_mount_tmpfs($1)
--	fs_unmount_tmpfs($1)
--
--	ifdef(`distro_redhat',`
--		# namespace.init
--		files_search_tmp($1)
--		files_search_home($1)
--		corecmd_exec_bin($1)
--		seutil_domtrans_setfiles($1)
--	')
-+	allow $1 spoolfile:sock_file delete_sock_file_perms;
  ')
  
  ########################################
  ## <summary>
 -##	Unconfined access to files.
-+##	Relabel to and from all spool
-+##	directory types.
++##	Create all spool sockets
  ## </summary>
  ## <param name="domain">
  ##	<summary>
- ##	Domain allowed access.
+@@ -6573,10 +7817,785 @@ interface(`files_polyinstantiate_all',`
  ##	</summary>
  ## </param>
-+## <rolecap/>
  #
 -interface(`files_unconfined',`
-+interface(`files_relabel_all_spool_dirs',`
++interface(`files_create_all_spool_sockets',`
  	gen_require(`
 -		attribute files_unconfined_type;
 +		attribute spoolfile;
-+		type var_t;
  	')
  
 -	typeattribute $1 files_unconfined_type;
++	allow $1 spoolfile:sock_file create_sock_file_perms;
++')
++
++########################################
++## <summary>
++##	Delete all spool sockets
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_delete_all_spool_sockets',`
++	gen_require(`
++		attribute spoolfile;
++	')
++
++	allow $1 spoolfile:sock_file delete_sock_file_perms;
++')
++
++########################################
++## <summary>
++##	Relabel to and from all spool
++##	directory types.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`files_relabel_all_spool_dirs',`
++	gen_require(`
++		attribute spoolfile;
++		type var_t;
++	')
++
 +	relabel_dirs_pattern($1, spoolfile, spoolfile)
 +')
 +
@@ -29328,7 +29378,7 @@ index 79a45f6..9a14d49 100644
 +	files_etc_filetrans($1, machineid_t, file, "machine-id" )
 +')
 diff --git a/policy/modules/system/init.te b/policy/modules/system/init.te
-index 17eda24..afe80c5 100644
+index 17eda24..c15f72a 100644
 --- a/policy/modules/system/init.te
 +++ b/policy/modules/system/init.te
 @@ -11,10 +11,31 @@ gen_require(`
@@ -29799,7 +29849,7 @@ index 17eda24..afe80c5 100644
  ')
  
  optional_policy(`
-@@ -216,7 +501,30 @@ optional_policy(`
+@@ -216,7 +501,31 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -29827,10 +29877,11 @@ index 17eda24..afe80c5 100644
 +optional_policy(`
  	unconfined_domain(init_t)
 +	domain_named_filetrans(init_t)
++	unconfined_server_domtrans(init_t)
  ')
  
  ########################################
-@@ -225,9 +533,9 @@ optional_policy(`
+@@ -225,9 +534,9 @@ optional_policy(`
  #
  
  allow initrc_t self:process { getpgid setsched setpgid setrlimit getsched };
@@ -29842,7 +29893,7 @@ index 17eda24..afe80c5 100644
  allow initrc_t self:passwd rootok;
  allow initrc_t self:key manage_key_perms;
  
-@@ -258,12 +566,16 @@ manage_fifo_files_pattern(initrc_t, initrc_state_t, initrc_state_t)
+@@ -258,12 +567,16 @@ manage_fifo_files_pattern(initrc_t, initrc_state_t, initrc_state_t)
  
  allow initrc_t initrc_var_run_t:file manage_file_perms;
  files_pid_filetrans(initrc_t, initrc_var_run_t, file)
@@ -29859,7 +29910,7 @@ index 17eda24..afe80c5 100644
  
  manage_dirs_pattern(initrc_t, initrc_var_log_t, initrc_var_log_t)
  manage_files_pattern(initrc_t, initrc_var_log_t, initrc_var_log_t)
-@@ -279,23 +591,36 @@ kernel_change_ring_buffer_level(initrc_t)
+@@ -279,23 +592,36 @@ kernel_change_ring_buffer_level(initrc_t)
  kernel_clear_ring_buffer(initrc_t)
  kernel_get_sysvipc_info(initrc_t)
  kernel_read_all_sysctls(initrc_t)
@@ -29902,7 +29953,7 @@ index 17eda24..afe80c5 100644
  corenet_tcp_sendrecv_all_ports(initrc_t)
  corenet_udp_sendrecv_all_ports(initrc_t)
  corenet_tcp_connect_all_ports(initrc_t)
-@@ -303,9 +628,11 @@ corenet_sendrecv_all_client_packets(initrc_t)
+@@ -303,9 +629,11 @@ corenet_sendrecv_all_client_packets(initrc_t)
  
  dev_read_rand(initrc_t)
  dev_read_urand(initrc_t)
@@ -29914,7 +29965,7 @@ index 17eda24..afe80c5 100644
  dev_rw_sysfs(initrc_t)
  dev_list_usbfs(initrc_t)
  dev_read_framebuffer(initrc_t)
-@@ -313,8 +640,10 @@ dev_write_framebuffer(initrc_t)
+@@ -313,8 +641,10 @@ dev_write_framebuffer(initrc_t)
  dev_read_realtime_clock(initrc_t)
  dev_read_sound_mixer(initrc_t)
  dev_write_sound_mixer(initrc_t)
@@ -29925,7 +29976,7 @@ index 17eda24..afe80c5 100644
  dev_delete_lvm_control_dev(initrc_t)
  dev_manage_generic_symlinks(initrc_t)
  dev_manage_generic_files(initrc_t)
-@@ -322,8 +651,7 @@ dev_manage_generic_files(initrc_t)
+@@ -322,8 +652,7 @@ dev_manage_generic_files(initrc_t)
  dev_delete_generic_symlinks(initrc_t)
  dev_getattr_all_blk_files(initrc_t)
  dev_getattr_all_chr_files(initrc_t)
@@ -29935,7 +29986,7 @@ index 17eda24..afe80c5 100644
  
  domain_kill_all_domains(initrc_t)
  domain_signal_all_domains(initrc_t)
-@@ -332,7 +660,6 @@ domain_sigstop_all_domains(initrc_t)
+@@ -332,7 +661,6 @@ domain_sigstop_all_domains(initrc_t)
  domain_sigchld_all_domains(initrc_t)
  domain_read_all_domains_state(initrc_t)
  domain_getattr_all_domains(initrc_t)
@@ -29943,7 +29994,7 @@ index 17eda24..afe80c5 100644
  domain_getsession_all_domains(initrc_t)
  domain_use_interactive_fds(initrc_t)
  # for lsof which is used by alsa shutdown:
-@@ -340,6 +667,7 @@ domain_dontaudit_getattr_all_udp_sockets(initrc_t)
+@@ -340,6 +668,7 @@ domain_dontaudit_getattr_all_udp_sockets(initrc_t)
  domain_dontaudit_getattr_all_tcp_sockets(initrc_t)
  domain_dontaudit_getattr_all_dgram_sockets(initrc_t)
  domain_dontaudit_getattr_all_pipes(initrc_t)
@@ -29951,7 +30002,7 @@ index 17eda24..afe80c5 100644
  
  files_getattr_all_dirs(initrc_t)
  files_getattr_all_files(initrc_t)
-@@ -347,14 +675,15 @@ files_getattr_all_symlinks(initrc_t)
+@@ -347,14 +676,15 @@ files_getattr_all_symlinks(initrc_t)
  files_getattr_all_pipes(initrc_t)
  files_getattr_all_sockets(initrc_t)
  files_purge_tmp(initrc_t)
@@ -29969,7 +30020,7 @@ index 17eda24..afe80c5 100644
  files_read_usr_files(initrc_t)
  files_manage_urandom_seed(initrc_t)
  files_manage_generic_spool(initrc_t)
-@@ -364,8 +693,12 @@ files_list_isid_type_dirs(initrc_t)
+@@ -364,8 +694,12 @@ files_list_isid_type_dirs(initrc_t)
  files_mounton_isid_type_dirs(initrc_t)
  files_list_default(initrc_t)
  files_mounton_default(initrc_t)
@@ -29983,7 +30034,7 @@ index 17eda24..afe80c5 100644
  fs_list_inotifyfs(initrc_t)
  fs_register_binary_executable_type(initrc_t)
  # rhgb-console writes to ramfs
-@@ -375,10 +708,11 @@ fs_mount_all_fs(initrc_t)
+@@ -375,10 +709,11 @@ fs_mount_all_fs(initrc_t)
  fs_unmount_all_fs(initrc_t)
  fs_remount_all_fs(initrc_t)
  fs_getattr_all_fs(initrc_t)
@@ -29997,7 +30048,7 @@ index 17eda24..afe80c5 100644
  mcs_process_set_categories(initrc_t)
  
  mls_file_read_all_levels(initrc_t)
-@@ -387,8 +721,10 @@ mls_process_read_up(initrc_t)
+@@ -387,8 +722,10 @@ mls_process_read_up(initrc_t)
  mls_process_write_down(initrc_t)
  mls_rangetrans_source(initrc_t)
  mls_fd_share_all_levels(initrc_t)
@@ -30008,7 +30059,7 @@ index 17eda24..afe80c5 100644
  
  storage_getattr_fixed_disk_dev(initrc_t)
  storage_setattr_fixed_disk_dev(initrc_t)
-@@ -398,6 +734,7 @@ term_use_all_terms(initrc_t)
+@@ -398,6 +735,7 @@ term_use_all_terms(initrc_t)
  term_reset_tty_labels(initrc_t)
  
  auth_rw_login_records(initrc_t)
@@ -30016,7 +30067,7 @@ index 17eda24..afe80c5 100644
  auth_setattr_login_records(initrc_t)
  auth_rw_lastlog(initrc_t)
  auth_read_pam_pid(initrc_t)
-@@ -416,20 +753,18 @@ logging_read_all_logs(initrc_t)
+@@ -416,20 +754,18 @@ logging_read_all_logs(initrc_t)
  logging_append_all_logs(initrc_t)
  logging_read_audit_config(initrc_t)
  
@@ -30040,7 +30091,7 @@ index 17eda24..afe80c5 100644
  
  ifdef(`distro_debian',`
  	dev_setattr_generic_dirs(initrc_t)
-@@ -451,7 +786,6 @@ ifdef(`distro_gentoo',`
+@@ -451,7 +787,6 @@ ifdef(`distro_gentoo',`
  	allow initrc_t self:process setfscreate;
  	dev_create_null_dev(initrc_t)
  	dev_create_zero_dev(initrc_t)
@@ -30048,7 +30099,7 @@ index 17eda24..afe80c5 100644
  	term_create_console_dev(initrc_t)
  
  	# unfortunately /sbin/rc does stupid tricks
-@@ -486,6 +820,10 @@ ifdef(`distro_gentoo',`
+@@ -486,6 +821,10 @@ ifdef(`distro_gentoo',`
  	sysnet_setattr_config(initrc_t)
  
  	optional_policy(`
@@ -30059,7 +30110,7 @@ index 17eda24..afe80c5 100644
  		alsa_read_lib(initrc_t)
  	')
  
-@@ -506,7 +844,7 @@ ifdef(`distro_redhat',`
+@@ -506,7 +845,7 @@ ifdef(`distro_redhat',`
  
  	# Red Hat systems seem to have a stray
  	# fd open from the initrd
@@ -30068,7 +30119,7 @@ index 17eda24..afe80c5 100644
  	files_dontaudit_read_root_files(initrc_t)
  
  	# These seem to be from the initrd
-@@ -521,6 +859,7 @@ ifdef(`distro_redhat',`
+@@ -521,6 +860,7 @@ ifdef(`distro_redhat',`
  	files_create_boot_dirs(initrc_t)
  	files_create_boot_flag(initrc_t)
  	files_rw_boot_symlinks(initrc_t)
@@ -30076,7 +30127,7 @@ index 17eda24..afe80c5 100644
  	# wants to read /.fonts directory
  	files_read_default_files(initrc_t)
  	files_mountpoint(initrc_tmp_t)
-@@ -541,6 +880,7 @@ ifdef(`distro_redhat',`
+@@ -541,6 +881,7 @@ ifdef(`distro_redhat',`
  	miscfiles_rw_localization(initrc_t)
  	miscfiles_setattr_localization(initrc_t)
  	miscfiles_relabel_localization(initrc_t)
@@ -30084,7 +30135,7 @@ index 17eda24..afe80c5 100644
  
  	miscfiles_read_fonts(initrc_t)
  	miscfiles_read_hwdata(initrc_t)
-@@ -550,8 +890,44 @@ ifdef(`distro_redhat',`
+@@ -550,8 +891,44 @@ ifdef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -30129,7 +30180,7 @@ index 17eda24..afe80c5 100644
  	')
  
  	optional_policy(`
-@@ -559,14 +935,31 @@ ifdef(`distro_redhat',`
+@@ -559,14 +936,31 @@ ifdef(`distro_redhat',`
  		rpc_write_exports(initrc_t)
  		rpc_manage_nfs_state_data(initrc_t)
  	')
@@ -30161,7 +30212,7 @@ index 17eda24..afe80c5 100644
  	')
  ')
  
-@@ -577,6 +970,39 @@ ifdef(`distro_suse',`
+@@ -577,6 +971,39 @@ ifdef(`distro_suse',`
  	')
  ')
  
@@ -30201,7 +30252,7 @@ index 17eda24..afe80c5 100644
  optional_policy(`
  	amavis_search_lib(initrc_t)
  	amavis_setattr_pid_files(initrc_t)
-@@ -589,6 +1015,8 @@ optional_policy(`
+@@ -589,6 +1016,8 @@ optional_policy(`
  optional_policy(`
  	apache_read_config(initrc_t)
  	apache_list_modules(initrc_t)
@@ -30210,7 +30261,7 @@ index 17eda24..afe80c5 100644
  ')
  
  optional_policy(`
-@@ -610,6 +1038,7 @@ optional_policy(`
+@@ -610,6 +1039,7 @@ optional_policy(`
  
  optional_policy(`
  	cgroup_stream_connect_cgred(initrc_t)
@@ -30218,7 +30269,7 @@ index 17eda24..afe80c5 100644
  ')
  
  optional_policy(`
-@@ -626,6 +1055,17 @@ optional_policy(`
+@@ -626,6 +1056,17 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30236,7 +30287,7 @@ index 17eda24..afe80c5 100644
  	dev_getattr_printer_dev(initrc_t)
  
  	cups_read_log(initrc_t)
-@@ -642,9 +1082,13 @@ optional_policy(`
+@@ -642,9 +1083,13 @@ optional_policy(`
  	dbus_connect_system_bus(initrc_t)
  	dbus_system_bus_client(initrc_t)
  	dbus_read_config(initrc_t)
@@ -30250,7 +30301,7 @@ index 17eda24..afe80c5 100644
  	')
  
  	optional_policy(`
-@@ -657,15 +1101,11 @@ optional_policy(`
+@@ -657,15 +1102,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30268,7 +30319,7 @@ index 17eda24..afe80c5 100644
  ')
  
  optional_policy(`
-@@ -686,6 +1126,15 @@ optional_policy(`
+@@ -686,6 +1127,15 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30284,7 +30335,7 @@ index 17eda24..afe80c5 100644
  	inn_exec_config(initrc_t)
  ')
  
-@@ -726,6 +1175,7 @@ optional_policy(`
+@@ -726,6 +1176,7 @@ optional_policy(`
  	lpd_list_spool(initrc_t)
  
  	lpd_read_config(initrc_t)
@@ -30292,7 +30343,7 @@ index 17eda24..afe80c5 100644
  ')
  
  optional_policy(`
-@@ -743,7 +1193,13 @@ optional_policy(`
+@@ -743,7 +1194,13 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30307,7 +30358,7 @@ index 17eda24..afe80c5 100644
  	mta_dontaudit_read_spool_symlinks(initrc_t)
  ')
  
-@@ -766,6 +1222,10 @@ optional_policy(`
+@@ -766,6 +1223,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30318,7 +30369,7 @@ index 17eda24..afe80c5 100644
  	postgresql_manage_db(initrc_t)
  	postgresql_read_config(initrc_t)
  ')
-@@ -775,10 +1235,20 @@ optional_policy(`
+@@ -775,10 +1236,20 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30339,7 +30390,7 @@ index 17eda24..afe80c5 100644
  	quota_manage_flags(initrc_t)
  ')
  
-@@ -787,6 +1257,10 @@ optional_policy(`
+@@ -787,6 +1258,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30350,7 +30401,7 @@ index 17eda24..afe80c5 100644
  	fs_write_ramfs_sockets(initrc_t)
  	fs_search_ramfs(initrc_t)
  
-@@ -808,8 +1282,6 @@ optional_policy(`
+@@ -808,8 +1283,6 @@ optional_policy(`
  	# bash tries ioctl for some reason
  	files_dontaudit_ioctl_all_pids(initrc_t)
  
@@ -30359,7 +30410,7 @@ index 17eda24..afe80c5 100644
  ')
  
  optional_policy(`
-@@ -818,6 +1290,10 @@ optional_policy(`
+@@ -818,6 +1291,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30370,7 +30421,7 @@ index 17eda24..afe80c5 100644
  	# shorewall-init script run /var/lib/shorewall/firewall
  	shorewall_lib_domtrans(initrc_t)
  ')
-@@ -827,10 +1303,12 @@ optional_policy(`
+@@ -827,10 +1304,12 @@ optional_policy(`
  	squid_manage_logs(initrc_t)
  ')
  
@@ -30383,7 +30434,7 @@ index 17eda24..afe80c5 100644
  
  optional_policy(`
  	ssh_dontaudit_read_server_keys(initrc_t)
-@@ -857,21 +1335,60 @@ optional_policy(`
+@@ -857,21 +1336,60 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30445,7 +30496,7 @@ index 17eda24..afe80c5 100644
  ')
  
  optional_policy(`
-@@ -887,6 +1404,10 @@ optional_policy(`
+@@ -887,6 +1405,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30456,7 +30507,7 @@ index 17eda24..afe80c5 100644
  	# Set device ownerships/modes.
  	xserver_setattr_console_pipes(initrc_t)
  
-@@ -897,3 +1418,218 @@ optional_policy(`
+@@ -897,3 +1419,218 @@ optional_policy(`
  optional_policy(`
  	zebra_read_config(initrc_t)
  ')
@@ -39234,10 +39285,10 @@ index 0000000..1d9bdfd
 +')
 diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
 new file mode 100644
-index 0000000..9785384
+index 0000000..e4b127c
 --- /dev/null
 +++ b/policy/modules/system/systemd.te
-@@ -0,0 +1,635 @@
+@@ -0,0 +1,636 @@
 +policy_module(systemd, 1.0.0)
 +
 +#######################################
@@ -39532,6 +39583,7 @@ index 0000000..9785384
 +mls_file_upgrade(systemd_tmpfiles_t)
 +
 +selinux_get_enforce_mode(systemd_tmpfiles_t)
++selinux_setcheckreqprot(systemd_tmpfiles_t)
 +
 +auth_manage_faillog(systemd_tmpfiles_t)
 +auth_relabel_faillog(systemd_tmpfiles_t)
@@ -40465,7 +40517,7 @@ index 0abaf84..8b34dbc 100644
 -/usr/lib/openoffice/program/[^/]+\.bin -- gen_context(system_u:object_r:unconfined_execmem_exec_t,s0)
 -')
 diff --git a/policy/modules/system/unconfined.if b/policy/modules/system/unconfined.if
-index 5ca20a9..01e03ec 100644
+index 5ca20a9..7bbabfc 100644
 --- a/policy/modules/system/unconfined.if
 +++ b/policy/modules/system/unconfined.if
 @@ -12,53 +12,57 @@
@@ -40576,7 +40628,7 @@ index 5ca20a9..01e03ec 100644
  ')
  
  ########################################
-@@ -175,414 +185,5 @@ interface(`unconfined_alias_domain',`
+@@ -175,381 +185,12 @@ interface(`unconfined_alias_domain',`
  ## </param>
  #
  interface(`unconfined_execmem_alias_program',`
@@ -40949,54 +41001,64 @@ index 5ca20a9..01e03ec 100644
 -	')
 -
 -	allow $1 unconfined_t:dbus send_msg;
--')
--
--########################################
--## <summary>
--##	Send and receive messages from
--##	unconfined_t over dbus.
--## </summary>
--## <param name="domain">
--##	<summary>
--##	Domain allowed access.
--##	</summary>
--## </param>
--#
--interface(`unconfined_dbus_chat',`
--	gen_require(`
--		type unconfined_t;
--		class dbus send_msg;
--	')
--
--	allow $1 unconfined_t:dbus send_msg;
--	allow unconfined_t $1:dbus send_msg;
--')
--
--########################################
--## <summary>
--##	Connect to the the unconfined DBUS
--##	for service (acquire_svc).
--## </summary>
--## <param name="domain">
--##	<summary>
--##	Domain allowed access.
--##	</summary>
--## </param>
--#
--interface(`unconfined_dbus_connect',`
--	gen_require(`
--		type unconfined_t;
--		class dbus acquire_svc;
--	')
--
--	allow $1 unconfined_t:dbus acquire_svc;
 +	refpolicywarn(`$0() has been deprecated.')
  ')
+ 
+ ########################################
+ ## <summary>
+-##	Send and receive messages from
+-##	unconfined_t over dbus.
++##	Connect to unconfined_server with a unix socket.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -557,20 +198,19 @@ interface(`unconfined_dbus_send',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`unconfined_dbus_chat',`
++interface(`unconfined_server_stream_connect',`
+ 	gen_require(`
+-		type unconfined_t;
+-		class dbus send_msg;
++		type unconfined_server_t;
+ 	')
+ 
+-	allow $1 unconfined_t:dbus send_msg;
+-	allow unconfined_t $1:dbus send_msg;
++	files_search_pids($1)
++	files_write_generic_pid_pipes($1)
++	allow $1 unconfined_server_t:unix_stream_socket { getattr connectto };
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Connect to the the unconfined DBUS
+-##	for service (acquire_svc).
++##	Connect to unconfined_server with a unix socket.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -578,11 +218,10 @@ interface(`unconfined_dbus_chat',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`unconfined_dbus_connect',`
++interface(`unconfined_server_domtrans',`
+ 	gen_require(`
+-		type unconfined_t;
+-		class dbus acquire_svc;
++		type unconfined_server_t;
+ 	')
+ 
+-	allow $1 unconfined_t:dbus acquire_svc;
++	corecmd_bin_domtrans($1, unconfined_server_t)
+ ')
 diff --git a/policy/modules/system/unconfined.te b/policy/modules/system/unconfined.te
-index 5fe902d..61f19e9 100644
+index 5fe902d..fe042f9 100644
 --- a/policy/modules/system/unconfined.te
 +++ b/policy/modules/system/unconfined.te
-@@ -1,207 +1,7 @@
+@@ -1,207 +1,15 @@
 -policy_module(unconfined, 3.5.1)
 +policy_module(unconfined, 3.5.0)
  
@@ -41004,7 +41066,8 @@ index 5fe902d..61f19e9 100644
  #
  # Declarations
  #
--
++attribute unconfined_services;
+ 
 -# usage in this module of types created by these
 -# calls is not correct, however we dont currently
 -# have another method to add access to these types
@@ -41012,10 +41075,13 @@ index 5fe902d..61f19e9 100644
 -userdom_manage_home_role(unconfined_r, unconfined_t)
 -userdom_manage_tmp_role(unconfined_r, unconfined_t)
 -userdom_manage_tmpfs_role(unconfined_r, unconfined_t)
--
++type unconfined_service_t;
++domain_type(unconfined_service_t)
+ 
 -type unconfined_exec_t;
 -init_system_domain(unconfined_t, unconfined_exec_t)
--
++unconfined_domain(unconfined_service_t)
+ 
 -type unconfined_execmem_t;
 -type unconfined_execmem_exec_t;
 -init_system_domain(unconfined_execmem_t, unconfined_execmem_exec_t)
@@ -41205,7 +41271,8 @@ index 5fe902d..61f19e9 100644
 -optional_policy(`
 -	unconfined_dbus_chat(unconfined_execmem_t)
 -')
-+attribute unconfined_services;
++corecmd_bin_entry_type(unconfined_service_t)
++corecmd_shell_entry_type(unconfined_service_t)
 diff --git a/policy/modules/system/userdomain.fc b/policy/modules/system/userdomain.fc
 index db75976..e4eb903 100644
 --- a/policy/modules/system/userdomain.fc
