@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 24%{?dist}
+Release: 25%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -580,6 +580,63 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Feb 18 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-25
+- Add lvm_read_metadata()
+- Allow auditadm to search /var/log/audit dir
+- Add lvm_read_metadata() interface
+- Allow confined users to run vmtools helpers
+- Fix userdom_common_user_template()
+- Generic systemd unit scripts do write check on /
+- Allow init_t to create init_tmp_t in /tmp.This is for temporary content created by generic unit files
+- Add additional fixes needed for init_t and setup script running in generic unit files
+- Allow general users to create packet_sockets
+- added connlcli port
+- Add init_manage_transient_unit() interface
+- Allow init_t (generic unit files) to manage rpc state date as we had it for initrc_t
+- Fix userdomain.te to require passwd class
+- devicekit_power sends out a signal to all processes on the message bus when power is going down
+- Dontaudit rendom domains listing /proc and hittping system_map_t
+- Dontauit leaks of var_t into ifconfig_t
+- Allow domains that transition to ssh_t to manipulate its keyring
+- Define oracleasm_t as a device node
+- Change to handle /root as a symbolic link for os-tree
+- Allow sysadm_t to create packet_socket, also move some rules to attributes
+- Add label for openvswitch port
+- Remove general transition for files/dirs created in /etc/mail which got etc_aliases_t label.
+- Allow postfix_local to read .forward in pcp lib files
+- Allow pegasus_openlmi_storage_t to read lvm metadata
+- Add additional fixes for pegasus_openlmi_storage_t
+- Allow bumblebee to manage debugfs
+- Make bumblebee as unconfined domain
+- Allow snmp to read etc_aliases_t
+- Allow lscpu running in pegasus_openlmi_storage_t to read /dev/mem
+- Allow pegasus_openlmi_storage_t to read /proc/1/environ
+- Dontaudit read gconf files for cupsd_config_t
+- make vmtools as unconfined domain
+- Add vmtools_helper_t for helper scripts. Allow vmtools shutdonw a host and run ifconfig.
+- Allow collectd_t to use a mysql database
+- Allow ipa-otpd to perform DNS name resolution
+- Added new policy for keepalived
+- Allow openlmi-service provider to manage transitient units and allow stream connect to sssd
+- Add additional fixes new pscs-lite+polkit support
+- Add labeling for /run/krb5kdc
+- Change w3c_validator_tmp_t to httpd_w3c_validator_tmp_t in F20
+- Allow pcscd to read users proc info
+- Dontaudit smbd_t sending out random signuls
+- Add boolean to allow openshift domains to use nfs
+- Allow w3c_validator to create content in /tmp
+- zabbix_agent uses nsswitch
+- Allow procmail and dovecot to work together to deliver mail
+- Allow spamd to execute files in homedir if boolean turned on
+- Allow openvswitch to listen on port 6634
+- Add net_admin capability in collectd policy
+- Fixed snapperd policy
+- Fixed bugsfor pcp policy
+- Allow dbus_system_domains to be started by init
+- Fixed some interfaces
+- Add kerberos_keytab_domain attribute
+- Fix snapperd_conf_t def
+
 * Fri Feb 14 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-24
 - Dontaudit rendom domains listing /proc and hittping system_map_t
 - devicekit_power sends out a signal to all processes on the message bus when power is going down
