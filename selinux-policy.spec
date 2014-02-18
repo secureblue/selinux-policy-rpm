@@ -414,7 +414,7 @@ echo "
 #     permissive - SELinux prints warnings instead of enforcing.
 #     disabled - No SELinux policy is loaded.
 SELINUX=enforcing
-# SELINUXTYPE= can take one of these two values:
+# SELINUXTYPE= can take one of these three values:
 #     targeted - Targeted processes are protected,
 #     minimum - Modification of targeted policy. Only selected processes are protected. 
 #     mls - Multi Level Security protection.
