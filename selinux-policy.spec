@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 25%{?dist}
+Release: 26%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -580,6 +580,24 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Feb 21 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-26
+- Add labeling for /usr/sbin/amavi
+- Colin asked for this program to be treated as cloud-init
+- Allow ftp services to manage xferlog_t
+- Fix vmtools policy to allow user roles to access vmtools_helper_t
+- Allow block_suspend cap2 for ipa-otpd
+- Allow certmonger to search home content
+- Allow pkcsslotd to read users state
+- Allow exim to use pam stack to check passwords
+- Add labeling for /usr/sbin/amavi
+- Colin asked for this program to be treated as cloud-init
+- Allow ftp services to manage xferlog_t
+- Fix vmtools policy to allow user roles to access vmtools_helper_t
+- Allow block_suspend cap2 for ipa-otpd
+- Allow certmonger to search home content
+- Allow pkcsslotd to read users state
+- Allow exim to use pam stack to check passwords
+
 * Tue Feb 18 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-25
 - Add lvm_read_metadata()
 - Allow auditadm to search /var/log/audit dir
