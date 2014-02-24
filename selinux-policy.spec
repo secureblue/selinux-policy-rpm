@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 26%{?dist}
+Release: 27%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -580,6 +580,19 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Feb 24 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-27
+- Make unconfined_service_t valid in enforcing
+- Remove transition for temp dirs created by init_t
+- gdm-simple-slave uses use setsockopt
+- Treat usermodehelper_t as a sysctl_type
+- xdm communicates with geo
+- Add lvm_read_metadata()
+- Allow rabbitmq_beam to connect to jabber_interserver_port
+- Allow logwatch_mail_t to transition to qmail_inject and queueu
+- Added new rules to pcp policy
+- Allow vmtools_helper_t to change role to system_r
+- Allow NM to dbus chat with vmtools
+
 * Fri Feb 21 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-26
 - Add labeling for /usr/sbin/amavi
 - Colin asked for this program to be treated as cloud-init
