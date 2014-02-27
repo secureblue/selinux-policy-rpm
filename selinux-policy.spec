@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 27%{?dist}
+Release: 28%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -580,6 +580,35 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Feb 27 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-28
+- Allow bumblebeed to send signal to insmod
+- Dontaudit attempts by crond_t net_admin caused by journald
+- Allow the docker daemon to mounton tty_device_t
+- Add addtional snapper fixes to allo relabel file_t
+- Allow setattr for all mountpoints
+- Allow snapperd to write all dirs
+- Add support for /etc/sysconfig/snapper
+- Allow mozilla_plugin to getsession
+- Add labeling for thttpd
+- Allow sosreport to execute grub2-probe
+- Allow NM to manage hostname config file
+- Allow systemd_timedated_t to dbus chat with rpm_script_t
+- Allow lsmd plugins to connect to http/ssh/http_cache ports by default
+- Add lsmd_plugin_connect_any boolea
+- Add support for ipset
+- Add support for /dev/sclp_line0
+- Add modutils_signal_insmod()
+- Add files_relabelto_all_mountpoints() interface
+- Allow the docker daemon to mounton tty_device_t
+- Allow all systemd domains to read /proc/1
+- Login programs talking to journald are attempting to net_admin, add dontaudit
+- init is not gettar on processes as shutdown time
+- Add systemd_hostnamed_manage_config() interface
+- Make unconfined_service_t valid in enforcing
+- Remove transition for temp dirs created by init_t
+- gdm-simple-slave uses use setsockopt
+- Add lvm_read_metadata()
+
 * Mon Feb 24 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-27
 - Make unconfined_service_t valid in enforcing
 - Remove transition for temp dirs created by init_t
