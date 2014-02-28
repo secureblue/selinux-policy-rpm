@@ -580,6 +580,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Feb 28 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-29
+- Make docker as permissive domain
+
 * Thu Feb 27 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-28
 - Allow bumblebeed to send signal to insmod
 - Dontaudit attempts by crond_t net_admin caused by journald
