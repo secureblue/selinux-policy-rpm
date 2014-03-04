@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 28%{?dist}
+Release: 29%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -580,6 +580,25 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Mar 4 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-30
+- Allow block_suspend cap2 for systemd-logind and rw dri device
+- Add labeling for /usr/libexec/nm-libreswan-service
+- Allow locallogin to rw xdm key to make Virtual Terminal login providing smartcard pin working
+- Add xserver_rw_xdm_keys()
+- Allow rpm_script_t to dbus chat also with systemd-located
+- Fix ipa_stream_connect_otpd()
+- update lpd_manage_spool() interface
+- Allow krb5kdc to stream connect to ipa-otpd
+- Add ipa_stream_connect_otpd() interface
+- Allow vpnc to unlink NM pids
+- Add networkmanager_delete_pid_files()
+- Allow munin plugins to access unconfined plugins
+- update abrt_filetrans_named_content to cover /var/spool/debug
+- Label /var/spool/debug as abrt_var_cache_t
+- Allow rhsmcertd to connect to squid port
+- Make docker_transition_unconfined as optional boolean
+- Allow certmonger to list home dirs
+
 * Fri Feb 28 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-29
 - Make docker as permissive domain
 
