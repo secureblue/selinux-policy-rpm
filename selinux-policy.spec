@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 29%{?dist}
+Release: 30%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -580,6 +580,24 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Mar 7 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-31
+- Modify xdm_write_home to allow create files/links in /root with xdm_home_t
+- Add more fixes for https://fedoraproject.org/wiki/Changes/XorgWithoutRootRights
+- Add xserver_dbus_chat() interface
+- Add sysnet_filetrans_named_content_ifconfig() interface
+- Change userdom_use_user_inherited_ttys to userdom_use_user_ttys for systemd-tty-ask
+- Turn on cron_userdomain_transition by default for now. Until we get a fix for #1063503
+- Allow lscpu running as rhsmcertd_t to read sysinfo
+- Allow virt domains to read network state
+- Added pcp rules
+- Allow ctdbd to connect own ports
+- Fix samba_export_all_rw booleanto cover also non security dirs
+- Allow swift to exec rpm in swift_t and allow to create tmp files/dirs
+- Allow neutron to create /run/netns with correct labeling
+- Allow to run ip cmd in neutron_t domain
+- Allow rpm_script_t to dbus chat also with systemd-located
+- Fix ipa_stream_connect_otpd()
+
 * Tue Mar 4 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-30
 - Allow block_suspend cap2 for systemd-logind and rw dri device
 - Add labeling for /usr/libexec/nm-libreswan-service
