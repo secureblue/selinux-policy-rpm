@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 30%{?dist}
+Release: 31%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -580,6 +580,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Mar 10 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-32
+- Allow numad to write scan_sleep_millisecs
+- Turn on entropyd_use_audio boolean by default
+- Allow cgred to read /etc/cgconfig.conf because it contains templates used together with rules from /etc/cgrules.conf.
+- Allow lscpu running as rhsmcertd_t to read /proc/sysinfo
+- Allow numad to write scan_sleep_millisecs
+- Turn on entropyd_use_audio boolean by default
+- Allow cgred to read /etc/cgconfig.conf because it contains templates used together with rules from /etc/cgrules.conf.
+- Allow lscpu running as rhsmcertd_t to read /proc/sysinfo
+- Fix label on irclogs in the homedir
+
 * Fri Mar 7 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-31
 - Modify xdm_write_home to allow create files/links in /root with xdm_home_t
 - Add more fixes for https://fedoraproject.org/wiki/Changes/XorgWithoutRootRights
