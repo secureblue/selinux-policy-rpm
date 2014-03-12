@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 31%{?dist}
+Release: 32%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -580,6 +580,25 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Mar 12 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-33
+- Allow init_t to stream connect to ipsec
+- Add /usr/lib/systemd/systemd-networkd policy
+- Add sysnet_manage_config_dirs()
+- Add support for /var/run/systemd/network and labeled it as net_conf_t
+- Allow unpriv SELinux users to dbus chat with firewalld
+- Add lvm_write_metadata()
+- Label /etc/yum.reposd dir as system_conf_t. Should be safe because system_conf_t is base_ro_file_type
+- Add support for /dev/vmcp and /dev/sclp
+- Add docker_connect_any boolean
+- Fix zabbix policy
+- Allow zabbix to send system log msgs
+- Allow pegasus_openlmi_storage_t to write lvm metadata
+- Updated pcp_bind_all_unreserved_ports
+- Allow numad to write scan_sleep_millisecs
+- Turn on entropyd_use_audio boolean by default
+- Allow cgred to read /etc/cgconfig.conf because it contains templates used together with rules from /etc/cgrules.conf.
+- Allow lscpu running as rhsmcertd_t to read /proc/sysinfo
+
 * Mon Mar 10 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-32
 - Allow numad to write scan_sleep_millisecs
 - Turn on entropyd_use_audio boolean by default
