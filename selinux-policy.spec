@@ -580,6 +580,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Mar 12 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-34
+- Add install_t for anaconda
+
 * Wed Mar 12 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-33
 - Allow init_t to stream connect to ipsec
 - Add /usr/lib/systemd/systemd-networkd policy
