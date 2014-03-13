@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 34%{?dist}
+Release: 35%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -580,6 +580,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Mar 13 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-35
+- sshd to read network sysctls
+- Allow vmtools_helper_t to execute bin_t
+- Add support for /usr/share/joomla
+- /var/lib/containers should be labeled as openshift content for now
+- Allow docker domains to talk to the login programs, to allow a process to login into the container
+
 * Wed Mar 12 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-34
 - Add install_t for anaconda
 
