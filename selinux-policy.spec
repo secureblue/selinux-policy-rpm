@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 35%{?dist}
+Release: 36%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -580,6 +580,19 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Mar 14 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-36
+- Add additional fixes for systemd_networkd_t
+- Allow systemd-logind to manage user_tmpfs_t
+- Allow systemd-logind to mount /run/user/1000 to get gdm working
+- Dontaudit attempts to setsched on the kernel_t threads
+- Allow munin mail plugins to read network systcl
+- Fix git_system_enable_homedirs boolean
+- Make cimtest script 03_defineVS.py of ComputerSystem group working
+- Make  abrt-java-connector working
+- Allow net_admin cap for fence_virtd running as fenced_t
+- Allow vmtools_helper_t to execute bin_t
+- Add support for /usr/share/joomla
+
 * Thu Mar 13 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-35
 - sshd to read network sysctls
 - Allow vmtools_helper_t to execute bin_t
