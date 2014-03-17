@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 37%{?dist}
+Release: 38%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -580,6 +580,14 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Mar 17 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-38
+- Label sddm as xdm_exec_t to make KDE working again
+- Allow postgresql to read network state
+- Allow java running as pki_tomcat to read network sysctls
+- Fix cgroup.te to allow cgred to read cgconfig_etc_t
+- Allow beam.smp to use ephemeral ports
+- Allow winbind to use the nis to authenticate passwords
+
 * Mon Mar 17 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-37
 - Allow collectd to talk to libvirt
 - Allow chrome_sandbox to use leaked unix_stream_sockets
