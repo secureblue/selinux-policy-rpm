@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 36%{?dist}
+Release: 37%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -580,6 +580,26 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Mar 17 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-37
+- Allow collectd to talk to libvirt
+- Allow chrome_sandbox to use leaked unix_stream_sockets
+- Dontaudit leaks of sockets into chrome_sandbox_t
+- If you create a cups directory in /var/cache then it should be labeled cups_rw_etc_t
+- Run vmtools as unconfined domains
+- Allow snort to manage its log files
+- Allow systemd_cronjob_t to be entered via bin_t
+- Allow procman to list doveconf_etc_t
+- allow keyring daemon to create content in tmpfs directories
+- Add proper labelling for icedtea-web
+- vpnc is creating content in networkmanager var run directory
+- unconfined_service should be allowed to transition to rpm_script_t
+- Allow couchdb to listen on port 6984
+- Dontaudit attempts by unpriv user domain to write to /run/mount directory, caused by running mount command
+- Allow systemd-logind to setup user tmpfs directories
+- Add additional fixes for systemd_networkd_t
+- Allow systemd-logind to manage user_tmpfs_t
+- Allow systemd-logind to mount /run/user/1000 to get gdm working
+
 * Fri Mar 14 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-36
 - Add additional fixes for systemd_networkd_t
 - Allow systemd-logind to manage user_tmpfs_t
