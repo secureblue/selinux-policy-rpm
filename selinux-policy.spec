@@ -305,6 +305,7 @@ fi;
 
 %define modulesList() \
 awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp ", $1 }' ./policy/modules-base.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules-base.lst \
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "base" { printf "%%s.pp ", $1 }' ./policy/modules-base.conf > %{buildroot}/%{_usr}/share/selinux/%1/base.lst \
 if [ -e ./policy/modules-contrib.conf ];then \
 	awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp ", $1 }' ./policy/modules-contrib.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules-contrib.lst; \
 fi;
@@ -486,6 +487,7 @@ exit 0
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/sysadm_u 
 %fileList targeted
+%{_usr}/share/selinux/targeted/base.lst
 %{_usr}/share/selinux/targeted/modules-base.lst
 %{_usr}/share/selinux/targeted/modules-contrib.lst
 %endif
@@ -545,6 +547,7 @@ exit 0
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/sysadm_u 
 %fileList targeted
 %fileList minimum
+%{_usr}/share/selinux/minimum/base.lst
 %{_usr}/share/selinux/minimum/modules-base.lst
 %{_usr}/share/selinux/minimum/modules-contrib.lst
 %endif
@@ -575,6 +578,7 @@ SELinux Reference policy mls base module.
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/mls/contexts/users/unconfined_u
 %fileList mls
+%{_usr}/share/selinux/mls/base.lst
 %{_usr}/share/selinux/mls/modules-base.lst
 %{_usr}/share/selinux/mls/modules-contrib.lst
 %endif
