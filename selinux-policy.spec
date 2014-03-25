@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 38%{?dist}
+Release: 39%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -584,6 +584,34 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Mar 25 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-39
+- Manage_service_perms should include enable and disable, need backport to RHEL7
+- Allow also unpriv user to run vmtools
+- Allow secadm to read /dev/urandom and meminfo
+- Add userdom_tmp_role for secadm_t
+- Allow postgresql to read network state
+- Add a new file context for /var/named/chroot/run directory
+- Add booleans to allow docker processes to use nfs and samba
+- Dontaudit net_amdin for /usr/lib/jvm/java-1.7.0-openjdk-1.7.0.51-2.4.5.1.el7.x86_64/jre-abrt/bin/java running as pki_tomcat_t
+- Allow puppet stream connect to mysql
+- Fixed some rules related to puppet policy
+- Allow vmware-user-sui to use user ttys
+- Allow talk 2 users logged via console too
+- Additional avcs for docker when running tests
+- allow anaconda to dbus chat with systemd-localed
+- clean up rhcs.te
+- remove dup rules from haproxy.te
+- Add fixes for haproxy based on bperkins@redhat.com
+- Allow cmirrord to make dmsetup working
+- Allow NM to execute arping
+- Allow users to send messages through talk
+- update rtas_errd policy
+- Add support for /var/spool/rhsm/debug
+- Make virt_sandbox_use_audit as True by default
+- Allow svirt_sandbox_domains to ptrace themselves
+- Allow snmpd to getattr on removeable and fixed disks
+- Allow docker containers to manage /var/lib/docker content
+
 * Mon Mar 17 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-38
 - Label sddm as xdm_exec_t to make KDE working again
 - Allow postgresql to read network state
