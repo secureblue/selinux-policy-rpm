@@ -8465,7 +8465,7 @@ index dcd774e..c240ffa 100644
  
  	allow $1 bacula_t:process { ptrace signal_perms };
 diff --git a/bacula.te b/bacula.te
-index f16b000..6cf82b3 100644
+index f16b000..941d3fd 100644
 --- a/bacula.te
 +++ b/bacula.te
 @@ -43,7 +43,7 @@ role bacula_admin_roles types bacula_admin_t;
@@ -8488,7 +8488,15 @@ index f16b000..6cf82b3 100644
  corenet_sendrecv_hplip_server_packets(bacula_t)
  corenet_tcp_bind_hplip_port(bacula_t)
  corenet_udp_bind_hplip_port(bacula_t)
-@@ -148,9 +152,7 @@ corenet_tcp_connect_hplip_port(bacula_admin_t)
+@@ -105,6 +109,7 @@ files_read_all_symlinks(bacula_t)
+ fs_getattr_xattr_fs(bacula_t)
+ fs_list_all(bacula_t)
+ 
++auth_use_nsswitch(bacula_t)
+ auth_read_shadow(bacula_t)
+ 
+ logging_send_syslog_msg(bacula_t)
+@@ -148,9 +153,7 @@ corenet_tcp_connect_hplip_port(bacula_admin_t)
  
  domain_use_interactive_fds(bacula_admin_t)
  
@@ -10875,7 +10883,7 @@ index 008f8ef..144c074 100644
  	admin_pattern($1, certmonger_var_run_t)
  ')
 diff --git a/certmonger.te b/certmonger.te
-index 550b287..b988f57 100644
+index 550b287..ad3330f 100644
 --- a/certmonger.te
 +++ b/certmonger.te
 @@ -18,6 +18,9 @@ files_type(certmonger_var_lib_t)
@@ -10960,7 +10968,7 @@ index 550b287..b988f57 100644
  ')
  
  optional_policy(`
-@@ -92,11 +108,47 @@ optional_policy(`
+@@ -92,11 +108,51 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -10968,6 +10976,10 @@ index 550b287..b988f57 100644
 +	dirsrv_manage_config(certmonger_t)
 +	dirsrv_signal(certmonger_t)
 +	dirsrv_signull(certmonger_t)
++')
++
++optional_policy(`
++    ipa_manage_lib(certmonger_t)
 +')
 +
 +optional_policy(`
@@ -33304,20 +33316,22 @@ index d443fee..6cbbf7d 100644
  
 diff --git a/ipa.fc b/ipa.fc
 new file mode 100644
-index 0000000..9278f85
+index 0000000..48d7322
 --- /dev/null
 +++ b/ipa.fc
-@@ -0,0 +1,4 @@
+@@ -0,0 +1,6 @@
 +/usr/lib/systemd/system/ipa-otpd.*		--	gen_context(system_u:object_r:ipa_otpd_unit_file_t,s0)
 +
 +/usr/libexec/ipa-otpd		--	gen_context(system_u:object_r:ipa_otpd_exec_t,s0)
 +
++/var/lib/ipa(/.*)?              gen_context(system_u:object_r:ipa_var_lib_t,s0)
++
 diff --git a/ipa.if b/ipa.if
 new file mode 100644
-index 0000000..70c67d3
+index 0000000..4095bed
 --- /dev/null
 +++ b/ipa.if
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,58 @@
 +## <summary>Policy for IPA services.</summary>
 +
 +########################################
@@ -33356,12 +33370,32 @@ index 0000000..70c67d3
 +    allow $1 ipa_otpd_t:unix_stream_socket connectto;
 +')
 +
++########################################
++## <summary>
++##	Allow domain to manage ipa lib files/dirs.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`ipa_manage_lib',`
++	gen_require(`
++		type ipa_var_lib_t;
++	')
++
++    manage_files_pattern($1, ipa_var_lib_t, ipa_var_lib_t)
++    manage_dirs_pattern($1, ipa_var_lib_t, ipa_var_lib_t)
++')
++
++')
 diff --git a/ipa.te b/ipa.te
 new file mode 100644
-index 0000000..0fd2678
+index 0000000..b60bc5f
 --- /dev/null
 +++ b/ipa.te
-@@ -0,0 +1,40 @@
+@@ -0,0 +1,43 @@
 +policy_module(ipa, 1.0.0)
 +
 +########################################
@@ -33377,6 +33411,9 @@ index 0000000..0fd2678
 +
 +type ipa_otpd_unit_file_t;
 +systemd_unit_file(ipa_otpd_unit_file_t)
++
++type ipa_var_lib_t;
++files_type(ipa_var_lib_t)
 +
 +########################################
 +#
@@ -61065,7 +61102,7 @@ index 8eb3f7b..1ff0fe3 100644
 +userdom_read_all_users_state(pkcs_slotd_t)
 diff --git a/pki.fc b/pki.fc
 new file mode 100644
-index 0000000..726d992
+index 0000000..e6592ea
 --- /dev/null
 +++ b/pki.fc
 @@ -0,0 +1,56 @@
@@ -61074,7 +61111,7 @@ index 0000000..726d992
 +/var/run/pki/tomcat(/.*)?		gen_context(system_u:object_r:pki_tomcat_var_run_t,s0)
 +/var/log/pki/pki-tomcat(/.*)?		gen_context(system_u:object_r:pki_tomcat_log_t,s0)
 +/etc/sysconfig/pki/tomcat(/.*)? 	gen_context(system_u:object_r:pki_tomcat_etc_rw_t,s0)
-+/var/log/pki                            gen_context(system_u:object_r:pki_log_t,s0)
++/var/log/pki(/.*)?                            gen_context(system_u:object_r:pki_log_t,s0)
 +/usr/bin/pkidaemon                      gen_context(system_u:object_r:pki_tomcat_exec_t,s0)
 +/etc/pki/pki-tomcat/alias(/.*)?         gen_context(system_u:object_r:pki_tomcat_cert_t,s0)
 +
@@ -61420,7 +61457,7 @@ index 0000000..798efb6
 +')
 diff --git a/pki.te b/pki.te
 new file mode 100644
-index 0000000..b7dfce7
+index 0000000..22f672d
 --- /dev/null
 +++ b/pki.te
 @@ -0,0 +1,274 @@
@@ -61453,7 +61490,7 @@ index 0000000..b7dfce7
 +files_type(pki_tomcat_etc_rw_t)
 +
 +type pki_tomcat_cert_t;
-+files_type(pki_tomcat_cert_t)
++miscfiles_cert_type(pki_tomcat_cert_t)
 +
 +tomcat_domain_template(pki_tomcat)
 +
@@ -91068,10 +91105,10 @@ index 0000000..ddfed09
 +')
 diff --git a/speech-dispatcher.te b/speech-dispatcher.te
 new file mode 100644
-index 0000000..57372d0
+index 0000000..931fa6c
 --- /dev/null
 +++ b/speech-dispatcher.te
-@@ -0,0 +1,50 @@
+@@ -0,0 +1,51 @@
 +policy_module(speech-dispatcher, 1.0.0)
 +
 +########################################
@@ -91082,6 +91119,7 @@ index 0000000..57372d0
 +type speech-dispatcher_t;
 +type speech-dispatcher_exec_t;
 +init_daemon_domain(speech-dispatcher_t, speech-dispatcher_exec_t)
++application_executable_file(speech-dispatcher_exec_t)
 +
 +type speech-dispatcher_log_t;
 +logging_log_file(speech-dispatcher_log_t)

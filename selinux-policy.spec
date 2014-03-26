@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 39%{?dist}
+Release: 40%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -584,6 +584,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Mar 26 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-40
+- update storage_filetrans_all_named_dev for sg* devices
+- Allow auditctl_t  to getattr on all removeable devices
+- Allow nsswitch_domains to stream connect to nmbd
+- Allow rasdaemon to rw /dev/cpu//msr
+- fix /var/log/pki file spec
+- make bacula_t as auth_nsswitch domain
+- Allow certmonger to manage ipa lib files
+- Add support for /var/lib/ipa
+
 * Tue Mar 25 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-39
 - Manage_service_perms should include enable and disable, need backport to RHEL7
 - Allow also unpriv user to run vmtools
