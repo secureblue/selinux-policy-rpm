@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 40%{?dist}
+Release: 41%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -584,6 +584,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Mar 27 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-41
+- Turn on gear_port_t
+- Add gear policy and remove permissive domains.
+- Add labels for ostree
+- Add SELinux awareness for NM
+- Label /usr/sbin/pwhistory_helper as updpwd_exec_t
+
 * Wed Mar 26 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-40
 - update storage_filetrans_all_named_dev for sg* devices
 - Allow auditctl_t  to getattr on all removeable devices
