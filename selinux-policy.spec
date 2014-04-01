@@ -19,12 +19,14 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 41%{?dist}
+Release: 42%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-rawhide-base.patch
 patch1: policy-rawhide-contrib.patch
+patch2: policy-rawhide-base-user_tmp.patch
+patch3: policy-rawhide-contrib-user_tmp.patch
 Source1: modules-targeted-base.conf 
 Source31: modules-targeted-contrib.conf
 Source2: booleans-targeted.conf
@@ -319,9 +321,11 @@ Based off of reference policy: Checked out revision  2.20091117
 %prep 
 %setup -n serefpolicy-contrib-%{version} -q -b 29
 %patch1 -p1
+%patch3 -p1
 contrib_path=`pwd`
 %setup -n serefpolicy-%{version} -q
 %patch -p1
+%patch2 -p1
 refpolicy_path=`pwd`
 cp $contrib_path/* $refpolicy_path/policy/modules/contrib
 
@@ -584,6 +588,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Apr 1 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-42
+- Merge user_tmp_t and user_tmpfs_t together to have only user_tmp_t
+
 * Thu Mar 27 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-41
 - Turn on gear_port_t
 - Add gear policy and remove permissive domains.
