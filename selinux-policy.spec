@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 42%{?dist}
+Release: 43%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,24 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Apr 4 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-43
+- Add labels for /var/named/chroot_sdb/dev devices
+- Add support for strongimcv
+- Add additional fixes for yubikeys based on william@firstyear.id.au
+- Allow init_t run /sbin/augenrules
+- Remove dup decl for dev_unmount_sysfs_fs
+- Allow unpriv SELinux user to use sandbox
+- Fix ntp_filetrans_named_content for sntp-kod file
+- Add httpd_dbus_sssd boolean
+- Dontaudit exec insmod in boinc policy
+- Add dbus_filetrans_named_content_system()
+- We want to label only /usr/bin/start-puppet-master to avoid puppet agent running in puppet_t
+- varnishd wants chown capability
+- update ntp_filetrans_named_content() interface
+- Add additional fixes for neutron_t. #1083335
+- Dontaudit sandbox_t getattr on proc_kcore_t
+- Allow pki_tomcat_t to read ipa lib files
+
 * Tue Apr 1 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-42
 - Merge user_tmp_t and user_tmpfs_t together to have only user_tmp_t
 
