@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 43%{?dist}
+Release: 44%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Apr 8 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-44
+- Change hsperfdata_root to have as user_tmp_t
+- Allow rsyslog low-level network access
+- Fix use_nfs_home_dirs/use_samba_home_dirs for xdm_t to allow append .xsession-errors by lightdm
+- Allow conman to resolve DNS and use user ptys
+- update pegasus_openlmi_admin_t policy
+- nslcd wants chown capability
+- Dontaudit exec insmod in boinc policy
+
 * Fri Apr 4 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-43
 - Add labels for /var/named/chroot_sdb/dev devices
 - Add support for strongimcv
