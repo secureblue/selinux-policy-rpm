@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 44%{?dist}
+Release: 45%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Apr 8 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-45
+Rename puppet_t to puppetagent_t and used it only for puppet agent which can be started by init. Also make it as unconfined_noaudit because there is no reason to confine it but we wantto avoid init_t.
+
 * Tue Apr 8 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-44
 - Change hsperfdata_root to have as user_tmp_t
 - Allow rsyslog low-level network access
