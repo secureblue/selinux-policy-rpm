@@ -19,12 +19,14 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 40%{?dist}
+Release: 45%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
 patch: policy-rawhide-base.patch
 patch1: policy-rawhide-contrib.patch
+patch2: policy-rawhide-base-user_tmp.patch
+patch3: policy-rawhide-contrib-user_tmp.patch
 Source1: modules-targeted-base.conf 
 Source31: modules-targeted-contrib.conf
 Source2: booleans-targeted.conf
@@ -319,9 +321,11 @@ Based off of reference policy: Checked out revision  2.20091117
 %prep 
 %setup -n serefpolicy-contrib-%{version} -q -b 29
 %patch1 -p1
+%patch3 -p1
 contrib_path=`pwd`
 %setup -n serefpolicy-%{version} -q
 %patch -p1
+%patch2 -p1
 refpolicy_path=`pwd`
 cp $contrib_path/* $refpolicy_path/policy/modules/contrib
 
@@ -584,6 +588,46 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Apr 8 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-45
+Rename puppet_t to puppetagent_t and used it only for puppet agent which can be started by init. Also make it as unconfined_noaudit because there is no reason to confine it but we wantto avoid init_t.
+
+* Tue Apr 8 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-44
+- Change hsperfdata_root to have as user_tmp_t
+- Allow rsyslog low-level network access
+- Fix use_nfs_home_dirs/use_samba_home_dirs for xdm_t to allow append .xsession-errors by lightdm
+- Allow conman to resolve DNS and use user ptys
+- update pegasus_openlmi_admin_t policy
+- nslcd wants chown capability
+- Dontaudit exec insmod in boinc policy
+
+* Fri Apr 4 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-43
+- Add labels for /var/named/chroot_sdb/dev devices
+- Add support for strongimcv
+- Add additional fixes for yubikeys based on william@firstyear.id.au
+- Allow init_t run /sbin/augenrules
+- Remove dup decl for dev_unmount_sysfs_fs
+- Allow unpriv SELinux user to use sandbox
+- Fix ntp_filetrans_named_content for sntp-kod file
+- Add httpd_dbus_sssd boolean
+- Dontaudit exec insmod in boinc policy
+- Add dbus_filetrans_named_content_system()
+- We want to label only /usr/bin/start-puppet-master to avoid puppet agent running in puppet_t
+- varnishd wants chown capability
+- update ntp_filetrans_named_content() interface
+- Add additional fixes for neutron_t. #1083335
+- Dontaudit sandbox_t getattr on proc_kcore_t
+- Allow pki_tomcat_t to read ipa lib files
+
+* Tue Apr 1 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-42
+- Merge user_tmp_t and user_tmpfs_t together to have only user_tmp_t
+
+* Thu Mar 27 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-41
+- Turn on gear_port_t
+- Add gear policy and remove permissive domains.
+- Add labels for ostree
+- Add SELinux awareness for NM
+- Label /usr/sbin/pwhistory_helper as updpwd_exec_t
+
 * Wed Mar 26 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-40
 - update storage_filetrans_all_named_dev for sg* devices
 - Allow auditctl_t  to getattr on all removeable devices
