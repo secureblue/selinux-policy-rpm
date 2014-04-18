@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 45%{?dist}
+Release: 46%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,35 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Apr 18 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-46
+- Allow init_t to setattr/relabelfrom dhcp state files
+- Allow dmesg to read hwdata and memory dev
+- Allow strongswan to create ipsec.secrets with correct labeling in /etc/strongswan
+- Dontaudit antivirus domains read access on all security files by default
+- Add missing alias for old amavis_etc_t type
+- Additional fixes for  instack overcloud
+- Allow block_suspend cap for haproxy
+- Allow OpenStack to read mysqld_db links and connect to MySQL
+- Remove dup filename rules in gnome.te
+- Allow sys_chroot cap for httpd_t and setattr on httpd_log_t
+- Add labeling for /lib/systemd/system/thttpd.service
+- Allow iscsid to handle own unit files
+- Add iscsi_systemctl()
+- Allow mongod also create sock_file with correct labeling in /run
+- Allow aiccu stream connect to pcscd
+- Allow rabbitmq_beam to connect to httpd port
+- Allow httpd to send signull to apache script domains and don't audit leaks
+- Fix labeling in drbd.fc
+- Allow sssd to connect to the smbd port for handing logins using active directory, needs back port for rhel7
+- Allow all freeipmi domains to read/write ipmi devices
+- Allow rabbitmq_epmd to manage rabbit_var_log_t files
+- Allow sblim_sfcbd to use also pegasus-https port
+- Allow chronyd to read /sys/class/hwmon/hwmon1/device/temp2_input
+- Add httpd_run_preupgrade boolean
+- Add interfaces to access preupgrade_data_t
+- Add preupgrade policy
+- Add labeling for puppet helper scripts
+
 * Tue Apr 8 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-45
 Rename puppet_t to puppetagent_t and used it only for puppet agent which can be started by init. Also make it as unconfined_noaudit because there is no reason to confine it but we wantto avoid init_t.
 
