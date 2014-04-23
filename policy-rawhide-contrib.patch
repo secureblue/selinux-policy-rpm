@@ -8893,7 +8893,7 @@ index 2b9a3a1..f755e6b 100644
 +/var/named/dynamic(/.*)?		gen_context(system_u:object_r:named_cache_t,s0)
 +')
 diff --git a/bind.if b/bind.if
-index 531a8f2..0df9341 100644
+index 531a8f2..67b6c3d 100644
 --- a/bind.if
 +++ b/bind.if
 @@ -20,6 +20,29 @@ interface(`bind_initrc_domtrans',`
@@ -8988,28 +8988,54 @@ index 531a8f2..0df9341 100644
  ##	Create, read, write, and delete
  ##	bind zone files.
  ## </summary>
-@@ -364,11 +428,17 @@ interface(`bind_admin',`
+@@ -344,6 +408,25 @@ interface(`bind_udp_chat_named',`
+ 
+ ########################################
+ ## <summary>
++##	Allow the domain to read bind state files in /proc.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`bind_read_state',`
++	gen_require(`
++		type named_t;
++	')
++
++	kernel_search_proc($1)
++	ps_process_pattern($1, named_t)
++')
++
++########################################
++## <summary>
+ ##	All of the rules required to
+ ##	administrate an bind environment.
+ ## </summary>
+@@ -364,11 +447,17 @@ interface(`bind_admin',`
  		type named_t, named_tmp_t, named_log_t;
  		type named_cache_t, named_zone_t, named_initrc_exec_t;
  		type dnssec_t, ndc_t, named_conf_t, named_var_run_t;
 -		type named_keytab_t;
 +		type named_keytab_t, named_unit_file_t;
- 	')
- 
--	allow $1 { named_t ndc_t }:process { ptrace signal_perms };
--	ps_process_pattern($1, { named_t ndc_t })
++	')
++
 +	allow $1 named_t:process signal_perms;
 +	ps_process_pattern($1, named_t)
 +
 +	tunable_policy(`deny_ptrace',`',`
 +		allow $1 named_t:process ptrace;
-+	')
-+
+ 	')
+ 
+-	allow $1 { named_t ndc_t }:process { ptrace signal_perms };
+-	ps_process_pattern($1, { named_t ndc_t })
 +	bind_run_ndc($1, $2)
  
  	init_labeled_script_domtrans($1, named_initrc_exec_t)
  	domain_system_change_exemption($1)
-@@ -384,11 +454,15 @@ interface(`bind_admin',`
+@@ -384,11 +473,15 @@ interface(`bind_admin',`
  	files_list_etc($1)
  	admin_pattern($1, { named_keytab_t named_conf_t })
  
@@ -12704,10 +12730,10 @@ index 0000000..8ac848b
 +')
 diff --git a/cloudform.te b/cloudform.te
 new file mode 100644
-index 0000000..0e17a32
+index 0000000..99cab6e
 --- /dev/null
 +++ b/cloudform.te
-@@ -0,0 +1,298 @@
+@@ -0,0 +1,229 @@
 +policy_module(cloudform, 1.0)
 +########################################
 +#
@@ -12718,7 +12744,6 @@ index 0000000..0e17a32
 +
 +cloudform_domain_template(deltacloudd)
 +cloudform_domain_template(iwhd)
-+cloudform_domain_template(mongod)
 +cloudform_domain_template(cloud_init)
 +
 +type cloud_init_tmp_t;
@@ -12750,21 +12775,6 @@ index 0000000..0e17a32
 +
 +type iwhd_var_run_t;
 +files_pid_file(iwhd_var_run_t)
-+
-+type mongod_initrc_exec_t;
-+init_script_file(mongod_initrc_exec_t)
-+
-+type mongod_log_t;
-+logging_log_file(mongod_log_t)
-+
-+type mongod_var_lib_t;
-+files_type(mongod_var_lib_t)
-+
-+type mongod_tmp_t;
-+files_tmp_file(mongod_tmp_t)
-+
-+type mongod_var_run_t;
-+files_pid_file(mongod_var_run_t)
 +
 +type iwhd_log_t;
 +logging_log_file(iwhd_log_t)
@@ -12953,59 +12963,6 @@ index 0000000..0e17a32
 +
 +userdom_home_manager(iwhd_t)
 +
-+########################################
-+#
-+# mongod local policy
-+#
-+
-+allow mongod_t self:process { execmem setsched signal };
-+
-+allow mongod_t self:netlink_route_socket r_netlink_socket_perms;
-+allow mongod_t self:unix_stream_socket create_stream_socket_perms;
-+allow mongod_t self:udp_socket create_socket_perms;
-+
-+manage_dirs_pattern(mongod_t, mongod_log_t, mongod_log_t)
-+manage_files_pattern(mongod_t, mongod_log_t, mongod_log_t)
-+logging_log_filetrans(mongod_t, mongod_log_t, file, "dbomatic.log")
-+logging_log_filetrans(mongod_t, mongod_log_t, file, "mongod.log")
-+
-+manage_dirs_pattern(mongod_t, mongod_var_lib_t, mongod_var_lib_t)
-+manage_files_pattern(mongod_t, mongod_var_lib_t, mongod_var_lib_t)
-+
-+manage_dirs_pattern(mongod_t, mongod_tmp_t, mongod_tmp_t)
-+manage_files_pattern(mongod_t, mongod_tmp_t, mongod_tmp_t)
-+manage_sock_files_pattern(mongod_t, mongod_tmp_t, mongod_tmp_t)
-+files_tmp_filetrans(mongod_t, mongod_tmp_t, { file dir sock_file })
-+
-+manage_dirs_pattern(mongod_t, mongod_var_run_t, mongod_var_run_t)
-+manage_files_pattern(mongod_t, mongod_var_run_t, mongod_var_run_t)
-+#needed by dbomatic
-+files_pid_filetrans(mongod_t, mongod_var_run_t, { file })
-+
-+corecmd_exec_bin(mongod_t)
-+corecmd_exec_shell(mongod_t)
-+
-+corenet_tcp_bind_generic_node(mongod_t)
-+corenet_tcp_bind_mongod_port(mongod_t)
-+corenet_tcp_connect_mongod_port(mongod_t)
-+corenet_tcp_connect_postgresql_port(mongod_t)
-+
-+kernel_read_vm_sysctls(mongod_t)
-+kernel_read_system_state(mongod_t)
-+
-+fs_getattr_all_fs(mongod_t)
-+
-+optional_policy(`
-+	mysql_stream_connect(mongod_t)
-+')
-+
-+optional_policy(`
-+	postgresql_stream_connect(mongod_t)
-+')
-+
-+optional_policy(`
-+	sysnet_dns_name_resolve(mongod_t)
-+')
 diff --git a/cmirrord.if b/cmirrord.if
 index cc4e7cb..f348d27 100644
 --- a/cmirrord.if
@@ -13257,6 +13214,312 @@ index 5f306dd..e01156f 100644
 +	tftp_manage_config(cobblerd_t)
  	tftp_filetrans_tftpdir(cobblerd_t, cobbler_var_lib_t, { dir file })
  ')
+diff --git a/cockpit.fc b/cockpit.fc
+new file mode 100644
+index 0000000..ee6e817
+--- /dev/null
++++ b/cockpit.fc
+@@ -0,0 +1,9 @@
++/usr/lib/systemd/system/cockpit.service		--	gen_context(system_u:object_r:cockpit_unit_file_t,s0)
++
++/usr/lib/systemd/system/cockpit.socket		--	gen_context(system_u:object_r:cockpit_unit_file_t,s0)
++
++/usr/lib/systemd/system/cockpitd.service		--	gen_context(system_u:object_r:cockpit_unit_file_t,s0)
++
++/usr/libexec/cockpitd		--	gen_context(system_u:object_r:cockpit_exec_t,s0)
++
++/var/lib/cockpit(/.*)?		gen_context(system_u:object_r:cockpit_var_lib_t,s0)
+diff --git a/cockpit.if b/cockpit.if
+new file mode 100644
+index 0000000..25e3237
+--- /dev/null
++++ b/cockpit.if
+@@ -0,0 +1,186 @@
++
++## <summary>policy for cockpit</summary>
++
++########################################
++## <summary>
++##	Execute TEMPLATE in the cockpit domin.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`cockpit_domtrans',`
++	gen_require(`
++		type cockpit_t, cockpit_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	domtrans_pattern($1, cockpit_exec_t, cockpit_t)
++')
++
++########################################
++## <summary>
++##	Search cockpit lib directories.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`cockpit_search_lib',`
++	gen_require(`
++		type cockpit_var_lib_t;
++	')
++
++	allow $1 cockpit_var_lib_t:dir search_dir_perms;
++	files_search_var_lib($1)
++')
++
++########################################
++## <summary>
++##	Read cockpit lib files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`cockpit_read_lib_files',`
++	gen_require(`
++		type cockpit_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++	read_files_pattern($1, cockpit_var_lib_t, cockpit_var_lib_t)
++')
++
++########################################
++## <summary>
++##	Manage cockpit lib files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`cockpit_manage_lib_files',`
++	gen_require(`
++		type cockpit_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++	manage_files_pattern($1, cockpit_var_lib_t, cockpit_var_lib_t)
++')
++
++########################################
++## <summary>
++##	Manage cockpit lib directories.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`cockpit_manage_lib_dirs',`
++	gen_require(`
++		type cockpit_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++	manage_dirs_pattern($1, cockpit_var_lib_t, cockpit_var_lib_t)
++')
++
++########################################
++## <summary>
++##	Execute cockpit server in the cockpit domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed to transition.
++##	</summary>
++## </param>
++#
++interface(`cockpit_systemctl',`
++	gen_require(`
++		type cockpit_t;
++		type cockpit_unit_file_t;
++	')
++
++	systemd_exec_systemctl($1)
++        systemd_read_fifo_file_passwd_run($1)
++	allow $1 cockpit_unit_file_t:file read_file_perms;
++	allow $1 cockpit_unit_file_t:service manage_service_perms;
++
++	ps_process_pattern($1, cockpit_t)
++')
++
++
++########################################
++## <summary>
++##	Send and receive messages from
++##	cockpit over dbus.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`cockpit_dbus_chat',`
++	gen_require(`
++		type cockpit_t;
++		class dbus send_msg;
++	')
++
++	allow $1 cockpit_t:dbus send_msg;
++	allow cockpit_t $1:dbus send_msg;
++')
++
++########################################
++## <summary>
++##	All of the rules required to administrate
++##	an cockpit environment
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	Role allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`cockpit_admin',`
++	gen_require(`
++		type cockpit_t;
++		type cockpit_var_lib_t;
++	type cockpit_unit_file_t;
++	')
++
++	allow $1 cockpit_t:process { signal_perms };
++	ps_process_pattern($1, cockpit_t)
++
++    tunable_policy(`deny_ptrace',`',`
++        allow $1 cockpit_t:process ptrace;
++    ')
++
++	files_search_var_lib($1)
++	admin_pattern($1, cockpit_var_lib_t)
++
++	cockpit_systemctl($1)
++	admin_pattern($1, cockpit_unit_file_t)
++	allow $1 cockpit_unit_file_t:service all_service_perms;
++	optional_policy(`
++		systemd_passwd_agent_exec($1)
++		systemd_read_fifo_file_passwd_run($1)
++	')
++')
+diff --git a/cockpit.te b/cockpit.te
+new file mode 100644
+index 0000000..ede96a7
+--- /dev/null
++++ b/cockpit.te
+@@ -0,0 +1,93 @@
++policy_module(cockpit, 1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++type cockpit_t;
++type cockpit_exec_t;
++init_daemon_domain(cockpit_t, cockpit_exec_t)
++
++type cockpit_var_lib_t;
++files_type(cockpit_var_lib_t)
++
++type cockpit_unit_file_t;
++systemd_unit_file(cockpit_unit_file_t)
++
++########################################
++#
++# cockpit local policy
++#
++allow cockpit_t self:capability net_admin;
++allow cockpit_t self:fifo_file rw_fifo_file_perms;
++allow cockpit_t self:unix_stream_socket create_stream_socket_perms;
++allow cockpit_t self:netlink_kobject_uevent_socket create_socket_perms;
++allow cockpit_t self:unix_dgram_socket create_socket_perms;
++
++manage_dirs_pattern(cockpit_t, cockpit_var_lib_t, cockpit_var_lib_t)
++manage_files_pattern(cockpit_t, cockpit_var_lib_t, cockpit_var_lib_t)
++manage_lnk_files_pattern(cockpit_t, cockpit_var_lib_t, cockpit_var_lib_t)
++files_var_lib_filetrans(cockpit_t, cockpit_var_lib_t, { dir file lnk_file })
++
++kernel_read_system_state(cockpit_t)
++kernel_read_network_state(cockpit_t)
++
++corecmd_exec_bin(cockpit_t)
++corecmd_exec_shell(cockpit_t)
++
++dev_read_sysfs(cockpit_t)
++
++domain_use_interactive_fds(cockpit_t)
++domain_read_all_domains_state(cockpit_t)
++
++files_read_etc_files(cockpit_t)
++files_list_tmp(cockpit_t)
++
++fs_read_tmpfs_symlinks(cockpit_t)
++fs_list_cgroup_dirs(cockpit_t)
++fs_read_cgroup_files(cockpit_t)
++fs_getattr_all_fs(cockpit_t)
++
++auth_use_nsswitch(cockpit_t)
++
++init_dbus_chat(cockpit_t)
++init_status(cockpit_t)
++init_read_state(cockpit_t)
++init_list_pid_dirs(cockpit_t)
++
++logging_send_syslog_msg(cockpit_t)
++
++miscfiles_read_localization(cockpit_t)
++
++systemd_status_all_unit_files(cockpit_t)
++systemd_read_logind_sessions_files(cockpit_t)
++
++udev_read_pid_files(cockpit_t)
++
++optional_policy(`
++	dbus_system_bus_client(cockpit_t)
++	dbus_connect_system_bus(cockpit_t)
++
++	optional_policy(`
++		accountsd_dbus_chat(cockpit_t)
++	')
++
++	optional_policy(`
++		devicekit_dbus_chat_disk(cockpit_t)
++		devicekit_dbus_chat_power(cockpit_t)
++	')
++
++	optional_policy(`
++		networkmanager_dbus_chat(cockpit_t)
++		networkmanager_stream_connect(cockpit_t)
++	')
++
++	optional_policy(`
++		realmd_dbus_chat(cockpit_t)
++	')
++')
++
++optional_policy(`
++	docker_stream_connect(cockpit_t)
++')
 diff --git a/collectd.fc b/collectd.fc
 index 79a3abe..8d70290 100644
 --- a/collectd.fc
@@ -23835,10 +24098,10 @@ index 0000000..1048292
 +')
 diff --git a/docker.te b/docker.te
 new file mode 100644
-index 0000000..d5a606c
+index 0000000..acaabd3
 --- /dev/null
 +++ b/docker.te
-@@ -0,0 +1,266 @@
+@@ -0,0 +1,267 @@
 +policy_module(docker, 1.0.0)
 +
 +########################################
@@ -24068,6 +24331,7 @@ index 0000000..d5a606c
 +
 +userdom_stream_connect(docker_t)
 +userdom_search_user_home_content(docker_t)
++userdom_read_all_users_state(docker_t)
 +
 +optional_policy(`
 +	dbus_system_bus_client(docker_t)
@@ -28272,10 +28536,10 @@ index 0000000..9e17d3e
 +')
 diff --git a/geoclue.te b/geoclue.te
 new file mode 100644
-index 0000000..95c3a2b
+index 0000000..7106428
 --- /dev/null
 +++ b/geoclue.te
-@@ -0,0 +1,47 @@
+@@ -0,0 +1,51 @@
 +policy_module(geoclue, 1.0.0)
 +
 +########################################
@@ -28322,6 +28586,10 @@ index 0000000..95c3a2b
 +
 +optional_policy(`
 +	dbus_system_domain(geoclue_t, geoclue_exec_t)
++
++	optional_policy(`
++		networkmanager_dbus_chat(geoclue_t)
++	')
 +')
 diff --git a/gift.te b/gift.te
 index 8a820fa..996b30c 100644
@@ -43927,20 +44195,59 @@ index b94102e..25d1d33 100644
 +	')
 +')
 diff --git a/mongodb.te b/mongodb.te
-index 169f236..a9a3284 100644
+index 169f236..2184be0 100644
 --- a/mongodb.te
 +++ b/mongodb.te
-@@ -41,7 +41,8 @@ files_var_lib_filetrans(mongod_t, mongod_var_lib_t, dir)
+@@ -21,19 +21,27 @@ files_type(mongod_var_lib_t)
+ type mongod_var_run_t;
+ files_pid_file(mongod_var_run_t)
+ 
++type mongod_tmp_t;
++files_tmp_file(mongod_tmp_t)
++
+ ########################################
+ #
+ # Local policy
+ #
+ 
+-allow mongod_t self:process signal;
++
++allow mongod_t self:process { setsched signal };
+ allow mongod_t self:fifo_file rw_fifo_file_perms;
+ 
++allow mongod_t self:netlink_route_socket r_netlink_socket_perms;
++allow mongod_t self:unix_stream_socket create_stream_socket_perms;
++allow mongod_t self:udp_socket create_socket_perms;
++
+ manage_dirs_pattern(mongod_t, mongod_log_t, mongod_log_t)
+ append_files_pattern(mongod_t, mongod_log_t, mongod_log_t)
+ create_files_pattern(mongod_t, mongod_log_t, mongod_log_t)
+ setattr_files_pattern(mongod_t, mongod_log_t, mongod_log_t)
+-logging_log_filetrans(mongod_t, mongod_log_t, dir)
++logging_log_filetrans(mongod_t, mongod_log_t, { dir file })
+ 
+ manage_dirs_pattern(mongod_t, mongod_var_lib_t, mongod_var_lib_t)
+ manage_files_pattern(mongod_t, mongod_var_lib_t, mongod_var_lib_t)
+@@ -41,21 +49,41 @@ files_var_lib_filetrans(mongod_t, mongod_var_lib_t, dir)
  
  manage_dirs_pattern(mongod_t, mongod_var_run_t, mongod_var_run_t)
  manage_files_pattern(mongod_t, mongod_var_run_t, mongod_var_run_t)
 -files_pid_filetrans(mongod_t, mongod_var_run_t, dir)
 +manage_sock_files_pattern(mongod_t, mongod_var_run_t, mongod_var_run_t)
 +files_pid_filetrans(mongod_t, mongod_var_run_t, { dir file sock_file })
++
++manage_dirs_pattern(mongod_t, mongod_tmp_t, mongod_tmp_t)
++manage_files_pattern(mongod_t, mongod_tmp_t, mongod_tmp_t)
++manage_sock_files_pattern(mongod_t, mongod_tmp_t, mongod_tmp_t)
++files_tmp_filetrans(mongod_t, mongod_tmp_t, { file dir sock_file })
  
  kernel_read_system_state(mongod_t)
++kernel_read_vm_sysctls(mongod_t)
++
++corecmd_exec_bin(mongod_t)
++corecmd_exec_shell(mongod_t)
  
-@@ -49,13 +50,11 @@ corenet_all_recvfrom_unlabeled(mongod_t)
+ corenet_all_recvfrom_unlabeled(mongod_t)
  corenet_all_recvfrom_netlabel(mongod_t)
  corenet_tcp_sendrecv_generic_if(mongod_t)
  corenet_tcp_sendrecv_generic_node(mongod_t)
@@ -43955,6 +44262,18 @@ index 169f236..a9a3284 100644
  fs_getattr_all_fs(mongod_t)
  
 -miscfiles_read_localization(mongod_t)
++optional_policy(`
++	mysql_stream_connect(mongod_t)
++')
++
++optional_policy(`
++	postgresql_stream_connect(mongod_t)
++')
++
++optional_policy(`
++	sysnet_dns_name_resolve(mongod_t)
++')
++
 diff --git a/mono.te b/mono.te
 index a6a8643..c0f6cf5 100644
 --- a/mono.te
@@ -49397,7 +49716,7 @@ index 687af38..a77dc09 100644
 +	mysql_stream_connect($1)
  ')
 diff --git a/mysql.te b/mysql.te
-index 7584bbe..ae0d53a 100644
+index 7584bbe..494cd37 100644
 --- a/mysql.te
 +++ b/mysql.te
 @@ -6,20 +6,15 @@ policy_module(mysql, 1.14.1)
@@ -49474,7 +49793,7 @@ index 7584bbe..ae0d53a 100644
  
  manage_dirs_pattern(mysqld_t, mysqld_log_t, mysqld_log_t)
  manage_files_pattern(mysqld_t, mysqld_log_t, mysqld_log_t)
-@@ -95,50 +92,54 @@ manage_files_pattern(mysqld_t, mysqld_var_run_t, mysqld_var_run_t)
+@@ -95,50 +92,56 @@ manage_files_pattern(mysqld_t, mysqld_var_run_t, mysqld_var_run_t)
  manage_sock_files_pattern(mysqld_t, mysqld_var_run_t, mysqld_var_run_t)
  files_pid_filetrans(mysqld_t, mysqld_var_run_t, { dir file sock_file })
  
@@ -49501,11 +49820,13 @@ index 7584bbe..ae0d53a 100644
 -corenet_sendrecv_mysqld_server_packets(mysqld_t)
  corenet_tcp_bind_mysqld_port(mysqld_t)
 -corenet_sendrecv_mysqld_client_packets(mysqld_t)
++corenet_tcp_bind_tram_port(mysqld_t)
  corenet_tcp_connect_mysqld_port(mysqld_t)
 -corenet_tcp_sendrecv_mysqld_port(mysqld_t)
 -
 -corecmd_exec_bin(mysqld_t)
 -corecmd_exec_shell(mysqld_t)
++corenet_tcp_connect_tram_port(mysqld_t)
 +corenet_sendrecv_mysqld_client_packets(mysqld_t)
 +corenet_sendrecv_mysqld_server_packets(mysqld_t)
  
@@ -49546,7 +49867,7 @@ index 7584bbe..ae0d53a 100644
  ')
  
  optional_policy(`
-@@ -146,6 +147,10 @@ optional_policy(`
+@@ -146,6 +149,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -49557,7 +49878,7 @@ index 7584bbe..ae0d53a 100644
  	seutil_sigchld_newrole(mysqld_t)
  ')
  
-@@ -155,21 +160,18 @@ optional_policy(`
+@@ -155,21 +162,18 @@ optional_policy(`
  
  #######################################
  #
@@ -49584,7 +49905,7 @@ index 7584bbe..ae0d53a 100644
  
  list_dirs_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
  manage_files_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
-@@ -177,9 +179,7 @@ manage_lnk_files_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
+@@ -177,9 +181,7 @@ manage_lnk_files_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
  logging_log_filetrans(mysqld_safe_t, mysqld_log_t, file)
  
  manage_files_pattern(mysqld_safe_t, mysqld_var_run_t, mysqld_var_run_t)
@@ -49595,7 +49916,7 @@ index 7584bbe..ae0d53a 100644
  
  kernel_read_system_state(mysqld_safe_t)
  kernel_read_kernel_sysctls(mysqld_safe_t)
-@@ -187,21 +187,29 @@ kernel_read_kernel_sysctls(mysqld_safe_t)
+@@ -187,21 +189,29 @@ kernel_read_kernel_sysctls(mysqld_safe_t)
  corecmd_exec_bin(mysqld_safe_t)
  corecmd_exec_shell(mysqld_safe_t)
  
@@ -49631,7 +49952,7 @@ index 7584bbe..ae0d53a 100644
  
  optional_policy(`
  	hostname_exec(mysqld_safe_t)
-@@ -209,7 +217,7 @@ optional_policy(`
+@@ -209,7 +219,7 @@ optional_policy(`
  
  ########################################
  #
@@ -49640,7 +49961,7 @@ index 7584bbe..ae0d53a 100644
  #
  
  allow mysqlmanagerd_t self:capability { dac_override kill };
-@@ -218,11 +226,12 @@ allow mysqlmanagerd_t self:fifo_file rw_fifo_file_perms;
+@@ -218,11 +228,12 @@ allow mysqlmanagerd_t self:fifo_file rw_fifo_file_perms;
  allow mysqlmanagerd_t self:tcp_socket create_stream_socket_perms;
  allow mysqlmanagerd_t self:unix_stream_socket create_stream_socket_perms;
  
@@ -49658,7 +49979,7 @@ index 7584bbe..ae0d53a 100644
  
  domtrans_pattern(mysqlmanagerd_t, mysqld_exec_t, mysqld_t)
  
-@@ -230,31 +239,20 @@ manage_files_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t)
+@@ -230,31 +241,20 @@ manage_files_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t)
  manage_sock_files_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t)
  filetrans_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t, { file sock_file })
  
@@ -89876,16 +90197,18 @@ index cbfe369..6594af3 100644
  	files_search_var_lib($1)
 diff --git a/snapper.fc b/snapper.fc
 new file mode 100644
-index 0000000..ab5d7e7
+index 0000000..e43fdd8
 --- /dev/null
 +++ b/snapper.fc
-@@ -0,0 +1,6 @@
+@@ -0,0 +1,8 @@
 +/usr/sbin/snapperd		--	gen_context(system_u:object_r:snapperd_exec_t,s0)
 +
 +/etc/snapper(/.*)?          gen_context(system_u:object_r:snapperd_conf_t,s0)
 +/etc/sysconfig/snapper  --  gen_context(system_u:object_r:snapperd_conf_t,s0)
 +
 +/var/log/snapper\.log.* --  gen_context(system_u:object_r:snapperd_log_t,s0)
++
++/mnt/(.*/)?.snapshots(/.*)?   gen_context(system_u:object_r:snapperd_data_t,s0)
 diff --git a/snapper.if b/snapper.if
 new file mode 100644
 index 0000000..94105ee

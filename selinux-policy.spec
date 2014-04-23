@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 46%{?dist}
+Release: 47%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Apr 23 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-47
+- mongod should not be a part of cloudforms.pp
+- Fix labeling in snapper.fc
+- Allow docker to read unconfined_t process state
+- geoclue dbus chats with NetworkManager
+- Add cockpit policy
+- Add interface to allow tools to check the processes state of bind/named
+- Allow myslqd to use the tram port for Galera/MariaDB
+
 * Fri Apr 18 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-46
 - Allow init_t to setattr/relabelfrom dhcp state files
 - Allow dmesg to read hwdata and memory dev
