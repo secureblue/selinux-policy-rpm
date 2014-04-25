@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 47%{?dist}
+Release: 48%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,20 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Apr 25 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-48
+- Fix virt_use_samba boolean
+- Looks like all domains that use dbus libraries are now reading /dev/urand
+- Add glance_use_fusefs() boolean
+- Allow tgtd to read /proc/net/psched
+- Additional access required for gear management of openshift directories
+- Allow sys_ptrace for mock-build
+- Fix mock_read_lib_files() interface
+- Allow mock-build to write all inherited ttys and ptys
+- Allow spamd to create razor home dirs with correct labeling
+- Clean up sysnet_use_ldap()
+- systemd calling needs to be optional
+- Allow init_t to setattr/relabelfrom dhcp state files
+
 * Wed Apr 23 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-47
 - mongod should not be a part of cloudforms.pp
 - Fix labeling in snapper.fc

@@ -8744,7 +8744,7 @@ index 6a1e4d1..84e8030 100644
 +	dontaudit $1 domain:dir_file_class_set audit_access;
  ')
 diff --git a/policy/modules/kernel/domain.te b/policy/modules/kernel/domain.te
-index cf04cb5..806e1cc 100644
+index cf04cb5..e0615d1 100644
 --- a/policy/modules/kernel/domain.te
 +++ b/policy/modules/kernel/domain.te
 @@ -4,6 +4,29 @@ policy_module(domain, 1.11.0)
@@ -8785,7 +8785,7 @@ index cf04cb5..806e1cc 100644
  
  # Transitions only allowed from domains to other domains
  neverallow domain ~domain:process { transition dyntransition };
-@@ -86,23 +110,46 @@ neverallow ~{ domain unlabeled_t } *:process *;
+@@ -86,23 +110,47 @@ neverallow ~{ domain unlabeled_t } *:process *;
  allow domain self:dir list_dir_perms;
  allow domain self:lnk_file { read_lnk_file_perms lock ioctl };
  allow domain self:file rw_file_perms;
@@ -8827,13 +8827,14 @@ index cf04cb5..806e1cc 100644
 +# All executables should be able to search the directory they are in
 +corecmd_search_bin(domain)
 +
++
 +tunable_policy(`domain_kernel_load_modules',`
 +	kernel_request_load_module(domain)
 +')
  
  ifdef(`hide_broken_symptoms',`
  	# This check is in the general socket
-@@ -121,8 +168,18 @@ tunable_policy(`global_ssp',`
+@@ -121,8 +169,18 @@ tunable_policy(`global_ssp',`
  ')
  
  optional_policy(`
@@ -8852,7 +8853,7 @@ index cf04cb5..806e1cc 100644
  ')
  
  optional_policy(`
-@@ -133,6 +190,9 @@ optional_policy(`
+@@ -133,6 +191,9 @@ optional_policy(`
  optional_policy(`
  	xserver_dontaudit_use_xdm_fds(domain)
  	xserver_dontaudit_rw_xdm_pipes(domain)
@@ -8862,7 +8863,7 @@ index cf04cb5..806e1cc 100644
  ')
  
  ########################################
-@@ -147,12 +207,18 @@ optional_policy(`
+@@ -147,12 +208,18 @@ optional_policy(`
  # Use/sendto/connectto sockets created by any domain.
  allow unconfined_domain_type domain:{ socket_class_set socket key_socket } *;
  
@@ -8882,7 +8883,7 @@ index cf04cb5..806e1cc 100644
  
  # Create/access any System V IPC objects.
  allow unconfined_domain_type domain:{ sem msgq shm } *;
-@@ -166,5 +232,346 @@ allow unconfined_domain_type domain:lnk_file { read_lnk_file_perms ioctl lock };
+@@ -166,5 +233,347 @@ allow unconfined_domain_type domain:lnk_file { read_lnk_file_perms ioctl lock };
  # act on all domains keys
  allow unconfined_domain_type domain:key *;
  
@@ -9086,6 +9087,7 @@ index cf04cb5..806e1cc 100644
 +	systemd_filetrans_named_content(named_filetrans_domain)
 +	systemd_filetrans_named_hostname(named_filetrans_domain)
 +	systemd_filetrans_home_content(named_filetrans_domain)
++    systemd_dontaudit_write_inherited_logind_sessions_pipes(domain)
 +')
 +
 +optional_policy(`
@@ -27067,7 +27069,7 @@ index 3efd5b6..0bd3a26 100644
 +	allow $1 login_pgm:process sigchld;
 +')
 diff --git a/policy/modules/system/authlogin.te b/policy/modules/system/authlogin.te
-index 09b791d..73376ca 100644
+index 09b791d..ff0708e 100644
 --- a/policy/modules/system/authlogin.te
 +++ b/policy/modules/system/authlogin.te
 @@ -5,6 +5,19 @@ policy_module(authlogin, 2.5.1)
@@ -27338,17 +27340,37 @@ index 09b791d..73376ca 100644
  files_list_var_lib(nsswitch_domain)
  
  # read /etc/nsswitch.conf
-@@ -417,15 +453,21 @@ files_read_etc_files(nsswitch_domain)
+@@ -417,15 +453,42 @@ files_read_etc_files(nsswitch_domain)
  
  sysnet_dns_name_resolve(nsswitch_domain)
  
--tunable_policy(`authlogin_nsswitch_use_ldap',`
--	files_list_var_lib(nsswitch_domain)
 +systemd_hostnamed_read_config(nsswitch_domain)
++
++
+ tunable_policy(`authlogin_nsswitch_use_ldap',`
+-	files_list_var_lib(nsswitch_domain)
++    allow nsswitch_domain self:tcp_socket create_socket_perms;
++')
++
++tunable_policy(`authlogin_nsswitch_use_ldap',`
++	corenet_tcp_sendrecv_generic_if(nsswitch_domain)
++	corenet_tcp_sendrecv_generic_node(nsswitch_domain)
++	corenet_tcp_sendrecv_ldap_port(nsswitch_domain)
++	corenet_tcp_connect_ldap_port(nsswitch_domain)
++	corenet_sendrecv_ldap_client_packets(nsswitch_domain)
++')
++
++tunable_policy(`authlogin_nsswitch_use_ldap',`
++	# Support for LDAPS
++	dev_read_rand(nsswitch_domain)
++	# LDAP Configuration using encrypted requires
++	dev_read_urand(nsswitch_domain)
++	sysnet_read_config(nsswitch_domain)
++')
  
 +tunable_policy(`authlogin_nsswitch_use_ldap',`
  	miscfiles_read_generic_certs(nsswitch_domain)
- 	sysnet_use_ldap(nsswitch_domain)
+-	sysnet_use_ldap(nsswitch_domain)
  ')
  
  optional_policy(`
@@ -27359,10 +27381,11 @@ index 09b791d..73376ca 100644
 +
 +optional_policy(`
 +	tunable_policy(`authlogin_nsswitch_use_ldap',`
++        ldap_read_certs(nsswitch_domain)
  		ldap_stream_connect(nsswitch_domain)
  	')
  ')
-@@ -438,6 +480,7 @@ optional_policy(`
+@@ -438,6 +501,7 @@ optional_policy(`
  	likewise_stream_connect_lsassd(nsswitch_domain)
  ')
  
@@ -27370,7 +27393,7 @@ index 09b791d..73376ca 100644
  optional_policy(`
  	kerberos_use(nsswitch_domain)
  ')
-@@ -456,10 +499,145 @@ optional_policy(`
+@@ -456,10 +520,145 @@ optional_policy(`
  
  optional_policy(`
  	sssd_stream_connect(nsswitch_domain)
@@ -31296,7 +31319,7 @@ index 0d4c8d3..e6ffda3 100644
 +    ps_process_pattern($1, ipsec_mgmt_t)
 +')
 diff --git a/policy/modules/system/ipsec.te b/policy/modules/system/ipsec.te
-index 312cd04..d6d434a 100644
+index 312cd04..3c62b4c 100644
 --- a/policy/modules/system/ipsec.te
 +++ b/policy/modules/system/ipsec.te
 @@ -48,6 +48,9 @@ init_system_domain(ipsec_mgmt_t, ipsec_mgmt_exec_t)
@@ -31493,7 +31516,7 @@ index 312cd04..d6d434a 100644
  
  init_read_utmp(ipsec_mgmt_t)
  init_use_script_ptys(ipsec_mgmt_t)
-@@ -288,17 +325,22 @@ init_exec_script_files(ipsec_mgmt_t)
+@@ -288,17 +325,23 @@ init_exec_script_files(ipsec_mgmt_t)
  init_use_fds(ipsec_mgmt_t)
  init_labeled_script_domtrans(ipsec_mgmt_t, ipsec_initrc_exec_t)
  
@@ -31517,11 +31540,12 @@ index 312cd04..d6d434a 100644
 +optional_policy(`
 +	bind_read_dnssec_keys(ipsec_mgmt_t)
 +	bind_read_config(ipsec_mgmt_t)
++	bind_read_state(ipsec_mgmt_t)
 +')
  
  optional_policy(`
  	consoletype_exec(ipsec_mgmt_t)
-@@ -322,6 +364,10 @@ optional_policy(`
+@@ -322,6 +365,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -31532,7 +31556,7 @@ index 312cd04..d6d434a 100644
  	modutils_domtrans_insmod(ipsec_mgmt_t)
  ')
  
-@@ -335,7 +381,7 @@ optional_policy(`
+@@ -335,7 +382,7 @@ optional_policy(`
  #
  
  allow racoon_t self:capability { net_admin net_bind_service };
@@ -31541,7 +31565,7 @@ index 312cd04..d6d434a 100644
  allow racoon_t self:unix_dgram_socket { connect create ioctl write };
  allow racoon_t self:netlink_selinux_socket { bind create read };
  allow racoon_t self:udp_socket create_socket_perms;
-@@ -370,13 +416,12 @@ kernel_request_load_module(racoon_t)
+@@ -370,13 +417,12 @@ kernel_request_load_module(racoon_t)
  corecmd_exec_shell(racoon_t)
  corecmd_exec_bin(racoon_t)
  
@@ -31561,7 +31585,7 @@ index 312cd04..d6d434a 100644
  corenet_udp_bind_isakmp_port(racoon_t)
  corenet_udp_bind_ipsecnat_port(racoon_t)
  
-@@ -401,10 +446,10 @@ locallogin_use_fds(racoon_t)
+@@ -401,10 +447,10 @@ locallogin_use_fds(racoon_t)
  logging_send_syslog_msg(racoon_t)
  logging_send_audit_msgs(racoon_t)
  
@@ -31574,7 +31598,7 @@ index 312cd04..d6d434a 100644
  auth_can_read_shadow_passwords(racoon_t)
  tunable_policy(`racoon_read_shadow',`
  	auth_tunable_read_shadow(racoon_t)
-@@ -438,9 +483,8 @@ corenet_setcontext_all_spds(setkey_t)
+@@ -438,9 +484,8 @@ corenet_setcontext_all_spds(setkey_t)
  
  locallogin_use_fds(setkey_t)
  
@@ -37506,7 +37530,7 @@ index 40edc18..a072ac2 100644
 +/etc/firestarter/firestarter\.sh gen_context(system_u:object_r:dhcpc_helper_exec_t,s0)
 +
 diff --git a/policy/modules/system/sysnetwork.if b/policy/modules/system/sysnetwork.if
-index 2cea692..1c0de21 100644
+index 2cea692..e094fc0 100644
 --- a/policy/modules/system/sysnetwork.if
 +++ b/policy/modules/system/sysnetwork.if
 @@ -38,11 +38,30 @@ interface(`sysnet_domtrans_dhcpc',`
@@ -37843,17 +37867,22 @@ index 2cea692..1c0de21 100644
  	corenet_tcp_sendrecv_generic_if($1)
  	corenet_tcp_sendrecv_generic_node($1)
  	corenet_tcp_sendrecv_ldap_port($1)
-@@ -763,6 +968,9 @@ interface(`sysnet_use_ldap',`
+@@ -760,9 +965,14 @@ interface(`sysnet_use_ldap',`
+ 
+ 	# Support for LDAPS
+ 	dev_read_rand($1)
++	# LDAP Configuration using encrypted requires
  	dev_read_urand($1)
  
  	sysnet_read_config($1)
 +
-+	# LDAP Configuration using encrypted requires
-+	dev_read_urand($1)
++	optional_policy(`
++		ldap_read_certs($1)
++	')
  ')
  
  ########################################
-@@ -784,7 +992,6 @@ interface(`sysnet_use_portmap',`
+@@ -784,7 +994,6 @@ interface(`sysnet_use_portmap',`
  	allow $1 self:udp_socket create_socket_perms;
  
  	corenet_all_recvfrom_unlabeled($1)
@@ -37861,7 +37890,7 @@ index 2cea692..1c0de21 100644
  	corenet_tcp_sendrecv_generic_if($1)
  	corenet_udp_sendrecv_generic_if($1)
  	corenet_tcp_sendrecv_generic_node($1)
-@@ -796,3 +1003,115 @@ interface(`sysnet_use_portmap',`
+@@ -796,3 +1005,115 @@ interface(`sysnet_use_portmap',`
  
  	sysnet_read_config($1)
  ')
@@ -37978,7 +38007,7 @@ index 2cea692..1c0de21 100644
 +	files_pid_filetrans($1, ifconfig_var_run_t, dir, "netns")
 +')
 diff --git a/policy/modules/system/sysnetwork.te b/policy/modules/system/sysnetwork.te
-index a392fc4..b0a854f 100644
+index a392fc4..f1782ee 100644
 --- a/policy/modules/system/sysnetwork.te
 +++ b/policy/modules/system/sysnetwork.te
 @@ -5,6 +5,13 @@ policy_module(sysnetwork, 1.15.4)
@@ -38208,7 +38237,7 @@ index a392fc4..b0a854f 100644
  	vmware_append_log(dhcpc_t)
  ')
  
-@@ -264,12 +312,23 @@ allow ifconfig_t self:msgq create_msgq_perms;
+@@ -264,12 +312,24 @@ allow ifconfig_t self:msgq create_msgq_perms;
  allow ifconfig_t self:msg { send receive };
  # Create UDP sockets, necessary when called from dhcpc
  allow ifconfig_t self:udp_socket create_socket_perms;
@@ -38225,6 +38254,7 @@ index a392fc4..b0a854f 100644
 +can_exec(ifconfig_t, ifconfig_exec_t)
 +
 +manage_files_pattern(ifconfig_t, ifconfig_var_run_t, ifconfig_var_run_t)
++manage_lnk_files_pattern(ifconfig_t, ifconfig_var_run_t, ifconfig_var_run_t)
 +create_dirs_pattern(ifconfig_t, ifconfig_var_run_t, ifconfig_var_run_t)
 +files_pid_filetrans(ifconfig_t, ifconfig_var_run_t, { file dir })
 +allow ifconfig_t ifconfig_var_run_t:file mounton;
@@ -38232,7 +38262,7 @@ index a392fc4..b0a854f 100644
  kernel_use_fds(ifconfig_t)
  kernel_read_system_state(ifconfig_t)
  kernel_read_network_state(ifconfig_t)
-@@ -279,14 +338,31 @@ kernel_rw_net_sysctls(ifconfig_t)
+@@ -279,14 +339,32 @@ kernel_rw_net_sysctls(ifconfig_t)
  
  corenet_rw_tun_tap_dev(ifconfig_t)
  
@@ -38249,7 +38279,8 @@ index a392fc4..b0a854f 100644
 +dev_unmount_sysfs_fs(ifconfig_t)
  
  domain_use_interactive_fds(ifconfig_t)
- 
++domain_read_all_domains_state(ifconfig_t)
++
 +read_files_pattern(ifconfig_t, dhcpc_state_t, dhcpc_state_t)
 +
 +files_dontaudit_rw_inherited_pipes(ifconfig_t)
@@ -38257,14 +38288,14 @@ index a392fc4..b0a854f 100644
 +files_dontaudit_read_root_files(ifconfig_t)
 +files_rw_inherited_tmp_file(ifconfig_t)
 +files_dontaudit_rw_var_files(ifconfig_t)
-+
+ 
  files_read_etc_files(ifconfig_t)
  files_read_etc_runtime_files(ifconfig_t)
 +files_read_usr_files(ifconfig_t)
  
  fs_getattr_xattr_fs(ifconfig_t)
  fs_search_auto_mountpoints(ifconfig_t)
-@@ -299,24 +375,22 @@ term_dontaudit_use_all_ptys(ifconfig_t)
+@@ -299,33 +377,50 @@ term_dontaudit_use_all_ptys(ifconfig_t)
  term_dontaudit_use_ptmx(ifconfig_t)
  term_dontaudit_use_generic_ptys(ifconfig_t)
  
@@ -38292,8 +38323,13 @@ index a392fc4..b0a854f 100644
 +userdom_use_inherited_user_terminals(ifconfig_t)
  userdom_use_all_users_fds(ifconfig_t)
  
++optional_policy(`
++	hostname_exec(ifconfig_t)
++')
++
  ifdef(`distro_ubuntu',`
-@@ -325,7 +399,22 @@ ifdef(`distro_ubuntu',`
+ 	optional_policy(`
+ 		unconfined_domain(ifconfig_t)
  	')
  ')
  
@@ -38316,7 +38352,7 @@ index a392fc4..b0a854f 100644
  	optional_policy(`
  		dev_dontaudit_rw_cardmgr(ifconfig_t)
  	')
-@@ -336,7 +425,11 @@ ifdef(`hide_broken_symptoms',`
+@@ -336,7 +431,11 @@ ifdef(`hide_broken_symptoms',`
  ')
  
  optional_policy(`
@@ -38329,7 +38365,7 @@ index a392fc4..b0a854f 100644
  ')
  
  optional_policy(`
-@@ -350,7 +443,15 @@ optional_policy(`
+@@ -350,7 +449,15 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -38346,7 +38382,7 @@ index a392fc4..b0a854f 100644
  ')
  
  optional_policy(`
-@@ -371,3 +472,13 @@ optional_policy(`
+@@ -371,3 +478,13 @@ optional_policy(`
  	xen_append_log(ifconfig_t)
  	xen_dontaudit_rw_unix_stream_sockets(ifconfig_t)
  ')
@@ -38417,10 +38453,10 @@ index 0000000..916c8ed
 +/var/run/initramfs(/.*)?	<<none>>
 diff --git a/policy/modules/system/systemd.if b/policy/modules/system/systemd.if
 new file mode 100644
-index 0000000..8bca1d7
+index 0000000..24b2af3
 --- /dev/null
 +++ b/policy/modules/system/systemd.if
-@@ -0,0 +1,1440 @@
+@@ -0,0 +1,1458 @@
 +## <summary>SELinux policy for systemd components</summary>
 +
 +######################################
@@ -38788,6 +38824,24 @@ index 0000000..8bca1d7
 +
 +	allow $1 systemd_logind_t:fd use;
 +	allow $1 systemd_logind_sessions_t:fifo_file write;
++')
++
++######################################
++## <summary>
++##	Dontaudit attempts to write inherited logind sessions pipes.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`systemd_dontaudit_write_inherited_logind_sessions_pipes',`
++	gen_require(`
++		type systemd_logind_sessions_t;
++	')
++
++	dontaudit $1 systemd_logind_sessions_t:fifo_file write;
 +')
 +
 +######################################
