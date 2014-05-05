@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 48%{?dist}
+Release: 49%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,32 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon May 5 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-49
+- Fix labeling for /root/\.yubico
+- userdom_search_admin_dir() calling needs to be optional in kernel.te
+- Dontaudit leaked xserver_misc_device_t into plugins
+- Allow all domains to search through all base_file_types, this should be back ported to RHEL7 policy
+- Need to allow sssd_t to manage kernel keyrings in login programs since they don't get labeled with user domains
+- Bootloader wants to look at init state
+- Add MCS/MLS Constraints to kernel keyring, also add MCS Constraints to ipc, sem.msgq, shm
+- init reads kdbump etc files
+- Add support for tcp/9697
+- Fix labeling for /var/run/user/<UID>/gvfs
+- Add support for us_cli ports
+- fix sysnet_use_ldap
+- Allow mysql to execute ifconfig if Red Hat OpenStack
+- ALlow stap-server to get attr on all fs
+- Fix mail_pool_t to mail_spool_t
+- Dontaudit leaked xserver_misc_device_t into plugins
+- Need to allow sssd_t to manage kernel keyrings in login programs since they don't get labeled with user domains
+- Add new labeling for /var/spool/smtpd
+- Allow httpd_t to kill passenger
+- Allow apache cgi scripts to use inherited httpd_t unix_stream_sockets
+- Allow nova-scheduler to read passwd/utmp files
+- Additional rules required by openstack,  needs backport to F20 and RHEL7
+- Additional access required by docker
+- ALlow motion to use tcp/8082 port
+
 * Fri Apr 25 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-48
 - Fix virt_use_samba boolean
 - Looks like all domains that use dbus libraries are now reading /dev/urand

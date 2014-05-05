@@ -1022,7 +1022,7 @@ index 4705ab6..b7e7ea5 100644
 +## </desc>
 +gen_tunable(mount_anyfile, false)
 diff --git a/policy/mcs b/policy/mcs
-index 216b3d1..275d3d9 100644
+index 216b3d1..064ec83 100644
 --- a/policy/mcs
 +++ b/policy/mcs
 @@ -1,4 +1,6 @@
@@ -1032,7 +1032,7 @@ index 216b3d1..275d3d9 100644
  #
  # Define sensitivities 
  #
-@@ -69,53 +71,50 @@ gen_levels(1,mcs_num_cats)
+@@ -69,53 +71,56 @@ gen_levels(1,mcs_num_cats)
  #  - /proc/pid operations are not constrained.
  
  mlsconstrain file { read ioctl lock execute execute_no_trans }
@@ -1069,6 +1069,12 @@ index 216b3d1..275d3d9 100644
 -	(( h1 dom h2 ) or ( t1 == mcswriteall ) or
 -	(( t1 != mcs_constrained_type ) and (t2 == domain)));
 +	(( h1 dom h2 ) or ( t1 != mcs_constrained_type ));
++
++mlsconstrain key { create link read search setattr view write }
++	(( h1 dom h2 ) or ( t1 != mcs_constrained_type ));
++
++mlsconstrain { ipc sem msgq shm } { create destroy setattr write unix_write }
++	(( h1 dom h2 ) or ( t1 != mcs_constrained_type ));
  
  # New filesystem object labels must be dominated by the relabeling subject
  # clearance, also the objects are single-level.
@@ -1103,7 +1109,7 @@ index 216b3d1..275d3d9 100644
  
  mlsconstrain process { signal }
  	(( h1 dom h2 ) or ( t1 != mcs_constrained_type ));
-@@ -135,6 +134,9 @@ mlsconstrain { db_database db_schema db_table db_sequence db_view db_procedure d
+@@ -135,6 +140,9 @@ mlsconstrain { db_database db_schema db_table db_sequence db_view db_procedure d
  mlsconstrain { db_tuple } { insert relabelto }
  	(( h1 dom h2 ) and ( l2 eq h2 ));
  
@@ -1113,7 +1119,7 @@ index 216b3d1..275d3d9 100644
  # Access control for any database objects based on MCS rules.
  mlsconstrain db_database { drop getattr setattr relabelfrom access install_module load_module get_param set_param }
  	( h1 dom h2 );
-@@ -166,4 +168,23 @@ mlsconstrain db_language { drop getattr setattr relabelfrom execute }
+@@ -166,4 +174,23 @@ mlsconstrain db_language { drop getattr setattr relabelfrom execute }
  mlsconstrain db_blob { drop getattr setattr relabelfrom read write import export }
  	( h1 dom h2 );
  
@@ -1138,10 +1144,20 @@ index 216b3d1..275d3d9 100644
 +
  ') dnl end enable_mcs
 diff --git a/policy/mls b/policy/mls
-index f11e5e2..656f7a7 100644
+index f11e5e2..9e0c245 100644
 --- a/policy/mls
 +++ b/policy/mls
-@@ -195,7 +195,8 @@ mlsconstrain { socket tcp_socket udp_socket rawip_socket netlink_socket packet_s
+@@ -156,9 +156,6 @@ mlsconstrain filesystem { mount remount unmount relabelfrom quotamod }
+ # these access vectors have no MLS restrictions
+ # filesystem { transition associate }
+ 
+-
+-
+-
+ #
+ # MLS policy for the socket classes
+ #
+@@ -195,7 +192,8 @@ mlsconstrain { socket tcp_socket udp_socket rawip_socket netlink_socket packet_s
  	(( l1 eq l2 ) or 
  	 (( t1 == mlsnetwriteranged ) and ( l1 dom l2 ) and ( l1 domby h2 )) or
  	 (( t1 == mlsnetwritetoclr ) and ( h1 dom l2 ) and ( l1 domby l2 )) or
@@ -1151,7 +1167,19 @@ index f11e5e2..656f7a7 100644
  
  # used by netlabel to restrict normal domains to same level connections
  mlsconstrain { tcp_socket udp_socket rawip_socket } recvfrom
-@@ -361,9 +362,6 @@ mlsconstrain { peer packet } { recv }
+@@ -252,6 +250,11 @@ mlsconstrain msg receive
+ 	 (( t1 == mlsipcreadtoclr ) and ( h1 dom l2 )) or
+ 	 ( t1 == mlsipcread ));
+ 
++mlsconstrain key { create link read search setattr view write }
++	(( l1 eq l2 ) or
++	 (( t1 == mlsprocwritetoclr ) and ( h1 dom l2 ) and ( l1 domby l2 )) or
++	 ( t1 == mlsprocwrite ));
++
+ # the ipc "write" ops (implicit single level)
+ mlsconstrain { ipc sem msgq shm } { create destroy setattr write unix_write }
+ 	(( l1 eq l2 ) or
+@@ -361,9 +364,6 @@ mlsconstrain { peer packet } { recv }
  	 (( t1 == mlsnetreadtoclr ) and ( h1 dom l2 )) or
  	 ( t1 == mlsnetread ));
  
@@ -1334,7 +1362,7 @@ index cc8df9d..90467f3 100644
 +	files_etc_filetrans($1,bootloader_etc_t,file, "zipl.conf")
 +')
 diff --git a/policy/modules/admin/bootloader.te b/policy/modules/admin/bootloader.te
-index 0fd5c5f..32514ee 100644
+index 0fd5c5f..643341a 100644
 --- a/policy/modules/admin/bootloader.te
 +++ b/policy/modules/admin/bootloader.te
 @@ -20,13 +20,20 @@ type bootloader_t;
@@ -1419,15 +1447,16 @@ index 0fd5c5f..32514ee 100644
  # for nscd
  files_dontaudit_search_pids(bootloader_t)
  # for blkid.tab
-@@ -111,6 +134,7 @@ files_manage_etc_runtime_files(bootloader_t)
+@@ -111,6 +134,8 @@ files_manage_etc_runtime_files(bootloader_t)
  files_etc_filetrans_etc_runtime(bootloader_t, file)
  files_dontaudit_search_home(bootloader_t)
  
 +
++init_read_state(bootloader_t)
  init_getattr_initctl(bootloader_t)
  init_use_script_ptys(bootloader_t)
  init_use_script_fds(bootloader_t)
-@@ -118,19 +142,20 @@ init_rw_script_pipes(bootloader_t)
+@@ -118,19 +143,20 @@ init_rw_script_pipes(bootloader_t)
  
  libs_read_lib_files(bootloader_t)
  libs_exec_lib_files(bootloader_t)
@@ -1453,7 +1482,7 @@ index 0fd5c5f..32514ee 100644
  userdom_dontaudit_search_user_home_dirs(bootloader_t)
  
  ifdef(`distro_debian',`
-@@ -174,6 +199,10 @@ ifdef(`distro_redhat',`
+@@ -174,6 +200,10 @@ ifdef(`distro_redhat',`
  ')
  
  optional_policy(`
@@ -1464,7 +1493,7 @@ index 0fd5c5f..32514ee 100644
  	fstools_exec(bootloader_t)
  ')
  
-@@ -183,6 +212,14 @@ optional_policy(`
+@@ -183,6 +213,14 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1479,7 +1508,7 @@ index 0fd5c5f..32514ee 100644
  	kudzu_domtrans(bootloader_t)
  ')
  
-@@ -195,17 +232,18 @@ optional_policy(`
+@@ -195,17 +233,18 @@ optional_policy(`
  
  optional_policy(`
  	modutils_exec_insmod(bootloader_t)
@@ -5418,7 +5447,7 @@ index 8e0f9cd..b9f45b9 100644
  
  define(`create_packet_interfaces',``
 diff --git a/policy/modules/kernel/corenetwork.te.in b/policy/modules/kernel/corenetwork.te.in
-index b191055..dd4a176 100644
+index b191055..1463ef3 100644
 --- a/policy/modules/kernel/corenetwork.te.in
 +++ b/policy/modules/kernel/corenetwork.te.in
 @@ -5,6 +5,7 @@ policy_module(corenetwork, 1.19.2)
@@ -5677,7 +5706,7 @@ index b191055..dd4a176 100644
  network_port(portmap, udp,111,s0, tcp,111,s0)
  network_port(postfix_policyd, tcp,10031,s0)
  network_port(postgresql, tcp,5432,s0)
-@@ -215,52 +268,59 @@ network_port(prelude, tcp,4690,s0, udp,4690,s0)
+@@ -215,66 +268,74 @@ network_port(prelude, tcp,4690,s0, udp,4690,s0)
  network_port(presence, tcp,5298-5299,s0, udp,5298-5299,s0)
  network_port(printer, tcp,515,s0)
  network_port(ptal, tcp,5703,s0)
@@ -5686,7 +5715,7 @@ index b191055..dd4a176 100644
  network_port(puppet, tcp, 8140, s0)
  network_port(pxe, udp,4011,s0)
  network_port(pyzor, udp,24441,s0)
-+network_port(neutron, tcp,9696,s0)
++network_port(neutron, tcp,9696,s0, tcp,9697,s0)
  network_port(radacct, udp,1646,s0, udp,1813,s0)
  network_port(radius, udp,1645,s0, udp,1812,s0)
  network_port(radsec, tcp,2083,s0)
@@ -5746,7 +5775,11 @@ index b191055..dd4a176 100644
  network_port(transproxy, tcp,8081,s0)
  network_port(trisoap, tcp,10200,s0, udp,10200,s0)
  network_port(trivnet1, tcp, 8200, s0, udp, 8200, s0)
-@@ -271,10 +331,10 @@ network_port(varnishd, tcp,6081-6082,s0)
+ network_port(ups, tcp,3493,s0)
+ network_port(utcpserver) # no defined portcon
+ network_port(uucpd, tcp,540,s0)
++network_port(us_cli, tcp,8082,s0, udp,8082,s0, tcp,8083,s0, udp,8083,s0)
+ network_port(varnishd, tcp,6081-6082,s0)
  network_port(virt, tcp,16509,s0, udp,16509,s0, tcp,16514,s0, udp,16514,s0)
  network_port(virtual_places, tcp,1533,s0, udp,1533,s0)
  network_port(virt_migration, tcp,49152-49216,s0)
@@ -5759,7 +5792,7 @@ index b191055..dd4a176 100644
  network_port(winshadow, tcp,3161,s0, udp,3261,s0)
  network_port(wsdapi, tcp,5357,s0, udp,5357,s0)
  network_port(wsicopy, tcp,3378,s0, udp,3378,s0)
-@@ -288,19 +348,23 @@ network_port(zabbix_agent, tcp,10050,s0)
+@@ -288,19 +349,23 @@ network_port(zabbix_agent, tcp,10050,s0)
  network_port(zookeeper_client, tcp,2181,s0)
  network_port(zookeeper_election, tcp,3888,s0)
  network_port(zookeeper_leader, tcp,2888,s0)
@@ -5786,7 +5819,7 @@ index b191055..dd4a176 100644
  
  ########################################
  #
-@@ -333,6 +397,8 @@ sid netif gen_context(system_u:object_r:netif_t,s0 - mls_systemhigh)
+@@ -333,6 +398,8 @@ sid netif gen_context(system_u:object_r:netif_t,s0 - mls_systemhigh)
  
  build_option(`enable_mls',`
  network_interface(lo, lo, s0 - mls_systemhigh)
@@ -5795,7 +5828,7 @@ index b191055..dd4a176 100644
  ',`
  typealias netif_t alias { lo_netif_t netif_lo_t };
  ')
-@@ -345,9 +411,28 @@ typealias netif_t alias { lo_netif_t netif_lo_t };
+@@ -345,9 +412,28 @@ typealias netif_t alias { lo_netif_t netif_lo_t };
  allow corenet_unconfined_type node_type:node *;
  allow corenet_unconfined_type netif_type:netif *;
  allow corenet_unconfined_type packet_type:packet *;
@@ -5960,7 +5993,7 @@ index b31c054..5e37a40 100644
 +/usr/lib/udev/devices/null	-c	gen_context(system_u:object_r:null_device_t,s0)
 +/usr/lib/udev/devices/zero	-c	gen_context(system_u:object_r:zero_device_t,s0)
 diff --git a/policy/modules/kernel/devices.if b/policy/modules/kernel/devices.if
-index 76f285e..fb27ae5 100644
+index 76f285e..d86836b 100644
 --- a/policy/modules/kernel/devices.if
 +++ b/policy/modules/kernel/devices.if
 @@ -143,13 +143,32 @@ interface(`dev_relabel_all_dev_nodes',`
@@ -7022,7 +7055,15 @@ index 76f285e..fb27ae5 100644
  ## <summary>
 -##	Read hardware state information.
 +##	Do not audit attempts to search sysfs.
-+## </summary>
+ ## </summary>
+-## <desc>
+-##	<p>
+-##	Allow the specified domain to read the contents of
+-##	the sysfs filesystem.  This filesystem contains
+-##	information, parameters, and other settings on the
+-##	hardware installed on the system.
+-##	</p>
+-## </desc>
 +## <param name="domain">
 +##	<summary>
 +##	Domain to not audit.
@@ -7120,15 +7161,7 @@ index 76f285e..fb27ae5 100644
 +########################################
 +## <summary>
 +##	Relabel cpu online hardware state information.
- ## </summary>
--## <desc>
--##	<p>
--##	Allow the specified domain to read the contents of
--##	the sysfs filesystem.  This filesystem contains
--##	information, parameters, and other settings on the
--##	hardware installed on the system.
--##	</p>
--## </desc>
++## </summary>
 +## <param name="domain">
 +##	<summary>
 +##	Domain allowed access.
@@ -7461,10 +7494,28 @@ index 76f285e..fb27ae5 100644
  ##	Read and write VMWare devices.
  ## </summary>
  ## <param name="domain">
-@@ -4762,6 +5532,26 @@ interface(`dev_rw_xserver_misc',`
+@@ -4762,6 +5532,44 @@ interface(`dev_rw_xserver_misc',`
  
  ########################################
  ## <summary>
++##	Dontaudit attempts to Read and write X server miscellaneous devices.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`dev_dontaudit_leaked_xserver_misc',`
++	gen_require(`
++		type xserver_misc_device_t;
++	')
++
++	dontaudit $1 xserver_misc_device_t:chr_file { read write };
++')
++
++########################################
++## <summary>
 +##	Read and write X server miscellaneous devices.
 +## </summary>
 +## <param name="domain">
@@ -7488,7 +7539,7 @@ index 76f285e..fb27ae5 100644
  ##	Read and write to the zero device (/dev/zero).
  ## </summary>
  ## <param name="domain">
-@@ -4851,3 +5641,946 @@ interface(`dev_unconfined',`
+@@ -4851,3 +5659,946 @@ interface(`dev_unconfined',`
  
  	typeattribute $1 devices_unconfined_type;
  ')
@@ -8744,7 +8795,7 @@ index 6a1e4d1..84e8030 100644
 +	dontaudit $1 domain:dir_file_class_set audit_access;
  ')
 diff --git a/policy/modules/kernel/domain.te b/policy/modules/kernel/domain.te
-index cf04cb5..e0615d1 100644
+index cf04cb5..71f4c33 100644
 --- a/policy/modules/kernel/domain.te
 +++ b/policy/modules/kernel/domain.te
 @@ -4,6 +4,29 @@ policy_module(domain, 1.11.0)
@@ -8785,7 +8836,7 @@ index cf04cb5..e0615d1 100644
  
  # Transitions only allowed from domains to other domains
  neverallow domain ~domain:process { transition dyntransition };
-@@ -86,23 +110,47 @@ neverallow ~{ domain unlabeled_t } *:process *;
+@@ -86,23 +110,51 @@ neverallow ~{ domain unlabeled_t } *:process *;
  allow domain self:dir list_dir_perms;
  allow domain self:lnk_file { read_lnk_file_perms lock ioctl };
  allow domain self:file rw_file_perms;
@@ -8816,9 +8867,10 @@ index cf04cb5..e0615d1 100644
  
  # list the root directory
  files_list_root(domain)
-+# allow all domains to search through default_t directory, since users sometimes
-+# place labels within these directories.  (samba_share_t) for example.
-+files_search_default(domain)
++# allow all domains to search through base_file_type directory, since users 
++# sometimes place labels within these directories.  (samba_share_t) for example.
++files_search_base_file_types(domain)
++
 +files_read_inherited_tmp_files(domain)
 +files_append_inherited_tmp_files(domain)
 +files_read_all_base_ro_files(domain)
@@ -8827,6 +8879,9 @@ index cf04cb5..e0615d1 100644
 +# All executables should be able to search the directory they are in
 +corecmd_search_bin(domain)
 +
++optional_policy(`
++    userdom_search_admin_dir(domain)
++')
 +
 +tunable_policy(`domain_kernel_load_modules',`
 +	kernel_request_load_module(domain)
@@ -8834,7 +8889,7 @@ index cf04cb5..e0615d1 100644
  
  ifdef(`hide_broken_symptoms',`
  	# This check is in the general socket
-@@ -121,8 +169,18 @@ tunable_policy(`global_ssp',`
+@@ -121,8 +173,18 @@ tunable_policy(`global_ssp',`
  ')
  
  optional_policy(`
@@ -8853,7 +8908,7 @@ index cf04cb5..e0615d1 100644
  ')
  
  optional_policy(`
-@@ -133,6 +191,9 @@ optional_policy(`
+@@ -133,6 +195,9 @@ optional_policy(`
  optional_policy(`
  	xserver_dontaudit_use_xdm_fds(domain)
  	xserver_dontaudit_rw_xdm_pipes(domain)
@@ -8863,7 +8918,7 @@ index cf04cb5..e0615d1 100644
  ')
  
  ########################################
-@@ -147,12 +208,18 @@ optional_policy(`
+@@ -147,12 +212,18 @@ optional_policy(`
  # Use/sendto/connectto sockets created by any domain.
  allow unconfined_domain_type domain:{ socket_class_set socket key_socket } *;
  
@@ -8883,7 +8938,7 @@ index cf04cb5..e0615d1 100644
  
  # Create/access any System V IPC objects.
  allow unconfined_domain_type domain:{ sem msgq shm } *;
-@@ -166,5 +233,347 @@ allow unconfined_domain_type domain:lnk_file { read_lnk_file_perms ioctl lock };
+@@ -166,5 +237,347 @@ allow unconfined_domain_type domain:lnk_file { read_lnk_file_perms ioctl lock };
  # act on all domains keys
  allow unconfined_domain_type domain:key *;
  
@@ -9479,7 +9534,7 @@ index b876c48..bbd0e79 100644
 +/nsr(/.*)?			gen_context(system_u:object_r:var_t,s0)
 +/nsr/logs(/.*)?			gen_context(system_u:object_r:var_log_t,s0)
 diff --git a/policy/modules/kernel/files.if b/policy/modules/kernel/files.if
-index f962f76..337a00e 100644
+index f962f76..ec9e64a 100644
 --- a/policy/modules/kernel/files.if
 +++ b/policy/modules/kernel/files.if
 @@ -19,6 +19,136 @@
@@ -9799,7 +9854,7 @@ index f962f76..337a00e 100644
  ##	Read all files.
  ## </summary>
  ## <param name="domain">
-@@ -683,12 +906,107 @@ interface(`files_read_non_security_files',`
+@@ -683,12 +906,125 @@ interface(`files_read_non_security_files',`
  		attribute non_security_file_type;
  	')
  
@@ -9879,6 +9934,24 @@ index f962f76..337a00e 100644
 +
 +########################################
 +## <summary>
++##	Search all base file dirs.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_search_base_file_types',`
++	gen_require(`
++		attribute base_file_type;
++	')
++
++	allow $1 base_file_type:dir search_dir_perms;
++')
++
++########################################
++## <summary>
 +##	Relabel all base file types.
 +## </summary>
 +## <param name="domain">
@@ -9907,7 +9980,7 @@ index f962f76..337a00e 100644
  ##	Read all directories on the filesystem, except
  ##	the listed exceptions.
  ## </summary>
-@@ -953,6 +1271,25 @@ interface(`files_dontaudit_getattr_non_security_pipes',`
+@@ -953,6 +1289,25 @@ interface(`files_dontaudit_getattr_non_security_pipes',`
  
  ########################################
  ## <summary>
@@ -9933,7 +10006,7 @@ index f962f76..337a00e 100644
  ##	Get the attributes of all named sockets.
  ## </summary>
  ## <param name="domain">
-@@ -991,8 +1328,8 @@ interface(`files_dontaudit_getattr_all_sockets',`
+@@ -991,8 +1346,8 @@ interface(`files_dontaudit_getattr_all_sockets',`
  
  ########################################
  ## <summary>
@@ -9944,7 +10017,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1000,43 +1337,81 @@ interface(`files_dontaudit_getattr_all_sockets',`
+@@ -1000,12 +1355,50 @@ interface(`files_dontaudit_getattr_all_sockets',`
  ##	</summary>
  ## </param>
  #
@@ -9957,87 +10030,48 @@ index f962f76..337a00e 100644
  
 -	dontaudit $1 non_security_file_type:sock_file getattr;
 +	dontaudit $1 file_type:sock_file read;
- ')
- 
- ########################################
- ## <summary>
--##	Read all block nodes with file types.
++')
++
++########################################
++## <summary>
 +##	Do not audit attempts to read
 +##	of all security file types.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
--##	Domain allowed access.
++## </summary>
++## <param name="domain">
++##	<summary>
 +##	Domain to not audit.
- ##	</summary>
- ## </param>
- #
--interface(`files_read_all_blk_files',`
++##	</summary>
++## </param>
++#
 +interface(`files_dontaudit_read_all_non_security_files',`
- 	gen_require(`
--		attribute file_type;
++	gen_require(`
 +		attribute non_security_file_type;
- 	')
- 
--	read_blk_files_pattern($1, file_type, file_type)
++	')
++
 +	dontaudit $1 non_security_file_type:file read_file_perms;
- ')
- 
- ########################################
- ## <summary>
--##	Read all character nodes with file types.
++')
++
++########################################
++## <summary>
 +##	Do not audit attempts to get the attributes
 +##	of non security named sockets.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
--##	Domain allowed access.
++## </summary>
++## <param name="domain">
++##	<summary>
 +##	Domain to not audit.
- ##	</summary>
- ## </param>
- #
--interface(`files_read_all_chr_files',`
++##	</summary>
++## </param>
++#
 +interface(`files_dontaudit_getattr_non_security_sockets',`
 +	gen_require(`
 +		attribute non_security_file_type;
 +	')
 +
 +	dontaudit $1 non_security_file_type:sock_file getattr;
-+')
-+
-+########################################
-+## <summary>
-+##	Read all block nodes with file types.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`files_read_all_blk_files',`
-+	gen_require(`
-+		attribute file_type;
-+	')
-+
-+	read_blk_files_pattern($1, file_type, file_type)
-+')
-+
-+########################################
-+## <summary>
-+##	Read all character nodes with file types.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`files_read_all_chr_files',`
- 	gen_require(`
- 		attribute file_type;
- 	')
-@@ -1073,10 +1448,8 @@ interface(`files_relabel_all_files',`
+ ')
+ 
+ ########################################
+@@ -1073,10 +1466,8 @@ interface(`files_relabel_all_files',`
  	relabel_lnk_files_pattern($1, { file_type $2 }, { file_type $2 })
  	relabel_fifo_files_pattern($1, { file_type $2 }, { file_type $2 })
  	relabel_sock_files_pattern($1, { file_type $2 }, { file_type $2 })
@@ -10050,7 +10084,7 @@ index f962f76..337a00e 100644
  
  	# satisfy the assertions:
  	seutil_relabelto_bin_policy($1)
-@@ -1182,24 +1555,6 @@ interface(`files_list_all',`
+@@ -1182,24 +1573,6 @@ interface(`files_list_all',`
  
  ########################################
  ## <summary>
@@ -10075,7 +10109,7 @@ index f962f76..337a00e 100644
  ##	Do not audit attempts to search the
  ##	contents of any directories on extended
  ##	attribute filesystems.
-@@ -1443,9 +1798,6 @@ interface(`files_relabel_non_auth_files',`
+@@ -1443,9 +1816,6 @@ interface(`files_relabel_non_auth_files',`
  	# device nodes with file types.
  	relabelfrom_blk_files_pattern($1, non_auth_file_type, non_auth_file_type)
  	relabelfrom_chr_files_pattern($1, non_auth_file_type, non_auth_file_type)
@@ -10085,7 +10119,7 @@ index f962f76..337a00e 100644
  ')
  
  #############################################
-@@ -1601,6 +1953,24 @@ interface(`files_setattr_all_mountpoints',`
+@@ -1601,6 +1971,24 @@ interface(`files_setattr_all_mountpoints',`
  
  ########################################
  ## <summary>
@@ -10110,7 +10144,7 @@ index f962f76..337a00e 100644
  ##	Do not audit attempts to set the attributes on all mount points.
  ## </summary>
  ## <param name="domain">
-@@ -1691,6 +2061,24 @@ interface(`files_dontaudit_list_all_mountpoints',`
+@@ -1691,6 +2079,24 @@ interface(`files_dontaudit_list_all_mountpoints',`
  
  ########################################
  ## <summary>
@@ -10135,7 +10169,7 @@ index f962f76..337a00e 100644
  ##	Do not audit attempts to write to mount points.
  ## </summary>
  ## <param name="domain">
-@@ -1709,6 +2097,42 @@ interface(`files_dontaudit_write_all_mountpoints',`
+@@ -1709,6 +2115,42 @@ interface(`files_dontaudit_write_all_mountpoints',`
  
  ########################################
  ## <summary>
@@ -10178,7 +10212,7 @@ index f962f76..337a00e 100644
  ##	List the contents of the root directory.
  ## </summary>
  ## <param name="domain">
-@@ -1725,6 +2149,23 @@ interface(`files_list_root',`
+@@ -1725,6 +2167,23 @@ interface(`files_list_root',`
  	allow $1 root_t:dir list_dir_perms;
  	allow $1 root_t:lnk_file { read_lnk_file_perms ioctl lock };
  ')
@@ -10202,7 +10236,7 @@ index f962f76..337a00e 100644
  
  ########################################
  ## <summary>
-@@ -1765,6 +2206,26 @@ interface(`files_dontaudit_rw_root_dir',`
+@@ -1765,6 +2224,26 @@ interface(`files_dontaudit_rw_root_dir',`
  
  ########################################
  ## <summary>
@@ -10229,7 +10263,7 @@ index f962f76..337a00e 100644
  ##	Create an object in the root directory, with a private
  ##	type using a type transition.
  ## </summary>
-@@ -1892,25 +2353,25 @@ interface(`files_delete_root_dir_entry',`
+@@ -1892,25 +2371,25 @@ interface(`files_delete_root_dir_entry',`
  
  ########################################
  ## <summary>
@@ -10261,7 +10295,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1923,7 +2384,7 @@ interface(`files_relabel_rootfs',`
+@@ -1923,7 +2402,7 @@ interface(`files_relabel_rootfs',`
  		type root_t;
  	')
  
@@ -10270,7 +10304,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -1946,6 +2407,24 @@ interface(`files_unmount_rootfs',`
+@@ -1946,6 +2425,24 @@ interface(`files_unmount_rootfs',`
  
  ########################################
  ## <summary>
@@ -10295,7 +10329,7 @@ index f962f76..337a00e 100644
  ##	Get attributes of the /boot directory.
  ## </summary>
  ## <param name="domain">
-@@ -2181,6 +2660,24 @@ interface(`files_relabelfrom_boot_files',`
+@@ -2181,6 +2678,24 @@ interface(`files_relabelfrom_boot_files',`
  	relabelfrom_files_pattern($1, boot_t, boot_t)
  ')
  
@@ -10320,7 +10354,7 @@ index f962f76..337a00e 100644
  ######################################
  ## <summary>
  ##	Read symbolic links in the /boot directory.
-@@ -2645,6 +3142,24 @@ interface(`files_rw_etc_dirs',`
+@@ -2645,6 +3160,24 @@ interface(`files_rw_etc_dirs',`
  	allow $1 etc_t:dir rw_dir_perms;
  ')
  
@@ -10345,7 +10379,7 @@ index f962f76..337a00e 100644
  ##########################################
  ## <summary>
  ## 	Manage generic directories in /etc
-@@ -2716,6 +3231,7 @@ interface(`files_read_etc_files',`
+@@ -2716,6 +3249,7 @@ interface(`files_read_etc_files',`
  	allow $1 etc_t:dir list_dir_perms;
  	read_files_pattern($1, etc_t, etc_t)
  	read_lnk_files_pattern($1, etc_t, etc_t)
@@ -10353,7 +10387,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -2724,7 +3240,7 @@ interface(`files_read_etc_files',`
+@@ -2724,7 +3258,7 @@ interface(`files_read_etc_files',`
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -10362,7 +10396,7 @@ index f962f76..337a00e 100644
  ##	</summary>
  ## </param>
  #
-@@ -2780,6 +3296,25 @@ interface(`files_manage_etc_files',`
+@@ -2780,6 +3314,25 @@ interface(`files_manage_etc_files',`
  
  ########################################
  ## <summary>
@@ -10388,7 +10422,7 @@ index f962f76..337a00e 100644
  ##	Delete system configuration files in /etc.
  ## </summary>
  ## <param name="domain">
-@@ -2798,6 +3333,24 @@ interface(`files_delete_etc_files',`
+@@ -2798,6 +3351,24 @@ interface(`files_delete_etc_files',`
  
  ########################################
  ## <summary>
@@ -10413,7 +10447,7 @@ index f962f76..337a00e 100644
  ##	Execute generic files in /etc.
  ## </summary>
  ## <param name="domain">
-@@ -2963,24 +3516,6 @@ interface(`files_delete_boot_flag',`
+@@ -2963,24 +3534,6 @@ interface(`files_delete_boot_flag',`
  
  ########################################
  ## <summary>
@@ -10438,7 +10472,7 @@ index f962f76..337a00e 100644
  ##	Read files in /etc that are dynamically
  ##	created on boot, such as mtab.
  ## </summary>
-@@ -3021,9 +3556,7 @@ interface(`files_read_etc_runtime_files',`
+@@ -3021,9 +3574,7 @@ interface(`files_read_etc_runtime_files',`
  
  ########################################
  ## <summary>
@@ -10449,7 +10483,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3031,18 +3564,17 @@ interface(`files_read_etc_runtime_files',`
+@@ -3031,18 +3582,17 @@ interface(`files_read_etc_runtime_files',`
  ##	</summary>
  ## </param>
  #
@@ -10471,7 +10505,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3060,12 +3592,32 @@ interface(`files_dontaudit_write_etc_runtime_files',`
+@@ -3060,23 +3610,44 @@ interface(`files_dontaudit_write_etc_runtime_files',`
  
  ########################################
  ## <summary>
@@ -10484,9 +10518,11 @@ index f962f76..337a00e 100644
  ##	<summary>
 -##	Domain allowed access.
 +##	Domain to not audit.
-+##	</summary>
-+## </param>
-+#
+ ##	</summary>
+ ## </param>
+-## <rolecap/>
+ #
+-interface(`files_rw_etc_runtime_files',`
 +interface(`files_dontaudit_read_etc_runtime_files',`
 +	gen_require(`
 +		type etc_runtime_t;
@@ -10503,10 +10539,14 @@ index f962f76..337a00e 100644
 +## <param name="domain">
 +##	<summary>
 +##	Domain allowed access.
- ##	</summary>
- ## </param>
- ## <rolecap/>
-@@ -3077,6 +3629,7 @@ interface(`files_rw_etc_runtime_files',`
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`files_rw_etc_runtime_files',`
+ 	gen_require(`
+ 		type etc_t, etc_runtime_t;
+ 	')
  
  	allow $1 etc_t:dir list_dir_perms;
  	rw_files_pattern($1, etc_t, etc_runtime_t)
@@ -10514,7 +10554,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3098,6 +3651,7 @@ interface(`files_manage_etc_runtime_files',`
+@@ -3098,6 +3669,7 @@ interface(`files_manage_etc_runtime_files',`
  	')
  
  	manage_files_pattern($1, { etc_t etc_runtime_t }, etc_runtime_t)
@@ -10522,7 +10562,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3142,10 +3696,48 @@ interface(`files_etc_filetrans_etc_runtime',`
+@@ -3142,10 +3714,48 @@ interface(`files_etc_filetrans_etc_runtime',`
  #
  interface(`files_getattr_isid_type_dirs',`
  	gen_require(`
@@ -10573,7 +10613,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3161,10 +3753,10 @@ interface(`files_getattr_isid_type_dirs',`
+@@ -3161,10 +3771,10 @@ interface(`files_getattr_isid_type_dirs',`
  #
  interface(`files_dontaudit_search_isid_type_dirs',`
  	gen_require(`
@@ -10586,7 +10626,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3180,10 +3772,10 @@ interface(`files_dontaudit_search_isid_type_dirs',`
+@@ -3180,10 +3790,10 @@ interface(`files_dontaudit_search_isid_type_dirs',`
  #
  interface(`files_list_isid_type_dirs',`
  	gen_require(`
@@ -10599,7 +10639,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3199,10 +3791,10 @@ interface(`files_list_isid_type_dirs',`
+@@ -3199,10 +3809,10 @@ interface(`files_list_isid_type_dirs',`
  #
  interface(`files_rw_isid_type_dirs',`
  	gen_require(`
@@ -10612,7 +10652,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3218,10 +3810,66 @@ interface(`files_rw_isid_type_dirs',`
+@@ -3218,10 +3828,66 @@ interface(`files_rw_isid_type_dirs',`
  #
  interface(`files_delete_isid_type_dirs',`
  	gen_require(`
@@ -10655,9 +10695,8 @@ index f962f76..337a00e 100644
 +interface(`files_mounton_isid',`
 +	gen_require(`
 +		type unlabeled_t;
- 	')
- 
--	delete_dirs_pattern($1, file_t, file_t)
++	')
++
 +	allow $1 unlabeled_t:dir mounton;
 +')
 +
@@ -10675,13 +10714,14 @@ index f962f76..337a00e 100644
 +interface(`files_relabelfrom_isid_type',`
 +	gen_require(`
 +		type unlabeled_t;
-+	')
-+
+ 	')
+ 
+-	delete_dirs_pattern($1, file_t, file_t)
 +	dontaudit $1 unlabeled_t:dir_file_class_set relabelfrom;
  ')
  
  ########################################
-@@ -3237,10 +3885,10 @@ interface(`files_delete_isid_type_dirs',`
+@@ -3237,10 +3903,10 @@ interface(`files_delete_isid_type_dirs',`
  #
  interface(`files_manage_isid_type_dirs',`
  	gen_require(`
@@ -10694,7 +10734,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3256,10 +3904,29 @@ interface(`files_manage_isid_type_dirs',`
+@@ -3256,10 +3922,29 @@ interface(`files_manage_isid_type_dirs',`
  #
  interface(`files_mounton_isid_type_dirs',`
  	gen_require(`
@@ -10726,7 +10766,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3275,10 +3942,10 @@ interface(`files_mounton_isid_type_dirs',`
+@@ -3275,10 +3960,10 @@ interface(`files_mounton_isid_type_dirs',`
  #
  interface(`files_read_isid_type_files',`
  	gen_require(`
@@ -10739,7 +10779,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3294,10 +3961,10 @@ interface(`files_read_isid_type_files',`
+@@ -3294,10 +3979,10 @@ interface(`files_read_isid_type_files',`
  #
  interface(`files_delete_isid_type_files',`
  	gen_require(`
@@ -10752,7 +10792,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3313,10 +3980,10 @@ interface(`files_delete_isid_type_files',`
+@@ -3313,10 +3998,10 @@ interface(`files_delete_isid_type_files',`
  #
  interface(`files_delete_isid_type_symlinks',`
  	gen_require(`
@@ -10765,7 +10805,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3332,10 +3999,10 @@ interface(`files_delete_isid_type_symlinks',`
+@@ -3332,10 +4017,10 @@ interface(`files_delete_isid_type_symlinks',`
  #
  interface(`files_delete_isid_type_fifo_files',`
  	gen_require(`
@@ -10778,7 +10818,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3351,10 +4018,10 @@ interface(`files_delete_isid_type_fifo_files',`
+@@ -3351,10 +4036,10 @@ interface(`files_delete_isid_type_fifo_files',`
  #
  interface(`files_delete_isid_type_sock_files',`
  	gen_require(`
@@ -10791,7 +10831,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3370,10 +4037,10 @@ interface(`files_delete_isid_type_sock_files',`
+@@ -3370,10 +4055,10 @@ interface(`files_delete_isid_type_sock_files',`
  #
  interface(`files_delete_isid_type_blk_files',`
  	gen_require(`
@@ -10804,7 +10844,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3389,10 +4056,10 @@ interface(`files_delete_isid_type_blk_files',`
+@@ -3389,10 +4074,10 @@ interface(`files_delete_isid_type_blk_files',`
  #
  interface(`files_dontaudit_write_isid_chr_files',`
  	gen_require(`
@@ -10817,7 +10857,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3408,10 +4075,10 @@ interface(`files_dontaudit_write_isid_chr_files',`
+@@ -3408,10 +4093,10 @@ interface(`files_dontaudit_write_isid_chr_files',`
  #
  interface(`files_delete_isid_type_chr_files',`
  	gen_require(`
@@ -10830,7 +10870,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3427,10 +4094,10 @@ interface(`files_delete_isid_type_chr_files',`
+@@ -3427,10 +4112,10 @@ interface(`files_delete_isid_type_chr_files',`
  #
  interface(`files_manage_isid_type_files',`
  	gen_require(`
@@ -10843,7 +10883,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3446,10 +4113,10 @@ interface(`files_manage_isid_type_files',`
+@@ -3446,10 +4131,10 @@ interface(`files_manage_isid_type_files',`
  #
  interface(`files_manage_isid_type_symlinks',`
  	gen_require(`
@@ -10856,14 +10896,15 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3465,10 +4132,29 @@ interface(`files_manage_isid_type_symlinks',`
+@@ -3465,10 +4150,29 @@ interface(`files_manage_isid_type_symlinks',`
  #
  interface(`files_rw_isid_type_blk_files',`
  	gen_require(`
 -		type file_t;
 +		type unlabeled_t;
-+	')
-+
+ 	')
+ 
+-	allow $1 file_t:blk_file rw_blk_file_perms;
 +	allow $1 unlabeled_t:blk_file rw_blk_file_perms;
 +')
 +
@@ -10881,14 +10922,13 @@ index f962f76..337a00e 100644
 +interface(`files_rw_inherited_isid_type_files',`
 +	gen_require(`
 +		type unlabeled_t;
- 	')
- 
--	allow $1 file_t:blk_file rw_blk_file_perms;
++	')
++
 +	allow $1 unlabeled_t:file rw_inherited_file_perms;
  ')
  
  ########################################
-@@ -3484,10 +4170,10 @@ interface(`files_rw_isid_type_blk_files',`
+@@ -3484,10 +4188,10 @@ interface(`files_rw_isid_type_blk_files',`
  #
  interface(`files_manage_isid_type_blk_files',`
  	gen_require(`
@@ -10901,7 +10941,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3503,10 +4189,10 @@ interface(`files_manage_isid_type_blk_files',`
+@@ -3503,10 +4207,10 @@ interface(`files_manage_isid_type_blk_files',`
  #
  interface(`files_manage_isid_type_chr_files',`
  	gen_require(`
@@ -10914,7 +10954,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -3814,20 +4500,38 @@ interface(`files_list_mnt',`
+@@ -3814,20 +4518,38 @@ interface(`files_list_mnt',`
  
  ######################################
  ## <summary>
@@ -10958,7 +10998,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -4217,6 +4921,172 @@ interface(`files_read_world_readable_sockets',`
+@@ -4217,6 +4939,172 @@ interface(`files_read_world_readable_sockets',`
  	allow $1 readable_t:sock_file read_sock_file_perms;
  ')
  
@@ -11131,7 +11171,7 @@ index f962f76..337a00e 100644
  ########################################
  ## <summary>
  ##	Allow the specified type to associate
-@@ -4239,6 +5109,26 @@ interface(`files_associate_tmp',`
+@@ -4239,6 +5127,26 @@ interface(`files_associate_tmp',`
  
  ########################################
  ## <summary>
@@ -11158,7 +11198,7 @@ index f962f76..337a00e 100644
  ##	Get the	attributes of the tmp directory (/tmp).
  ## </summary>
  ## <param name="domain">
-@@ -4252,17 +5142,37 @@ interface(`files_getattr_tmp_dirs',`
+@@ -4252,17 +5160,37 @@ interface(`files_getattr_tmp_dirs',`
  		type tmp_t;
  	')
  
@@ -11197,7 +11237,7 @@ index f962f76..337a00e 100644
  ##	</summary>
  ## </param>
  #
-@@ -4289,6 +5199,7 @@ interface(`files_search_tmp',`
+@@ -4289,6 +5217,7 @@ interface(`files_search_tmp',`
  		type tmp_t;
  	')
  
@@ -11205,7 +11245,7 @@ index f962f76..337a00e 100644
  	allow $1 tmp_t:dir search_dir_perms;
  ')
  
-@@ -4325,6 +5236,7 @@ interface(`files_list_tmp',`
+@@ -4325,6 +5254,7 @@ interface(`files_list_tmp',`
  		type tmp_t;
  	')
  
@@ -11213,7 +11253,7 @@ index f962f76..337a00e 100644
  	allow $1 tmp_t:dir list_dir_perms;
  ')
  
-@@ -4334,7 +5246,7 @@ interface(`files_list_tmp',`
+@@ -4334,7 +5264,7 @@ interface(`files_list_tmp',`
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -11222,7 +11262,7 @@ index f962f76..337a00e 100644
  ##	</summary>
  ## </param>
  #
-@@ -4346,21 +5258,41 @@ interface(`files_dontaudit_list_tmp',`
+@@ -4346,13 +5276,32 @@ interface(`files_dontaudit_list_tmp',`
  	dontaudit $1 tmp_t:dir list_dir_perms;
  ')
  
@@ -11235,13 +11275,11 @@ index f962f76..337a00e 100644
  ## <param name="domain">
 -##	<summary>
 -##	Domain allowed access.
--##	</summary>
 +##  <summary>
 +##  Domain not to audit.
 +##  </summary>
- ## </param>
- #
--interface(`files_delete_tmp_dir_entry',`
++## </param>
++#
 +interface(`files_rw_generic_tmp_dir',`
 +    gen_require(`
 +        type tmp_t;
@@ -11258,11 +11296,10 @@ index f962f76..337a00e 100644
 +## <param name="domain">
 +##	<summary>
 +##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`files_delete_tmp_dir_entry',`
- 	gen_require(`
+ ##	</summary>
+ ## </param>
+ #
+@@ -4361,6 +5310,7 @@ interface(`files_delete_tmp_dir_entry',`
  		type tmp_t;
  	')
  
@@ -11270,7 +11307,7 @@ index f962f76..337a00e 100644
  	allow $1 tmp_t:dir del_entry_dir_perms;
  ')
  
-@@ -4402,6 +5334,32 @@ interface(`files_manage_generic_tmp_dirs',`
+@@ -4402,6 +5352,32 @@ interface(`files_manage_generic_tmp_dirs',`
  
  ########################################
  ## <summary>
@@ -11303,7 +11340,7 @@ index f962f76..337a00e 100644
  ##	Manage temporary files and directories in /tmp.
  ## </summary>
  ## <param name="domain">
-@@ -4456,6 +5414,42 @@ interface(`files_rw_generic_tmp_sockets',`
+@@ -4456,6 +5432,42 @@ interface(`files_rw_generic_tmp_sockets',`
  
  ########################################
  ## <summary>
@@ -11346,7 +11383,7 @@ index f962f76..337a00e 100644
  ##	Set the attributes of all tmp directories.
  ## </summary>
  ## <param name="domain">
-@@ -4474,6 +5468,60 @@ interface(`files_setattr_all_tmp_dirs',`
+@@ -4474,6 +5486,60 @@ interface(`files_setattr_all_tmp_dirs',`
  
  ########################################
  ## <summary>
@@ -11407,7 +11444,7 @@ index f962f76..337a00e 100644
  ##	List all tmp directories.
  ## </summary>
  ## <param name="domain">
-@@ -4519,7 +5567,7 @@ interface(`files_relabel_all_tmp_dirs',`
+@@ -4519,7 +5585,7 @@ interface(`files_relabel_all_tmp_dirs',`
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -11416,7 +11453,7 @@ index f962f76..337a00e 100644
  ##	</summary>
  ## </param>
  #
-@@ -4579,7 +5627,7 @@ interface(`files_relabel_all_tmp_files',`
+@@ -4579,7 +5645,7 @@ interface(`files_relabel_all_tmp_files',`
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -11425,7 +11462,7 @@ index f962f76..337a00e 100644
  ##	</summary>
  ## </param>
  #
-@@ -4611,6 +5659,44 @@ interface(`files_read_all_tmp_files',`
+@@ -4611,6 +5677,44 @@ interface(`files_read_all_tmp_files',`
  
  ########################################
  ## <summary>
@@ -11470,7 +11507,7 @@ index f962f76..337a00e 100644
  ##	Create an object in the tmp directories, with a private
  ##	type using a type transition.
  ## </summary>
-@@ -4664,6 +5750,16 @@ interface(`files_purge_tmp',`
+@@ -4664,6 +5768,16 @@ interface(`files_purge_tmp',`
  	delete_lnk_files_pattern($1, tmpfile, tmpfile)
  	delete_fifo_files_pattern($1, tmpfile, tmpfile)
  	delete_sock_files_pattern($1, tmpfile, tmpfile)
@@ -11487,7 +11524,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -5112,6 +6208,24 @@ interface(`files_create_kernel_symbol_table',`
+@@ -5112,6 +6226,24 @@ interface(`files_create_kernel_symbol_table',`
  
  ########################################
  ## <summary>
@@ -11512,7 +11549,7 @@ index f962f76..337a00e 100644
  ##	Read system.map in the /boot directory.
  ## </summary>
  ## <param name="domain">
-@@ -5241,6 +6355,24 @@ interface(`files_list_var',`
+@@ -5241,6 +6373,24 @@ interface(`files_list_var',`
  
  ########################################
  ## <summary>
@@ -11537,7 +11574,7 @@ index f962f76..337a00e 100644
  ##	Create, read, write, and delete directories
  ##	in the /var directory.
  ## </summary>
-@@ -5328,7 +6460,7 @@ interface(`files_dontaudit_rw_var_files',`
+@@ -5328,7 +6478,7 @@ interface(`files_dontaudit_rw_var_files',`
  		type var_t;
  	')
  
@@ -11546,7 +11583,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -5527,6 +6659,25 @@ interface(`files_rw_var_lib_dirs',`
+@@ -5527,6 +6677,25 @@ interface(`files_rw_var_lib_dirs',`
  
  ########################################
  ## <summary>
@@ -11572,7 +11609,7 @@ index f962f76..337a00e 100644
  ##	Create objects in the /var/lib directory
  ## </summary>
  ## <param name="domain">
-@@ -5596,6 +6747,25 @@ interface(`files_read_var_lib_symlinks',`
+@@ -5596,6 +6765,25 @@ interface(`files_read_var_lib_symlinks',`
  	read_lnk_files_pattern($1, { var_t var_lib_t }, var_lib_t)
  ')
  
@@ -11598,7 +11635,7 @@ index f962f76..337a00e 100644
  # cjp: the next two interfaces really need to be fixed
  # in some way.  They really neeed their own types.
  
-@@ -5641,7 +6811,7 @@ interface(`files_manage_mounttab',`
+@@ -5641,7 +6829,7 @@ interface(`files_manage_mounttab',`
  
  ########################################
  ## <summary>
@@ -11607,7 +11644,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -5649,12 +6819,13 @@ interface(`files_manage_mounttab',`
+@@ -5649,12 +6837,13 @@ interface(`files_manage_mounttab',`
  ##	</summary>
  ## </param>
  #
@@ -11623,7 +11660,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -5672,6 +6843,7 @@ interface(`files_search_locks',`
+@@ -5672,6 +6861,7 @@ interface(`files_search_locks',`
  		type var_t, var_lock_t;
  	')
  
@@ -11631,7 +11668,7 @@ index f962f76..337a00e 100644
  	allow $1 var_lock_t:lnk_file read_lnk_file_perms;
  	search_dirs_pattern($1, var_t, var_lock_t)
  ')
-@@ -5698,7 +6870,26 @@ interface(`files_dontaudit_search_locks',`
+@@ -5698,7 +6888,26 @@ interface(`files_dontaudit_search_locks',`
  
  ########################################
  ## <summary>
@@ -11659,7 +11696,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -5706,13 +6897,12 @@ interface(`files_dontaudit_search_locks',`
+@@ -5706,13 +6915,12 @@ interface(`files_dontaudit_search_locks',`
  ##	</summary>
  ## </param>
  #
@@ -11676,7 +11713,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -5731,7 +6921,7 @@ interface(`files_rw_lock_dirs',`
+@@ -5731,7 +6939,7 @@ interface(`files_rw_lock_dirs',`
  		type var_t, var_lock_t;
  	')
  
@@ -11685,7 +11722,7 @@ index f962f76..337a00e 100644
  	rw_dirs_pattern($1, var_t, var_lock_t)
  ')
  
-@@ -5764,7 +6954,6 @@ interface(`files_create_lock_dirs',`
+@@ -5764,7 +6972,6 @@ interface(`files_create_lock_dirs',`
  ##	Domain allowed access.
  ##	</summary>
  ## </param>
@@ -11693,7 +11730,7 @@ index f962f76..337a00e 100644
  #
  interface(`files_relabel_all_lock_dirs',`
  	gen_require(`
-@@ -5779,7 +6968,7 @@ interface(`files_relabel_all_lock_dirs',`
+@@ -5779,7 +6986,7 @@ interface(`files_relabel_all_lock_dirs',`
  
  ########################################
  ## <summary>
@@ -11702,7 +11739,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -5787,13 +6976,33 @@ interface(`files_relabel_all_lock_dirs',`
+@@ -5787,13 +6994,33 @@ interface(`files_relabel_all_lock_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -11737,7 +11774,7 @@ index f962f76..337a00e 100644
  	allow $1 var_lock_t:dir list_dir_perms;
  	getattr_files_pattern($1, var_lock_t, var_lock_t)
  ')
-@@ -5809,13 +7018,12 @@ interface(`files_getattr_generic_locks',`
+@@ -5809,13 +7036,12 @@ interface(`files_getattr_generic_locks',`
  ## </param>
  #
  interface(`files_delete_generic_locks',`
@@ -11755,7 +11792,7 @@ index f962f76..337a00e 100644
  ')
  
  ########################################
-@@ -5834,9 +7042,7 @@ interface(`files_manage_generic_locks',`
+@@ -5834,9 +7060,7 @@ interface(`files_manage_generic_locks',`
  		type var_t, var_lock_t;
  	')
  
@@ -11766,7 +11803,7 @@ index f962f76..337a00e 100644
  	manage_files_pattern($1, var_lock_t, var_lock_t)
  ')
  
-@@ -5878,8 +7084,7 @@ interface(`files_read_all_locks',`
+@@ -5878,8 +7102,7 @@ interface(`files_read_all_locks',`
  		type var_t, var_lock_t;
  	')
  
@@ -11776,7 +11813,7 @@ index f962f76..337a00e 100644
  	allow $1 lockfile:dir list_dir_perms;
  	read_files_pattern($1, lockfile, lockfile)
  	read_lnk_files_pattern($1, lockfile, lockfile)
-@@ -5901,8 +7106,7 @@ interface(`files_manage_all_locks',`
+@@ -5901,8 +7124,7 @@ interface(`files_manage_all_locks',`
  		type var_t, var_lock_t;
  	')
  
@@ -11786,7 +11823,7 @@ index f962f76..337a00e 100644
  	manage_dirs_pattern($1, lockfile, lockfile)
  	manage_files_pattern($1, lockfile, lockfile)
  	manage_lnk_files_pattern($1, lockfile, lockfile)
-@@ -5939,8 +7143,7 @@ interface(`files_lock_filetrans',`
+@@ -5939,8 +7161,7 @@ interface(`files_lock_filetrans',`
  		type var_t, var_lock_t;
  	')
  
@@ -11796,7 +11833,7 @@ index f962f76..337a00e 100644
  	filetrans_pattern($1, var_lock_t, $2, $3, $4)
  ')
  
-@@ -5979,7 +7182,7 @@ interface(`files_setattr_pid_dirs',`
+@@ -5979,7 +7200,7 @@ interface(`files_setattr_pid_dirs',`
  		type var_run_t;
  	')
  
@@ -11805,7 +11842,7 @@ index f962f76..337a00e 100644
  	allow $1 var_run_t:dir setattr;
  ')
  
-@@ -5999,10 +7202,48 @@ interface(`files_search_pids',`
+@@ -5999,10 +7220,48 @@ interface(`files_search_pids',`
  		type var_t, var_run_t;
  	')
  
@@ -11854,7 +11891,7 @@ index f962f76..337a00e 100644
  ########################################
  ## <summary>
  ##	Do not audit attempts to search
-@@ -6025,6 +7266,25 @@ interface(`files_dontaudit_search_pids',`
+@@ -6025,6 +7284,25 @@ interface(`files_dontaudit_search_pids',`
  
  ########################################
  ## <summary>
@@ -11880,7 +11917,7 @@ index f962f76..337a00e 100644
  ##	List the contents of the runtime process
  ##	ID directories (/var/run).
  ## </summary>
-@@ -6039,7 +7299,7 @@ interface(`files_list_pids',`
+@@ -6039,7 +7317,7 @@ interface(`files_list_pids',`
  		type var_t, var_run_t;
  	')
  
@@ -11889,7 +11926,7 @@ index f962f76..337a00e 100644
  	list_dirs_pattern($1, var_t, var_run_t)
  ')
  
-@@ -6058,7 +7318,7 @@ interface(`files_read_generic_pids',`
+@@ -6058,7 +7336,7 @@ interface(`files_read_generic_pids',`
  		type var_t, var_run_t;
  	')
  
@@ -11898,7 +11935,7 @@ index f962f76..337a00e 100644
  	list_dirs_pattern($1, var_t, var_run_t)
  	read_files_pattern($1, var_run_t, var_run_t)
  ')
-@@ -6078,7 +7338,7 @@ interface(`files_write_generic_pid_pipes',`
+@@ -6078,7 +7356,7 @@ interface(`files_write_generic_pid_pipes',`
  		type var_run_t;
  	')
  
@@ -11907,7 +11944,7 @@ index f962f76..337a00e 100644
  	allow $1 var_run_t:fifo_file write;
  ')
  
-@@ -6140,7 +7400,6 @@ interface(`files_pid_filetrans',`
+@@ -6140,7 +7418,6 @@ interface(`files_pid_filetrans',`
  	')
  
  	allow $1 var_t:dir search_dir_perms;
@@ -11915,7 +11952,7 @@ index f962f76..337a00e 100644
  	filetrans_pattern($1, var_run_t, $2, $3, $4)
  ')
  
-@@ -6169,6 +7428,24 @@ interface(`files_pid_filetrans_lock_dir',`
+@@ -6169,6 +7446,24 @@ interface(`files_pid_filetrans_lock_dir',`
  
  ########################################
  ## <summary>
@@ -11940,7 +11977,7 @@ index f962f76..337a00e 100644
  ##	Read and write generic process ID files.
  ## </summary>
  ## <param name="domain">
-@@ -6182,7 +7459,7 @@ interface(`files_rw_generic_pids',`
+@@ -6182,7 +7477,7 @@ interface(`files_rw_generic_pids',`
  		type var_t, var_run_t;
  	')
  
@@ -11949,7 +11986,7 @@ index f962f76..337a00e 100644
  	list_dirs_pattern($1, var_t, var_run_t)
  	rw_files_pattern($1, var_run_t, var_run_t)
  ')
-@@ -6249,55 +7526,43 @@ interface(`files_dontaudit_ioctl_all_pids',`
+@@ -6249,55 +7544,43 @@ interface(`files_dontaudit_ioctl_all_pids',`
  
  ########################################
  ## <summary>
@@ -12012,7 +12049,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6305,42 +7570,35 @@ interface(`files_delete_all_pids',`
+@@ -6305,42 +7588,35 @@ interface(`files_delete_all_pids',`
  ##	</summary>
  ## </param>
  #
@@ -12062,7 +12099,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6348,18 +7606,18 @@ interface(`files_manage_all_pids',`
+@@ -6348,18 +7624,18 @@ interface(`files_manage_all_pids',`
  ##	</summary>
  ## </param>
  #
@@ -12086,7 +12123,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6367,37 +7625,40 @@ interface(`files_mounton_all_poly_members',`
+@@ -6367,37 +7643,40 @@ interface(`files_mounton_all_poly_members',`
  ##	</summary>
  ## </param>
  #
@@ -12138,7 +12175,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6405,18 +7666,17 @@ interface(`files_dontaudit_search_spool',`
+@@ -6405,18 +7684,17 @@ interface(`files_dontaudit_search_spool',`
  ##	</summary>
  ## </param>
  #
@@ -12161,7 +12198,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6424,18 +7684,18 @@ interface(`files_list_spool',`
+@@ -6424,18 +7702,18 @@ interface(`files_list_spool',`
  ##	</summary>
  ## </param>
  #
@@ -12185,7 +12222,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6443,19 +7703,18 @@ interface(`files_manage_generic_spool_dirs',`
+@@ -6443,19 +7721,18 @@ interface(`files_manage_generic_spool_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -12210,7 +12247,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6463,55 +7722,43 @@ interface(`files_read_generic_spool',`
+@@ -6463,55 +7740,43 @@ interface(`files_read_generic_spool',`
  ##	</summary>
  ## </param>
  #
@@ -12281,7 +12318,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6519,53 +7766,68 @@ interface(`files_spool_filetrans',`
+@@ -6519,53 +7784,68 @@ interface(`files_spool_filetrans',`
  ##	</summary>
  ## </param>
  #
@@ -12388,7 +12425,7 @@ index f962f76..337a00e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -6573,10 +7835,784 @@ interface(`files_polyinstantiate_all',`
+@@ -6573,10 +7853,784 @@ interface(`files_polyinstantiate_all',`
  ##	</summary>
  ## </param>
  #
@@ -12397,8 +12434,9 @@ index f962f76..337a00e 100644
  	gen_require(`
 -		attribute files_unconfined_type;
 +		attribute spoolfile;
-+	')
-+
+ 	')
+ 
+-	typeattribute $1 files_unconfined_type;
 +	allow $1 spoolfile:sock_file create_sock_file_perms;
 +')
 +
@@ -12661,10 +12699,10 @@ index f962f76..337a00e 100644
 +interface(`files_unconfined',`
 +	gen_require(`
 +		attribute files_unconfined_type;
- 	')
- 
- 	typeattribute $1 files_unconfined_type;
- ')
++	')
++
++	typeattribute $1 files_unconfined_type;
++')
 +
 +########################################
 +## <summary>
@@ -13174,7 +13212,7 @@ index f962f76..337a00e 100644
 +	')
 +
 +	allow $1 etc_t:service status;
-+')
+ ')
 diff --git a/policy/modules/kernel/files.te b/policy/modules/kernel/files.te
 index 1a03abd..32a40f8 100644
 --- a/policy/modules/kernel/files.te
@@ -13378,7 +13416,7 @@ index 1a03abd..32a40f8 100644
  	allow files_unconfined_type file_type:file execmod;
  ')
 diff --git a/policy/modules/kernel/filesystem.fc b/policy/modules/kernel/filesystem.fc
-index d7c11a0..2fc3436 100644
+index d7c11a0..6b3331d 100644
 --- a/policy/modules/kernel/filesystem.fc
 +++ b/policy/modules/kernel/filesystem.fc
 @@ -1,23 +1,26 @@
@@ -13404,8 +13442,8 @@ index d7c11a0..2fc3436 100644
 +/usr/lib/udev/devices/hugepages/.*	<<none>>
 +/usr/lib/udev/devices/shm	-d	gen_context(system_u:object_r:tmpfs_t,s0)
 +/usr/lib/udev/devices/shm/.*	<<none>>
-+/var/run/[^/]*/gvfs		-d	gen_context(system_u:object_r:fusefs_t,s0)
-+/var/run/[^/]*/gvfs/.*	<<none>>
++/var/run/user/[^/]*/gvfs		-d	gen_context(system_u:object_r:fusefs_t,s0)
++/var/run/user/[^/]*/gvfs/.*	<<none>>
 +
 +# for systemd systems:
  /sys/fs/cgroup	-d	gen_context(system_u:object_r:cgroup_t,s0)
@@ -26124,14 +26162,14 @@ index c6fdab7..af71c62 100644
  	sudo_sigchld(application_domain_type)
  ')
 diff --git a/policy/modules/system/authlogin.fc b/policy/modules/system/authlogin.fc
-index 2479587..077c9bc 100644
+index 2479587..890e1e2 100644
 --- a/policy/modules/system/authlogin.fc
 +++ b/policy/modules/system/authlogin.fc
 @@ -1,14 +1,28 @@
 +HOME_DIR/\.yubico(/.*)?				    gen_context(system_u:object_r:auth_home_t,s0)
 +HOME_DIR/\.google_authenticator			gen_context(system_u:object_r:auth_home_t,s0)
 +HOME_DIR/\.google_authenticator~		gen_context(system_u:object_r:auth_home_t,s0)
-+/root/\.yubico/(.*)                     gen_context(system_u:object_r:auth_home_t,s0)
++/root/\.yubico(/.*)?                    gen_context(system_u:object_r:auth_home_t,s0)
 +/root/\.google_authenticator			gen_context(system_u:object_r:auth_home_t,s0)
 +/root/\.google_authenticator~			gen_context(system_u:object_r:auth_home_t,s0)
  
@@ -26219,7 +26257,7 @@ index 2479587..077c9bc 100644
  /var/(db|adm)/sudo(/.*)?	gen_context(system_u:object_r:pam_var_run_t,s0)
  /var/lib/sudo(/.*)?	gen_context(system_u:object_r:pam_var_run_t,s0)
 diff --git a/policy/modules/system/authlogin.if b/policy/modules/system/authlogin.if
-index 3efd5b6..0bd3a26 100644
+index 3efd5b6..b07f3fe 100644
 --- a/policy/modules/system/authlogin.if
 +++ b/policy/modules/system/authlogin.if
 @@ -23,11 +23,17 @@ interface(`auth_role',`
@@ -26805,7 +26843,7 @@ index 3efd5b6..0bd3a26 100644
  ')
  
  ########################################
-@@ -1805,3 +2029,262 @@ interface(`auth_unconfined',`
+@@ -1805,3 +2029,280 @@ interface(`auth_unconfined',`
  	typeattribute $1 can_write_shadow_passwords;
  	typeattribute $1 can_relabelto_shadow_passwords;
  ')
@@ -27067,6 +27105,24 @@ index 3efd5b6..0bd3a26 100644
 +	')
 +
 +	allow $1 login_pgm:process sigchld;
++')
++
++########################################
++## <summary>
++##	Manage the keyrings of all login programs
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`auth_login_manage_key',`
++	gen_require(`
++		attribute login_pgm;
++	')
++
++	allow $1 login_pgm:key manage_key_perms;
 +')
 diff --git a/policy/modules/system/authlogin.te b/policy/modules/system/authlogin.te
 index 09b791d..ff0708e 100644
@@ -29680,7 +29736,7 @@ index 79a45f6..89b43aa 100644
 +	files_etc_filetrans($1, machineid_t, file, "machine-id" )
 +')
 diff --git a/policy/modules/system/init.te b/policy/modules/system/init.te
-index 17eda24..e5c555c 100644
+index 17eda24..43c0bc6 100644
 --- a/policy/modules/system/init.te
 +++ b/policy/modules/system/init.te
 @@ -11,10 +11,31 @@ gen_require(`
@@ -29950,7 +30006,7 @@ index 17eda24..e5c555c 100644
  
  ifdef(`distro_gentoo',`
  	allow init_t self:process { getcap setcap };
-@@ -186,29 +301,235 @@ ifdef(`distro_gentoo',`
+@@ -186,29 +301,236 @@ ifdef(`distro_gentoo',`
  ')
  
  ifdef(`distro_redhat',`
@@ -29986,6 +30042,7 @@ index 17eda24..e5c555c 100644
  optional_policy(`
 -	auth_rw_login_records(init_t)
 +	kdump_read_crash(init_t)
++	kdump_read_config(init_t)
  ')
  
  optional_policy(`
@@ -30194,7 +30251,7 @@ index 17eda24..e5c555c 100644
  ')
  
  optional_policy(`
-@@ -216,7 +537,31 @@ optional_policy(`
+@@ -216,7 +538,31 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30226,7 +30283,7 @@ index 17eda24..e5c555c 100644
  ')
  
  ########################################
-@@ -225,9 +570,9 @@ optional_policy(`
+@@ -225,9 +571,9 @@ optional_policy(`
  #
  
  allow initrc_t self:process { getpgid setsched setpgid setrlimit getsched };
@@ -30238,7 +30295,7 @@ index 17eda24..e5c555c 100644
  allow initrc_t self:passwd rootok;
  allow initrc_t self:key manage_key_perms;
  
-@@ -258,12 +603,16 @@ manage_fifo_files_pattern(initrc_t, initrc_state_t, initrc_state_t)
+@@ -258,12 +604,16 @@ manage_fifo_files_pattern(initrc_t, initrc_state_t, initrc_state_t)
  
  allow initrc_t initrc_var_run_t:file manage_file_perms;
  files_pid_filetrans(initrc_t, initrc_var_run_t, file)
@@ -30255,7 +30312,7 @@ index 17eda24..e5c555c 100644
  
  manage_dirs_pattern(initrc_t, initrc_var_log_t, initrc_var_log_t)
  manage_files_pattern(initrc_t, initrc_var_log_t, initrc_var_log_t)
-@@ -279,23 +628,36 @@ kernel_change_ring_buffer_level(initrc_t)
+@@ -279,23 +629,36 @@ kernel_change_ring_buffer_level(initrc_t)
  kernel_clear_ring_buffer(initrc_t)
  kernel_get_sysvipc_info(initrc_t)
  kernel_read_all_sysctls(initrc_t)
@@ -30298,7 +30355,7 @@ index 17eda24..e5c555c 100644
  corenet_tcp_sendrecv_all_ports(initrc_t)
  corenet_udp_sendrecv_all_ports(initrc_t)
  corenet_tcp_connect_all_ports(initrc_t)
-@@ -303,9 +665,11 @@ corenet_sendrecv_all_client_packets(initrc_t)
+@@ -303,9 +666,11 @@ corenet_sendrecv_all_client_packets(initrc_t)
  
  dev_read_rand(initrc_t)
  dev_read_urand(initrc_t)
@@ -30310,7 +30367,7 @@ index 17eda24..e5c555c 100644
  dev_rw_sysfs(initrc_t)
  dev_list_usbfs(initrc_t)
  dev_read_framebuffer(initrc_t)
-@@ -313,8 +677,10 @@ dev_write_framebuffer(initrc_t)
+@@ -313,8 +678,10 @@ dev_write_framebuffer(initrc_t)
  dev_read_realtime_clock(initrc_t)
  dev_read_sound_mixer(initrc_t)
  dev_write_sound_mixer(initrc_t)
@@ -30321,7 +30378,7 @@ index 17eda24..e5c555c 100644
  dev_delete_lvm_control_dev(initrc_t)
  dev_manage_generic_symlinks(initrc_t)
  dev_manage_generic_files(initrc_t)
-@@ -322,8 +688,7 @@ dev_manage_generic_files(initrc_t)
+@@ -322,8 +689,7 @@ dev_manage_generic_files(initrc_t)
  dev_delete_generic_symlinks(initrc_t)
  dev_getattr_all_blk_files(initrc_t)
  dev_getattr_all_chr_files(initrc_t)
@@ -30331,7 +30388,7 @@ index 17eda24..e5c555c 100644
  
  domain_kill_all_domains(initrc_t)
  domain_signal_all_domains(initrc_t)
-@@ -332,7 +697,6 @@ domain_sigstop_all_domains(initrc_t)
+@@ -332,7 +698,6 @@ domain_sigstop_all_domains(initrc_t)
  domain_sigchld_all_domains(initrc_t)
  domain_read_all_domains_state(initrc_t)
  domain_getattr_all_domains(initrc_t)
@@ -30339,7 +30396,7 @@ index 17eda24..e5c555c 100644
  domain_getsession_all_domains(initrc_t)
  domain_use_interactive_fds(initrc_t)
  # for lsof which is used by alsa shutdown:
-@@ -340,6 +704,7 @@ domain_dontaudit_getattr_all_udp_sockets(initrc_t)
+@@ -340,6 +705,7 @@ domain_dontaudit_getattr_all_udp_sockets(initrc_t)
  domain_dontaudit_getattr_all_tcp_sockets(initrc_t)
  domain_dontaudit_getattr_all_dgram_sockets(initrc_t)
  domain_dontaudit_getattr_all_pipes(initrc_t)
@@ -30347,7 +30404,7 @@ index 17eda24..e5c555c 100644
  
  files_getattr_all_dirs(initrc_t)
  files_getattr_all_files(initrc_t)
-@@ -347,14 +712,15 @@ files_getattr_all_symlinks(initrc_t)
+@@ -347,14 +713,15 @@ files_getattr_all_symlinks(initrc_t)
  files_getattr_all_pipes(initrc_t)
  files_getattr_all_sockets(initrc_t)
  files_purge_tmp(initrc_t)
@@ -30365,7 +30422,7 @@ index 17eda24..e5c555c 100644
  files_read_usr_files(initrc_t)
  files_manage_urandom_seed(initrc_t)
  files_manage_generic_spool(initrc_t)
-@@ -364,8 +730,12 @@ files_list_isid_type_dirs(initrc_t)
+@@ -364,8 +731,12 @@ files_list_isid_type_dirs(initrc_t)
  files_mounton_isid_type_dirs(initrc_t)
  files_list_default(initrc_t)
  files_mounton_default(initrc_t)
@@ -30379,7 +30436,7 @@ index 17eda24..e5c555c 100644
  fs_list_inotifyfs(initrc_t)
  fs_register_binary_executable_type(initrc_t)
  # rhgb-console writes to ramfs
-@@ -375,10 +745,11 @@ fs_mount_all_fs(initrc_t)
+@@ -375,10 +746,11 @@ fs_mount_all_fs(initrc_t)
  fs_unmount_all_fs(initrc_t)
  fs_remount_all_fs(initrc_t)
  fs_getattr_all_fs(initrc_t)
@@ -30393,7 +30450,7 @@ index 17eda24..e5c555c 100644
  mcs_process_set_categories(initrc_t)
  
  mls_file_read_all_levels(initrc_t)
-@@ -387,8 +758,10 @@ mls_process_read_up(initrc_t)
+@@ -387,8 +759,10 @@ mls_process_read_up(initrc_t)
  mls_process_write_down(initrc_t)
  mls_rangetrans_source(initrc_t)
  mls_fd_share_all_levels(initrc_t)
@@ -30404,7 +30461,7 @@ index 17eda24..e5c555c 100644
  
  storage_getattr_fixed_disk_dev(initrc_t)
  storage_setattr_fixed_disk_dev(initrc_t)
-@@ -398,6 +771,7 @@ term_use_all_terms(initrc_t)
+@@ -398,6 +772,7 @@ term_use_all_terms(initrc_t)
  term_reset_tty_labels(initrc_t)
  
  auth_rw_login_records(initrc_t)
@@ -30412,7 +30469,7 @@ index 17eda24..e5c555c 100644
  auth_setattr_login_records(initrc_t)
  auth_rw_lastlog(initrc_t)
  auth_read_pam_pid(initrc_t)
-@@ -416,20 +790,18 @@ logging_read_all_logs(initrc_t)
+@@ -416,20 +791,18 @@ logging_read_all_logs(initrc_t)
  logging_append_all_logs(initrc_t)
  logging_read_audit_config(initrc_t)
  
@@ -30436,7 +30493,7 @@ index 17eda24..e5c555c 100644
  
  ifdef(`distro_debian',`
  	dev_setattr_generic_dirs(initrc_t)
-@@ -451,7 +823,6 @@ ifdef(`distro_gentoo',`
+@@ -451,7 +824,6 @@ ifdef(`distro_gentoo',`
  	allow initrc_t self:process setfscreate;
  	dev_create_null_dev(initrc_t)
  	dev_create_zero_dev(initrc_t)
@@ -30444,7 +30501,7 @@ index 17eda24..e5c555c 100644
  	term_create_console_dev(initrc_t)
  
  	# unfortunately /sbin/rc does stupid tricks
-@@ -486,6 +857,10 @@ ifdef(`distro_gentoo',`
+@@ -486,6 +858,10 @@ ifdef(`distro_gentoo',`
  	sysnet_setattr_config(initrc_t)
  
  	optional_policy(`
@@ -30455,7 +30512,7 @@ index 17eda24..e5c555c 100644
  		alsa_read_lib(initrc_t)
  	')
  
-@@ -506,7 +881,7 @@ ifdef(`distro_redhat',`
+@@ -506,7 +882,7 @@ ifdef(`distro_redhat',`
  
  	# Red Hat systems seem to have a stray
  	# fd open from the initrd
@@ -30464,7 +30521,7 @@ index 17eda24..e5c555c 100644
  	files_dontaudit_read_root_files(initrc_t)
  
  	# These seem to be from the initrd
-@@ -521,6 +896,7 @@ ifdef(`distro_redhat',`
+@@ -521,6 +897,7 @@ ifdef(`distro_redhat',`
  	files_create_boot_dirs(initrc_t)
  	files_create_boot_flag(initrc_t)
  	files_rw_boot_symlinks(initrc_t)
@@ -30472,7 +30529,7 @@ index 17eda24..e5c555c 100644
  	# wants to read /.fonts directory
  	files_read_default_files(initrc_t)
  	files_mountpoint(initrc_tmp_t)
-@@ -541,6 +917,7 @@ ifdef(`distro_redhat',`
+@@ -541,6 +918,7 @@ ifdef(`distro_redhat',`
  	miscfiles_rw_localization(initrc_t)
  	miscfiles_setattr_localization(initrc_t)
  	miscfiles_relabel_localization(initrc_t)
@@ -30480,7 +30537,7 @@ index 17eda24..e5c555c 100644
  
  	miscfiles_read_fonts(initrc_t)
  	miscfiles_read_hwdata(initrc_t)
-@@ -550,8 +927,44 @@ ifdef(`distro_redhat',`
+@@ -550,8 +928,44 @@ ifdef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -30525,7 +30582,7 @@ index 17eda24..e5c555c 100644
  	')
  
  	optional_policy(`
-@@ -559,14 +972,31 @@ ifdef(`distro_redhat',`
+@@ -559,14 +973,31 @@ ifdef(`distro_redhat',`
  		rpc_write_exports(initrc_t)
  		rpc_manage_nfs_state_data(initrc_t)
  	')
@@ -30557,7 +30614,7 @@ index 17eda24..e5c555c 100644
  	')
  ')
  
-@@ -577,6 +1007,39 @@ ifdef(`distro_suse',`
+@@ -577,6 +1008,39 @@ ifdef(`distro_suse',`
  	')
  ')
  
@@ -30597,7 +30654,7 @@ index 17eda24..e5c555c 100644
  optional_policy(`
  	amavis_search_lib(initrc_t)
  	amavis_setattr_pid_files(initrc_t)
-@@ -589,6 +1052,8 @@ optional_policy(`
+@@ -589,6 +1053,8 @@ optional_policy(`
  optional_policy(`
  	apache_read_config(initrc_t)
  	apache_list_modules(initrc_t)
@@ -30606,7 +30663,7 @@ index 17eda24..e5c555c 100644
  ')
  
  optional_policy(`
-@@ -610,6 +1075,7 @@ optional_policy(`
+@@ -610,6 +1076,7 @@ optional_policy(`
  
  optional_policy(`
  	cgroup_stream_connect_cgred(initrc_t)
@@ -30614,7 +30671,7 @@ index 17eda24..e5c555c 100644
  ')
  
  optional_policy(`
-@@ -626,6 +1092,17 @@ optional_policy(`
+@@ -626,6 +1093,17 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30632,7 +30689,7 @@ index 17eda24..e5c555c 100644
  	dev_getattr_printer_dev(initrc_t)
  
  	cups_read_log(initrc_t)
-@@ -642,9 +1119,13 @@ optional_policy(`
+@@ -642,9 +1120,13 @@ optional_policy(`
  	dbus_connect_system_bus(initrc_t)
  	dbus_system_bus_client(initrc_t)
  	dbus_read_config(initrc_t)
@@ -30646,7 +30703,7 @@ index 17eda24..e5c555c 100644
  	')
  
  	optional_policy(`
-@@ -657,15 +1138,11 @@ optional_policy(`
+@@ -657,15 +1139,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30664,7 +30721,7 @@ index 17eda24..e5c555c 100644
  ')
  
  optional_policy(`
-@@ -686,6 +1163,15 @@ optional_policy(`
+@@ -686,6 +1164,15 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30680,7 +30737,7 @@ index 17eda24..e5c555c 100644
  	inn_exec_config(initrc_t)
  ')
  
-@@ -726,6 +1212,7 @@ optional_policy(`
+@@ -726,6 +1213,7 @@ optional_policy(`
  	lpd_list_spool(initrc_t)
  
  	lpd_read_config(initrc_t)
@@ -30688,7 +30745,7 @@ index 17eda24..e5c555c 100644
  ')
  
  optional_policy(`
-@@ -743,7 +1230,13 @@ optional_policy(`
+@@ -743,7 +1231,13 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30703,7 +30760,7 @@ index 17eda24..e5c555c 100644
  	mta_dontaudit_read_spool_symlinks(initrc_t)
  ')
  
-@@ -766,6 +1259,10 @@ optional_policy(`
+@@ -766,6 +1260,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30714,7 +30771,7 @@ index 17eda24..e5c555c 100644
  	postgresql_manage_db(initrc_t)
  	postgresql_read_config(initrc_t)
  ')
-@@ -775,10 +1272,20 @@ optional_policy(`
+@@ -775,10 +1273,20 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30735,7 +30792,7 @@ index 17eda24..e5c555c 100644
  	quota_manage_flags(initrc_t)
  ')
  
-@@ -787,6 +1294,10 @@ optional_policy(`
+@@ -787,6 +1295,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30746,7 +30803,7 @@ index 17eda24..e5c555c 100644
  	fs_write_ramfs_sockets(initrc_t)
  	fs_search_ramfs(initrc_t)
  
-@@ -808,8 +1319,6 @@ optional_policy(`
+@@ -808,8 +1320,6 @@ optional_policy(`
  	# bash tries ioctl for some reason
  	files_dontaudit_ioctl_all_pids(initrc_t)
  
@@ -30755,7 +30812,7 @@ index 17eda24..e5c555c 100644
  ')
  
  optional_policy(`
-@@ -818,6 +1327,10 @@ optional_policy(`
+@@ -818,6 +1328,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30766,7 +30823,7 @@ index 17eda24..e5c555c 100644
  	# shorewall-init script run /var/lib/shorewall/firewall
  	shorewall_lib_domtrans(initrc_t)
  ')
-@@ -827,10 +1340,12 @@ optional_policy(`
+@@ -827,10 +1341,12 @@ optional_policy(`
  	squid_manage_logs(initrc_t)
  ')
  
@@ -30779,7 +30836,7 @@ index 17eda24..e5c555c 100644
  
  optional_policy(`
  	ssh_dontaudit_read_server_keys(initrc_t)
-@@ -857,21 +1372,60 @@ optional_policy(`
+@@ -857,21 +1373,60 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30841,7 +30898,7 @@ index 17eda24..e5c555c 100644
  ')
  
  optional_policy(`
-@@ -887,6 +1441,10 @@ optional_policy(`
+@@ -887,6 +1442,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30852,7 +30909,7 @@ index 17eda24..e5c555c 100644
  	# Set device ownerships/modes.
  	xserver_setattr_console_pipes(initrc_t)
  
-@@ -897,3 +1455,218 @@ optional_policy(`
+@@ -897,3 +1456,218 @@ optional_policy(`
  optional_policy(`
  	zebra_read_config(initrc_t)
  ')
