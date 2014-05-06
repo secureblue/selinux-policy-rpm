@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 49%{?dist}
+Release: 50%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue May 6 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-50
+- selinux_unconfined_type should not be able to set booleans if the securemode is set
+- Update sandbox_transition() to call sandbox_dyntrasition(). #885288.
+
 * Mon May 5 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-49
 - Fix labeling for /root/\.yubico
 - userdom_search_admin_dir() calling needs to be optional in kernel.te

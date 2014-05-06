@@ -7477,7 +7477,7 @@ index f3c0aba..2b3352b 100644
 +	files_etc_filetrans(apcupsd_t, apcupsd_power_t, file, "powerfail")
  ')
 diff --git a/apcupsd.te b/apcupsd.te
-index 080bc4d..c85265d 100644
+index 080bc4d..0b6be35 100644
 --- a/apcupsd.te
 +++ b/apcupsd.te
 @@ -24,6 +24,12 @@ files_tmp_file(apcupsd_tmp_t)
@@ -7524,11 +7524,13 @@ index 080bc4d..c85265d 100644
  
  corenet_udp_bind_snmp_port(apcupsd_t)
  corenet_sendrecv_snmp_server_packets(apcupsd_t)
-@@ -74,19 +82,23 @@ corenet_udp_sendrecv_snmp_port(apcupsd_t)
+@@ -74,19 +82,25 @@ corenet_udp_sendrecv_snmp_port(apcupsd_t)
  
  dev_rw_generic_usb_dev(apcupsd_t)
  
 -files_read_etc_files(apcupsd_t)
++domain_signull_all_domains(apcupsd_t)
++
  files_manage_etc_runtime_files(apcupsd_t)
  files_etc_filetrans_etc_runtime(apcupsd_t, file, "nologin")
  
@@ -7552,7 +7554,7 @@ index 080bc4d..c85265d 100644
  
  optional_policy(`
  	hostname_exec(apcupsd_t)
-@@ -101,6 +113,11 @@ optional_policy(`
+@@ -101,6 +115,11 @@ optional_policy(`
  	shutdown_domtrans(apcupsd_t)
  ')
  
@@ -7564,7 +7566,7 @@ index 080bc4d..c85265d 100644
  ########################################
  #
  # CGI local policy
-@@ -108,20 +125,20 @@ optional_policy(`
+@@ -108,20 +127,20 @@ optional_policy(`
  
  optional_policy(`
  	apache_content_template(apcupsd_cgi)
@@ -38387,7 +38389,7 @@ index e88fb16..f20248c 100644
 +	')
  ')
 diff --git a/keystone.te b/keystone.te
-index 9929647..ff98be8 100644
+index 9929647..0907a30 100644
 --- a/keystone.te
 +++ b/keystone.te
 @@ -21,10 +21,14 @@ files_type(keystone_var_lib_t)
@@ -38405,13 +38407,12 @@ index 9929647..ff98be8 100644
  
  allow keystone_t self:fifo_file rw_fifo_file_perms;
  allow keystone_t self:unix_stream_socket { accept listen };
-@@ -57,20 +61,30 @@ corenet_all_recvfrom_netlabel(keystone_t)
+@@ -57,20 +61,33 @@ corenet_all_recvfrom_netlabel(keystone_t)
  corenet_tcp_sendrecv_generic_if(keystone_t)
  corenet_tcp_sendrecv_generic_node(keystone_t)
  corenet_tcp_bind_generic_node(keystone_t)
 +corenet_tcp_connect_mysqld_port(keystone_t)
-+
-+corenet_tcp_connect_mysqld_port(keystone_t)
++corenet_tcp_connect_ldap_port(keystone_t)
  
  corenet_sendrecv_commplex_main_server_packets(keystone_t)
  corenet_tcp_bind_commplex_main_port(keystone_t)
@@ -38425,11 +38426,14 @@ index 9929647..ff98be8 100644
  libs_exec_ldconfig(keystone_t)
  
 -miscfiles_read_localization(keystone_t)
--
++optional_policy(`
++	ldap_stream_connect(keystone_t)
++')
+ 
  optional_policy(`
  	mysql_stream_connect(keystone_t)
  	mysql_tcp_connect(keystone_t)
-+    mysql_read_db_lnk_files(keystone_t)
++	mysql_read_db_lnk_files(keystone_t)
 +')
 +
 +optional_policy(`
@@ -73461,10 +73465,10 @@ index afc0068..3105104 100644
 +	')
  ')
 diff --git a/quantum.te b/quantum.te
-index 8644d8b..96f804c 100644
+index 8644d8b..d76fab5 100644
 --- a/quantum.te
 +++ b/quantum.te
-@@ -5,92 +5,131 @@ policy_module(quantum, 1.1.0)
+@@ -5,92 +5,132 @@ policy_module(quantum, 1.1.0)
  # Declarations
  #
  
@@ -73509,15 +73513,16 @@ index 8644d8b..96f804c 100644
 -allow quantum_t self:key manage_key_perms;
 -allow quantum_t self:tcp_socket { accept listen };
 -allow quantum_t self:unix_stream_socket { accept listen };
-+allow neutron_t self:capability { dac_override sys_ptrace kill setgid setuid sys_resource net_admin sys_admin net_raw };
-+
++allow neutron_t self:capability { dac_override sys_ptrace kill setgid setuid sys_resource net_admin sys_admin net_raw net_bind_service};
 +allow neutron_t self:capability2 block_suspend;
 +allow neutron_t self:process { setsched setrlimit signal_perms };
++
 +allow neutron_t self:fifo_file rw_fifo_file_perms;
 +allow neutron_t self:key manage_key_perms;
 +allow neutron_t self:tcp_socket { accept listen };
 +allow neutron_t self:unix_stream_socket { accept listen };
 +allow neutron_t self:netlink_route_socket rw_netlink_socket_perms;
++allow neutron_t self:rawip_socket create_socket_perms;
 +
 +manage_dirs_pattern(neutron_t, neutron_log_t, neutron_log_t)
 +append_files_pattern(neutron_t, neutron_log_t, neutron_log_t)
@@ -85604,10 +85609,10 @@ index 0000000..b7db254
 +# Empty
 diff --git a/sandbox.if b/sandbox.if
 new file mode 100644
-index 0000000..89bc443
+index 0000000..a2cb772
 --- /dev/null
 +++ b/sandbox.if
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,85 @@
 +
 +## <summary>policy for sandbox</summary>
 +
@@ -85632,14 +85637,42 @@ index 0000000..89bc443
 +		attribute sandbox_domain;
 +	')
 +
-+	allow $1 sandbox_domain:process transition;
-+	dontaudit $1 sandbox_domain:process { noatsecure siginh rlimitinh };
-+	role $2 types sandbox_domain;
-+	allow sandbox_domain $1:process { sigchld signull };
-+	allow sandbox_domain $1:fifo_file rw_inherited_fifo_file_perms;
-+	dontaudit sandbox_domain $1:process signal;
-+	dontaudit sandbox_domain $1:key { link read search view };
-+	dontaudit sandbox_domain $1:unix_stream_socket rw_socket_perms;
++    sandbox_dyntransition($1) #885288
++    allow $1 sandbox_domain:process transition;
++    dontaudit $1 sandbox_domain:process { noatsecure siginh rlimitinh };
++
++    role $2 types sandbox_domain;
++
++    allow sandbox_domain $1:process { sigchld signull };
++    allow sandbox_domain $1:fifo_file rw_inherited_fifo_file_perms;
++
++    dontaudit sandbox_domain $1:process signal;
++    dontaudit sandbox_domain $1:key { link read search view };
++    dontaudit sandbox_domain $1:unix_stream_socket rw_socket_perms;
++')
++
++########################################
++## <summary>
++##	Execute sandbox in the sandbox domain, and
++##	allow the specified role the sandbox domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	The role to be allowed the sandbox domain.
++##	</summary>
++## </param>
++#
++interface(`sandbox_dyntransition',`
++	gen_require(`
++		attribute sandbox_domain;
++	')
++
++	allow $1 sandbox_domain:process dyntransition;
 +')
 +
 +########################################
