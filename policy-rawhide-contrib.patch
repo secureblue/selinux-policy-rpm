@@ -27964,16 +27964,16 @@ index 2820368..88c98f4 100644
  userdom_dontaudit_use_unpriv_user_fds(gatekeeper_t)
 diff --git a/gear.fc b/gear.fc
 new file mode 100644
-index 0000000..5eabf35
+index 0000000..98c012c
 --- /dev/null
 +++ b/gear.fc
 @@ -0,0 +1,7 @@
 +/usr/bin/gear			--	gen_context(system_u:object_r:gear_exec_t,s0)
 +
-+/usr/lib/systemd/system/gear.service		--	gen_context(system_u:object_r:gear_unit_file_t,s0)
++/usr/lib/systemd/system/gear.service	--	gen_context(system_u:object_r:gear_unit_file_t,s0)
 +
-+/var/lib/containers/bin/gear	--	gen_context(system_u:object_r:gear_exec_t,s0)
-+
++/var/lib/containers(/.*)?			gen_context(system_u:object_r:gear_var_lib_t,s0)
++/var/lib/containers/units(/.*)?			gen_context(system_u:object_r:gear_unit_file_t,s0)
 +/var/lib/gear(/.*)?		gen_context(system_u:object_r:gear_var_lib_t,s0)
 diff --git a/gear.if b/gear.if
 new file mode 100644
@@ -28271,10 +28271,10 @@ index 0000000..04e159f
 +')
 diff --git a/gear.te b/gear.te
 new file mode 100644
-index 0000000..45141fc
+index 0000000..75d7bc3
 --- /dev/null
 +++ b/gear.te
-@@ -0,0 +1,115 @@
+@@ -0,0 +1,121 @@
 +policy_module(gear, 1.0.0)
 +
 +########################################
@@ -28360,6 +28360,7 @@ index 0000000..45141fc
 +
 +init_read_state(gear_t)
 +init_dbus_chat(gear_t)
++init_enable_services(gear_t)
 +
 +iptables_domtrans(gear_t)
 +
@@ -28384,11 +28385,16 @@ index 0000000..45141fc
 +')
 +
 +optional_policy(`
++	dbus_system_bus_client(gear_t)
++')
++
++optional_policy(`
 +	docker_stream_connect(gear_t)
 +')
 +
 +optional_policy(`
 +	openshift_manage_lib_files(gear_t)
++	openshift_relabelfrom_lib(gear_t)
 +')
 diff --git a/geoclue.fc b/geoclue.fc
 new file mode 100644
@@ -56883,7 +56889,7 @@ index 0000000..a437f80
 +files_read_config_files(openshift_domain)
 diff --git a/openshift.fc b/openshift.fc
 new file mode 100644
-index 0000000..88c2186
+index 0000000..418db16
 --- /dev/null
 +++ b/openshift.fc
 @@ -0,0 +1,28 @@
@@ -56894,7 +56900,7 @@ index 0000000..88c2186
 +
 +/var/lib/stickshift(/.*)?            gen_context(system_u:object_r:openshift_var_lib_t,s0)
 +/var/lib/stickshift/.*/data(/.*)?	       gen_context(system_u:object_r:openshift_rw_file_t,s0)
-+/var/lib/containers(/.*)?            gen_context(system_u:object_r:openshift_var_lib_t,s0)
++/var/lib/containers/home(/.*)?            gen_context(system_u:object_r:openshift_var_lib_t,s0)
 +/var/lib/openshift(/.*)?            gen_context(system_u:object_r:openshift_var_lib_t,s0)
 +/var/lib/openshift/.*/data(/.*)?          gen_context(system_u:object_r:openshift_rw_file_t,s0)
 +
@@ -56917,10 +56923,10 @@ index 0000000..88c2186
 +/var/run/openshift(/.*)?               gen_context(system_u:object_r:openshift_var_run_t,s0)
 diff --git a/openshift.if b/openshift.if
 new file mode 100644
-index 0000000..cf03270
+index 0000000..a60155c
 --- /dev/null
 +++ b/openshift.if
-@@ -0,0 +1,702 @@
+@@ -0,0 +1,721 @@
 +
 +## <summary> policy for openshift </summary>
 +
@@ -57285,6 +57291,26 @@ index 0000000..cf03270
 +	manage_sock_files_pattern($1, openshift_file_type, openshift_file_type)
 +')
 +
++########################################
++## <summary>
++##	Relabel openshift library files 
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`openshift_relabelfrom_lib',`
++	gen_require(`
++		type openshift_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++	relabel_dirs_pattern($1, openshift_var_lib_t, openshift_var_lib_t)
++	relabel_files_pattern($1, openshift_var_lib_t, openshift_var_lib_t)
++')
++
 +#######################################
 +## <summary>
 +##	Create private objects in the
@@ -57338,7 +57364,6 @@ index 0000000..cf03270
 +	files_search_pids($1)
 +	allow $1 openshift_var_run_t:file read_file_perms;
 +')
-+
 +
 +########################################
 +## <summary>
@@ -57625,10 +57650,10 @@ index 0000000..cf03270
 +')
 diff --git a/openshift.te b/openshift.te
 new file mode 100644
-index 0000000..db64c6a
+index 0000000..a2db55e
 --- /dev/null
 +++ b/openshift.te
-@@ -0,0 +1,576 @@
+@@ -0,0 +1,580 @@
 +policy_module(openshift,1.0.0)
 +
 +gen_require(`
@@ -57950,6 +57975,10 @@ index 0000000..db64c6a
 +
 +optional_policy(`
 +	cron_role(system_r, openshift_domain)
++')
++
++optional_policy(`
++	gear_search_lib(openshift_domain)
 +')
 +
 +optional_policy(`

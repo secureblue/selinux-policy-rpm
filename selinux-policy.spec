@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 51%{?dist}
+Release: 52%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed May 7 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-52
+- More rules for gears and openshift
+
 * Wed May 7 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-51
 - Add gear fixes from dwalsh
 
