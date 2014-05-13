@@ -588,6 +588,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue May 13 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-53
+- Add missing dyntransition for sandbox_x_domain
+
 * Wed May 7 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-52
 - More rules for gears and openshift
 - Added iotop policy. Thanks William Brown
