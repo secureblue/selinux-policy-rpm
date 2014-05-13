@@ -590,6 +590,25 @@ SELinux Reference policy mls base module.
 %changelog
 * Wed May 7 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-52
 - More rules for gears and openshift
+- Added iotop policy. Thanks William Brown
+- Allow spamc to read .pyzor located in /var/spool/spampd
+- Allow spamc to create home content with correct labeling
+- Allow logwatch_mail_t to create dead.letter with correct labelign
+- Add labeling for min-cloud-agent
+- Allow geoclue to read unix in proc.
+- Add support for /usr/local/Brother labeling. We removed /usr/local equiv.
+- add support for min-cloud-agent
+- Allow ulogd to request the kernel to load a module
+- remove unconfined_domain for openwsman_t
+- Add openwsman_tmp_t rules
+- Allow openwsman to execute chkpwd and make this domain as unconfined for F20.
+- Allow nova-scheduler to read passwd file
+- Allow neutron execute arping in neutron_t
+- Dontaudit logrotate executing systemctl command attempting to net_admin
+- Allow mozilla plugins to use /dev/sr0
+- svirt sandbox domains to read gear content in /run. Allow gear_t to manage openshift files
+- Any app that executes systemctl will attempt a net_admin
+- Fix path to mmap_min_addr
 
 * Wed May 7 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-51
 - Add gear fixes from dwalsh
