@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 53%{?dist}
+Release: 54%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,31 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue May 20 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-54
+- geard seems to do a lot of relabeling
+- Allow system_mail_t to append to munin_var_lib_t
+- Allow mozilla_plugin to read alsa_rw_ content
+- Allow asterisk to connect to the apache ports
+- Dontaudit attempts to read fixed disk
+- Dontaudit search gconf_home_t
+- Allow rsync to create  swift_server.lock with swift.log labeling
+- Add labeling for swift lock files
+- Use swift_virt_lock in swift.te
+- Allow openwsman to getattr on sblim_sfcbd executable
+- Fix sblim_stream_connect_sfcb() to contain also sblim_tmp_t
+- Allow openwsman_t to read/write sblim-sfcb shared mem
+- Allow openwsman to stream connec to sblim-sfcbd
+- Allow openwsman to create tmpfs files/dirs
+- dontaudit acces to rpm db if rpm_exec for swift_t and sblim_sfcbd_t
+- Allow sblim_sfcbd to execute shell
+- Allow swift to create lock file
+- Allow openwsman to use tcp/80
+- Allow neutron to create also dirs in /tmp
+- Allow seunshare domains to getattr on all executables
+- Allow ssh-keygen to create temporary files/dirs needed by OpenStack
+- Allow named_filetrans_domain to create /run/netns
+- Allow ifconfig to create /run/netns
+
 * Tue May 13 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-53
 - Add missing dyntransition for sandbox_x_domain
 
