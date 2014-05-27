@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 54%{?dist}
+Release: 55%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,25 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue May 27 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-55
+- Add decl for cockip port
+- Allow sysadm_t to read all kernel proc
+- Allow logrotate to execute all executables
+- Allow lircd_t to use tty_device_t for use withmythtv
+- Make sure all zabbix files direcories in /var/log have the correct label
+- Allow bittlebee to create directories and files in /var/log with the correct label
+- Label /var/log/horizon as an apache log
+- Add squid directory in /var/run
+- Add transition rules to allow rabbitmq to create log files and var_lib files with the correct label
+- Wronly labeled avahi_var_lib_t as a pid file
+- Fix labels on rabbitmq_var_run_t on file/dir creation
+- Allow neutron to create sock files
+- Allow postfix domains to getattr on all file systems
+- Label swift-proxy-server as swift_exec_t
+- Tighten SELinux capabilities to match docker capabilities
+- Add fixes for squid which is configured to run with more than one worker.
+- Allow cockpit to bind to its port
+
 * Tue May 20 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-54
 - geard seems to do a lot of relabeling
 - Allow system_mail_t to append to munin_var_lib_t
