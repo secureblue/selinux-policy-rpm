@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 56%{?dist}
+Release: 57%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,33 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jun 9 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-57
+- Allow staff_t to communicate and run docker
+- Fix *_ecryptfs_home_dirs booleans
+- Allow ldconfig_t to read/write inherited user tmp pipes
+- Allow storaged to dbus chat with lvm_t
+- Add support for storaged  and storaged-lvm-helper. Labeled it as lvm_exec_t.
+- Use proper calling in ssh.te for userdom_home_manager attribute
+- Use userdom_home_manager_type() also for ssh_keygen_t
+- Allow locate to list directories without labels
+- Allow bitlbee to use tcp/7778 port
+- /etc/cron.daily/logrotate to execute fail2ban-client.
+- Allow keepalives to connect to SNMP port. Support to do  SNMP stuff
+- Allow staff_t to communicate and run docker
+- Dontaudit search mgrepl/.local for cobblerd_t
+- Allow neutron to execute kmod in insmod_t
+- Allow neutron to execute udevadm in udev_t
+- Allow also fowner cap for varnishd
+- Allow keepalived to execute bin_t/shell_exec_t
+- rhsmcertd seems to need these accesses.  We need this backported to RHEL7 and perhaps RHEL6 policy
+- Add cups_execmem boolean
+- Allow gear to manage gear service
+- New requires for gear to use systemctl and init var_run_t
+- Allow cups to execute its rw_etc_t files, for brothers printers
+- Add fixes to make munin and munin-cgi working. Allow munin-cgit to create files/dirs in /tmp, list munin conf dirs and manage munin logs.
+- Allow swift to execute bin_t
+- Allow swift to bind http_cache
+
 * Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.13.1-56
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
