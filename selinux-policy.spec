@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 57%{?dist}
+Release: 58%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jun 11 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-58
+- Add mozilla_plugin_use_bluejeans boolean
+- Add additional interfaces needed by mozilla_plugin_use_bluejeans boolean
+
 * Mon Jun 9 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-57
 - Allow staff_t to communicate and run docker
 - Fix *_ecryptfs_home_dirs booleans

@@ -11121,7 +11121,7 @@ index 008f8ef..144c074 100644
  	admin_pattern($1, certmonger_var_run_t)
  ')
 diff --git a/certmonger.te b/certmonger.te
-index 550b287..ad3330f 100644
+index 550b287..31b8bd7 100644
 --- a/certmonger.te
 +++ b/certmonger.te
 @@ -18,6 +18,9 @@ files_type(certmonger_var_lib_t)
@@ -11185,17 +11185,17 @@ index 550b287..ad3330f 100644
  
  fs_search_cgroup_dirs(certmonger_t)
  
-@@ -70,16 +84,18 @@ init_getattr_all_script_files(certmonger_t)
+@@ -70,16 +84,17 @@ init_getattr_all_script_files(certmonger_t)
  
  logging_send_syslog_msg(certmonger_t)
  
 -miscfiles_read_localization(certmonger_t)
- miscfiles_manage_generic_cert_files(certmonger_t)
- 
-+systemd_exec_systemctl(certmonger_t)
+-miscfiles_manage_generic_cert_files(certmonger_t)
++miscfiles_manage_all_certs(certmonger_t)
 +
++systemd_exec_systemctl(certmonger_t)
+ 
  userdom_search_user_home_content(certmonger_t)
-+userdom_manage_home_certs(certmonger_t)
  
  optional_policy(`
 -	apache_initrc_domtrans(certmonger_t)
@@ -11206,7 +11206,7 @@ index 550b287..ad3330f 100644
  ')
  
  optional_policy(`
-@@ -92,11 +108,51 @@ optional_policy(`
+@@ -92,11 +107,51 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -11556,10 +11556,10 @@ index 80a88a2..ec869f5 100644
 +logging_send_syslog_msg(cgred_t)
 diff --git a/chrome.fc b/chrome.fc
 new file mode 100644
-index 0000000..57866f6
+index 0000000..d020d89
 --- /dev/null
 +++ b/chrome.fc
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,10 @@
 +/opt/google/chrome/chrome-sandbox	--	gen_context(system_u:object_r:chrome_sandbox_exec_t,s0)
 +
 +/usr/lib/chromium-browser/chrome-sandbox	--	gen_context(system_u:object_r:chrome_sandbox_exec_t,s0)
@@ -11568,6 +11568,7 @@ index 0000000..57866f6
 +/usr/lib/chromium-browser/nacl_helper_bootstrap	--	gen_context(system_u:object_r:chrome_sandbox_nacl_exec_t,s0)
 +
 +HOME_DIR/\.cache/google-chrome(/.*)?	gen_context(system_u:object_r:chrome_sandbox_home_t,s0)
++HOME_DIR/\.cache/google-chrome-unstable(/.*)?	gen_context(system_u:object_r:chrome_sandbox_home_t,s0)
 +HOME_DIR/\.cache/chromium(/.*)?		gen_context(system_u:object_r:chrome_sandbox_home_t,s0)
 diff --git a/chrome.if b/chrome.if
 new file mode 100644
@@ -11713,10 +11714,10 @@ index 0000000..a0fdbcb
 +')
 diff --git a/chrome.te b/chrome.te
 new file mode 100644
-index 0000000..fb60ffc
+index 0000000..b4f29e9
 --- /dev/null
 +++ b/chrome.te
-@@ -0,0 +1,248 @@
+@@ -0,0 +1,249 @@
 +policy_module(chrome,1.0.0)
 +
 +########################################
@@ -11851,7 +11852,8 @@ index 0000000..fb60ffc
 +	gnome_read_home_config(chrome_sandbox_t)
 +	gnome_cache_filetrans(chrome_sandbox_t, chrome_sandbox_home_t, dir, "chromium")
 +	gnome_cache_filetrans(chrome_sandbox_t, chrome_sandbox_home_t, dir, "chrome")
-+
++	gnome_cache_filetrans(chrome_sandbox_t, chrome_sandbox_home_t, dir, "google-chrome")
++	gnome_cache_filetrans(chrome_sandbox_t, chrome_sandbox_home_t, dir, "google-chrome-unstable")
 +')
 +
 +optional_policy(`
@@ -38624,7 +38626,7 @@ index e88fb16..f20248c 100644
 +	')
  ')
 diff --git a/keystone.te b/keystone.te
-index 9929647..0907a30 100644
+index 9929647..4b6faae 100644
 --- a/keystone.te
 +++ b/keystone.te
 @@ -21,10 +21,14 @@ files_type(keystone_var_lib_t)
@@ -38642,12 +38644,15 @@ index 9929647..0907a30 100644
  
  allow keystone_t self:fifo_file rw_fifo_file_perms;
  allow keystone_t self:unix_stream_socket { accept listen };
-@@ -57,20 +61,33 @@ corenet_all_recvfrom_netlabel(keystone_t)
+@@ -57,20 +61,36 @@ corenet_all_recvfrom_netlabel(keystone_t)
  corenet_tcp_sendrecv_generic_if(keystone_t)
  corenet_tcp_sendrecv_generic_node(keystone_t)
  corenet_tcp_bind_generic_node(keystone_t)
 +corenet_tcp_connect_mysqld_port(keystone_t)
 +corenet_tcp_connect_ldap_port(keystone_t)
++corenet_tcp_connect_keystone_port(keystone_t)
++corenet_tcp_connect_amqp_port(keystone_t)
++corenet_tcp_connect_osapi_compute_port(keystone_t)
  
  corenet_sendrecv_commplex_main_server_packets(keystone_t)
  corenet_tcp_bind_commplex_main_port(keystone_t)
@@ -45834,10 +45839,10 @@ index 6194b80..7490fe3 100644
  ')
 +
 diff --git a/mozilla.te b/mozilla.te
-index 11ac8e4..fb431ea 100644
+index 11ac8e4..ab5b577 100644
 --- a/mozilla.te
 +++ b/mozilla.te
-@@ -6,17 +6,41 @@ policy_module(mozilla, 2.8.0)
+@@ -6,17 +6,48 @@ policy_module(mozilla, 2.8.0)
  #
  
  ## <desc>
@@ -45868,6 +45873,13 @@ index 11ac8e4..fb431ea 100644
 +
 +## <desc>
 +## <p>
++## Allow mozilla plugin to use Bluejeans.
++## </p>
++## </desc>
++gen_tunable(mozilla_plugin_use_bluejeans, false)
++
++## <desc>
++## <p>
 +## Allow confined web browsers to read home directory content
 +## </p>
 +## </desc>
@@ -45884,7 +45896,7 @@ index 11ac8e4..fb431ea 100644
  type mozilla_t;
  type mozilla_exec_t;
  typealias mozilla_t alias { user_mozilla_t staff_mozilla_t sysadm_mozilla_t };
-@@ -24,6 +48,9 @@ typealias mozilla_t alias { auditadm_mozilla_t secadm_mozilla_t };
+@@ -24,6 +55,9 @@ typealias mozilla_t alias { auditadm_mozilla_t secadm_mozilla_t };
  userdom_user_application_domain(mozilla_t, mozilla_exec_t)
  role mozilla_roles types mozilla_t;
  
@@ -45894,7 +45906,7 @@ index 11ac8e4..fb431ea 100644
  type mozilla_home_t;
  typealias mozilla_home_t alias { user_mozilla_home_t staff_mozilla_home_t sysadm_mozilla_home_t };
  typealias mozilla_home_t alias { auditadm_mozilla_home_t secadm_mozilla_home_t };
-@@ -31,28 +58,24 @@ userdom_user_home_content(mozilla_home_t)
+@@ -31,28 +65,24 @@ userdom_user_home_content(mozilla_home_t)
  
  type mozilla_plugin_t;
  type mozilla_plugin_exec_t;
@@ -45928,7 +45940,7 @@ index 11ac8e4..fb431ea 100644
  role mozilla_plugin_config_roles types mozilla_plugin_config_t;
  
  type mozilla_tmp_t;
-@@ -63,10 +86,6 @@ typealias mozilla_tmpfs_t alias { user_mozilla_tmpfs_t staff_mozilla_tmpfs_t sys
+@@ -63,10 +93,6 @@ typealias mozilla_tmpfs_t alias { user_mozilla_tmpfs_t staff_mozilla_tmpfs_t sys
  typealias mozilla_tmpfs_t alias { auditadm_mozilla_tmpfs_t secadm_mozilla_tmpfs_t };
  userdom_user_tmpfs_file(mozilla_tmpfs_t)
  
@@ -45939,7 +45951,7 @@ index 11ac8e4..fb431ea 100644
  ########################################
  #
  # Local policy
-@@ -75,27 +94,30 @@ optional_policy(`
+@@ -75,27 +101,30 @@ optional_policy(`
  allow mozilla_t self:capability { sys_nice setgid setuid };
  allow mozilla_t self:process { sigkill signal setsched getsched setrlimit };
  allow mozilla_t self:fifo_file rw_fifo_file_perms;
@@ -45983,7 +45995,7 @@ index 11ac8e4..fb431ea 100644
  
  manage_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
  manage_lnk_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
-@@ -103,76 +125,69 @@ manage_fifo_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
+@@ -103,76 +132,69 @@ manage_fifo_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
  manage_sock_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
  fs_tmpfs_filetrans(mozilla_t, mozilla_tmpfs_t, { file lnk_file sock_file fifo_file })
  
@@ -46091,7 +46103,7 @@ index 11ac8e4..fb431ea 100644
  
  term_dontaudit_getattr_pty_dirs(mozilla_t)
  
-@@ -181,56 +196,73 @@ auth_use_nsswitch(mozilla_t)
+@@ -181,56 +203,73 @@ auth_use_nsswitch(mozilla_t)
  logging_send_syslog_msg(mozilla_t)
  
  miscfiles_read_fonts(mozilla_t)
@@ -46099,15 +46111,15 @@ index 11ac8e4..fb431ea 100644
  miscfiles_dontaudit_setattr_fonts_dirs(mozilla_t)
  
 -userdom_use_user_ptys(mozilla_t)
--
++userdom_use_inherited_user_ptys(mozilla_t)
+ 
 -userdom_manage_user_tmp_dirs(mozilla_t)
 -userdom_manage_user_tmp_files(mozilla_t)
 -
 -userdom_manage_user_home_content_dirs(mozilla_t)
 -userdom_manage_user_home_content_files(mozilla_t)
 -userdom_user_home_dir_filetrans_user_home_content(mozilla_t, { dir file })
-+userdom_use_inherited_user_ptys(mozilla_t)
- 
+-
 -userdom_write_user_tmp_sockets(mozilla_t)
 -
 -mozilla_run_plugin(mozilla_t, mozilla_roles)
@@ -46202,7 +46214,7 @@ index 11ac8e4..fb431ea 100644
  ')
  
  optional_policy(`
-@@ -244,19 +276,12 @@ optional_policy(`
+@@ -244,19 +283,12 @@ optional_policy(`
  
  optional_policy(`
  	cups_read_rw_config(mozilla_t)
@@ -46224,7 +46236,7 @@ index 11ac8e4..fb431ea 100644
  
  	optional_policy(`
  		networkmanager_dbus_chat(mozilla_t)
-@@ -265,33 +290,32 @@ optional_policy(`
+@@ -265,33 +297,32 @@ optional_policy(`
  
  optional_policy(`
  	gnome_stream_connect_gconf(mozilla_t)
@@ -46237,34 +46249,34 @@ index 11ac8e4..fb431ea 100644
 -	gnome_home_filetrans_gnome_home(mozilla_t, dir, ".gnome2_private")
 +	gnome_manage_config(mozilla_t)
 +	gnome_manage_gconf_home_files(mozilla_t)
-+')
-+
-+optional_policy(`
-+	java_domtrans(mozilla_t)
  ')
  
  optional_policy(`
 -	java_exec(mozilla_t)
 -	java_manage_generic_home_content(mozilla_t)
 -	java_home_filetrans_java_home(mozilla_t, dir, ".java")
-+	lpd_domtrans_lpr(mozilla_t)
++	java_domtrans(mozilla_t)
  ')
  
  optional_policy(`
 -	lpd_run_lpr(mozilla_t, mozilla_roles)
-+	mplayer_domtrans(mozilla_t)
-+	mplayer_read_user_home_files(mozilla_t)
++	lpd_domtrans_lpr(mozilla_t)
  ')
  
  optional_policy(`
 -	mplayer_exec(mozilla_t)
 -	mplayer_manage_generic_home_content(mozilla_t)
 -	mplayer_home_filetrans_mplayer_home(mozilla_t, dir, ".mplayer")
-+	nscd_socket_use(mozilla_t)
++	mplayer_domtrans(mozilla_t)
++	mplayer_read_user_home_files(mozilla_t)
  ')
  
  optional_policy(`
 -	pulseaudio_run(mozilla_t, mozilla_roles)
++	nscd_socket_use(mozilla_t)
++')
++
++optional_policy(`
 +	#pulseaudio_role(mozilla_roles, mozilla_t)
 +	pulseaudio_exec(mozilla_t)
 +	pulseaudio_stream_connect(mozilla_t)
@@ -46272,7 +46284,7 @@ index 11ac8e4..fb431ea 100644
  ')
  
  optional_policy(`
-@@ -300,259 +324,253 @@ optional_policy(`
+@@ -300,259 +331,253 @@ optional_policy(`
  
  ########################################
  #
@@ -46356,12 +46368,12 @@ index 11ac8e4..fb431ea 100644
  allow mozilla_plugin_t mozilla_plugin_rw_t:dir list_dir_perms;
 -allow mozilla_plugin_t mozilla_plugin_rw_t:file read_file_perms;
 -allow mozilla_plugin_t mozilla_plugin_rw_t:lnk_file read_lnk_file_perms;
--
--dgram_send_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t, mozilla_t)
--stream_connect_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t, mozilla_t)
 +read_lnk_files_pattern(mozilla_plugin_t, mozilla_plugin_rw_t, mozilla_plugin_rw_t)
 +read_files_pattern(mozilla_plugin_t, mozilla_plugin_rw_t, mozilla_plugin_rw_t)
  
+-dgram_send_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t, mozilla_t)
+-stream_connect_pattern(mozilla_plugin_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t, mozilla_t)
+-
 -can_exec(mozilla_plugin_t, { mozilla_exec_t mozilla_plugin_home_t mozilla_plugin_tmp_t })
 +can_exec(mozilla_plugin_t, mozilla_exec_t)
  
@@ -46539,12 +46551,12 @@ index 11ac8e4..fb431ea 100644
  
 -userdom_manage_user_tmp_dirs(mozilla_plugin_t)
 -userdom_manage_user_tmp_files(mozilla_plugin_t)
--
++systemd_read_logind_sessions_files(mozilla_plugin_t)
+ 
 -userdom_manage_user_home_content_dirs(mozilla_plugin_t)
 -userdom_manage_user_home_content_files(mozilla_plugin_t)
 -userdom_user_home_dir_filetrans_user_home_content(mozilla_plugin_t, { dir file })
-+systemd_read_logind_sessions_files(mozilla_plugin_t)
- 
+-
 -userdom_write_user_tmp_sockets(mozilla_plugin_t)
 +term_getattr_all_ttys(mozilla_plugin_t)
 +term_getattr_all_ptys(mozilla_plugin_t)
@@ -46672,7 +46684,7 @@ index 11ac8e4..fb431ea 100644
  ')
  
  optional_policy(`
-@@ -560,7 +578,11 @@ optional_policy(`
+@@ -560,7 +585,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -46685,7 +46697,7 @@ index 11ac8e4..fb431ea 100644
  ')
  
  optional_policy(`
-@@ -568,108 +590,131 @@ optional_policy(`
+@@ -568,108 +597,136 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -46718,19 +46730,17 @@ index 11ac8e4..fb431ea 100644
 -allow mozilla_plugin_config_t mozilla_plugin_rw_t:dir manage_dir_perms;
 -allow mozilla_plugin_config_t mozilla_plugin_rw_t:file manage_file_perms;
 -allow mozilla_plugin_config_t mozilla_plugin_rw_t:lnk_file manage_lnk_file_perms;
-+allow mozilla_plugin_config_t self:process { setsched signal_perms getsched execmem execstack };
- 
+-
 -manage_dirs_pattern(mozilla_plugin_config_t, { mozilla_home_t mozilla_plugin_home_t }, { mozilla_home_t mozilla_plugin_home_t })
 -manage_files_pattern(mozilla_plugin_config_t, { mozilla_home_t mozilla_plugin_home_t }, mozilla_plugin_home_t)
 -manage_lnk_files_pattern(mozilla_plugin_config_t, { mozilla_home_t mozilla_plugin_home_t }, mozilla_plugin_home_t)
--
++allow mozilla_plugin_config_t self:process { setsched signal_perms getsched execmem execstack };
+ 
 -userdom_user_home_dir_filetrans(mozilla_plugin_config_t, mozilla_home_t, dir, ".galeon")
 -userdom_user_home_dir_filetrans(mozilla_plugin_config_t, mozilla_home_t, dir, ".mozilla")
 -userdom_user_home_dir_filetrans(mozilla_plugin_config_t, mozilla_home_t, dir, ".netscape")
 -userdom_user_home_dir_filetrans(mozilla_plugin_config_t, mozilla_home_t, dir, ".phoenix")
-+allow mozilla_plugin_config_t self:fifo_file rw_file_perms;
-+allow mozilla_plugin_config_t self:unix_stream_socket create_stream_socket_perms;
- 
+-
 -userdom_user_home_dir_filetrans(mozilla_plugin_config_t, mozilla_plugin_home_t, dir, ".adobe")
 -userdom_user_home_dir_filetrans(mozilla_plugin_config_t, mozilla_plugin_home_t, dir, ".macromedia")
 -userdom_user_home_dir_filetrans(mozilla_plugin_config_t, mozilla_plugin_home_t, dir, ".gnash")
@@ -46739,20 +46749,22 @@ index 11ac8e4..fb431ea 100644
 -userdom_user_home_dir_filetrans(mozilla_plugin_config_t, mozilla_plugin_home_t, dir, ".spicec")
 -userdom_user_home_dir_filetrans(mozilla_plugin_config_t, mozilla_plugin_home_t, dir, ".ICAClient")
 -userdom_user_home_dir_filetrans(mozilla_plugin_config_t, mozilla_plugin_home_t, dir, "zimbrauserdata")
-+ps_process_pattern(mozilla_plugin_config_t,mozilla_plugin_t)
++allow mozilla_plugin_config_t self:fifo_file rw_file_perms;
++allow mozilla_plugin_config_t self:unix_stream_socket create_stream_socket_perms;
  
 -filetrans_pattern(mozilla_plugin_config_t, mozilla_home_t, mozilla_plugin_home_t, dir, "plugins")
++ps_process_pattern(mozilla_plugin_config_t,mozilla_plugin_t)
+ 
+-can_exec(mozilla_plugin_config_t, { mozilla_plugin_rw_t mozilla_plugin_home_t })
 +dev_read_sysfs(mozilla_plugin_config_t)
 +dev_read_urand(mozilla_plugin_config_t)
 +dev_dontaudit_read_rand(mozilla_plugin_config_t)
 +dev_dontaudit_rw_dri(mozilla_plugin_config_t)
  
--can_exec(mozilla_plugin_config_t, { mozilla_plugin_rw_t mozilla_plugin_home_t })
+-ps_process_pattern(mozilla_plugin_config_t, mozilla_plugin_t)
 +fs_search_auto_mountpoints(mozilla_plugin_config_t)
 +fs_list_inotifyfs(mozilla_plugin_config_t)
  
--ps_process_pattern(mozilla_plugin_config_t, mozilla_plugin_t)
--
 -kernel_read_system_state(mozilla_plugin_config_t)
 -kernel_request_load_module(mozilla_plugin_config_t)
 +can_exec(mozilla_plugin_config_t, mozilla_plugin_rw_t)
@@ -46824,18 +46836,14 @@ index 11ac8e4..fb431ea 100644
 -	allow mozilla_plugin_config_t self:process execmem;
 +optional_policy(`
 +	gnome_dontaudit_rw_inherited_config(mozilla_plugin_config_t)
- ')
- 
--tunable_policy(`mozilla_execstack',`
--	allow mozilla_plugin_config_t self:process { execmem execstack };
++')
++
 +optional_policy(`
 +	xserver_use_user_fonts(mozilla_plugin_config_t)
  ')
  
--tunable_policy(`use_nfs_home_dirs',`
--	fs_manage_nfs_dirs(mozilla_plugin_config_t)
--	fs_manage_nfs_files(mozilla_plugin_config_t)
--	fs_manage_nfs_symlinks(mozilla_plugin_config_t)
+-tunable_policy(`mozilla_execstack',`
+-	allow mozilla_plugin_config_t self:process { execmem execstack };
 +ifdef(`distro_redhat',`
 +	typealias mozilla_plugin_t  alias nsplugin_t;
 +	typealias mozilla_plugin_exec_t  alias nsplugin_exec_t;
@@ -46846,10 +46854,10 @@ index 11ac8e4..fb431ea 100644
 +	typealias mozilla_plugin_config_exec_t  alias nsplugin_config_exec_t;
  ')
  
--tunable_policy(`use_samba_home_dirs',`
--	fs_manage_cifs_dirs(mozilla_plugin_config_t)
--	fs_manage_cifs_files(mozilla_plugin_config_t)
--	fs_manage_cifs_symlinks(mozilla_plugin_config_t)
+-tunable_policy(`use_nfs_home_dirs',`
+-	fs_manage_nfs_dirs(mozilla_plugin_config_t)
+-	fs_manage_nfs_files(mozilla_plugin_config_t)
+-	fs_manage_nfs_symlinks(mozilla_plugin_config_t)
 +#tunable_policy(`mozilla_plugin_enable_homedirs',`
 +#	userdom_user_home_dir_filetrans(mozilla_plugin_t, mozilla_home_t, { dir file })
 +#', `
@@ -46862,8 +46870,10 @@ index 11ac8e4..fb431ea 100644
 +	userdom_execmod_user_home_files(mozilla_plugin_t)
  ')
  
--optional_policy(`
--	automount_dontaudit_getattr_tmp_dirs(mozilla_plugin_config_t)
+-tunable_policy(`use_samba_home_dirs',`
+-	fs_manage_cifs_dirs(mozilla_plugin_config_t)
+-	fs_manage_cifs_files(mozilla_plugin_config_t)
+-	fs_manage_cifs_symlinks(mozilla_plugin_config_t)
 +tunable_policy(`mozilla_plugin_use_spice',`
 +	dev_rw_generic_usb_dev(mozilla_plugin_t)
 +	dev_setattr_generic_usb_dev(mozilla_plugin_t)
@@ -46871,10 +46881,17 @@ index 11ac8e4..fb431ea 100644
  ')
  
 -optional_policy(`
--	xserver_use_user_fonts(mozilla_plugin_config_t)
+-	automount_dontaudit_getattr_tmp_dirs(mozilla_plugin_config_t)
 +tunable_policy(`mozilla_plugin_use_gps',`
 +    fs_manage_dos_dirs(mozilla_plugin_t)
 +    fs_manage_dos_files(mozilla_plugin_t)
+ ')
+ 
+-optional_policy(`
+-	xserver_use_user_fonts(mozilla_plugin_config_t)
++tunable_policy(`mozilla_plugin_use_bluejeans',`
++    corenet_tcp_bind_unreserved_ports(mozilla_plugin_t)
++    corenet_dontaudit_tcp_bind_all_defined_ports(mozilla_plugin_t)
  ')
 diff --git a/mpd.fc b/mpd.fc
 index 313ce52..ae93e07 100644
@@ -51533,7 +51550,7 @@ index fe1068b..98166ee 100644
  
  userdom_dontaudit_use_unpriv_user_fds(nessusd_t)
 diff --git a/networkmanager.fc b/networkmanager.fc
-index 94b9734..bb9c83e 100644
+index 94b9734..448a7e8 100644
 --- a/networkmanager.fc
 +++ b/networkmanager.fc
 @@ -1,44 +1,46 @@
@@ -51565,7 +51582,7 @@ index 94b9734..bb9c83e 100644
  
 -/sbin/wpa_cli	--	gen_context(system_u:object_r:wpa_cli_exec_t,s0)
 -/sbin/wpa_supplicant	--	gen_context(system_u:object_r:NetworkManager_exec_t,s0)
-+/usr/libexec/nm-dispatcher.action --	gen_context(system_u:object_r:NetworkManager_exec_t,s0)
++/usr/libexec/nm-dispatcher.* --	gen_context(system_u:object_r:NetworkManager_exec_t,s0)
  
  /usr/bin/NetworkManager	--	gen_context(system_u:object_r:NetworkManager_exec_t,s0)
  /usr/bin/wpa_cli	--	gen_context(system_u:object_r:wpa_cli_exec_t,s0)
@@ -53278,10 +53295,10 @@ index 0000000..28936b4
 +')
 diff --git a/nova.te b/nova.te
 new file mode 100644
-index 0000000..2c40c73
+index 0000000..87072c4
 --- /dev/null
 +++ b/nova.te
-@@ -0,0 +1,314 @@
+@@ -0,0 +1,318 @@
 +policy_module(nova, 1.0.0)
 +
 +########################################
@@ -53353,10 +53370,14 @@ index 0000000..2c40c73
 +corecmd_exec_shell(nova_domain)
 +corenet_tcp_connect_mysqld_port(nova_domain)
 +
++auth_read_passwd(nova_domain)
++
 +dev_read_sysfs(nova_domain)
 +dev_read_urand(nova_domain)
 +
 +fs_getattr_xattr_fs(nova_domain)
++
++init_read_utmp(nova_domain)
 +
 +libs_exec_ldconfig(nova_domain)
 +
@@ -79663,7 +79684,7 @@ index 6dbc905..4b17c93 100644
 -	admin_pattern($1, rhsmcertd_lock_t)
  ')
 diff --git a/rhsmcertd.te b/rhsmcertd.te
-index d32e1a2..33ca060 100644
+index d32e1a2..04fffba 100644
 --- a/rhsmcertd.te
 +++ b/rhsmcertd.te
 @@ -18,6 +18,9 @@ logging_log_file(rhsmcertd_log_t)
@@ -79739,8 +79760,8 @@ index d32e1a2..33ca060 100644
 -miscfiles_read_generic_certs(rhsmcertd_t)
 +logging_send_syslog_msg(rhsmcertd_t)
 +
-+miscfiles_manage_cert_files(rhsmcertd_t)
-+miscfiles_manage_cert_dirs(rhsmcertd_t)
++miscfiles_manage_generic_cert_files(rhsmcertd_t)
++miscfiles_manage_generic_cert_dirs(rhsmcertd_t)
  
  sysnet_dns_name_resolve(rhsmcertd_t)
  
@@ -94554,16 +94575,25 @@ index 0000000..6a1f575
 +')
 diff --git a/swift.te b/swift.te
 new file mode 100644
-index 0000000..7fce837
+index 0000000..d3fe02a
 --- /dev/null
 +++ b/swift.te
-@@ -0,0 +1,102 @@
+@@ -0,0 +1,119 @@
 +policy_module(swift, 1.0.0)
 +
 +########################################
 +#
 +# Declarations
 +#
++
++## <desc>
++##  <p>
++##	Determine whether swift can
++##	connect to all TCP ports
++##	</p>
++## </desc>
++gen_tunable(swift_can_network, false)
++
 +
 +type swift_t;
 +type swift_exec_t;
@@ -94637,6 +94667,8 @@ index 0000000..7fce837
 +corenet_tcp_bind_xserver_port(swift_t)
 +corenet_tcp_bind_http_cache_port(swift_t)
 +
++corenet_tcp_connect_xserver_port(swift_t)
++
 +corecmd_exec_shell(swift_t)
 +corecmd_exec_bin(swift_t)
 +
@@ -94655,6 +94687,12 @@ index 0000000..7fce837
 +logging_send_syslog_msg(swift_t)
 +
 +userdom_dontaudit_search_user_home_dirs(swift_t)
++
++tunable_policy(`swift_can_network',`
++	corenet_sendrecv_all_client_packets(swift_t)
++	corenet_tcp_connect_all_ports(swift_t)
++	corenet_tcp_sendrecv_all_ports(swift_t)
++')
 +
 +optional_policy(`
 +    rpm_exec(swift_t)
@@ -97037,10 +97075,10 @@ index 0000000..c1fd8b4
 +')
 diff --git a/thumb.te b/thumb.te
 new file mode 100644
-index 0000000..0e30ce2
+index 0000000..7f7e7ff
 --- /dev/null
 +++ b/thumb.te
-@@ -0,0 +1,157 @@
+@@ -0,0 +1,159 @@
 +policy_module(thumb, 1.0.0)
 +
 +########################################
@@ -97110,6 +97148,8 @@ index 0000000..0e30ce2
 +
 +corecmd_exec_bin(thumb_t)
 +corecmd_exec_shell(thumb_t)
++
++corenet_tcp_connect_xserver_port(thumb_t)
 +
 +dev_read_sysfs(thumb_t)
 +dev_read_urand(thumb_t)
