@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 58%{?dist}
+Release: 59%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -588,6 +588,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jun 17 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-59
+- Allow system_bus_types to use stream_sockets inherited from system_dbusd
+- Allow journalctl to call getpw
+- New access needed by dbus to talk to kernel stream
+- Label sm-notifypid files correctly
+- contrib: Add KMSCon policy module
+
 * Wed Jun 11 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-58
 - Add mozilla_plugin_use_bluejeans boolean
 - Add additional interfaces needed by mozilla_plugin_use_bluejeans boolean
