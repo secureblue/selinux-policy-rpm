@@ -11,7 +11,7 @@
 %define BUILD_MINIMUM 1
 %endif
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
-%define BUILD_MLS 1
+%define BUILD_MLS 0
 %endif
 %define POLICYVER 29
 %define POLICYCOREUTILSVER 2.1.14-74
@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 59%{?dist}
+Release: 60%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -216,7 +216,7 @@ ln -sf /etc/selinux/%1/policy/policy.%{POLICYVER}  %{buildroot}%{_sysconfdir}/se
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/netfilter_contexts \
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/homedir_template \
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/*.pp \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/permissivedomains.pp \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.local \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.bin \
@@ -310,6 +310,16 @@ if [ -e ./policy/modules-contrib.conf ];then \
 	awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s.pp ", $1 }' ./policy/modules-contrib.conf > %{buildroot}/%{_usr}/share/selinux/%1/modules-contrib.lst; \
 fi;
 
+%define nonBaseModulesList() \
+contrib_modules=`cat %{buildroot}/%{_usr}/share/selinux/%1/modules-contrib.lst` \
+base_modules=`cat %{buildroot}/%{_usr}/share/selinux/%1/modules-base.lst` \
+for i in $contrib_modules $base_modules; do \
+    if [ $i != "sandbox.pp" ];then \
+        echo "%verify(not md5 size mtime) /etc/selinux/%1/modules/active/modules/$i" >> %{buildroot}/%{_usr}/share/selinux/%1/nonbasemodules.lst \
+    fi; \
+done
+
+
 %description
 SELinux Reference Policy - modular.
 Based off of reference policy: Checked out revision  2.20091117
@@ -355,6 +365,7 @@ cp %{SOURCE28} %{buildroot}/%{_usr}/share/selinux/targeted
 %installCmds targeted mcs n allow
 mv %{buildroot}/%{_sysconfdir}/selinux/targeted/modules/active/modules/sandbox.pp %{buildroot}/usr/share/selinux/packages
 %modulesList targeted 
+%nonBaseModulesList targeted
 %endif
 
 %if %{BUILD_MINIMUM}
@@ -367,6 +378,7 @@ cp %{SOURCE28} %{buildroot}/%{_usr}/share/selinux/minimum
 %installCmds minimum mcs n allow
 rm -f %{buildroot}/%{_sysconfdir}/selinux/minimum/modules/active/modules/sandbox.pp
 %modulesList minimum
+%nonBaseModulesList minimum
 %endif
 
 %if %{BUILD_MLS}
@@ -375,6 +387,7 @@ rm -f %{buildroot}/%{_sysconfdir}/selinux/minimum/modules/active/modules/sandbox
 %makeModulesConf mls base contrib
 %installCmds mls mls n deny
 %modulesList mls
+%nonBaseModulesList mls
 %endif
 
 mkdir -p %{buildroot}%{_mandir}
@@ -482,7 +495,7 @@ exit 0
 restorecon -R -p /home
 exit 0
 
-%files targeted
+%files targeted -f %{buildroot}/%{_usr}/share/selinux/targeted/nonbasemodules.lst
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/sysadm_u 
@@ -490,6 +503,7 @@ exit 0
 %{_usr}/share/selinux/targeted/base.lst
 %{_usr}/share/selinux/targeted/modules-base.lst
 %{_usr}/share/selinux/targeted/modules-contrib.lst
+%{_usr}/share/selinux/targeted/nonbasemodules.lst
 %endif
 
 %if %{BUILD_MINIMUM}
@@ -541,7 +555,7 @@ done
 fi
 exit 0
 
-%files minimum
+%files minimum -f %{buildroot}/%{_usr}/share/selinux/minimum/nonbasemodules.lst
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/sysadm_u 
@@ -550,6 +564,7 @@ exit 0
 %{_usr}/share/selinux/minimum/base.lst
 %{_usr}/share/selinux/minimum/modules-base.lst
 %{_usr}/share/selinux/minimum/modules-contrib.lst
+%{_usr}/share/selinux/minimum/nonbasemodules.lst
 %endif
 
 %if %{BUILD_MLS}
@@ -574,16 +589,20 @@ SELinux Reference policy mls base module.
 %post mls 
 %postInstall $1 mls
 
-%files mls
+%files mls -f %{buildroot}/%{_usr}/share/selinux/mls/nonbasemodules.lst
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/mls/contexts/users/unconfined_u
 %fileList mls
 %{_usr}/share/selinux/mls/base.lst
 %{_usr}/share/selinux/mls/modules-base.lst
 %{_usr}/share/selinux/mls/modules-contrib.lst
+%{_usr}/share/selinux/mls/nonbasemodules.lst
 %endif
 
 %changelog
+* Thu Jun 19 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-60
+- Implement new spec file handling for *.pp modules which allows us to move a policy module out of the policy
+
 * Tue Jun 17 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-59
 - Allow system_bus_types to use stream_sockets inherited from system_dbusd
 - Allow journalctl to call getpw
