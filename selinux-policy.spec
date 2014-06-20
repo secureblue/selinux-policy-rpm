@@ -11,7 +11,7 @@
 %define BUILD_MINIMUM 1
 %endif
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
-%define BUILD_MLS 0
+%define BUILD_MLS 1
 %endif
 %define POLICYVER 29
 %define POLICYCOREUTILSVER 2.1.14-74
@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 60%{?dist}
+Release: 61%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -600,6 +600,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jun 20 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-61
+- Add back MLS policy
+
 * Thu Jun 19 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-60
 - Implement new spec file handling for *.pp modules which allows us to move a policy module out of the policy
 
