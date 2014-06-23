@@ -216,7 +216,6 @@ ln -sf /etc/selinux/%1/policy/policy.%{POLICYVER}  %{buildroot}%{_sysconfdir}/se
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/netfilter_contexts \
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/users_extra \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/homedir_template \
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/permissivedomains.pp \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.local \
 %ghost %{_sysconfdir}/selinux/%1/modules/active/*.bin \
@@ -500,6 +499,7 @@ exit 0
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/sysadm_u 
 %fileList targeted
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/permissivedomains.pp
 %{_usr}/share/selinux/targeted/base.lst
 %{_usr}/share/selinux/targeted/modules-base.lst
 %{_usr}/share/selinux/targeted/modules-contrib.lst
@@ -559,8 +559,8 @@ exit 0
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/sysadm_u 
-%fileList targeted
 %fileList minimum
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/permissivedomains.pp
 %{_usr}/share/selinux/minimum/base.lst
 %{_usr}/share/selinux/minimum/modules-base.lst
 %{_usr}/share/selinux/minimum/modules-contrib.lst
