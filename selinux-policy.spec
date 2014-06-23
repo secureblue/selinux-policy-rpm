@@ -499,7 +499,7 @@ exit 0
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/sysadm_u 
 %fileList targeted
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/permissivedomains.pp
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/targeted/modules/active/modules/permissivedomains.pp
 %{_usr}/share/selinux/targeted/base.lst
 %{_usr}/share/selinux/targeted/modules-base.lst
 %{_usr}/share/selinux/targeted/modules-contrib.lst
@@ -560,7 +560,7 @@ exit 0
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/sysadm_u 
 %fileList minimum
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/modules/active/modules/permissivedomains.pp
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/minimum/modules/active/modules/permissivedomains.pp
 %{_usr}/share/selinux/minimum/base.lst
 %{_usr}/share/selinux/minimum/modules-base.lst
 %{_usr}/share/selinux/minimum/modules-contrib.lst
