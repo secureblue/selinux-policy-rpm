@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 61%{?dist}
+Release: 62%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -600,6 +600,18 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jun 25 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-62
+- Allow swift to use tcp/6200 swift port
+- ALlow swift to search apache configs
+- Remove duplicate .fc entry for Grilo plugin bookmarks
+- Remove duplicate .fc entry for telepathy-gabble
+- Additional allow rules for docker sandbox processes
+- Allow keepalived connect to agentx port
+- Allow neutron-ns-metadata to connectto own unix stream socket
+- Add support for tcp/6200 port
+- Remove ability for confined users to run xinit
+- New tool for managing wireless /usr/sbin/iw
+
 * Fri Jun 20 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-61
 - Add back MLS policy
 
