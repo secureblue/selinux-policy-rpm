@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 62%{?dist}
+Release: 63%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -600,6 +600,29 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Jul 4 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-63
+- If I can create a socket I need to be able to set the attributes
+- Add tcp/8775 port as neutron port
+- Add additional ports for swift ports
+- Added changes to fedora from bug bz#1082183
+- Add support for tcp/6200 port
+- Allow collectd getattr access to configfs_t dir Fixes Bug 1115040
+- Update neutron_manage_lib_files() interface
+- Allow glustered to connect to ephemeral ports
+- Allow apache to search ipa lib files by default
+- Allow neutron to domtrans to haproxy
+- Add rhcs_domtrans_haproxy()
+- Add support for openstack-glance-* unit files
+- Add initial support for /usr/bin/glance-scrubber
+- Allow swift to connect to keystone and memcache ports.
+- Fix labeling for /usr/lib/systemd/system/openstack-cinder-backup
+- Add policies for openstack-cinder
+- Add support for /usr/bin/nova-conductor
+- Add neutron_can_network boolean
+- Allow neutron to connet to neutron port
+- Allow glance domain to use syslog
+- Add support for /usr/bin/swift-object-expirer and label it as swift_exec_t
+
 * Wed Jun 25 2014 Miroslav Grepl<mgrepl@redhat.com> 3.13.1-62
 - Allow swift to use tcp/6200 swift port
 - ALlow swift to search apache configs
