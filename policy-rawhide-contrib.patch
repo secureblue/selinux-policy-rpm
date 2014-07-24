@@ -11136,7 +11136,7 @@ index 008f8ef..144c074 100644
  	admin_pattern($1, certmonger_var_run_t)
  ')
 diff --git a/certmonger.te b/certmonger.te
-index 550b287..31b8bd7 100644
+index 550b287..0b1d596 100644
 --- a/certmonger.te
 +++ b/certmonger.te
 @@ -18,6 +18,9 @@ files_type(certmonger_var_lib_t)
@@ -11200,8 +11200,12 @@ index 550b287..31b8bd7 100644
  
  fs_search_cgroup_dirs(certmonger_t)
  
-@@ -70,16 +84,17 @@ init_getattr_all_script_files(certmonger_t)
+@@ -68,18 +82,21 @@ auth_rw_cache(certmonger_t)
  
+ init_getattr_all_script_files(certmonger_t)
+ 
++libs_exec_ldconfig(certmonger_t)
++
  logging_send_syslog_msg(certmonger_t)
  
 -miscfiles_read_localization(certmonger_t)
@@ -11221,7 +11225,7 @@ index 550b287..31b8bd7 100644
  ')
  
  optional_policy(`
-@@ -92,11 +107,51 @@ optional_policy(`
+@@ -92,11 +109,51 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -13537,26 +13541,26 @@ index 5f306dd..e01156f 100644
  ')
 diff --git a/cockpit.fc b/cockpit.fc
 new file mode 100644
-index 0000000..ee6e817
+index 0000000..276ea8a
 --- /dev/null
 +++ b/cockpit.fc
-@@ -0,0 +1,9 @@
-+/usr/lib/systemd/system/cockpit.service		--	gen_context(system_u:object_r:cockpit_unit_file_t,s0)
+@@ -0,0 +1,10 @@
++# cockpit stuff
 +
-+/usr/lib/systemd/system/cockpit.socket		--	gen_context(system_u:object_r:cockpit_unit_file_t,s0)
++/usr/lib/systemd/system/cockpit.*		--	gen_context(system_u:object_r:cockpit_unit_file_t,s0)
++/etc/systemd/system/cockpit.*	--	gen_context(system_u:object_r:cockpit_unit_file_t,s0)
 +
-+/usr/lib/systemd/system/cockpitd.service		--	gen_context(system_u:object_r:cockpit_unit_file_t,s0)
++/usr/libexec/cockpit-ws		--	gen_context(system_u:object_r:cockpit_ws_exec_t,s0)
 +
-+/usr/libexec/cockpitd		--	gen_context(system_u:object_r:cockpit_exec_t,s0)
++/usr/libexec/cockpit-session	--	gen_context(system_u:object_r:cockpit_session_exec_t,s0)
 +
-+/var/lib/cockpit(/.*)?		gen_context(system_u:object_r:cockpit_var_lib_t,s0)
++/usr/libexec/cockpit-agent	--	gen_context(system_u:object_r:shell_exec_t,s0)
 diff --git a/cockpit.if b/cockpit.if
 new file mode 100644
-index 0000000..25e3237
+index 0000000..573dcae
 --- /dev/null
 +++ b/cockpit.if
-@@ -0,0 +1,186 @@
-+
+@@ -0,0 +1,188 @@
 +## <summary>policy for cockpit</summary>
 +
 +########################################
@@ -13569,13 +13573,32 @@ index 0000000..25e3237
 +## </summary>
 +## </param>
 +#
-+interface(`cockpit_domtrans',`
++interface(`cockpit_ws_domtrans',`
 +	gen_require(`
-+		type cockpit_t, cockpit_exec_t;
++		type cockpit_ws_t, cockpit_ws_exec_t;
 +	')
 +
 +	corecmd_search_bin($1)
-+	domtrans_pattern($1, cockpit_exec_t, cockpit_t)
++	domtrans_pattern($1, cockpit_ws_exec_t, cockpit_ws_t)
++')
++
++########################################
++## <summary>
++##	Execute TEMPLATE in the cockpit domin.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`cockpit_session_domtrans',`
++	gen_require(`
++		type cockpit_session_t, cockpit_session_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	domtrans_pattern($1, cockpit_session_exec_t, cockpit_session_t)
 +')
 +
 +########################################
@@ -13666,7 +13689,7 @@ index 0000000..25e3237
 +#
 +interface(`cockpit_systemctl',`
 +	gen_require(`
-+		type cockpit_t;
++		type cockpit_ws_t;
 +		type cockpit_unit_file_t;
 +	')
 +
@@ -13675,30 +13698,9 @@ index 0000000..25e3237
 +	allow $1 cockpit_unit_file_t:file read_file_perms;
 +	allow $1 cockpit_unit_file_t:service manage_service_perms;
 +
-+	ps_process_pattern($1, cockpit_t)
++	ps_process_pattern($1, cockpit_ws_t)
 +')
 +
-+
-+########################################
-+## <summary>
-+##	Send and receive messages from
-+##	cockpit over dbus.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`cockpit_dbus_chat',`
-+	gen_require(`
-+		type cockpit_t;
-+		class dbus send_msg;
-+	')
-+
-+	allow $1 cockpit_t:dbus send_msg;
-+	allow cockpit_t $1:dbus send_msg;
-+')
 +
 +########################################
 +## <summary>
@@ -13719,17 +13721,22 @@ index 0000000..25e3237
 +#
 +interface(`cockpit_admin',`
 +	gen_require(`
-+		type cockpit_t;
++		type cockpit_ws_t;
++		type cockpit_session_t;
 +		type cockpit_var_lib_t;
-+	type cockpit_unit_file_t;
++		type cockpit_unit_file_t;
 +	')
 +
-+	allow $1 cockpit_t:process { signal_perms };
-+	ps_process_pattern($1, cockpit_t)
++	allow $1 cockpit_ws_t:process { signal_perms };
++	ps_process_pattern($1, cockpit_ws_t)
 +
-+    tunable_policy(`deny_ptrace',`',`
-+        allow $1 cockpit_t:process ptrace;
-+    ')
++	allow $1 cockpit_session_t:process { signal_perms };
++	ps_process_pattern($1, cockpit_session_t)
++
++	tunable_policy(`deny_ptrace',`',`
++		allow $1 cockpit_ws_t:process ptrace;
++		allow $1 cockpit_session_t:process ptrace;
++	')
 +
 +	files_search_var_lib($1)
 +	admin_pattern($1, cockpit_var_lib_t)
@@ -13744,10 +13751,10 @@ index 0000000..25e3237
 +')
 diff --git a/cockpit.te b/cockpit.te
 new file mode 100644
-index 0000000..589262d
+index 0000000..cc6201d
 --- /dev/null
 +++ b/cockpit.te
-@@ -0,0 +1,95 @@
+@@ -0,0 +1,89 @@
 +policy_module(cockpit, 1.0.0)
 +
 +########################################
@@ -13755,93 +13762,87 @@ index 0000000..589262d
 +# Declarations
 +#
 +
-+type cockpit_t;
-+type cockpit_exec_t;
-+init_daemon_domain(cockpit_t, cockpit_exec_t)
++type cockpit_ws_t;
++type cockpit_ws_exec_t;
++init_daemon_domain(cockpit_ws_t,cockpit_ws_exec_t)
 +
-+type cockpit_var_lib_t;
-+files_type(cockpit_var_lib_t)
++type cockpit_tmp_t;
++files_tmp_file(cockpit_tmp_t)
 +
 +type cockpit_unit_file_t;
 +systemd_unit_file(cockpit_unit_file_t)
 +
++type cockpit_session_t;
++type cockpit_session_exec_t;
++domain_type(cockpit_session_t)
++domain_entry_file(cockpit_session_t,cockpit_session_exec_t)
++
 +########################################
 +#
-+# cockpit local policy
++# cockpit_ws_t local policy
 +#
-+allow cockpit_t self:capability net_admin;
-+allow cockpit_t self:fifo_file rw_fifo_file_perms;
-+allow cockpit_t self:unix_stream_socket create_stream_socket_perms;
-+allow cockpit_t self:netlink_kobject_uevent_socket create_socket_perms;
-+allow cockpit_t self:unix_dgram_socket create_socket_perms;
 +
-+manage_dirs_pattern(cockpit_t, cockpit_var_lib_t, cockpit_var_lib_t)
-+manage_files_pattern(cockpit_t, cockpit_var_lib_t, cockpit_var_lib_t)
-+manage_lnk_files_pattern(cockpit_t, cockpit_var_lib_t, cockpit_var_lib_t)
-+files_var_lib_filetrans(cockpit_t, cockpit_var_lib_t, { dir file lnk_file })
++allow cockpit_ws_t self:capability net_admin;
++allow cockpit_ws_t self:tcp_socket create_stream_socket_perms;
 +
-+kernel_read_system_state(cockpit_t)
-+kernel_read_network_state(cockpit_t)
++# cockpit-ws can execute cockpit-session
++can_exec(cockpit_ws_t,cockpit_session_exec_t)
 +
-+corecmd_exec_bin(cockpit_t)
-+corecmd_exec_shell(cockpit_t)
++# cockpit-ws can read from /dev/urandom
++dev_read_urand(cockpit_ws_t) # for authkey
++dev_read_rand(cockpit_ws_t)  # for libssh
 +
-+corenet_tcp_bind_cockpit_port(cockpit_t)
++# cockpit-ws can read from the cockpit port
++# TODO: disable this until we have it in our f20 selinux-policy-targeted
++# corenet_tcp_bind_cockpit_port(cockpit_ws_t)
++#allow cockpit_ws_t init_t:tcp_socket accept;
++corenet_tcp_bind_all_reserved_ports(cockpit_ws_t)
 +
-+dev_read_sysfs(cockpit_t)
++# cockpit-ws can connect to other hosts via ssh
++corenet_tcp_connect_ssh_port(cockpit_ws_t)
 +
-+domain_use_interactive_fds(cockpit_t)
-+domain_read_all_domains_state(cockpit_t)
++# cockpit-ws can write to its temp files
++manage_dirs_pattern(cockpit_ws_t, cockpit_tmp_t, cockpit_tmp_t)
++manage_files_pattern(cockpit_ws_t, cockpit_tmp_t, cockpit_tmp_t)
++files_tmp_filetrans(cockpit_ws_t, cockpit_tmp_t, { dir file })
 +
-+files_read_etc_files(cockpit_t)
-+files_list_tmp(cockpit_t)
++auth_use_nsswitch(cockpit_ws_t)
 +
-+fs_read_tmpfs_symlinks(cockpit_t)
-+fs_list_cgroup_dirs(cockpit_t)
-+fs_read_cgroup_files(cockpit_t)
-+fs_getattr_all_fs(cockpit_t)
++logging_send_syslog_msg(cockpit_ws_t)
 +
-+auth_use_nsswitch(cockpit_t)
++# cockpit-ws launches cockpit-session
++cockpit_session_domtrans(cockpit_ws_t)
++allow cockpit_ws_t cockpit_session_t:process signal_perms;
 +
-+init_dbus_chat(cockpit_t)
-+init_status(cockpit_t)
-+init_read_state(cockpit_t)
-+init_list_pid_dirs(cockpit_t)
-+
-+logging_send_syslog_msg(cockpit_t)
-+
-+miscfiles_read_localization(cockpit_t)
-+
-+systemd_status_all_unit_files(cockpit_t)
-+systemd_read_logind_sessions_files(cockpit_t)
-+
-+udev_read_pid_files(cockpit_t)
++# cockpit-session communicates back with cockpit-ws
++allow cockpit_session_t cockpit_ws_t:unix_stream_socket rw_stream_socket_perms;
 +
 +optional_policy(`
-+	dbus_system_bus_client(cockpit_t)
-+	dbus_connect_system_bus(cockpit_t)
++	ssh_read_user_home_files(cockpit_ws_t)
++')
 +
-+	optional_policy(`
-+		accountsd_dbus_chat(cockpit_t)
-+	')
++#########################################################
++#
++#  cockpit-session local policy
++#
 +
-+	optional_policy(`
-+		devicekit_dbus_chat_disk(cockpit_t)
-+		devicekit_dbus_chat_power(cockpit_t)
-+	')
++# cockpit-session changes to the actual logged in user
++allow cockpit_session_t self:capability { sys_admin dac_override setuid setgid };
++allow cockpit_session_t self:process { setexec setsched signal_perms };
 +
-+	optional_policy(`
-+		networkmanager_dbus_chat(cockpit_t)
-+		networkmanager_stream_connect(cockpit_t)
-+	')
++# cockpit-session runs a full pam stack, including pam_selinux.so
++auth_login_pgm_domain(cockpit_session_t)
++auth_write_login_records(cockpit_session_t)
 +
-+	optional_policy(`
-+		realmd_dbus_chat(cockpit_t)
-+	')
++# cockpit-session can execute cockpit-agent as the user
++userdom_spec_domtrans_all_users(cockpit_session_t)
++
++optional_policy(`
++    userdom_signal_all_users(cockpit_session_t)
 +')
 +
 +optional_policy(`
-+	docker_stream_connect(cockpit_t)
++	unconfined_domtrans(cockpit_session_t)
 +')
 diff --git a/collectd.fc b/collectd.fc
 index 79a3abe..8d70290 100644
@@ -37549,7 +37550,7 @@ index 0000000..0d61849
 +')
 diff --git a/keepalived.te b/keepalived.te
 new file mode 100644
-index 0000000..1e45967
+index 0000000..a5b2f96
 --- /dev/null
 +++ b/keepalived.te
 @@ -0,0 +1,55 @@
@@ -37606,7 +37607,7 @@ index 0000000..1e45967
 +logging_send_syslog_msg(keepalived_t)
 +
 +optional_policy(`
-+    snmp_manage_snmp_var_lib_files(keepalived_t)
++    snmp_manage_var_lib_files(keepalived_t)
 +')
 diff --git a/kerberos.fc b/kerberos.fc
 index 4fe75fd..b029c28 100644
@@ -108291,7 +108292,7 @@ index dd63de0..38ce620 100644
 -	admin_pattern($1, zabbix_tmpfs_t)
  ')
 diff --git a/zabbix.te b/zabbix.te
-index 7f496c6..f2b5fa6 100644
+index 7f496c6..11bcf63 100644
 --- a/zabbix.te
 +++ b/zabbix.te
 @@ -6,27 +6,32 @@ policy_module(zabbix, 1.6.0)
@@ -108330,7 +108331,7 @@ index 7f496c6..f2b5fa6 100644
  type zabbix_log_t;
  logging_log_file(zabbix_log_t)
  
-@@ -36,27 +41,53 @@ files_tmp_file(zabbix_tmp_t)
+@@ -36,27 +41,54 @@ files_tmp_file(zabbix_tmp_t)
  type zabbix_tmpfs_t;
  files_tmpfs_file(zabbix_tmpfs_t)
  
@@ -108354,6 +108355,7 @@ index 7f496c6..f2b5fa6 100644
 +allow zabbix_domain self:unix_stream_socket create_stream_socket_perms;
 +
 +kernel_read_all_sysctls(zabbix_domain)
++kernel_read_network_state(zabbix_domain)
 +
 +corenet_tcp_sendrecv_generic_if(zabbix_domain)
 +corenet_tcp_sendrecv_generic_node(zabbix_domain)
@@ -108396,7 +108398,7 @@ index 7f496c6..f2b5fa6 100644
  
  manage_dirs_pattern(zabbix_t, zabbix_tmp_t, zabbix_tmp_t)
  manage_files_pattern(zabbix_t, zabbix_tmp_t, zabbix_tmp_t)
-@@ -70,13 +101,9 @@ manage_files_pattern(zabbix_t, zabbix_var_run_t, zabbix_var_run_t)
+@@ -70,13 +102,9 @@ manage_files_pattern(zabbix_t, zabbix_var_run_t, zabbix_var_run_t)
  files_pid_filetrans(zabbix_t, zabbix_var_run_t, { dir file })
  
  kernel_read_system_state(zabbix_t)
@@ -108410,7 +108412,7 @@ index 7f496c6..f2b5fa6 100644
  
  corenet_sendrecv_ftp_client_packets(zabbix_t)
  corenet_tcp_connect_ftp_port(zabbix_t)
-@@ -85,24 +112,18 @@ corenet_tcp_sendrecv_ftp_port(zabbix_t)
+@@ -85,24 +113,18 @@ corenet_tcp_sendrecv_ftp_port(zabbix_t)
  corenet_sendrecv_http_client_packets(zabbix_t)
  corenet_tcp_connect_http_port(zabbix_t)
  corenet_tcp_sendrecv_http_port(zabbix_t)
@@ -108438,7 +108440,7 @@ index 7f496c6..f2b5fa6 100644
  tunable_policy(`zabbix_can_network',`
  	corenet_sendrecv_all_client_packets(zabbix_t)
  	corenet_tcp_connect_all_ports(zabbix_t)
-@@ -110,12 +131,11 @@ tunable_policy(`zabbix_can_network',`
+@@ -110,12 +132,11 @@ tunable_policy(`zabbix_can_network',`
  ')
  
  optional_policy(`
@@ -108453,7 +108455,7 @@ index 7f496c6..f2b5fa6 100644
  ')
  
  optional_policy(`
-@@ -125,6 +145,7 @@ optional_policy(`
+@@ -125,6 +146,7 @@ optional_policy(`
  
  optional_policy(`
  	snmp_read_snmp_var_lib_files(zabbix_t)
@@ -108461,7 +108463,7 @@ index 7f496c6..f2b5fa6 100644
  ')
  
  ########################################
-@@ -132,18 +153,7 @@ optional_policy(`
+@@ -132,18 +154,7 @@ optional_policy(`
  # Agent local policy
  #
  
@@ -108481,7 +108483,7 @@ index 7f496c6..f2b5fa6 100644
  
  rw_files_pattern(zabbix_agent_t, zabbix_tmpfs_t, zabbix_tmpfs_t)
  fs_tmpfs_filetrans(zabbix_agent_t, zabbix_tmpfs_t, file)
-@@ -151,16 +161,13 @@ fs_tmpfs_filetrans(zabbix_agent_t, zabbix_tmpfs_t, file)
+@@ -151,16 +162,13 @@ fs_tmpfs_filetrans(zabbix_agent_t, zabbix_tmpfs_t, file)
  manage_files_pattern(zabbix_agent_t, zabbix_var_run_t, zabbix_var_run_t)
  files_pid_filetrans(zabbix_agent_t, zabbix_var_run_t, file)
  
@@ -108501,7 +108503,7 @@ index 7f496c6..f2b5fa6 100644
  
  corenet_sendrecv_zabbix_agent_server_packets(zabbix_agent_t)
  corenet_tcp_bind_zabbix_agent_port(zabbix_agent_t)
-@@ -177,21 +184,28 @@ corenet_tcp_sendrecv_zabbix_port(zabbix_agent_t)
+@@ -177,21 +185,28 @@ corenet_tcp_sendrecv_zabbix_port(zabbix_agent_t)
  dev_getattr_all_blk_files(zabbix_agent_t)
  dev_getattr_all_chr_files(zabbix_agent_t)
  
