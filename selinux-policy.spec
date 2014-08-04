@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 68%{?dist}
+Release: 69%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -63,6 +63,8 @@ SELinux Base package
 
 %files 
 %defattr(-,root,root,-)
+%{!?_licensedir:%global license %%doc}
+%license COPYING
 %dir %{_usr}/share/selinux
 %dir %{_usr}/share/selinux/packages
 %dir %{_sysconfdir}/selinux
@@ -600,6 +602,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Aug  4 2014 Tom Callaway <spot@fedoraproject.org> 3.13.1-69
+- fix license handling
+
 * Thu Jul 31 2014 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-68
 - Add new mozilla_plugin_bind_unreserved_ports boolean to allow mozilla plugin to use tcp/udp unreserved ports. There is a lot of plugins which binds ports without SELinux port type. We want to allow users to use these plugins properly using this boolean. (#1109681)
 - Allow smokeping cgi scripts to accept connection on httpd stream socket.
