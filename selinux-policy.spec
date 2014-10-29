@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 88%{?dist}
+Release: 89%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -604,6 +604,19 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Oct 29 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-89
+- Allow keystone_cgi_script_t to bind on commplex_main_port. BZ (#1138424)
+- Allow freeipmi_bmc_watchdog rw_sem_perms to freeipmi_ipmiseld
+- Allow rabbitmq to read nfs state data. BZ(1122412)
+- Allow named to read /var/tmp/DNS_25 labeled as krb5_host_rcache_t.
+- Add rolekit policy
+- ALlow rolekit domtrans to sssd_t.
+- Add kerberos_tmp_filetrans_kadmin() interface.
+- rolekit should be noaudit.
+- Add rolekit_manage_keys().
+- Need to label rpmnew file correctly
+- Allow modemmanger to connectto itself
+
 * Tue Oct 21 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-88
 - Allow couchdb read sysctl_fs_t files. BZ(1154327)
 - Allow osad to connect to jabber client port. BZ (1154242)
