@@ -52,7 +52,7 @@ Source28: permissivedomains.pp
 Source29: serefpolicy-contrib-%{version}.tgz
 Source30: booleans.subs_dist
 
-Url: http://oss.tresys.com/repos/refpolicy/
+Url: http://github.com/TresysTechnology/refpolicy/wiki
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2 
