@@ -619,6 +619,8 @@ SELinux Reference policy mls base module.
 - Allow nslcd to read /dev/urandom.
 - Allow dovecot to create user's home directory when they log into IMAP.
 - Label also logrotate.status.tmp as logrotate_var_lib_t. BZ(1158835)
+- Allow wine domains to read user homedir content
+- Add fixes to allow docker to create more content in tmpfs ,and donaudit reading /proc
 
 * Wed Oct 29 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-89
 - Allow keystone_cgi_script_t to bind on commplex_main_port. BZ (#1138424)
