@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 89%{?dist}
+Release: 90%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -604,6 +604,22 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Nov 03 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-90
+- Add support for /dev/nvme controllerdevice nodes created by nvme driver.
+- Add 15672 as amqp_port_t
+- Allow wine domains to read user homedir content
+- Add fixes to allow docker to create more content in tmpfs ,and donaudit reading /proc
+- Allow winbind to read usermodehelper
+- Allow telepathy domains to execute shells and bin_t
+- Allow gpgdomains to create netlink_kobject_uevent_sockets
+- Allow abrt to read software raid state. BZ (1157770)
+- Fix rhcs_signull_haproxy() interface.
+-  Add suppor for keepalived unconfined scripts and allow keepalived to read all domain state and kill capability.
+- Allow snapperd to dbus chat with system cron jobs.
+- Allow nslcd to read /dev/urandom.
+- Allow dovecot to create user's home directory when they log into IMAP.
+- Label also logrotate.status.tmp as logrotate_var_lib_t. BZ(1158835)
+
 * Wed Oct 29 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-89
 - Allow keystone_cgi_script_t to bind on commplex_main_port. BZ (#1138424)
 - Allow freeipmi_bmc_watchdog rw_sem_perms to freeipmi_ipmiseld
