@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 90%{?dist}
+Release: 91%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -604,6 +604,28 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Nov 07 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-91
+- Added interface userdom_dontaudit_manage_user_home_dirs
+- Fix unconfined_server_dbus_chat() interface.
+- Add unconfined_server_dbus_chat() inteface.
+- Allow login domains to create kernel keyring with different level.
+- Dontaudit policykit_auth_t to write to user home dirs. BZ (1157256)
+- Make tuned as unconfined domain.
+- Added support for linuxptp policy. BZ(1149693)
+- make zoneminder as dbus client by default.
+- Allow bluetooth read/write uhid devices. BZ (1161169)
+- Add fixes for hypervkvp daemon
+- Allow guest to connect to libvirt using unix_stream_socket.
+- Allow all bus client domains to dbus chat with unconfined_service_t.
+- Allow inetd service without own policy to run in inetd_child_t which is unconfined domain.
+- Make opensm as nsswitch domain to make it working with sssd.
+- Allow brctl to read meminfo.
+- Allow winbind-helper to execute ntlm_auth in the caller domain.
+- Make plymouthd as nsswitch domain to make it working with sssd.
+- Make drbd as nsswitch domain to make it working with sssd.
+- Make conman as nsswitch domain to make ipmitool.exp runing as conman_t working.
+- Add support for /var/lib/sntp directory.
+
 * Mon Nov 03 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-90
 - Add support for /dev/nvme controllerdevice nodes created by nvme driver.
 - Add 15672 as amqp_port_t
