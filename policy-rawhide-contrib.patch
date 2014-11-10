@@ -12502,7 +12502,7 @@ index 32e8265..0de4af3 100644
 +	allow $1 chronyd_unit_file_t:service all_service_perms;
  ')
 diff --git a/chronyd.te b/chronyd.te
-index e5b621c..f975594 100644
+index e5b621c..fc150e9 100644
 --- a/chronyd.te
 +++ b/chronyd.te
 @@ -18,6 +18,9 @@ files_type(chronyd_keys_t)
@@ -12533,7 +12533,7 @@ index e5b621c..f975594 100644
  allow chronyd_t chronyd_keys_t:file read_file_perms;
  
  manage_dirs_pattern(chronyd_t, chronyd_tmpfs_t, chronyd_tmpfs_t)
-@@ -76,18 +83,24 @@ corenet_sendrecv_chronyd_server_packets(chronyd_t)
+@@ -76,18 +83,29 @@ corenet_sendrecv_chronyd_server_packets(chronyd_t)
  corenet_udp_bind_chronyd_port(chronyd_t)
  corenet_udp_sendrecv_chronyd_port(chronyd_t)
  
@@ -12559,6 +12559,11 @@ index e5b621c..f975594 100644
  optional_policy(`
 -	mta_send_mail(chronyd_t)
 +    timemaster_stream_connect(chronyd_t)
++    timemaster_rw_shm(chronyd_t)
++')
++
++optional_policy(`
++    ptp4l_rw_shm(chronyd_t)
  ')
 diff --git a/cinder.fc b/cinder.fc
 new file mode 100644
@@ -37843,7 +37848,7 @@ index a49ae4e..0c0e987 100644
 +
 +/var/lock/kdump(/.*)?   gen_context(system_u:object_r:kdump_lock_t,s0)
 diff --git a/kdump.if b/kdump.if
-index 3a00b3a..21efcc4 100644
+index 3a00b3a..6043fd6 100644
 --- a/kdump.if
 +++ b/kdump.if
 @@ -1,4 +1,4 @@
@@ -37984,7 +37989,7 @@ index 3a00b3a..21efcc4 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -76,10 +177,69 @@ interface(`kdump_manage_config',`
+@@ -76,10 +177,88 @@ interface(`kdump_manage_config',`
  	allow $1 kdump_etc_t:file manage_file_perms;
  ')
  
@@ -38005,6 +38010,25 @@ index 3a00b3a..21efcc4 100644
 +
 +	files_search_locks($1)
 +    rw_files_pattern($1, kdump_lock_t, kdump_lock_t)
++')
++
++###################################
++## <summary>
++##      Read/write inherited kdump /var/tmp named pipes.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`kdump_rw_inherited_kdumpctl_tmp_pipes',`
++        gen_require(`
++                type kdumpctl_tmp_t;
++        ')
++
++    files_search_tmp($1)
++    allow $1 kdumpctl_tmp_t:fifo_file rw_inherited_fifo_file_perms;
 +')
 +
 +###################################
@@ -38056,7 +38080,7 @@ index 3a00b3a..21efcc4 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -88,19 +248,24 @@ interface(`kdump_manage_config',`
+@@ -88,19 +267,24 @@ interface(`kdump_manage_config',`
  ## </param>
  ## <param name="role">
  ##	<summary>
@@ -38086,7 +38110,7 @@ index 3a00b3a..21efcc4 100644
  
  	init_labeled_script_domtrans($1, kdump_initrc_exec_t)
  	domain_system_change_exemption($1)
-@@ -110,6 +275,10 @@ interface(`kdump_admin',`
+@@ -110,6 +294,10 @@ interface(`kdump_admin',`
  	files_search_etc($1)
  	admin_pattern($1, kdump_etc_t)
  
@@ -39886,16 +39910,18 @@ index 628b78b..fe65617 100644
 -
 -miscfiles_read_localization(keyboardd_t)
 diff --git a/keystone.fc b/keystone.fc
-index b273d80..6a07210 100644
+index b273d80..9b6e9bd 100644
 --- a/keystone.fc
 +++ b/keystone.fc
-@@ -1,3 +1,5 @@
+@@ -1,7 +1,13 @@
 +/usr/lib/systemd/system/openstack-keystone.*		--	gen_context(system_u:object_r:keystone_unit_file_t,s0)
 +
  /etc/rc\.d/init\.d/openstack-keystone	--	gen_context(system_u:object_r:keystone_initrc_exec_t,s0)
  
  /usr/bin/keystone-all	--	gen_context(system_u:object_r:keystone_exec_t,s0)
-@@ -5,3 +7,5 @@
+ 
++/usr/share/keystone(/.*)?	gen_context(system_u:object_r:keystone_cgi_script_exec_t,s0)
++
  /var/lib/keystone(/.*)?	gen_context(system_u:object_r:keystone_var_lib_t,s0)
  
  /var/log/keystone(/.*)?	gen_context(system_u:object_r:keystone_log_t,s0)
@@ -41912,10 +41938,10 @@ index 0000000..d2061a9
 +/var/run/timemaster(/.*)?				gen_context(system_u:object_r:timemaster_var_run_t,s0)
 diff --git a/linuxptp.if b/linuxptp.if
 new file mode 100644
-index 0000000..8d6873f
+index 0000000..236707b
 --- /dev/null
 +++ b/linuxptp.if
-@@ -0,0 +1,59 @@
+@@ -0,0 +1,103 @@
 +## <summary>implementation of the Precision Time Protocol (PTP) according to IEEE standard 1588 for Linux.</summary>
 +
 +########################################
@@ -41975,12 +42001,56 @@ index 0000000..8d6873f
 +        stream_connect_pattern($1, timemaster_var_run_t, timemaster_var_run_t, timemaster_t)
 +')
 +
++########################################
++## <summary>
++## Read and write timemaster shared memory.
++## </summary>
++## <param name="domain">
++## <summary>
++## Domain allowed access.
++## </summary>
++## </param>
++#
++interface(`timemaster_rw_shm',`
++	gen_require(`
++		type timemaster_t, timemaster_tmpfs_t;
++	')
++
++	allow $1 timemaster_t:shm rw_shm_perms;
++	list_dirs_pattern($1, timemaster_tmpfs_t, timemaster_tmpfs_t)
++	rw_files_pattern($1, timemaster_tmpfs_t, timemaster_tmpfs_t)
++	read_lnk_files_pattern($1, timemaster_tmpfs_t, timemaster_tmpfs_t)
++	fs_search_tmpfs($1)
++')
++
++########################################
++## <summary>
++## Read and write ptp4l_t shared memory.
++## </summary>
++## <param name="domain">
++## <summary>
++## Domain allowed access.
++## </summary>
++## </param>
++#
++interface(`ptp4l_rw_shm',`
++	gen_require(`
++		type ptp4l_t, timemaster_tmpfs_t;
++	')
++
++	allow $1 ptp4l_t:shm rw_shm_perms;
++	list_dirs_pattern($1, timemaster_tmpfs_t, timemaster_tmpfs_t)
++	rw_files_pattern($1, timemaster_tmpfs_t, timemaster_tmpfs_t)
++	read_lnk_files_pattern($1, timemaster_tmpfs_t, timemaster_tmpfs_t)
++	fs_search_tmpfs($1)
++')
++
 diff --git a/linuxptp.te b/linuxptp.te
 new file mode 100644
-index 0000000..5a1445c
+index 0000000..affa9bd
 --- /dev/null
 +++ b/linuxptp.te
-@@ -0,0 +1,144 @@
+@@ -0,0 +1,173 @@
 +policy_module(linuxptp, 1.0.0)
 +
 +
@@ -41995,6 +42065,9 @@ index 0000000..5a1445c
 +
 +type timemaster_var_run_t;
 +files_pid_file(timemaster_var_run_t)
++
++type timemaster_tmpfs_t;
++files_tmpfs_file(timemaster_tmpfs_t)
 +
 +type timemaster_unit_file_t;
 +systemd_unit_file(timemaster_unit_file_t)
@@ -42028,10 +42101,16 @@ index 0000000..5a1445c
 +allow timemaster_t ptp4l_t:process signal;
 +allow timemaster_t phc2sys_t:process signal;
 +
++allow timemaster_t ptp4l_t:shm rw_shm_perms;
++
 +manage_dirs_pattern(timemaster_t, timemaster_var_run_t, timemaster_var_run_t)
 +manage_files_pattern(timemaster_t, timemaster_var_run_t, timemaster_var_run_t)
 +manage_sock_files_pattern(timemaster_t, timemaster_var_run_t, timemaster_var_run_t)
 +files_pid_filetrans(timemaster_t, timemaster_var_run_t, { dir file sock_file })
++
++manage_dirs_pattern(timemaster_t, timemaster_tmpfs_t, timemaster_tmpfs_t)
++manage_files_pattern(timemaster_t, timemaster_tmpfs_t, timemaster_tmpfs_t)
++fs_tmpfs_filetrans(timemaster_t, timemaster_tmpfs_t, { dir file })
 +
 +kernel_read_network_state(timemaster_t)
 +
@@ -42040,9 +42119,15 @@ index 0000000..5a1445c
 +corenet_udp_bind_generic_node(timemaster_t)
 +corenet_udp_bind_ntp_port(timemaster_t)
 +
++dev_read_urand(timemaster_t)
++
 +logging_send_syslog_msg(timemaster_t)
 +
 +sysnet_read_config(timemaster_t)
++
++optional_policy(`
++	ntp_domtrans(timemaster_t)
++')
 +
 +optional_policy(`
 +	chronyd_domtrans(timemaster_t)
@@ -42074,10 +42159,18 @@ index 0000000..5a1445c
 +
 +allow phc2sys_t ptp4l_t:unix_dgram_socket sendto;
 +
++allow phc2sys_t timemaster_t:shm rw_shm_perms;
++
 +manage_dirs_pattern(phc2sys_t, timemaster_var_run_t, timemaster_var_run_t)
 +manage_files_pattern(phc2sys_t, timemaster_var_run_t, timemaster_var_run_t)
 +manage_sock_files_pattern(phc2sys_t, timemaster_var_run_t, timemaster_var_run_t)
 +files_pid_filetrans(phc2sys_t, timemaster_var_run_t, { dir file sock_file })
++
++manage_dirs_pattern(phc2sys_t, timemaster_tmpfs_t, timemaster_tmpfs_t)
++manage_files_pattern(phc2sys_t, timemaster_tmpfs_t, timemaster_tmpfs_t)
++fs_tmpfs_filetrans(phc2sys_t, timemaster_tmpfs_t, { dir file })
++
++dev_rw_realtime_clock(phc2sys_t)
 +
 +logging_send_syslog_msg(phc2sys_t)
 +
@@ -42112,8 +42205,14 @@ index 0000000..5a1445c
 +manage_sock_files_pattern(ptp4l_t, timemaster_var_run_t, timemaster_var_run_t)
 +files_pid_filetrans(ptp4l_t, timemaster_var_run_t, { dir file sock_file })
 +
++manage_dirs_pattern(ptp4l_t, timemaster_tmpfs_t, timemaster_tmpfs_t)
++manage_files_pattern(ptp4l_t, timemaster_tmpfs_t, timemaster_tmpfs_t)
++fs_tmpfs_filetrans(ptp4l_t, timemaster_tmpfs_t, { dir file })
++
 +corenet_udp_bind_generic_node(ptp4l_t)
 +corenet_udp_bind_reserved_port(ptp4l_t)
++
++dev_rw_realtime_clock(ptp4l_t)
 +
 +logging_send_syslog_msg(ptp4l_t)
 +
@@ -67101,7 +67200,7 @@ index 032a84d..be00a65 100644
 +	allow $1 policykit_auth_t:process signal;
  ')
 diff --git a/policykit.te b/policykit.te
-index ee91778..b00a474 100644
+index ee91778..945a36f 100644
 --- a/policykit.te
 +++ b/policykit.te
 @@ -7,9 +7,6 @@ policy_module(policykit, 1.3.0)
@@ -67297,7 +67396,7 @@ index ee91778..b00a474 100644
  
  userdom_dontaudit_read_user_home_content_files(policykit_auth_t)
 +userdom_dontaudit_write_user_tmp_files(policykit_auth_t)
-+userdom_dontaudit_manage_user_home_dirs(policykit_auth_t)
++userdom_dontaudit_access_check_user_content(policykit_auth_t)
 +userdom_read_admin_home_files(policykit_auth_t)
  
  optional_policy(`

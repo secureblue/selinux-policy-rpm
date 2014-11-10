@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 91%{?dist}
+Release: 92%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -604,6 +604,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Nov 10 2014 Lukas Vrabec <lvrabec@redhat.com> 3.12.1-92
+- Add kdump_rw_inherited_kdumpctl_tmp_pipes()
+- Added fixes related to linuxptp. BZ (1149693)
+- Label keystone cgi files as keystone_cgi_script_exec_t. BZ(1138424
+- Dontaudit policykit_auth_t to access to user home dirs. BZ (1157256)
+- Fix seutil_dontaudit_access_check_load_policy()
+- Add dontaudit interfaces for audit_access in seutil
+- Label /etc/strongimcv as ipsec_conf_file_t.
+
 * Fri Nov 07 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-91
 - Added interface userdom_dontaudit_manage_user_home_dirs
 - Fix unconfined_server_dbus_chat() interface.
