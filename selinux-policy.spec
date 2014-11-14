@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 92%{?dist}
+Release: 93%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -604,7 +604,14 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Mon Nov 10 2014 Lukas Vrabec <lvrabec@redhat.com> 3.12.1-92
+* Fri Nov 14 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-93
+- Allow bumblebee to use nsswitch. BZ(1155339)
+- Allow openvpn to stream connect to networkmanager. BZ(1164182)
+- Allow smbd to create HOMEDIRS is pam_oddjob_mkhomedir in MLS.
+- Allow cpuplug rw virtual memory sysctl. BZ (1077831)
+- Docker needs to write to sysfs, needs back port to F20,F21, RHEL7
+
+* Mon Nov 10 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-92
 - Add kdump_rw_inherited_kdumpctl_tmp_pipes()
 - Added fixes related to linuxptp. BZ (1149693)
 - Label keystone cgi files as keystone_cgi_script_exec_t. BZ(1138424
