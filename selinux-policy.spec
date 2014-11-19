@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 93%{?dist}
+Release: 94%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -604,6 +604,14 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Nov 19 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-94
+- Allow openvpn to create uuid connections in /var/run/NetworkManager with NM labeling.
+- Allow sendmail to create dead.letter. BZ(1165443)
+- Allow selinux_child running as sssd access check on /etc/selinux/targeted/modules/active.
+- Allow access checks on setfiles/load_policy/semanage_lock for selinux_child running as sssd_t.
+- Label sock file charon.vici as ipsec_var_run_t. BZ(1165065)
+- Add additional interfaces for load_policy/setfiles/read_lock related to access checks.
+
 * Fri Nov 14 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-93
 - Allow bumblebee to use nsswitch. BZ(1155339)
 - Allow openvpn to stream connect to networkmanager. BZ(1164182)
