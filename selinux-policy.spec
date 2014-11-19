@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 94%{?dist}
+Release: 95%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -604,6 +604,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Nov 19 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-95
+- Allow networkmanager manage also openvpn sock pid files.
+
 * Wed Nov 19 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-94
 - Allow openvpn to create uuid connections in /var/run/NetworkManager with NM labeling.
 - Allow sendmail to create dead.letter. BZ(1165443)
