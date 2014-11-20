@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 95%{?dist}
+Release: 96%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -604,6 +604,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Nov 20 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-96
+- Allow NetworkManager stream connect on openvpn. BZ(1165110)
+
 * Wed Nov 19 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-95
 - Allow networkmanager manage also openvpn sock pid files.
 
