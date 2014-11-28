@@ -604,7 +604,7 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Fri Nov 27 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-97
+* Fri Nov 28 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-97
 - Allow reading of symlinks in /etc/puppet
 - Added TAGS to gitignore
 - I guess there can be content under /var/lib/lockdown #1167502
