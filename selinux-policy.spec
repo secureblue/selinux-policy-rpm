@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 96%{?dist}
+Release: 97%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -604,6 +604,27 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Nov 27 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-97
+- Allow reading of symlinks in /etc/puppet
+- Added TAGS to gitignore
+- I guess there can be content under /var/lib/lockdown #1167502
+- Allow rhev-agentd to read /dev/.udev/db to make deploying hosted engine via iSCSI working.
+- Allow keystone to send a generic signal to own process.
+- Allow radius to bind tcp/1812 radius port.
+- Dontaudit list user_tmp files for system_mail_t
+- label virt-who as virtd_exec_t
+- Allow rhsmcertd to send a null signal to virt-who running as virtd_t
+- Add virt_signull() interface
+- Add missing alias for _content_rw_t
+- Allow .snapshots to be created in other directories, on all mountpoints
+- Allow spamd to access razor-agent.log
+- Add fixes for sfcb from libvirt-cim TestOnly bug. (#1152104)
+- Allow .snapshots to be created in other directories, on all mountpoints
+- Label tcp port 5280 as ejabberd port. BZ(1059930)
+- Make /usr/bin/vncserver running as unconfined_service_t
+- Label /etc/docker/certs.d as cert_t
+- Allow all systemd domains to search file systems
+
 * Thu Nov 20 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-96
 - Allow NetworkManager stream connect on openvpn. BZ(1165110)
 
