@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 98%{?dist}
+Release: 99%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -604,6 +604,14 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Dec 02 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-99
+- Add files_dontaudit_list_security_dirs() interface.
+- Added seutil_dontaudit_access_check_semanage_module_store interface.
+- Allow docker to create /root/.docker
+- Allow rlogind to use also rlogin ports
+- dontaudit list security dirs for samba domain
+- Dontaudit couchdb to list /var
+
 * Fri Nov 29 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-98
 - Update to have all _systemctl() interface also init_reload_services()
 - Dontaudit access check on SELinux module store for sssd.
