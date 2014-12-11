@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 99%{?dist}
+Release: 100%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -604,6 +604,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Dec 11 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-100
+- Allow admin SELinux users mounting / as private within a new mount namespace as root in MLS.
+- Fix miscfiles_manage_generic_cert_files() to allow manage link files
+- Allow pegasus_openlmi_storage_t use nsswitch. BZ(1172258)
+- Add support for /var/run/gluster.
+- Allow openvpn manage systemd_passwd_var_run_t files. BZ(1170085)
+
 * Fri Dec 02 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-99
 - Add files_dontaudit_list_security_dirs() interface.
 - Added seutil_dontaudit_access_check_semanage_module_store interface.
@@ -612,7 +619,7 @@ SELinux Reference policy mls base module.
 - dontaudit list security dirs for samba domain
 - Dontaudit couchdb to list /var
 
-* Fri Nov 29 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-98
+* Sat Nov 29 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-98
 - Update to have all _systemctl() interface also init_reload_services()
 - Dontaudit access check on SELinux module store for sssd.
 - Label /var/lib/rpmrebuilddb/ as rpm_var_lib_t. BZ (1167946)
