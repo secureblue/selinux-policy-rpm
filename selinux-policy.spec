@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 100%{?dist}
+Release: 101%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -604,6 +604,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Dec 15 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-101
+- Allow logrotate to read hawkey.log in /var/cache/dnf/ BZ(1163438)
+- Allow virt_qemu_ga_t to execute kmod.
+- Add missing files_dontaudit_list_security_dirs() for smbd_t in samba_export_all_ro boolean
+- Add additionnal MLS attribute for oddjob_mkhomedir to create homedirs.
+- Add support for /usr/share/vdsm/daemonAdapter.
+- Docker has a new config/key file it writes to /etc/docker
+- Allow bacula to connect also to postgresql.
+
 * Thu Dec 11 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-100
 - Allow admin SELinux users mounting / as private within a new mount namespace as root in MLS.
 - Fix miscfiles_manage_generic_cert_files() to allow manage link files
