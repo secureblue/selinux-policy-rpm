@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 101%{?dist}
+Release: 102%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -237,6 +237,7 @@ ln -sf /etc/selinux/%1/policy/policy.%{POLICYVER}  %{buildroot}%{_sysconfdir}/se
 %config %{_sysconfdir}/selinux/%1/contexts/lxc_contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/systemd_contexts \
 %config %{_sysconfdir}/selinux/%1/contexts/sepgsql_contexts \
+%config %{_sysconfdir}/selinux/%1/contexts/openssh_contexts \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/default_type \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/failsafe_context \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/initrc_context \
@@ -604,6 +605,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Sat Jan 3 2015 Dan Walsh <dwalsh@redhat.com> 3.13.1-103
+- Add /etc/selinux/targeted/contexts/openssh_contexts
+
 * Mon Dec 15 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-101
 - Allow logrotate to read hawkey.log in /var/cache/dnf/ BZ(1163438)
 - Allow virt_qemu_ga_t to execute kmod.
