@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 103%{?dist}
+Release: 104%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -605,6 +605,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jan 15 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-104
+- remove duplicate filename transition rules.
+- Call proper interface in sosreport.te.
+- Allow fetchmail to manage its keyring
+- Allow mail munin to create udp_sockets
+- Allow couchdb to sendto kernel unix domain sockets
+
 * Sat Jan 3 2015 Dan Walsh <dwalsh@redhat.com> 3.13.1-103
 - Add /etc/selinux/targeted/contexts/openssh_contexts
 
