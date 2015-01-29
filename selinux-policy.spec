@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 104%{?dist}
+Release: 106%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -605,6 +605,28 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jan 29 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-106
+- Allow docker to attach to the sandbox and user domains tun devices
+- Allow pingd to read /dev/urandom. BZ(1181831)
+- Allow virtd to list all mountpoints
+- Allow sblim-sfcb to search images
+- pkcsslotd_lock_t should be an alias for pkcs_slotd_lock_t.
+- Call correct macro in virt_read_content().
+- Dontaudit couchdb search in gconf_home_t. BZ(1177717)
+- Allow docker_t to changes it rlimit
+- Allow neutron to read rpm DB.
+- Allow radius to connect/bind radsec ports
+- Allow pm-suspend running as virt_qemu_ga to read /var/log/pm-suspend.log.
+- Add devicekit_read_log_files().
+- Allow  virt_qemu_ga to dbus chat with rpm.
+- Allow netutils chown capability to make tcpdump working with -w.
+- Label /ostree/deploy/rhel-atomic-host/deploy directory as system_conf_t.
+- journald now reads the netlink audit socket
+- Add auditing support for ipsec.
+
+* Thu Jan 29 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-105
+- Bump release
+
 * Thu Jan 15 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-104
 - remove duplicate filename transition rules.
 - Call proper interface in sosreport.te.
