@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 106%{?dist}
+Release: 107%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -605,6 +605,19 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Feb 02 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-107
+- Fix labels on new location of resolv.conf
+- syslog is not writing to the audit socket
+- seunshare is doing getattr on unix_stream_sockets leaked into it
+- Allow sshd_t to manage gssd keyring
+- Allow apps that create net_conf_t content to create .resolv.conf.NetworkManager
+- Posgresql listens on port 9898 when running PCP (pgpool Control Port)
+- Allow svirt sandbox domains to read /proc/mtrr
+- Allow polipo_deamon connect to all ephemeral ports. BZ(1187723)
+- Allow dovecot domains to use sys_resouce
+- Allow sshd_t to manage gssd keyring
+- gpg_pinentry_t needs more access in f22
+
 * Thu Jan 29 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-106
 - Allow docker to attach to the sandbox and user domains tun devices
 - Allow pingd to read /dev/urandom. BZ(1181831)
