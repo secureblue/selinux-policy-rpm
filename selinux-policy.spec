@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 107%{?dist}
+Release: 108%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -605,6 +605,12 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Feb 04 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-108
+- Fix labels, improve sysnet_manage_config interface.
+- Label /var/run/NetworkManager/resolv.conf.tmp as net_conf_t.
+- Dontaudit network connections related to thumb_t. BZ(1187981)
+- Remove sysnet_filetrans_named_content from fail2ban
+
 * Thu Feb 02 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-107
 - Fix labels on new location of resolv.conf
 - syslog is not writing to the audit socket
