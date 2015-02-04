@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 108%{?dist}
+Release: 109%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -605,6 +605,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Feb 04 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-109
+- Allow search all pid dirs when managing net_conf_t files.
+
 * Wed Feb 04 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-108
 - Fix labels, improve sysnet_manage_config interface.
 - Label /var/run/NetworkManager/resolv.conf.tmp as net_conf_t.
