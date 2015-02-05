@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 109%{?dist}
+Release: 110%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -605,6 +605,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Feb 05 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-110
+- Allow cockpit_session_t to create tmp files
+- apmd needs sys_resource when shutting down the machine
+- Fix path label to resolv.conf under NetworkManager
+
 * Wed Feb 04 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-109
 - Allow search all pid dirs when managing net_conf_t files.
 
