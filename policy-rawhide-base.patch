@@ -15771,7 +15771,7 @@ index 7be4ddf..71e675a 100644
 +/sys/class/net/ib.* 	  --	gen_context(system_u:object_r:sysctl_net_t,s0)
 +/sys/kernel/uevent_helper --	gen_context(system_u:object_r:usermodehelper_t,s0)
 diff --git a/policy/modules/kernel/kernel.if b/policy/modules/kernel/kernel.if
-index e100d88..9e881e6 100644
+index e100d88..f45a698 100644
 --- a/policy/modules/kernel/kernel.if
 +++ b/policy/modules/kernel/kernel.if
 @@ -126,6 +126,24 @@ interface(`kernel_setsched',`
@@ -16398,7 +16398,7 @@ index e100d88..9e881e6 100644
  ##	Unconfined access to kernel module resources.
  ## </summary>
  ## <param name="domain">
-@@ -2972,5 +3280,565 @@ interface(`kernel_unconfined',`
+@@ -2972,5 +3280,583 @@ interface(`kernel_unconfined',`
  	')
  
  	typeattribute $1 kern_unconfined;
@@ -16964,6 +16964,24 @@ index e100d88..9e881e6 100644
 +	')
 +
 +	allow $1 usermodehelper_t:file relabelto;
++')
++
++########################################
++## <summary>
++##      Read netlink audit socket
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`kernel_read_netlink_audit_socket',`
++	gen_require(`
++		type kernel_t;
++	')
++
++	allow $1 kernel_t:netlink_audit_socket r_netlink_socket_perms;
  ')
 diff --git a/policy/modules/kernel/kernel.te b/policy/modules/kernel/kernel.te
 index 8dbab4c..15230be 100644
@@ -21737,18 +21755,20 @@ index 6d77e81..79ee03d 100644
 +	')
 +')
 diff --git a/policy/modules/services/postgresql.fc b/policy/modules/services/postgresql.fc
-index a26f84f..947af6c 100644
+index a26f84f..59fe535 100644
 --- a/policy/modules/services/postgresql.fc
 +++ b/policy/modules/services/postgresql.fc
-@@ -10,6 +10,7 @@
+@@ -10,6 +10,9 @@
  #
  /usr/bin/initdb(\.sepgsql)?	--	gen_context(system_u:object_r:postgresql_exec_t,s0)
  /usr/bin/(se)?postgres		--	gen_context(system_u:object_r:postgresql_exec_t,s0)
 +/usr/bin/pg_ctl				--	gen_context(system_u:object_r:postgresql_exec_t,s0)
++
++/usr/libexec/postgresql-ctl     --  gen_context(system_u:object_r:postgresql_exec_t,s0)
  
  /usr/lib/pgsql/test/regress(/.*)?	gen_context(system_u:object_r:postgresql_db_t,s0)
  /usr/lib/pgsql/test/regress/pg_regress -- gen_context(system_u:object_r:postgresql_exec_t,s0)
-@@ -28,9 +29,10 @@ ifdef(`distro_redhat', `
+@@ -28,9 +31,10 @@ ifdef(`distro_redhat', `
  #
  /var/lib/postgres(ql)?(/.*)? 		gen_context(system_u:object_r:postgresql_db_t,s0)
  
@@ -21761,7 +21781,7 @@ index a26f84f..947af6c 100644
  
  /var/lib/sepgsql(/.*)?			gen_context(system_u:object_r:postgresql_db_t,s0)
  /var/lib/sepgsql/pgstartup\.log	--	gen_context(system_u:object_r:postgresql_log_t,s0)
-@@ -45,4 +47,4 @@ ifdef(`distro_redhat', `
+@@ -45,4 +49,4 @@ ifdef(`distro_redhat', `
  
  /var/run/postgresql(/.*)?		gen_context(system_u:object_r:postgresql_var_run_t,s0)
  
@@ -34686,7 +34706,7 @@ index 4e94884..8de26ad 100644
 +    logging_log_filetrans($1, var_log_t, dir, "anaconda")
 +')
 diff --git a/policy/modules/system/logging.te b/policy/modules/system/logging.te
-index 59b04c1..53a6182 100644
+index 59b04c1..d9852d4 100644
 --- a/policy/modules/system/logging.te
 +++ b/policy/modules/system/logging.te
 @@ -4,6 +4,21 @@ policy_module(logging, 1.20.1)
@@ -34921,7 +34941,7 @@ index 59b04c1..53a6182 100644
  
  # Create and bind to /dev/log or /var/run/log.
  allow syslogd_t devlog_t:sock_file manage_sock_file_perms;
-@@ -389,30 +434,46 @@ manage_dirs_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
+@@ -389,30 +434,47 @@ manage_dirs_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
  manage_files_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
  files_tmp_filetrans(syslogd_t, syslogd_tmp_t, { dir file })
  
@@ -34944,6 +34964,7 @@ index 59b04c1..53a6182 100644
  kernel_read_system_state(syslogd_t)
  kernel_read_network_state(syslogd_t)
  kernel_read_kernel_sysctls(syslogd_t)
++kernel_read_netlink_audit_socket(syslogd_t)
  kernel_read_proc_symlinks(syslogd_t)
  # Allow access to /proc/kmsg for syslog-ng
  kernel_read_messages(syslogd_t)
@@ -34971,7 +34992,7 @@ index 59b04c1..53a6182 100644
  # syslog-ng can listen and connect on tcp port 514 (rsh)
  corenet_tcp_sendrecv_generic_if(syslogd_t)
  corenet_tcp_sendrecv_generic_node(syslogd_t)
-@@ -422,6 +483,8 @@ corenet_tcp_bind_rsh_port(syslogd_t)
+@@ -422,6 +484,8 @@ corenet_tcp_bind_rsh_port(syslogd_t)
  corenet_tcp_connect_rsh_port(syslogd_t)
  # Allow users to define additional syslog ports to connect to
  corenet_tcp_bind_syslogd_port(syslogd_t)
@@ -34980,7 +35001,7 @@ index 59b04c1..53a6182 100644
  corenet_tcp_connect_syslogd_port(syslogd_t)
  corenet_tcp_connect_postgresql_port(syslogd_t)
  corenet_tcp_connect_mysqld_port(syslogd_t)
-@@ -432,9 +495,26 @@ corenet_sendrecv_syslogd_server_packets(syslogd_t)
+@@ -432,9 +496,26 @@ corenet_sendrecv_syslogd_server_packets(syslogd_t)
  corenet_sendrecv_postgresql_client_packets(syslogd_t)
  corenet_sendrecv_mysqld_client_packets(syslogd_t)
  
@@ -35008,7 +35029,7 @@ index 59b04c1..53a6182 100644
  domain_use_interactive_fds(syslogd_t)
  
  files_read_etc_files(syslogd_t)
-@@ -448,13 +528,17 @@ files_var_lib_filetrans(syslogd_t, syslogd_var_lib_t, { file dir })
+@@ -448,13 +529,17 @@ files_var_lib_filetrans(syslogd_t, syslogd_var_lib_t, { file dir })
  
  fs_getattr_all_fs(syslogd_t)
  fs_search_auto_mountpoints(syslogd_t)
@@ -35026,7 +35047,7 @@ index 59b04c1..53a6182 100644
  # for sending messages to logged in users
  init_read_utmp(syslogd_t)
  init_dontaudit_write_utmp(syslogd_t)
-@@ -466,11 +550,11 @@ init_use_fds(syslogd_t)
+@@ -466,11 +551,11 @@ init_use_fds(syslogd_t)
  
  # cjp: this doesnt make sense
  logging_send_syslog_msg(syslogd_t)
@@ -35041,7 +35062,7 @@ index 59b04c1..53a6182 100644
  
  ifdef(`distro_gentoo',`
  	# default gentoo syslog-ng config appends kernel
-@@ -497,6 +581,7 @@ optional_policy(`
+@@ -497,6 +582,7 @@ optional_policy(`
  optional_policy(`
  	cron_manage_log_files(syslogd_t)
  	cron_generic_log_filetrans_log(syslogd_t, file, "cron.log")
@@ -35049,7 +35070,7 @@ index 59b04c1..53a6182 100644
  ')
  
  optional_policy(`
-@@ -507,15 +592,40 @@ optional_policy(`
+@@ -507,15 +593,40 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -35090,7 +35111,7 @@ index 59b04c1..53a6182 100644
  ')
  
  optional_policy(`
-@@ -526,3 +636,26 @@ optional_policy(`
+@@ -526,3 +637,26 @@ optional_policy(`
  	# log to the xconsole
  	xserver_rw_console(syslogd_t)
  ')
@@ -39082,7 +39103,7 @@ index 1447687..d5e6fb9 100644
  seutil_read_config(setrans_t)
  
 diff --git a/policy/modules/system/sysnetwork.fc b/policy/modules/system/sysnetwork.fc
-index 40edc18..963b974 100644
+index 40edc18..b328c40 100644
 --- a/policy/modules/system/sysnetwork.fc
 +++ b/policy/modules/system/sysnetwork.fc
 @@ -17,23 +17,27 @@ ifdef(`distro_debian',`
@@ -39114,7 +39135,7 @@ index 40edc18..963b974 100644
 +/var/run/systemd/network(/.*)?  gen_context(system_u:object_r:net_conf_t,s0)
 +/var/run/systemd/resolve/resolv\.conf   --  gen_context(system_u:object_r:net_conf_t,s0)
  ')
-+/var/run/NetworkManager/resolv\.conf   --  gen_context(system_u:object_r:net_conf_t,s0)
++/var/run/NetworkManager/resolv\.conf.*   --  gen_context(system_u:object_r:net_conf_t,s0)
  
  #
  # /sbin
@@ -39156,7 +39177,7 @@ index 40edc18..963b974 100644
 +/etc/firestarter/firestarter\.sh gen_context(system_u:object_r:dhcpc_helper_exec_t,s0)
 +
 diff --git a/policy/modules/system/sysnetwork.if b/policy/modules/system/sysnetwork.if
-index 2cea692..07185cb 100644
+index 2cea692..8dbfc5b 100644
 --- a/policy/modules/system/sysnetwork.if
 +++ b/policy/modules/system/sysnetwork.if
 @@ -38,11 +38,30 @@ interface(`sysnet_domtrans_dhcpc',`
@@ -39359,7 +39380,7 @@ index 2cea692..07185cb 100644
  
  	allow $1 net_conf_t:file manage_file_perms;
  
-@@ -463,7 +597,42 @@ interface(`sysnet_manage_config',`
+@@ -463,7 +597,41 @@ interface(`sysnet_manage_config',`
  	')
  
  	ifdef(`distro_redhat',`
@@ -39368,7 +39389,6 @@ index 2cea692..07185cb 100644
 +		allow $1 net_conf_t:dir list_dir_perms;
  		manage_files_pattern($1, net_conf_t, net_conf_t)
 +		manage_lnk_files_pattern($1, net_conf_t, net_conf_t)
-+        sysnet_filetrans_named_content($1)
 +	')
 +')
 +
@@ -39402,7 +39422,7 @@ index 2cea692..07185cb 100644
  	')
  ')
  
-@@ -501,6 +670,7 @@ interface(`sysnet_delete_dhcpc_pid',`
+@@ -501,6 +669,7 @@ interface(`sysnet_delete_dhcpc_pid',`
  		type dhcpc_var_run_t;
  	')
  
@@ -39410,7 +39430,7 @@ index 2cea692..07185cb 100644
  	allow $1 dhcpc_var_run_t:file unlink;
  ')
  
-@@ -610,6 +780,25 @@ interface(`sysnet_signull_ifconfig',`
+@@ -610,6 +779,25 @@ interface(`sysnet_signull_ifconfig',`
  
  ########################################
  ## <summary>
@@ -39436,7 +39456,7 @@ index 2cea692..07185cb 100644
  ##	Read the DHCP configuration files.
  ## </summary>
  ## <param name="domain">
-@@ -626,6 +815,7 @@ interface(`sysnet_read_dhcp_config',`
+@@ -626,6 +814,7 @@ interface(`sysnet_read_dhcp_config',`
  	files_search_etc($1)
  	allow $1 dhcp_etc_t:dir list_dir_perms;
  	read_files_pattern($1, dhcp_etc_t, dhcp_etc_t)
@@ -39444,7 +39464,7 @@ index 2cea692..07185cb 100644
  ')
  
  ########################################
-@@ -647,6 +837,26 @@ interface(`sysnet_search_dhcp_state',`
+@@ -647,6 +836,26 @@ interface(`sysnet_search_dhcp_state',`
  	allow $1 dhcp_state_t:dir search_dir_perms;
  ')
  
@@ -39471,7 +39491,7 @@ index 2cea692..07185cb 100644
  ########################################
  ## <summary>
  ##	Create DHCP state data.
-@@ -711,8 +921,6 @@ interface(`sysnet_dns_name_resolve',`
+@@ -711,8 +920,6 @@ interface(`sysnet_dns_name_resolve',`
  	allow $1 self:udp_socket create_socket_perms;
  	allow $1 self:netlink_route_socket r_netlink_socket_perms;
  
@@ -39480,19 +39500,21 @@ index 2cea692..07185cb 100644
  	corenet_tcp_sendrecv_generic_if($1)
  	corenet_udp_sendrecv_generic_if($1)
  	corenet_tcp_sendrecv_generic_node($1)
-@@ -720,8 +928,11 @@ interface(`sysnet_dns_name_resolve',`
+@@ -720,8 +927,13 @@ interface(`sysnet_dns_name_resolve',`
  	corenet_tcp_sendrecv_dns_port($1)
  	corenet_udp_sendrecv_dns_port($1)
  	corenet_tcp_connect_dns_port($1)
-+    corenet_tcp_connect_dnssec_port($1)
++	corenet_tcp_connect_dnssec_port($1)
  	corenet_sendrecv_dns_client_packets($1)
  
++	files_search_all_pids($1)
++
 +	miscfiles_read_generic_certs($1)
 +
  	sysnet_read_config($1)
  
  	optional_policy(`
-@@ -750,8 +961,6 @@ interface(`sysnet_use_ldap',`
+@@ -750,8 +962,6 @@ interface(`sysnet_use_ldap',`
  
  	allow $1 self:tcp_socket create_socket_perms;
  
@@ -39501,7 +39523,7 @@ index 2cea692..07185cb 100644
  	corenet_tcp_sendrecv_generic_if($1)
  	corenet_tcp_sendrecv_generic_node($1)
  	corenet_tcp_sendrecv_ldap_port($1)
-@@ -760,9 +969,14 @@ interface(`sysnet_use_ldap',`
+@@ -760,9 +970,14 @@ interface(`sysnet_use_ldap',`
  
  	# Support for LDAPS
  	dev_read_rand($1)
@@ -39516,7 +39538,7 @@ index 2cea692..07185cb 100644
  ')
  
  ########################################
-@@ -784,7 +998,6 @@ interface(`sysnet_use_portmap',`
+@@ -784,7 +999,6 @@ interface(`sysnet_use_portmap',`
  	allow $1 self:udp_socket create_socket_perms;
  
  	corenet_all_recvfrom_unlabeled($1)
@@ -39524,7 +39546,7 @@ index 2cea692..07185cb 100644
  	corenet_tcp_sendrecv_generic_if($1)
  	corenet_udp_sendrecv_generic_if($1)
  	corenet_tcp_sendrecv_generic_node($1)
-@@ -796,3 +1009,122 @@ interface(`sysnet_use_portmap',`
+@@ -796,3 +1010,122 @@ interface(`sysnet_use_portmap',`
  
  	sysnet_read_config($1)
  ')

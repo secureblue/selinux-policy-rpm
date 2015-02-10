@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 110%{?dist}
+Release: 111%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -605,6 +605,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Feb 10 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-111
+- Label /usr/libexec/postgresql-ctl as postgresql_exec_t. BZ(1191004)
+- Remove automatcically running filetrans_named_content form sysnet_manage_config
+- Allow syslogd/journal to read netlink audit socket
+- Allow brltty ioctl on usb_device_t. BZ(1190349)
+- Make sure NetworkManager configures resolv.conf correctly
+
 * Thu Feb 05 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-110
 - Allow cockpit_session_t to create tmp files
 - apmd needs sys_resource when shutting down the machine
