@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 111%{?dist}
+Release: 112%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -605,6 +605,12 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Feb 16 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-112
+- Allow audisp to connect to system DBUS for service.
+- Label /dev/log correctly.
+- Add interface init_read_var_lib_files().
+- Allow abrt_dump_oops_t read /var/lib/systemd/, Allow abrt_dump_oops_t cap. chown,fsetid,fowner, BZ(1187017)
+
 * Tue Feb 10 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-111
 - Label /usr/libexec/postgresql-ctl as postgresql_exec_t. BZ(1191004)
 - Remove automatcically running filetrans_named_content form sysnet_manage_config
