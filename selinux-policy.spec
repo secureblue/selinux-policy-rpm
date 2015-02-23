@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 112%{?dist}
+Release: 113%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -605,6 +605,19 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Feb 23 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-113
+- Xserver needs to be transitioned to from confined users
+- Added logging_syslogd_pid_filetrans
+- xdm_t now talks to hostnamed
+- Label new strongswan binary swanctl and new unit file strongswan-swanctl.service. BZ(1193102)
+- Additional fix for labeleling /dev/log correctly.
+- cups chats with network manager
+- Allow parent domains to read/write fifo files in mozilla plugin
+- Allow spc_t to transition to svirt domains
+- Cleanup spc_t
+- docker needs more control over spc_t
+- pcp domains are executed out of cron
+
 * Mon Feb 16 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-112
 - Allow audisp to connect to system DBUS for service.
 - Label /dev/log correctly.
