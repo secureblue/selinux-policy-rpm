@@ -407,11 +407,8 @@ echo  "xdg-open file:///usr/share/doc/selinux-policy/html/index.html"> %{buildro
 chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 /usr/bin/sepolicy manpage -a -p %{buildroot}/usr/share/man/man8/ -w -r %{buildroot}
 mkdir %{buildroot}%{_usr}/share/selinux/devel/html
-htmldir=`compgen -d %{buildroot}%{_usr}/share/man/man8/`
-mv ${htmldir}/* %{buildroot}%{_usr}/share/selinux/devel/html
-mv %{buildroot}%{_usr}/share/man/man8/index.html %{buildroot}%{_usr}/share/selinux/devel/html
+mv %{buildroot}%{_usr}/share/man/man8/*.html %{buildroot}%{_usr}/share/selinux/devel/html
 mv %{buildroot}%{_usr}/share/man/man8/style.css %{buildroot}%{_usr}/share/selinux/devel/html
-rm -rf ${htmldir}
 
 mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
 echo '%%_selinux_policy_version %{version}-%{release}' > %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
