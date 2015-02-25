@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 113%{?dist}
+Release: 114%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Feb 25 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-114
+- Fix source filepath for moving html files.
+
 * Mon Feb 23 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-113
 - Xserver needs to be transitioned to from confined users
 - Added logging_syslogd_pid_filetrans
