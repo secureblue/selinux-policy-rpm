@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 114%{?dist}
+Release: 115%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,27 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Mar 05 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-115
+- Allow glusterd_t exec glusterd_var_lib_t files. BZ(1198406)
+- Add gluster_exec_lib interface.
+- Allow l2tpd to manage NetworkManager pid files
+- Allow firewalld_t relabelfrom firewalld_rw_etc_t. BZ(1195327)
+- Allow cyrus bind tcp berknet port. BZ(1198347)
+- Add nsswitch domain for more serviecs.
+- Allow abrt_dump_oops_t read /etc/passwd file. BZ(1197190)
+- Remove ftpd_use_passive_mode boolean. It does not make sense due to ephemeral port handling.
+- Make munin yum plugin as unconfined by default.
+- Allow bitlbee connections to the system DBUS.
+- Allow system apache scripts to send log messages.
+- Allow denyhosts execute iptables. BZ(1197371)
+- Allow brltty rw event device. BZ(1190349)
+- Allow cupsd config to execute ldconfig. BZ(1196608)
+- xdm_t now needs to manage user ttys
+- Allow ping_t read urand. BZ(1181831)
+- Add support for tcp/2005 port.
+- Allow setfiles domain to access files with admin_home_t. semanage -i /root/testfile.
+- In F23 we are running xserver as the user, need this to allow confined users to us X
+
 * Mon Feb 25 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-114
 - Fix source filepath for moving html files.
 
