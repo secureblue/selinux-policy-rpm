@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 115%{?dist}
+Release: 116%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Mar 06 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-116
+- Turn on rolekit in F23
+
 * Thu Mar 05 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-115
 - Allow glusterd_t exec glusterd_var_lib_t files. BZ(1198406)
 - Add gluster_exec_lib interface.
