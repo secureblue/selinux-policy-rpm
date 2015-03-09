@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 116%{?dist}
+Release: 117%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Fri Mar 09 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-117
+- Allow spamc read spamd_etc_t files. BZ(1199339).
+- Allow collectd to write to smnpd_var_lib_t dirs. BZ(1199278)
+- Allow abrt_watch_log_t read passwd file. BZ(1197396)
+- Allow abrt_watch_log_t to nsswitch_domain. BZ(1199659)
+- Allow cups to read colord_var_lib_t files. BZ(1199765)
+
 * Fri Mar 06 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-116
 - Turn on rolekit in F23
 
