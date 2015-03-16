@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 117%{?dist}
+Release: 118%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Mar 16 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-118
+- docker watches for content in the /etc directory
+- Merge branch 'rawhide-contrib' of github.com:selinux-policy/selinux-policy into rawhide-contrib
+- Fix abrt_filetrans_named_content() to create /var/tmp/abrt with the correct abrt_var_cache_t labeling.
+- Allow docker to communicate with openvswitch
+- Merge branch 'rawhide-contrib' of github.com:selinux-policy/selinux-policy into rawhide-contrib
+- Allow docker to relablefrom/to sockets and docker_log_t
+- Allow journald to set loginuid. BZ(1190498)
+- Add cap. sys_admin for passwd_t. BZ(1185191)
+- Allow abrt-hook-ccpp running as kernel_t to allow create /var/tmp/abrt with correct labeling.
+
 * Fri Mar 09 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-117
 - Allow spamc read spamd_etc_t files. BZ(1199339).
 - Allow collectd to write to smnpd_var_lib_t dirs. BZ(1199278)
