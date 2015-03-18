@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 118%{?dist}
+Release: 119%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Mar 18 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-119
+- build without docker
+
 * Mon Mar 16 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-118
 - docker watches for content in the /etc directory
 - Merge branch 'rawhide-contrib' of github.com:selinux-policy/selinux-policy into rawhide-contrib
