@@ -29127,10 +29127,10 @@ index 0000000..d745c67
 +')
 diff --git a/gear.te b/gear.te
 new file mode 100644
-index 0000000..7a27337
+index 0000000..0685927
 --- /dev/null
 +++ b/gear.te
-@@ -0,0 +1,140 @@
+@@ -0,0 +1,136 @@
 +policy_module(gear, 1.0.0)
 +
 +########################################
@@ -29260,10 +29260,6 @@ index 0000000..7a27337
 +
 +optional_policy(`
 +	dbus_system_bus_client(gear_t)
-+')
-+
-+optional_policy(`
-+	docker_stream_connect(gear_t)
 +')
 +
 +optional_policy(`
@@ -104122,10 +104118,10 @@ index a4f20bc..b3bd64f 100644
 +/var/log/qemu-ga\.log.*           --      gen_context(system_u:object_r:virt_qemu_ga_log_t,s0)
 +/var/log/qemu-ga(/.*)?		gen_context(system_u:object_r:virt_qemu_ga_log_t,s0)
 diff --git a/virt.if b/virt.if
-index facdee8..f6b8a09 100644
+index facdee8..c930866 100644
 --- a/virt.if
 +++ b/virt.if
-@@ -1,120 +1,51 @@
+@@ -1,318 +1,226 @@
 -## <summary>Libvirt virtualization API.</summary>
 +## <summary>Libvirt virtualization API</summary>
  
@@ -104133,72 +104129,62 @@ index facdee8..f6b8a09 100644
 +########################################
  ## <summary>
 -##	The template to define a virt domain.
-+##	Creates types and rules for a basic
-+##	qemu process domain.
++##	virtd_lxc_t stub interface.  No access allowed.
  ## </summary>
 -## <param name="domain_prefix">
-+## <param name="prefix">
++## <param name="domain" unused="true">
  ##	<summary>
 -##	Domain prefix to be used.
-+##	Prefix for the domain.
++##	Domain allowed access.
  ##	</summary>
  ## </param>
  #
- template(`virt_domain_template',`
+-template(`virt_domain_template',`
++interface(`virt_stub_lxc',`
  	gen_require(`
 -		attribute_role virt_domain_roles;
 -		attribute virt_image_type, virt_domain, virt_tmpfs_type;
 -		attribute virt_ptynode, virt_tmp_type;
-+		attribute virt_image_type, virt_domain;
-+		attribute virt_tmpfs_type;
-+		attribute virt_ptynode;
-+		type qemu_exec_t;
- 	')
- 
+-	')
+-
 -	########################################
 -	#
 -	# Declarations
 -	#
 -
- 	type $1_t, virt_domain;
+-	type $1_t, virt_domain;
 -	application_type($1_t)
 -	qemu_entry_type($1_t)
-+	application_domain($1_t, qemu_exec_t)
- 	domain_user_exemption_target($1_t)
- 	mls_rangetrans_target($1_t)
- 	mcs_constrained($1_t)
+-	domain_user_exemption_target($1_t)
+-	mls_rangetrans_target($1_t)
+-	mcs_constrained($1_t)
 -	role virt_domain_roles types $1_t;
-+	role system_r types $1_t;
- 
- 	type $1_devpts_t, virt_ptynode;
- 	term_pty($1_devpts_t)
- 
+-
+-	type $1_devpts_t, virt_ptynode;
+-	term_pty($1_devpts_t)
+-
 -	type $1_tmp_t, virt_tmp_type;
 -	files_tmp_file($1_tmp_t)
 -
 -	type $1_tmpfs_t, virt_tmpfs_type;
 -	files_tmpfs_file($1_tmpfs_t)
-+	kernel_read_system_state($1_t)
- 
+-
 -	optional_policy(`
 -		pulseaudio_tmpfs_content($1_tmpfs_t)
 -	')
-+	auth_read_passwd($1_t)
- 
+-
 -	type $1_image_t, virt_image_type;
 -	files_type($1_image_t)
 -	dev_node($1_image_t)
 -	dev_associate_sysfs($1_image_t)
-+	logging_send_syslog_msg($1_t)
- 
+-
 -	########################################
 -	#
 -	# Policy
 -	#
 -
 -	allow $1_t $1_devpts_t:chr_file { rw_term_perms setattr_chr_file_perms };
-+	allow $1_t $1_devpts_t:chr_file { rw_chr_file_perms setattr_chr_file_perms };
- 	term_create_pty($1_t, $1_devpts_t)
+-	term_create_pty($1_t, $1_devpts_t)
 -
 -	manage_dirs_pattern($1_t, $1_image_t, $1_image_t)
 -	manage_files_pattern($1_t, $1_image_t, $1_image_t)
@@ -104225,24 +104211,31 @@ index facdee8..f6b8a09 100644
 -
 -	optional_policy(`
 -		xserver_rw_shm($1_t)
--	')
--')
--
++		type virtd_lxc_t;
+ 	')
+ ')
+ 
 -#######################################
--## <summary>
++########################################
+ ## <summary>
 -##	The template to define a virt lxc domain.
--## </summary>
++##	svirt_sandbox_domain attribute stub interface.  No access allowed.
+ ## </summary>
 -## <param name="domain_prefix">
--##	<summary>
++## <param name="domain" unused="true">
+ ##	<summary>
 -##	Domain prefix to be used.
--##	</summary>
--## </param>
--#
++##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+ #
 -template(`virt_lxc_domain_template',`
--	gen_require(`
++interface(`virt_stub_svirt_sandbox_domain',`
+ 	gen_require(`
 -		attribute_role svirt_lxc_domain_roles;
 -		attribute svirt_lxc_domain;
--	')
++		attribute svirt_sandbox_domain;
+ 	')
 -
 -	type $1_t, svirt_lxc_domain;
 -	domain_type($1_t)
@@ -104255,28 +104248,108 @@ index facdee8..f6b8a09 100644
  ########################################
  ## <summary>
 -##	Make the specified type virt image type.
-+##	Make the specified type usable as a virt image
++##	svirt_sandbox_file_t stub interface.  No access allowed.
  ## </summary>
- ## <param name="type">
+-## <param name="type">
++## <param name="domain" unused="true">
  ##	<summary>
 -##	Type to be used as a virtual image.
++##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`virt_image',`
++interface(`virt_stub_svirt_sandbox_file',`
+ 	gen_require(`
+-		attribute virt_image_type;
++		type svirt_sandbox_file_t;
+ 	')
+-
+-	typeattribute $1 virt_image_type;
+-	files_type($1)
+-	dev_node($1)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Execute a domain transition to run virtd.
++##	Creates types and rules for a basic
++##	qemu process domain.
+ ## </summary>
+-## <param name="domain">
++## <param name="prefix">
+ ##	<summary>
+-##	Domain allowed to transition.
++##	Prefix for the domain.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`virt_domtrans',`
++template(`virt_domain_template',`
+ 	gen_require(`
+-		type virtd_t, virtd_exec_t;
++		attribute virt_image_type, virt_domain;
++		attribute virt_tmpfs_type;
++		attribute virt_ptynode;
++		type qemu_exec_t;
+ 	')
+ 
+-	corecmd_search_bin($1)
+-	domtrans_pattern($1, virtd_exec_t, virtd_t)
++	type $1_t, virt_domain;
++	application_domain($1_t, qemu_exec_t)
++	domain_user_exemption_target($1_t)
++	mls_rangetrans_target($1_t)
++	mcs_constrained($1_t)
++	role system_r types $1_t;
++
++	type $1_devpts_t, virt_ptynode;
++	term_pty($1_devpts_t)
++
++	kernel_read_system_state($1_t)
++
++	auth_read_passwd($1_t)
++
++	logging_send_syslog_msg($1_t)
++
++	allow $1_t $1_devpts_t:chr_file { rw_chr_file_perms setattr_chr_file_perms };
++	term_create_pty($1_t, $1_devpts_t)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Execute a domain transition to run virt qmf.
++##	Make the specified type usable as a virt image
+ ## </summary>
+-## <param name="domain">
++## <param name="type">
+ ##	<summary>
+-##	Domain allowed to transition.
 +##	Type to be used as a virtual image
  ##	</summary>
  ## </param>
  #
-@@ -125,31 +56,32 @@ interface(`virt_image',`
+-interface(`virt_domtrans_qmf',`
++interface(`virt_image',`
+ 	gen_require(`
+-		type virt_qmf_t, virt_qmf_exec_t;
++		attribute virt_image_type;
+ 	')
  
- 	typeattribute $1 virt_image_type;
- 	files_type($1)
+-	corecmd_search_bin($1)
+-	domtrans_pattern($1, virt_qmf_exec_t, virt_qmf_t)
++	typeattribute $1 virt_image_type;
++	files_type($1)
 +
 +	# virt images can be assigned to blk devices
- 	dev_node($1)
++	dev_node($1)
  ')
  
 -########################################
 +#######################################
  ## <summary>
--##	Execute a domain transition to run virtd.
+-##	Execute a domain transition to
+-##	run virt bridgehelper.
 +##  Getattr on virt executable.
  ## </summary>
  ## <param name="domain">
@@ -104288,9 +104361,9 @@ index facdee8..f6b8a09 100644
 +##  </summary>
  ## </param>
  #
--interface(`virt_domtrans',`
+-interface(`virt_domtrans_bridgehelper',`
 -	gen_require(`
--		type virtd_t, virtd_exec_t;
+-		type virt_bridgehelper_t, virt_bridgehelper_exec_t;
 -	')
 +interface(`virt_getattr_exec',`
 +    gen_require(`
@@ -104298,56 +104371,8 @@ index facdee8..f6b8a09 100644
 +    ')
  
 -	corecmd_search_bin($1)
--	domtrans_pattern($1, virtd_exec_t, virtd_t)
-+	allow $1 virtd_exec_t:file getattr;
- ')
- 
- ########################################
- ## <summary>
--##	Execute a domain transition to run virt qmf.
-+##	Execute a domain transition to run virt.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -157,162 +89,90 @@ interface(`virt_domtrans',`
- ##	</summary>
- ## </param>
- #
--interface(`virt_domtrans_qmf',`
-+interface(`virt_domtrans',`
- 	gen_require(`
--		type virt_qmf_t, virt_qmf_exec_t;
-+		type virtd_t, virtd_exec_t;
- 	')
- 
--	corecmd_search_bin($1)
--	domtrans_pattern($1, virt_qmf_exec_t, virt_qmf_t)
-+	domtrans_pattern($1, virtd_exec_t, virtd_t)
- ')
- 
- ########################################
- ## <summary>
--##	Execute a domain transition to
--##	run virt bridgehelper.
-+##	Execute virtd in the caller domain.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
--##	Domain allowed to transition.
-+##	Domain allowed access.
- ##	</summary>
- ## </param>
- #
--interface(`virt_domtrans_bridgehelper',`
-+interface(`virt_exec',`
- 	gen_require(`
--		type virt_bridgehelper_t, virt_bridgehelper_exec_t;
-+		type virtd_exec_t;
- 	')
- 
--	corecmd_search_bin($1)
 -	domtrans_pattern($1, virt_bridgehelper_exec_t, virt_bridgehelper_t)
-+	can_exec($1, virtd_exec_t)
++	allow $1 virtd_exec_t:file getattr;
  ')
  
  ########################################
@@ -104355,52 +104380,56 @@ index facdee8..f6b8a09 100644
 -##	Execute bridgehelper in the bridgehelper
 -##	domain, and allow the specified role
 -##	the bridgehelper domain.
-+##	Transition to virt_qmf.
++##	Execute a domain transition to run virt.
  ## </summary>
  ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed to transition.
+ ##	</summary>
+ ## </param>
+-## <param name="role">
 -##	<summary>
+-##	Role allowed access.
+-##	</summary>
+-## </param>
+ #
+-interface(`virt_run_bridgehelper',`
++interface(`virt_domtrans',`
+ 	gen_require(`
+-		attribute_role virt_bridgehelper_roles;
++		type virtd_t, virtd_exec_t;
+ 	')
+ 
+-	virt_domtrans_bridgehelper($1)
+-	roleattribute $2 virt_bridgehelper_roles;
++	domtrans_pattern($1, virtd_exec_t, virtd_t)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Execute virt domain in the their
+-##	domain, and allow the specified
+-##	role that virt domain.
++##	Execute virtd in the caller domain.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
 -##	Domain allowed to transition.
 -##	</summary>
 -## </param>
 -## <param name="role">
 -##	<summary>
 -##	Role allowed access.
--##	</summary>
--## </param>
--#
--interface(`virt_run_bridgehelper',`
--	gen_require(`
--		attribute_role virt_bridgehelper_roles;
--	')
--
--	virt_domtrans_bridgehelper($1)
--	roleattribute $2 virt_bridgehelper_roles;
--')
--
--########################################
- ## <summary>
--##	Execute virt domain in the their
--##	domain, and allow the specified
--##	role that virt domain.
--## </summary>
--## <param name="domain">
--##	<summary>
- ##	Domain allowed to transition.
--##	</summary>
--## </param>
--## <param name="role">
--##	<summary>
--##	Role allowed access.
--##	</summary>
-+## </summary>
++##	Domain allowed access.
+ ##	</summary>
  ## </param>
  #
 -interface(`virt_run_virt_domain',`
-+interface(`virt_domtrans_qmf',`
++interface(`virt_exec',`
  	gen_require(`
 -		attribute virt_domain;
 -		attribute_role virt_domain_roles;
-+		type virt_qmf_t, virt_qmf_exec_t;
++		type virtd_exec_t;
  	')
  
 -	allow $1 virt_domain:process { signal transition };
@@ -104409,38 +104438,47 @@ index facdee8..f6b8a09 100644
 -	allow virt_domain $1:fd use;
 -	allow virt_domain $1:fifo_file rw_fifo_file_perms;
 -	allow virt_domain $1:process sigchld;
++	can_exec($1, virtd_exec_t)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Send generic signals to all virt domains.
++##	Transition to virt_qmf.
+ ## </summary>
+ ## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
++## <summary>
++##	Domain allowed to transition.
++## </summary>
+ ## </param>
+ #
+-interface(`virt_signal_all_virt_domains',`
++interface(`virt_domtrans_qmf',`
+ 	gen_require(`
+-		attribute virt_domain;
++		type virt_qmf_t, virt_qmf_exec_t;
+ 	')
+ 
+-	allow $1 virt_domain:process signal;
 +	corecmd_search_bin($1)
 +	domtrans_pattern($1, virt_qmf_exec_t, virt_qmf_t)
  ')
  
  ########################################
  ## <summary>
--##	Send generic signals to all virt domains.
+-##	Send kill signals to all virt domains.
 +##  Transition to virt_bridgehelper.
  ## </summary>
  ## <param name="domain">
 -##	<summary>
 -##	Domain allowed access.
 -##	</summary>
--## </param>
--#
--interface(`virt_signal_all_virt_domains',`
--	gen_require(`
--		attribute virt_domain;
--	')
--
--	allow $1 virt_domain:process signal;
--')
--
--########################################
- ## <summary>
--##	Send kill signals to all virt domains.
++## <summary>
 +##  Domain allowed to transition.
- ## </summary>
--## <param name="domain">
--##	<summary>
--##	Domain allowed access.
--##	</summary>
++## </summary>
  ## </param>
 -#
 -interface(`virt_kill_all_virt_domains',`
@@ -104499,7 +104537,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -320,18 +180,17 @@ interface(`virt_run_svirt_lxc_domain',`
+@@ -320,18 +228,17 @@ interface(`virt_run_svirt_lxc_domain',`
  ##	</summary>
  ## </param>
  #
@@ -104523,7 +104561,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -339,18 +198,18 @@ interface(`virt_getattr_virtd_exec_files',`
+@@ -339,18 +246,18 @@ interface(`virt_getattr_virtd_exec_files',`
  ##	</summary>
  ## </param>
  #
@@ -104547,7 +104585,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -358,18 +217,18 @@ interface(`virt_stream_connect',`
+@@ -358,18 +265,18 @@ interface(`virt_stream_connect',`
  ##	</summary>
  ## </param>
  #
@@ -104570,7 +104608,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -383,7 +242,6 @@ interface(`virt_read_config',`
+@@ -383,7 +290,6 @@ interface(`virt_read_config',`
  	')
  
  	files_search_etc($1)
@@ -104578,7 +104616,7 @@ index facdee8..f6b8a09 100644
  	read_files_pattern($1, virt_etc_t, virt_etc_t)
  	read_files_pattern($1, virt_etc_rw_t, virt_etc_rw_t)
  	read_lnk_files_pattern($1, virt_etc_rw_t, virt_etc_rw_t)
-@@ -391,8 +249,7 @@ interface(`virt_read_config',`
+@@ -391,8 +297,7 @@ interface(`virt_read_config',`
  
  ########################################
  ## <summary>
@@ -104588,7 +104626,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -406,7 +263,6 @@ interface(`virt_manage_config',`
+@@ -406,7 +311,6 @@ interface(`virt_manage_config',`
  	')
  
  	files_search_etc($1)
@@ -104596,7 +104634,7 @@ index facdee8..f6b8a09 100644
  	manage_files_pattern($1, virt_etc_t, virt_etc_t)
  	manage_files_pattern($1, virt_etc_rw_t, virt_etc_rw_t)
  	manage_lnk_files_pattern($1, virt_etc_rw_t, virt_etc_rw_t)
-@@ -414,8 +270,25 @@ interface(`virt_manage_config',`
+@@ -414,8 +318,25 @@ interface(`virt_manage_config',`
  
  ########################################
  ## <summary>
@@ -104624,7 +104662,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -434,6 +307,7 @@ interface(`virt_read_content',`
+@@ -434,6 +355,7 @@ interface(`virt_read_content',`
  	read_files_pattern($1, virt_content_t, virt_content_t)
  	read_lnk_files_pattern($1, virt_content_t, virt_content_t)
  	read_blk_files_pattern($1, virt_content_t, virt_content_t)
@@ -104632,7 +104670,7 @@ index facdee8..f6b8a09 100644
  
  	tunable_policy(`virt_use_nfs',`
  		fs_list_nfs($1)
-@@ -450,8 +324,7 @@ interface(`virt_read_content',`
+@@ -450,8 +372,7 @@ interface(`virt_read_content',`
  
  ########################################
  ## <summary>
@@ -104642,7 +104680,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -459,35 +332,17 @@ interface(`virt_read_content',`
+@@ -459,35 +380,17 @@ interface(`virt_read_content',`
  ##	</summary>
  ## </param>
  #
@@ -104681,7 +104719,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -495,53 +350,37 @@ interface(`virt_manage_virt_content',`
+@@ -495,53 +398,37 @@ interface(`virt_manage_virt_content',`
  ##	</summary>
  ## </param>
  #
@@ -104745,7 +104783,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -549,34 +388,21 @@ interface(`virt_home_filetrans_virt_content',`
+@@ -549,34 +436,21 @@ interface(`virt_home_filetrans_virt_content',`
  ##	</summary>
  ## </param>
  #
@@ -104788,7 +104826,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -584,32 +410,36 @@ interface(`virt_manage_svirt_home_content',`
+@@ -584,32 +458,36 @@ interface(`virt_manage_svirt_home_content',`
  ##	</summary>
  ## </param>
  #
@@ -104825,19 +104863,19 @@ index facdee8..f6b8a09 100644
  ## </param>
 -## <param name="object_class">
 +## <param name="file">
-+##	<summary>
+ ##	<summary>
+-##	Class of the object being created.
 +##	Type to which the created node will be transitioned.
 +##	</summary>
 +## </param>
 +## <param name="class">
- ##	<summary>
--##	Class of the object being created.
++##	<summary>
 +##	Object class(es) (single or set including {}) for which this
 +##	the transition will occur.
  ##	</summary>
  ## </param>
  ## <param name="name" optional="true">
-@@ -618,54 +448,36 @@ interface(`virt_relabel_svirt_home_content',`
+@@ -618,54 +496,36 @@ interface(`virt_relabel_svirt_home_content',`
  ##	</summary>
  ## </param>
  #
@@ -104901,7 +104939,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -673,54 +485,38 @@ interface(`virt_home_filetrans',`
+@@ -673,107 +533,136 @@ interface(`virt_home_filetrans',`
  ##	</summary>
  ## </param>
  #
@@ -104936,19 +104974,35 @@ index facdee8..f6b8a09 100644
 +interface(`virt_dontaudit_read_lib_files',`
  	gen_require(`
 -		type virt_home_t;
--	')
--
++		type virt_var_lib_t;
+ 	')
+ 
 -	userdom_search_user_home_dirs($1)
 -	allow $1 virt_home_t:dir manage_dir_perms;
 -	allow $1 virt_home_t:file manage_file_perms;
 -	allow $1 virt_home_t:fifo_file manage_fifo_file_perms;
 -	allow $1 virt_home_t:lnk_file manage_lnk_file_perms;
 -	allow $1 virt_home_t:sock_file manage_sock_file_perms;
--
++	dontaudit $1 virt_var_lib_t:file read_inherited_file_perms;
++')
+ 
 -	tunable_policy(`virt_use_nfs',`
 -		fs_manage_nfs_dirs($1)
 -		fs_manage_nfs_files($1)
 -		fs_manage_nfs_symlinks($1)
++########################################
++## <summary>
++##	Create, read, write, and delete
++##	virt lib files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`virt_manage_lib_files',`
++	gen_require(`
 +		type virt_var_lib_t;
  	')
  
@@ -104957,26 +105011,27 @@ index facdee8..f6b8a09 100644
 -		fs_manage_cifs_files($1)
 -		fs_manage_cifs_symlinks($1)
 -	')
-+	dontaudit $1 virt_var_lib_t:file read_inherited_file_perms;
++	files_search_var_lib($1)
++	manage_files_pattern($1, virt_var_lib_t, virt_var_lib_t)
  ')
  
  ########################################
  ## <summary>
 -##	Relabel virt home content.
-+##	Create, read, write, and delete
-+##	virt lib files.
++##	Allow the specified domain to read virt's log files.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -728,52 +524,58 @@ interface(`virt_manage_generic_virt_home_content',`
+ ##	Domain allowed access.
  ##	</summary>
  ## </param>
++## <rolecap/>
  #
 -interface(`virt_relabel_generic_virt_home_content',`
-+interface(`virt_manage_lib_files',`
++interface(`virt_read_log',`
  	gen_require(`
 -		type virt_home_t;
-+		type virt_var_lib_t;
++		type virt_log_t;
  	')
  
 -	userdom_search_user_home_dirs($1)
@@ -104985,8 +105040,8 @@ index facdee8..f6b8a09 100644
 -	allow $1 virt_home_t:fifo_file relabel_fifo_file_perms;
 -	allow $1 virt_home_t:lnk_file relabel_lnk_file_perms;
 -	allow $1 virt_home_t:sock_file relabel_sock_file_perms;
-+	files_search_var_lib($1)
-+	manage_files_pattern($1, virt_var_lib_t, virt_var_lib_t)
++	logging_search_logs($1)
++	read_files_pattern($1, virt_log_t, virt_log_t)
  ')
  
  ########################################
@@ -104994,7 +105049,8 @@ index facdee8..f6b8a09 100644
 -##	Create specified objects in user home
 -##	directories with the generic virt
 -##	home type.
-+##	Allow the specified domain to read virt's log files.
++##	Allow the specified domain to append
++##	virt log files.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -105002,26 +105058,41 @@ index facdee8..f6b8a09 100644
  ##	</summary>
  ## </param>
 -## <param name="object_class">
--##	<summary>
--##	Class of the object being created.
--##	</summary>
--## </param>
--## <param name="name" optional="true">
-+## <rolecap/>
 +#
-+interface(`virt_read_log',`
++interface(`virt_append_log',`
 +	gen_require(`
 +		type virt_log_t;
 +	')
 +
 +	logging_search_logs($1)
-+	read_files_pattern($1, virt_log_t, virt_log_t)
++	append_files_pattern($1, virt_log_t, virt_log_t)
 +')
 +
 +########################################
 +## <summary>
-+##	Allow the specified domain to append
-+##	virt log files.
++##	Allow domain to manage virt log files
++## </summary>
++## <param name="domain">
+ ##	<summary>
+-##	Class of the object being created.
++##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+-## <param name="name" optional="true">
++#
++interface(`virt_manage_log',`
++	gen_require(`
++		type virt_log_t;
++	')
++
++	manage_dirs_pattern($1, virt_log_t, virt_log_t)
++	manage_files_pattern($1, virt_log_t, virt_log_t)
++	manage_lnk_files_pattern($1, virt_log_t, virt_log_t)
++')
++
++########################################
++## <summary>
++##	Allow domain to getattr virt image direcories
 +## </summary>
 +## <param name="domain">
  ##	<summary>
@@ -105031,112 +105102,63 @@ index facdee8..f6b8a09 100644
  ## </param>
  #
 -interface(`virt_home_filetrans_virt_home',`
-+interface(`virt_append_log',`
- 	gen_require(`
--		type virt_home_t;
-+		type virt_log_t;
- 	')
- 
--	userdom_user_home_dir_filetrans($1, virt_home_t, $2, $3)
-+	logging_search_logs($1)
-+	append_files_pattern($1, virt_log_t, virt_log_t)
- ')
- 
- ########################################
- ## <summary>
--##	Read virt pid files.
-+##	Allow domain to manage virt log files
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -781,19 +583,19 @@ interface(`virt_home_filetrans_virt_home',`
- ##	</summary>
- ## </param>
- #
--interface(`virt_read_pid_files',`
-+interface(`virt_manage_log',`
- 	gen_require(`
--		type virt_var_run_t;
-+		type virt_log_t;
- 	')
- 
--	files_search_pids($1)
--	read_files_pattern($1, virt_var_run_t, virt_var_run_t)
-+	manage_dirs_pattern($1, virt_log_t, virt_log_t)
-+	manage_files_pattern($1, virt_log_t, virt_log_t)
-+	manage_lnk_files_pattern($1, virt_log_t, virt_log_t)
- ')
- 
- ########################################
- ## <summary>
--##	Create, read, write, and delete
--##	virt pid files.
-+##	Allow domain to getattr virt image direcories
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -801,18 +603,18 @@ interface(`virt_read_pid_files',`
- ##	</summary>
- ## </param>
- #
--interface(`virt_manage_pid_files',`
 +interface(`virt_getattr_images',`
  	gen_require(`
--		type virt_var_run_t;
+-		type virt_home_t;
 +		attribute virt_image_type;
  	')
  
--	files_search_pids($1)
--	manage_files_pattern($1, virt_var_run_t, virt_var_run_t)
+-	userdom_user_home_dir_filetrans($1, virt_home_t, $2, $3)
 +	virt_search_lib($1)
 +	allow $1 virt_image_type:file getattr_file_perms;
  ')
  
  ########################################
  ## <summary>
--##	Search virt lib directories.
+-##	Read virt pid files.
 +##	Allow domain to search virt image direcories
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -820,18 +622,18 @@ interface(`virt_manage_pid_files',`
+@@ -781,19 +670,18 @@ interface(`virt_home_filetrans_virt_home',`
  ##	</summary>
  ## </param>
  #
--interface(`virt_search_lib',`
+-interface(`virt_read_pid_files',`
 +interface(`virt_search_images',`
  	gen_require(`
--		type virt_var_lib_t;
+-		type virt_var_run_t;
 +		attribute virt_image_type;
  	')
  
--	files_search_var_lib($1)
--	allow $1 virt_var_lib_t:dir search_dir_perms;
+-	files_search_pids($1)
+-	read_files_pattern($1, virt_var_run_t, virt_var_run_t)
 +	virt_search_lib($1)
 +	allow $1 virt_image_type:dir search_dir_perms;
  ')
  
  ########################################
  ## <summary>
--##	Read virt lib files.
+-##	Create, read, write, and delete
+-##	virt pid files.
 +##	Allow domain to read virt image files
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -839,20 +641,73 @@ interface(`virt_search_lib',`
+@@ -801,18 +689,36 @@ interface(`virt_read_pid_files',`
  ##	</summary>
  ## </param>
  #
--interface(`virt_read_lib_files',`
+-interface(`virt_manage_pid_files',`
 +interface(`virt_read_images',`
  	gen_require(`
- 		type virt_var_lib_t;
+-		type virt_var_run_t;
++		type virt_var_lib_t;
 +		attribute virt_image_type;
  	')
  
--	files_search_var_lib($1)
--	read_files_pattern($1, virt_var_lib_t, virt_var_lib_t)
--	read_lnk_files_pattern($1, virt_var_lib_t, virt_var_lib_t)
+-	files_search_pids($1)
+-	manage_files_pattern($1, virt_var_run_t, virt_var_run_t)
 +	virt_search_lib($1)
 +	allow $1 virt_image_type:dir list_dir_perms;
 +	list_dirs_pattern($1, virt_image_type, virt_image_type)
@@ -105156,41 +105178,52 @@ index facdee8..f6b8a09 100644
 +		fs_read_cifs_files($1)
 +		fs_read_cifs_symlinks($1)
 +	')
-+')
-+
-+########################################
-+## <summary>
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Search virt lib directories.
 +##	Allow domain to read virt blk image files
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -820,18 +726,17 @@ interface(`virt_manage_pid_files',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`virt_search_lib',`
 +interface(`virt_read_blk_images',`
-+	gen_require(`
+ 	gen_require(`
+-		type virt_var_lib_t;
 +		attribute virt_image_type;
-+	')
-+
+ 	')
+ 
+-	files_search_var_lib($1)
+-	allow $1 virt_var_lib_t:dir search_dir_perms;
 +	read_blk_files_pattern($1, virt_image_type, virt_image_type)
-+')
-+
-+########################################
-+## <summary>
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Read virt lib files.
 +##	Allow domain to read/write virt image chr files
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -839,20 +744,18 @@ interface(`virt_search_lib',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`virt_read_lib_files',`
 +interface(`virt_rw_chr_files',`
-+	gen_require(`
+ 	gen_require(`
+-		type virt_var_lib_t;
 +		attribute virt_image_type;
-+	')
-+
+ 	')
+ 
+-	files_search_var_lib($1)
+-	read_files_pattern($1, virt_var_lib_t, virt_var_lib_t)
+-	read_lnk_files_pattern($1, virt_var_lib_t, virt_var_lib_t)
 +	rw_chr_files_pattern($1, virt_image_type, virt_image_type)
  ')
  
@@ -105202,7 +105235,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -860,94 +715,267 @@ interface(`virt_read_lib_files',`
+@@ -860,94 +763,267 @@ interface(`virt_read_lib_files',`
  ##	</summary>
  ## </param>
  #
@@ -105265,12 +105298,10 @@ index facdee8..f6b8a09 100644
 +    manage_dirs_pattern($1, virt_image_t, virt_image_t)
 +    manage_files_pattern($1, virt_image_t, virt_image_t)
 +    read_lnk_files_pattern($1, virt_image_t, virt_image_t)
- ')
- 
- ########################################
- ## <summary>
--##	Create objects in virt pid
--##	directories with a private type.
++')
++
++########################################
++## <summary>
 +##	Execute virt server in the virt domain.
 +## </summary>
 +## <param name="domain">
@@ -105291,10 +105322,12 @@ index facdee8..f6b8a09 100644
 +	allow $1 virtd_unit_file_t:service manage_service_perms;
 +
 +	ps_process_pattern($1, virtd_t)
-+')
-+
-+########################################
-+## <summary>
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Create objects in virt pid
+-##	directories with a private type.
 +##	Ptrace the svirt domain
 +## </summary>
 +## <param name="domain">
@@ -105499,7 +105532,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -955,20 +983,17 @@ interface(`virt_append_log',`
+@@ -955,20 +1031,17 @@ interface(`virt_append_log',`
  ##	</summary>
  ## </param>
  #
@@ -105524,7 +105557,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -976,18 +1001,17 @@ interface(`virt_manage_log',`
+@@ -976,18 +1049,17 @@ interface(`virt_manage_log',`
  ##	</summary>
  ## </param>
  #
@@ -105547,7 +105580,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -995,36 +1019,35 @@ interface(`virt_search_images',`
+@@ -995,36 +1067,35 @@ interface(`virt_search_images',`
  ##	</summary>
  ## </param>
  #
@@ -105603,7 +105636,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1032,20 +1055,17 @@ interface(`virt_read_images',`
+@@ -1032,20 +1103,17 @@ interface(`virt_read_images',`
  ##	</summary>
  ## </param>
  #
@@ -105628,7 +105661,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1053,15 +1073,57 @@ interface(`virt_rw_all_image_chr_files',`
+@@ -1053,15 +1121,57 @@ interface(`virt_rw_all_image_chr_files',`
  ##	</summary>
  ## </param>
  #
@@ -105691,7 +105724,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1069,21 +1131,28 @@ interface(`virt_manage_svirt_cache',`
+@@ -1069,21 +1179,28 @@ interface(`virt_manage_svirt_cache',`
  ##	</summary>
  ## </param>
  #
@@ -105728,7 +105761,7 @@ index facdee8..f6b8a09 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1091,36 +1160,188 @@ interface(`virt_manage_virt_cache',`
+@@ -1091,36 +1208,188 @@ interface(`virt_manage_virt_cache',`
  ##	</summary>
  ## </param>
  #
@@ -105903,13 +105936,15 @@ index facdee8..f6b8a09 100644
 +interface(`virt_rlimitinh',`
 +	gen_require(`
 +		type virtd_t;
-+	')
+ 	')
 +
 +    allow $1 virtd_t:process { rlimitinh };
-+')
-+
-+########################################
-+## <summary>
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	All of the rules required to
+-##	administrate an virt environment.
 +##	Read and write to svirt_image devices.
 +## </summary>
 +## <param name="domain">
@@ -105921,21 +105956,19 @@ index facdee8..f6b8a09 100644
 +interface(`virt_noatsecure',`
 +	gen_require(`
 +		type virtd_t;
- 	')
++	')
 +
 +    allow $1 virtd_t:process { noatsecure rlimitinh };
- ')
- 
- ########################################
- ## <summary>
--##	All of the rules required to
--##	administrate an virt environment.
++')
++
++########################################
++## <summary>
 +##	All of the rules required to administrate
 +##	an virt environment
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1136,50 +1357,53 @@ interface(`virt_manage_images',`
+@@ -1136,50 +1405,53 @@ interface(`virt_manage_images',`
  #
  interface(`virt_admin',`
  	gen_require(`
@@ -106024,7 +106057,7 @@ index facdee8..f6b8a09 100644
 +	typeattribute $1 sandbox_caps_domain;
  ')
 diff --git a/virt.te b/virt.te
-index f03dcf5..a1f667e 100644
+index f03dcf5..e8341d7 100644
 --- a/virt.te
 +++ b/virt.te
 @@ -1,150 +1,241 @@
@@ -107114,7 +107147,7 @@ index f03dcf5..a1f667e 100644
  
 -can_exec(virsh_t, virsh_exec_t)
 +append_files_pattern(virt_domain, virt_var_lib_t, virt_var_lib_t)
- 
++
 +corecmd_exec_bin(virt_domain)
 +corecmd_exec_shell(virt_domain)
 +
@@ -107188,7 +107221,7 @@ index f03dcf5..a1f667e 100644
 +optional_policy(`
 +	pulseaudio_dontaudit_exec(virt_domain)
 +')
-+
+ 
 +optional_policy(`
 +	sssd_dontaudit_stream_connect(virt_domain)
 +	sssd_dontaudit_read_lib(virt_domain)
@@ -107524,7 +107557,7 @@ index f03dcf5..a1f667e 100644
  selinux_get_enforce_mode(virtd_lxc_t)
  selinux_get_fs_mount(virtd_lxc_t)
  selinux_validate_context(virtd_lxc_t)
-@@ -974,194 +1171,321 @@ selinux_compute_create_context(virtd_lxc_t)
+@@ -974,194 +1171,310 @@ selinux_compute_create_context(virtd_lxc_t)
  selinux_compute_relabel_context(virtd_lxc_t)
  selinux_compute_user_contexts(virtd_lxc_t)
  
@@ -107540,29 +107573,25 @@ index f03dcf5..a1f667e 100644
 +optional_policy(`
 +	dbus_system_bus_client(virtd_lxc_t)
 +	init_dbus_chat(virtd_lxc_t)
- 
--miscfiles_read_localization(virtd_lxc_t)
++
 +	optional_policy(`
 +		hal_dbus_chat(virtd_lxc_t)
 +	')
++')
+ 
+-miscfiles_read_localization(virtd_lxc_t)
++optional_policy(`
++	gnome_read_generic_cache_files(virtd_lxc_t)
 +')
  
 -seutil_domtrans_setfiles(virtd_lxc_t)
 -seutil_read_config(virtd_lxc_t)
 -seutil_read_default_contexts(virtd_lxc_t)
 +optional_policy(`
-+	docker_exec_lib(virtd_lxc_t)
-+')
-+
-+optional_policy(`
-+	gnome_read_generic_cache_files(virtd_lxc_t)
++	setrans_manage_pid_files(virtd_lxc_t)
 +')
  
 -sysnet_domtrans_ifconfig(virtd_lxc_t)
-+optional_policy(`
-+	setrans_manage_pid_files(virtd_lxc_t)
-+')
-+
 +optional_policy(`
 +	unconfined_domain(virtd_lxc_t)
 +')
@@ -107759,13 +107788,6 @@ index f03dcf5..a1f667e 100644
  optional_policy(`
 -	apache_exec_modules(svirt_lxc_domain)
 -	apache_read_sys_content(svirt_lxc_domain)
-+	docker_read_share_files(svirt_sandbox_domain)
-+	docker_lib_filetrans(svirt_sandbox_domain,svirt_sandbox_file_t, sock_file)
-+	docker_use_ptys(svirt_sandbox_domain)
-+	docker_spc_stream_connect(svirt_sandbox_domain)
-+')
-+
-+optional_policy(`
 +	gear_read_pid_files(svirt_sandbox_domain)
 +')
 +
@@ -107945,13 +107967,13 @@ index f03dcf5..a1f667e 100644
 +append_files_pattern(svirt_qemu_net_t, virt_log_t, virt_log_t)
 +
 +kernel_read_irq_sysctls(svirt_qemu_net_t)
- 
--allow svirt_prot_exec_t self:process { execmem execstack };
++
 +dev_read_sysfs(svirt_qemu_net_t)
 +dev_getattr_mtrr_dev(svirt_qemu_net_t)
 +dev_read_rand(svirt_qemu_net_t)
 +dev_read_urand(svirt_qemu_net_t)
-+
+ 
+-allow svirt_prot_exec_t self:process { execmem execstack };
 +files_read_kernel_modules(svirt_qemu_net_t)
 +
 +fs_noxattr_type(svirt_sandbox_file_t)
@@ -107987,7 +108009,7 @@ index f03dcf5..a1f667e 100644
  allow virt_qmf_t self:tcp_socket create_stream_socket_perms;
  allow virt_qmf_t self:netlink_route_socket create_netlink_socket_perms;
  
-@@ -1174,12 +1498,12 @@ dev_read_sysfs(virt_qmf_t)
+@@ -1174,12 +1487,12 @@ dev_read_sysfs(virt_qmf_t)
  dev_read_rand(virt_qmf_t)
  dev_read_urand(virt_qmf_t)
  
@@ -108002,7 +108024,7 @@ index f03dcf5..a1f667e 100644
  sysnet_read_config(virt_qmf_t)
  
  optional_policy(`
-@@ -1192,9 +1516,8 @@ optional_policy(`
+@@ -1192,9 +1505,8 @@ optional_policy(`
  
  ########################################
  #
@@ -108013,7 +108035,7 @@ index f03dcf5..a1f667e 100644
  allow virt_bridgehelper_t self:process { setcap getcap };
  allow virt_bridgehelper_t self:capability { setpcap setgid setuid net_admin };
  allow virt_bridgehelper_t self:tcp_socket create_stream_socket_perms;
-@@ -1207,5 +1530,238 @@ kernel_read_network_state(virt_bridgehelper_t)
+@@ -1207,5 +1519,238 @@ kernel_read_network_state(virt_bridgehelper_t)
  
  corenet_rw_tun_tap_dev(virt_bridgehelper_t)
  
