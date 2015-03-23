@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 119%{?dist}
+Release: 120%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Mar 23 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-120
+- Allow mysqld_t to use pam. BZ(1196104)
+- Added label mysqld_etc_t for /etc/my.cnf.d/ dir. BZ(1203989)
+- Allow fetchmail to read mail_spool_t. BZ(1200552)
+- Dontaudit blueman_t write to all mountpoints. BZ(1198272)
+- Allow all domains some process flags.
+- Merge branch 'rawhide-base' of github.com:selinux-policy/selinux-policy into rawhide-base
+- Turn on overlayfs labeling for testin, we need this backported to F22 and Rawhide.  Eventually will need this in RHEL
+
 * Wed Mar 18 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-119
 - build without docker
 
