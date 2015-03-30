@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 120%{?dist}
+Release: 121%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,11 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Mar 30 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-121
+- Allow kmscon to read system state. BZ (1206871)
+- Label ~/.abrt/ as abrt_etc_t. BZ(1199658)
+- Allow xdm_t to read colord_var_lib_t files. BZ(1201985)
+
 * Mon Mar 23 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-120
 - Allow mysqld_t to use pam. BZ(1196104)
 - Added label mysqld_etc_t for /etc/my.cnf.d/ dir. BZ(1203989)
