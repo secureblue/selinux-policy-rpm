@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 121%{?dist}
+Release: 122%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,28 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Apr 07 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-122
+- Label /usr/libexec/mongodb-scl-helper as mongod_initrc_exec_t. BZ(1202013)
+- Add mongodb port to httpd_can_network_connect_db interface. BZ(1209180)
+- Allow mongod to work with configured SSSD.
+- Add collectd net_raw capability. BZ(1194169)
+- Merge postfix spool types(maildrop,flush) to one postfix_spool_t
+- Allow dhcpd kill capability.
+- Make rwhod as nsswitch domain.
+- Add support for new fence agent fence_mpath which is executed by fence_node.
+- Fix cloudform policy.(m4 is case sensitive)
+- Allow networkmanager and cloud_init_t to dbus chat
+- Allow lsmd plugin to run with configured SSSD.
+- Allow bacula access to tape devices.
+- Allow sblim domain to read sysctls..
+- Allow timemaster send a signal to ntpd.
+- Allow mysqld_t to use pam.It is needed by MariDB if auth_apm.so auth plugin is used.
+- two 'l' is enough.
+- Add labeling for systemd-time*.service unit files and allow systemd-timedated to access these unit files.
+- Allow polkit to dbus chat with xserver. (1207478)
+- Add lvm_stream_connect() interface.
+- Set label of /sys/kernel/debug
+
 * Mon Mar 30 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-121
 - Allow kmscon to read system state. BZ (1206871)
 - Label ~/.abrt/ as abrt_etc_t. BZ(1199658)
