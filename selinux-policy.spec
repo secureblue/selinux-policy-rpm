@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 122%{?dist}
+Release: 123%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,15 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Apr 14 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-123
+- Allow abrtd to list home config. BZ(1199658)
+- Dontaudit dnssec_trigger_t to read /tmp. BZ(1210250)
+- Allow abrt_dump_oops_t to IPC_LOCK. BZ(1205481)
+- Allow mock_t to use ptmx. BZ(1181333)
+- Allow dnssec_trigger_t to stream connect to networkmanager.
+- Allow dnssec_trigger_t to create resolv files labeled as net_conf_t
+- Fix labeling for keystone CGI scripts.
+
 * Tue Apr 07 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-122
 - Label /usr/libexec/mongodb-scl-helper as mongod_initrc_exec_t. BZ(1202013)
 - Add mongodb port to httpd_can_network_connect_db interface. BZ(1209180)
