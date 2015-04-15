@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 123%{?dist}
+Release: 124%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,7 +602,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
-* Wed Apr 14 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-123
+* Wed Apr 15 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-124
+- Add more restriction on entrypoint for unconfined domains.
+
+* Tue Apr 14 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-123
 - Allow abrtd to list home config. BZ(1199658)
 - Dontaudit dnssec_trigger_t to read /tmp. BZ(1210250)
 - Allow abrt_dump_oops_t to IPC_LOCK. BZ(1205481)
