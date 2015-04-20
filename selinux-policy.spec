@@ -676,7 +676,7 @@ SELinux Reference policy mls base module.
 - Add cap. sys_admin for passwd_t. BZ(1185191)
 - Allow abrt-hook-ccpp running as kernel_t to allow create /var/tmp/abrt with correct labeling.
 
-* Fri Mar 09 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-117
+* Mon Mar 09 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-117
 - Allow spamc read spamd_etc_t files. BZ(1199339).
 - Allow collectd to write to smnpd_var_lib_t dirs. BZ(1199278)
 - Allow abrt_watch_log_t read passwd file. BZ(1197396)
@@ -707,7 +707,7 @@ SELinux Reference policy mls base module.
 - Allow setfiles domain to access files with admin_home_t. semanage -i /root/testfile.
 - In F23 we are running xserver as the user, need this to allow confined users to us X
 
-* Mon Feb 25 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-114
+* Wed Feb 25 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-114
 - Fix source filepath for moving html files.
 
 * Mon Feb 23 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-113
@@ -750,7 +750,7 @@ SELinux Reference policy mls base module.
 - Dontaudit network connections related to thumb_t. BZ(1187981)
 - Remove sysnet_filetrans_named_content from fail2ban
 
-* Thu Feb 02 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-107
+* Mon Feb 02 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-107
 - Fix labels on new location of resolv.conf
 - syslog is not writing to the audit socket
 - seunshare is doing getattr on unix_stream_sockets leaked into it
@@ -811,7 +811,7 @@ SELinux Reference policy mls base module.
 - Add support for /var/run/gluster.
 - Allow openvpn manage systemd_passwd_var_run_t files. BZ(1170085)
 
-* Fri Dec 02 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-99
+* Tue Dec 02 2014 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-99
 - Add files_dontaudit_list_security_dirs() interface.
 - Added seutil_dontaudit_access_check_semanage_module_store interface.
 - Allow docker to create /root/.docker
