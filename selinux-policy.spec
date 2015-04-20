@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 124%{?dist}
+Release: 125%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,18 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Apr 20 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-125
+- Define ipa_var_run_t type
+- Allow certmonger to manage renewal.lock. BZ(1213256)
+- Add ipa_manage_pid_files interface.
+- Add rules for netlink_socket in iotop.
+- Allow iotop netlink socket.
+- cloudinit and rhsmcertd need to communicate with dbus
+- Allow apcupsd to use USBttys. BZ(1210960)
+- Allow sge_execd_t to mamange tmp sge lnk files.BZ(1211574)
+- Remove dac_override capability for setroubleshoot. We now have it running as setroubleshoot user.
+- Allow syslogd_t to manage devlog_t lnk files. BZ(1210968)
+
 * Wed Apr 15 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-124
 - Add more restriction on entrypoint for unconfined domains.
 
