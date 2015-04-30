@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 125%{?dist}
+Release: 126%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,24 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Apr 30 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-126
+- allow httpd_t to read nagios lib_var_lib_t to allow rddtool generate graphs which will be shown by httpd .
+- Add nagios_read_lib() interface.
+- Additional fix for mongod_unit_file_t in mongodb.te.
+- Fix decl of mongod_unit_file to mongod_unit_file_t.
+- Fix mongodb unit file declaration.
+- Update virt_read_pid_files() interface to allow read also symlinks with virt_var_run_t type.
+- Fix labeling for /usr/libexec/mysqld_safe-scl-helper.
+- Add support for mysqld_safe-scl-helper which is needed for RHSCL daemons.
+- Allow sys_ptrace cap for sblim-gatherd caused by ps.
+- Add support for /usr/libexec/mongodb-scl-helper RHSCL helper script.
+- Add support for mongod/mongos systemd unit files.
+- Allow dnssec-trigger to send sigchld to networkmanager
+- add interface networkmanager_sigchld
+- Add dnssec-trigger unit file Label dnssec-trigger script in libexec
+- Remove duplicate  specification for /etc/localtime.
+- Add default labeling for /etc/localtime symlink.
+
 * Mon Apr 20 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-125
 - Define ipa_var_run_t type
 - Allow certmonger to manage renewal.lock. BZ(1213256)
