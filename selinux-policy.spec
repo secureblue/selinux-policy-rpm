@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 126%{?dist}
+Release: 127%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,13 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue May 05 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-127
+- Add missing typealiases in apache_content_template() for script domain/executable.
+- Don't use deprecated userdom_manage_tmpfs_role() interface calliing and use userdom_manage_tmp_role() instead.
+- Add support for new cobbler dir locations:
+- Add support for iprdbg logging files in /var/log.
+- Add relabel_user_home_dirs for use by docker_t
+
 * Mon Apr 30 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-126
 - allow httpd_t to read nagios lib_var_lib_t to allow rddtool generate graphs which will be shown by httpd .
 - Add nagios_read_lib() interface.
