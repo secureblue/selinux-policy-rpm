@@ -60,7 +60,9 @@ Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(post): /bin/awk /usr/bin/sha512sum
 
 %description 
-SELinux Base package
+SELinux Base package for SELinux Reference Policy - modular.
+Based off of reference policy: Checked out revision  2.20091117
+
 
 %files 
 %defattr(-,root,root,-)
@@ -321,11 +323,6 @@ for i in $contrib_modules $base_modules; do \
         echo "%verify(not md5 size mtime) /etc/selinux/%1/modules/active/modules/$i" >> %{buildroot}/%{_usr}/share/selinux/%1/nonbasemodules.lst \
     fi; \
 done
-
-
-%description
-SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2.20091117
 
 %build
 
@@ -609,7 +606,7 @@ SELinux Reference policy mls base module.
 - Add support for iprdbg logging files in /var/log.
 - Add relabel_user_home_dirs for use by docker_t
 
-* Mon Apr 30 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-126
+* Thu Apr 30 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-126
 - allow httpd_t to read nagios lib_var_lib_t to allow rddtool generate graphs which will be shown by httpd .
 - Add nagios_read_lib() interface.
 - Additional fix for mongod_unit_file_t in mongodb.te.
