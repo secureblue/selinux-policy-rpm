@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 128.1%{?dist}
+Release: 129%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jun 09 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-129
+- We need to restore contexts on /etc/passwd*,/etc/group*,/etc/*shadow* during install phase to get proper labeling for these files until selinux-policy pkgs are installed. BZ(1228489)
+
 * Tue Jun 09 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-128
 - Add ipsec_rw_inherited_pipes() interface.
 - Allow ibus-x11 running as xdm_t to connect uder session buses. We already allow to connect to userdomains over unix_stream_socket. 
