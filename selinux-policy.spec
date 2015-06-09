@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 128%{?dist}
+Release: 128.1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -306,7 +306,7 @@ if [ -e /etc/selinux/%2/.rebuild ]; then \
 fi; \
 [ "${SELINUXTYPE}" == "%2" ] && selinuxenabled && load_policy; \
 if [ %1 -eq 1 ]; then \
-   /sbin/restorecon -R /root /var/log /run 2> /dev/null; \
+   /sbin/restorecon -R /root /var/log /run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null; \
 else \
 %relabel %2 \
 fi;
