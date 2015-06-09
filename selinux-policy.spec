@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 127%{?dist}
+Release: 128%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,106 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jun 09 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-128
+- Add ipsec_rw_inherited_pipes() interface.
+- Allow ibus-x11 running as xdm_t to connect uder session buses. We already allow to connect to userdomains over unix_stream_socket. 
+- Label /usr/libexec/Xorg.wrap as xserver_exec_t.
+- Allow systemd-networkd to bind dhcpc ports if DHCP=yes in *.network conf file.
+- Add fixes for selinux userspace moving the policy store to /var/lib/selinux.
+- Remove optional else block for dhcp ping (needed by CIL)
+- Label all gluster hooks in /var/lib/gluster as bin_t. They are not created on the fly.
+- Access required to run with unconfine.pp disabled
+- Fix selinux_search_fs() interface.
+- Update selinux_search_fs(domain) rule to have ability to search /etc/selinuc/ to check if /etc/selinux/config exists. 
+- Add seutil_search_config() interface.
+- Make ssh-keygen as nsswitch domain to access SSSD.
+- Label ctdb events scripts as bin_t.
+- Add support for /usr/sbin/lvmpolld.
+- Allow gvfsd-fuse running as xdm_t to use /run/user/42/gvfs as mountpoint.
+- Add support for ~/.local/share/networkmanagement/certificates and update filename transitions rules. 
+- Allow login_pgm domains to access kernel keyring for nsswitch domains.
+- Allow hypervkvp to read /dev/urandom and read  addition states/config files.
+- Add cgdcbxd policy.
+- Allow hypervkvp to execute arping in own domain and make it as nsswitch domain.
+- Add labeling for pacemaker.log.
+- Allow ntlm_auth running in winbind_helper_t to access /dev/urandom.
+- Allow lsmd plugin to connect to tcp/5989 by default.
+- Allow lsmd plugin to connect to tcp/5988 by default.
+- Allow setuid/setgid for selinux_child.
+- Allow radiusd to connect to radsec ports.
+- ALlow bind to read/write inherited ipsec pipes.
+- Allow fowner capability for sssd because of selinux_child handling.
+- Allow pki-tomcat relabel pki_tomcat_etc_rw_t.
+- Allow cluster domain to dbus chat with systemd-logind.
+- Allow tmpreaper_t to manage ntp log content 
+- Allow openvswitch_t to communicate with sssd.
+- Allow isnsd_t to communicate with sssd.
+- Allow rwho_t to communicate with sssd.
+- Allow pkcs_slotd_t to communicate with sssd.
+- Add httpd_var_lib_t label for roundcubemail 
+- Allow puppetagent_t to transfer firewalld messages over dbus.
+- Allow glusterd to have mknod capability. It creates a special file using mknod in a brick.
+- Update rules related to glusterd_brick_t.
+- Allow glusterd to execute lvm tools in the lvm_t target domain.
+- Allow glusterd to execute xfs_growfs in the target domain.
+- Allow sysctl to have running under hypervkvp_t domain.
+- Allow smartdnotify to use user terminals. 
+- Allow pcp domains to create root.socket in /var/lip/pcp directroy. 
+- Allow NM to execute dnssec-trigger-script in dnssec_trigger_t domain.
+- Allow rpcbind to create rpcbind.xdr as a temporary file. 
+- Allow dnssec-trigger connections to the system DBUS. It uses libnm-glib Python bindings. 
+- Allow hostapd net_admin capability. hostapd needs to able to set an interface flag. 
+- rsync server can be setup to send mail
+- Make "ostree admin upgrade -r" command which suppose to upgrade the system and reboot working again. 
+- Remove ctdbd_manage_var_files() interface which is not used and is declared for the wrong type.
+- Fix samba_load_libgfapi decl in samba.te.
+- Fix typo in nagios_run_sudo() boolean.
+- remove duplicate declaration from hypervkvp.te.
+- Move ctdd_domtrans() from ctdbd to gluster.
+- Allow smbd to access /var/lib/ctdb/persistent/secrets.tdb.0.
+- Glusterd wants to manage samba config files if they are setup together.
+- ALlow NM to do access check on /sys.
+- Allow NetworkManager to keep RFCOMM connection for Bluetooth DUN open . Based on fixes from Lubomir Rintel.
+- Allow NetworkManager nm-dispacher to read links.
+- Allow gluster hooks scripts to transition to ctdbd_t.
+- Allow glusterd to read/write samba config files.
+- Update mysqld rules related to mysqld log files.
+- Add fixes for hypervkvp realed to ifdown/ifup scripts.
+- Update netlink_route_socket for ptp4l.
+- Allow glusterd to connect to /var/run/dbus/system_bus_socket.
+- ALlow glusterd to have sys_ptrace capability. Needed by gluster+samba configuration.
+- Add new boolean samba_load_libgfapi to allow smbd load libgfapi from gluster. Allow smbd to read gluster config files by default.
+- Allow gluster to transition to smbd. It is needed for smbd+gluster configuration.
+- Allow glusterd to read /dev/random.
+- Update nagios_run_sudo boolean to allow run chkpwd.
+- Allow docker and container tools to control caps, don't rely on SELinux for now.  Since there is no easy way for SELinux modification of policy as far as caps.  docker run --cap-add will work now
+- Allow sosreport to dbus chat with NM.
+- Allow anaconda to run iscsid in own domain. BZ(1220948).
+- Allow rhsmcetd to use the ypbind service to access NIS services.
+- Add nagios_run_pnp4nagios and nagios_run_sudo booleans to allow run sudo from NRPE utils scripts and allow run nagios in conjunction with PNP4Nagios.
+- Allow ctdb to create rawip socket.
+- Allow ctdbd to bind  smbd port.
+- Make ctdbd as userdom_home_reader.
+- Dontaudit chrome-sandbox write access its parent process information. BZ(1220958)
+- Allow net_admin cap for dnssec-trigger to make wifi reconnect working.
+- Add support for /var/lib/ipsilon dir and label it as httpd_var_lib_t. BZ(1186046)
+- Allow gluster rpm scripletto create glusterd socket with correct labeling. This is a workaround until we get fix in glusterd.
+- Add glusterd_filetrans_named_pid() interface.
+- Allow antivirus_t to read system state info.
+- Dontaudit use console for chrome-sandbox. 
+- Add support for ~/.local/share/libvirt/images and for ~/.local/share/libvirt/boot. 
+- Clamd needs to have fsetid capability. 
+- Allow cinder-backup to dbus chat with systemd-logind. 
+- Update httpd_use_openstack boolean to allow httpd to bind commplex_main_port and read keystone log files.
+- Allow gssd to access kernel keyring for login_pgm domains.
+- Add more fixes related to timemaster+ntp+ptp4l.
+- Allow docker sandbox domains to search all mountpoiunts
+- update winbind_t rules to allow IPC for winbind.
+- Add rpm_exec_t labeling for /usr/bin/dnf-automatic,/usr/bin/dnf-2 and /usr/bin/dnf-3.
+- Allow inet_gethost called by couchdb to access /proc/net/unix. 
+- Allow eu-unstrip running under abrt_t to access /var/lib/pcp/pmdas/linux/pmda_linux.so 
+- Label /usr/bin/yum-deprecated as rpm_exec_t. 
+
 * Tue May 05 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-127
 - Add missing typealiases in apache_content_template() for script domain/executable.
 - Don't use deprecated userdom_manage_tmpfs_role() interface calliing and use userdom_manage_tmp_role() instead.
