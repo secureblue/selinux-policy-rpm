@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 129%{?dist}
+Release: 130%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,34 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jun 18 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-130
+- Allow glusterd to interact with gluster tools running in a user domain
+- rpm_transition_script() is called from rpm_run. Update cloud-init rules.
+- Call rpm_transition_script() from rpm_run() interface.
+- Allow radvd has setuid and it requires dac_override. BZ(1224403)
+- Add glusterd_manage_lib_files() interface.
+- Allow samba_t net_admin capability to make CIFS mount working.
+- S30samba-start gluster hooks wants to search audit logs. Dontaudit it.
+- Reflect logrotate change which moves /var/lib/logrotate.status to /var/lib/logrotate/logrotate.status. BZ(1228531)
+- ntop reads /var/lib/ntop/macPrefix.db and it needs dac_override. It has setuid/setgid. BZ(1058822)
+- Allow cloud-init to run rpm scriptlets to install packages. BZ(1227484)
+- Allow nagios to generate charts.
+- Allow glusterd to send generic signals to systemd_passwd_agent processes.
+- Allow glusterd to run init scripts.
+- Allow glusterd to execute /usr/sbin/xfs_dbin glusterd_t domain.
+- Calling cron_system_entry() in pcp_domain_template needs to be a part of optional_policy block.
+- Allow samba-net to access /var/lib/ctdbd dirs/files.
+- Allow glusterd to send a signal to smbd.
+- Make ctdbd as home manager to access also FUSE.
+- Allow glusterd to use geo-replication gluster tool.
+- Allow glusterd to execute ssh-keygen.
+- Allow glusterd to interact with cluster services.
+- Add rhcs_dbus_chat_cluster()
+- systemd-logind accesses /dev/shm. BZ(1230443)
+- Label gluster python hooks also as bin_t.
+- Allow sshd to execute gnome-keyring if there is configured pam_gnome_keyring.so.
+- Allow gnome-keyring executed by passwd to access /run/user/UID/keyring to change a password.
+
 * Tue Jun 09 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-129
 - We need to restore contexts on /etc/passwd*,/etc/group*,/etc/*shadow* during install phase to get proper labeling for these files until selinux-policy pkgs are installed. BZ(1228489)
 
