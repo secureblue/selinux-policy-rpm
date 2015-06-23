@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 130%{?dist}
+Release: 131%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,16 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jun 23 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-131
+- Allow NetworkManager write to sysfs. BZ(1234086)
+- Fix bogus line in logrotate.fc.
+- Add dontaudit interface for kdumpctl_tmp_t
+- Use userdom_rw_user_tmp_files() instead of userdom_rw_user_tmpfs_files() in gluster.te
+- Add postgresql support for systemd unit files.
+- Fix missing bracket
+- Pull request by ssekidde. https://github.com/fedora-selinux/selinux-policy/pull/18
+- Fixed obsoleted userdom_delete_user_tmpfs_files() inteface
+
 * Thu Jun 18 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-130
 - Allow glusterd to interact with gluster tools running in a user domain
 - rpm_transition_script() is called from rpm_run. Update cloud-init rules.

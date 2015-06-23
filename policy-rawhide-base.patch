@@ -22567,10 +22567,10 @@ index 6d77e81..656a8c4 100644
 +	')
  ')
 diff --git a/policy/modules/services/postgresql.fc b/policy/modules/services/postgresql.fc
-index a26f84f..59fe535 100644
+index a26f84f..f4a44eb 100644
 --- a/policy/modules/services/postgresql.fc
 +++ b/policy/modules/services/postgresql.fc
-@@ -10,6 +10,9 @@
+@@ -10,11 +10,16 @@
  #
  /usr/bin/initdb(\.sepgsql)?	--	gen_context(system_u:object_r:postgresql_exec_t,s0)
  /usr/bin/(se)?postgres		--	gen_context(system_u:object_r:postgresql_exec_t,s0)
@@ -22580,7 +22580,14 @@ index a26f84f..59fe535 100644
  
  /usr/lib/pgsql/test/regress(/.*)?	gen_context(system_u:object_r:postgresql_db_t,s0)
  /usr/lib/pgsql/test/regress/pg_regress -- gen_context(system_u:object_r:postgresql_exec_t,s0)
-@@ -28,9 +31,10 @@ ifdef(`distro_redhat', `
+ /usr/lib/postgresql/bin/.*	--	gen_context(system_u:object_r:postgresql_exec_t,s0)
+ 
++/usr/lib/systemd/system/postgresql.*    --  gen_context(system_u:object_r:postgresql_unit_file_t,s0)
++
+ ifdef(`distro_debian', `
+ /usr/lib/postgresql/.*/bin/.*	--	gen_context(system_u:object_r:postgresql_exec_t,s0)
+ ')
+@@ -28,9 +33,10 @@ ifdef(`distro_redhat', `
  #
  /var/lib/postgres(ql)?(/.*)? 		gen_context(system_u:object_r:postgresql_db_t,s0)
  
@@ -22593,7 +22600,7 @@ index a26f84f..59fe535 100644
  
  /var/lib/sepgsql(/.*)?			gen_context(system_u:object_r:postgresql_db_t,s0)
  /var/lib/sepgsql/pgstartup\.log	--	gen_context(system_u:object_r:postgresql_log_t,s0)
-@@ -45,4 +49,4 @@ ifdef(`distro_redhat', `
+@@ -45,4 +51,4 @@ ifdef(`distro_redhat', `
  
  /var/run/postgresql(/.*)?		gen_context(system_u:object_r:postgresql_var_run_t,s0)
  
@@ -22933,7 +22940,7 @@ index 9d2f311..9e87525 100644
 +	postgresql_filetrans_named_content($1)
  ')
 diff --git a/policy/modules/services/postgresql.te b/policy/modules/services/postgresql.te
-index 0306134..ae0d841 100644
+index 0306134..bb5f3dd 100644
 --- a/policy/modules/services/postgresql.te
 +++ b/policy/modules/services/postgresql.te
 @@ -19,25 +19,32 @@ gen_require(`
@@ -22975,7 +22982,17 @@ index 0306134..ae0d841 100644
  
  type postgresql_t;
  type postgresql_exec_t;
-@@ -236,7 +243,8 @@ allow postgresql_t self:udp_socket create_stream_socket_perms;
+@@ -52,6 +59,9 @@ files_config_file(postgresql_etc_t)
+ type postgresql_initrc_exec_t;
+ init_script_file(postgresql_initrc_exec_t)
+ 
++type postgresql_unit_file_t;
++systemd_unit_file(postgresql_unit_file_t)
++
+ type postgresql_lock_t;
+ files_lock_file(postgresql_lock_t)
+ 
+@@ -236,7 +246,8 @@ allow postgresql_t self:udp_socket create_stream_socket_perms;
  allow postgresql_t self:unix_dgram_socket create_socket_perms;
  allow postgresql_t self:unix_stream_socket { create_stream_socket_perms connectto };
  allow postgresql_t self:netlink_selinux_socket create_socket_perms;
@@ -22985,7 +23002,7 @@ index 0306134..ae0d841 100644
  	allow postgresql_t self:process { setsockcreate };
  ')
  
-@@ -270,18 +278,19 @@ manage_files_pattern(postgresql_t, postgresql_db_t, postgresql_db_t)
+@@ -270,18 +281,19 @@ manage_files_pattern(postgresql_t, postgresql_db_t, postgresql_db_t)
  manage_lnk_files_pattern(postgresql_t, postgresql_db_t, postgresql_db_t)
  manage_fifo_files_pattern(postgresql_t, postgresql_db_t, postgresql_db_t)
  manage_sock_files_pattern(postgresql_t, postgresql_db_t, postgresql_db_t)
@@ -23007,7 +23024,7 @@ index 0306134..ae0d841 100644
  manage_files_pattern(postgresql_t, postgresql_log_t, postgresql_log_t)
  logging_log_filetrans(postgresql_t, postgresql_log_t, { file dir })
  
-@@ -299,12 +308,12 @@ manage_sock_files_pattern(postgresql_t, postgresql_var_run_t, postgresql_var_run
+@@ -299,12 +311,12 @@ manage_sock_files_pattern(postgresql_t, postgresql_var_run_t, postgresql_var_run
  files_pid_filetrans(postgresql_t, postgresql_var_run_t, { dir file })
  
  kernel_read_kernel_sysctls(postgresql_t)
@@ -23021,7 +23038,7 @@ index 0306134..ae0d841 100644
  corenet_all_recvfrom_netlabel(postgresql_t)
  corenet_tcp_sendrecv_generic_if(postgresql_t)
  corenet_udp_sendrecv_generic_if(postgresql_t)
-@@ -342,8 +351,7 @@ domain_dontaudit_list_all_domains_state(postgresql_t)
+@@ -342,8 +354,7 @@ domain_dontaudit_list_all_domains_state(postgresql_t)
  domain_use_interactive_fds(postgresql_t)
  
  files_dontaudit_search_home(postgresql_t)
@@ -23031,7 +23048,7 @@ index 0306134..ae0d841 100644
  files_read_etc_runtime_files(postgresql_t)
  files_read_usr_files(postgresql_t)
  
-@@ -354,20 +362,28 @@ init_read_utmp(postgresql_t)
+@@ -354,20 +365,28 @@ init_read_utmp(postgresql_t)
  logging_send_syslog_msg(postgresql_t)
  logging_send_audit_msgs(postgresql_t)
  
@@ -23063,7 +23080,7 @@ index 0306134..ae0d841 100644
  	allow postgresql_t self:process execmem;
  ')
  
-@@ -485,10 +501,52 @@ dontaudit { postgresql_t sepgsql_admin_type sepgsql_client_type sepgsql_unconfin
+@@ -485,10 +504,52 @@ dontaudit { postgresql_t sepgsql_admin_type sepgsql_client_type sepgsql_unconfin
  # It is always allowed to operate temporary objects for any database client.
  allow sepgsql_client_type sepgsql_temp_object_t:{db_schema db_table db_column db_tuple db_sequence db_view db_procedure} ~{ relabelto relabelfrom };
  
@@ -23120,7 +23137,7 @@ index 0306134..ae0d841 100644
  	allow sepgsql_client_type sepgsql_schema_t:db_schema { add_name remove_name };
  ')
  
-@@ -536,7 +594,7 @@ allow sepgsql_admin_type sepgsql_module_type:db_database install_module;
+@@ -536,7 +597,7 @@ allow sepgsql_admin_type sepgsql_module_type:db_database install_module;
  
  kernel_relabelfrom_unlabeled_database(sepgsql_admin_type)
  
@@ -23129,7 +23146,7 @@ index 0306134..ae0d841 100644
  	allow sepgsql_admin_type sepgsql_database_type:db_database *;
  
  	allow sepgsql_admin_type sepgsql_schema_type:db_schema *;
-@@ -589,3 +647,17 @@ allow sepgsql_unconfined_type sepgsql_blob_type:db_blob *;
+@@ -589,3 +650,17 @@ allow sepgsql_unconfined_type sepgsql_blob_type:db_blob *;
  allow sepgsql_unconfined_type sepgsql_module_type:db_database install_module;
  
  kernel_relabelfrom_unlabeled_database(sepgsql_unconfined_type)
