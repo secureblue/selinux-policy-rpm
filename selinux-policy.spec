@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 131%{?dist}
+Release: 132%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,24 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Mon Jun 29 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-132
+- Rename xodbc-connect port to xodbc_connect
+- Dontaudit apache to manage snmpd_var_lib_t files/dirs. BZ(1189214)
+- Add interface snmp_dontaudit_manage_snmp_var_lib_files().
+- Allow ovsdb-server to connect on xodbc-connect and ovsdb tcp ports. BZ(1179809)
+- Dontaudit mozilla_plugin_t cap. sys_ptrace. BZ(1202043)
+- Allow iscsid write to fifo file kdumpctl_tmp_t. Appears when kdump generates the initramfs during the kernel boot. BZ(1181476)
+- Dontaudit chrome to read passwd file. BZ(1204307)
+- Allow firewalld exec ldconfig. BZ(1232748)
+- Allow dnssec_trigger_t read networkmanager conf files. BZ(1231798)
+- Allow in networkmanager_read_conf() also read NetworkManager_etc_rw_t files. BZ(1231798)
+- Allow NetworkManager write to sysfs. BZ(1234086)
+- Fix bogus line in logrotate.fc.
+- Add dontaudit interface for kdumpctl_tmp_t
+- Rename xodbc-connect port to xodbc_connect
+- Label tcp port 6632 as xodbc-connect port. BZ (1179809)
+- Label tcp port 6640 as ovsdb port. BZ (1179809)
+
 * Tue Jun 23 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-131
 - Allow NetworkManager write to sysfs. BZ(1234086)
 - Fix bogus line in logrotate.fc.
