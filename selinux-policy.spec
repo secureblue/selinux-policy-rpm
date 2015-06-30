@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 132%{?dist}
+Release: 133%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,9 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jun 30 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-133
+- Cleanup permissive domains.
+
 * Mon Jun 29 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-132
 - Rename xodbc-connect port to xodbc_connect
 - Dontaudit apache to manage snmpd_var_lib_t files/dirs. BZ(1189214)
