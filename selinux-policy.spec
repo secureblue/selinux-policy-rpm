@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 133%{?dist}
+Release: 134%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,17 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jul 02 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-134
+- Allow ctdb_t sending signull to smbd_t, for checking if smbd process exists. BZ(1224879)
+- Fix cron_system_cronjob_use_shares boolean to call fs interfaces which contain only entrypoint permission.
+- Add cron_system_cronjob_use_shares boolean to allow system cronjob to be executed from shares - NFS, CIFS, FUSE. It requires "entrypoint" permissios on nfs_t, cifs_t and fusefs_t SELinux types.
+- Merge remote-tracking branch 'refs/remotes/origin/rawhide-contrib' into rawhide-contrib
+- nrpe needs kill capability to make gluster moniterd nodes working.
+- Fix interface corenet_tcp_connect_postgresql_port_port(prosody_t)
+- Allow prosody connect to postgresql port.
+- Add new interfaces
+- Add fs_fusefs_entry_type() interface.
+
 * Tue Jun 30 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-133
 - Cleanup permissive domains.
 

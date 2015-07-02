@@ -18378,10 +18378,10 @@ index 1303b30..759412f 100644
 +    logging_log_filetrans($1, cron_log_t, $2, $3)
  ')
 diff --git a/cron.te b/cron.te
-index 7de3859..0ee059a 100644
+index 7de3859..9d2cd2d 100644
 --- a/cron.te
 +++ b/cron.te
-@@ -11,46 +11,46 @@ gen_require(`
+@@ -11,46 +11,54 @@ gen_require(`
  
  ## <desc>
  ##	<p>
@@ -18405,9 +18405,17 @@ index 7de3859..0ee059a 100644
 +##  in the user domain as opposed to the
 +##  the generic cronjob domain.
 +##  </p>
++## </desc>
++gen_tunable(cron_userdomain_transition, true)
++
++## <desc>
++##  <p>
++##  Allow system cronjob to be executed on
++##  on NFS, CIFS or FUSE filesystem.
++##  </p>
  ## </desc>
 -gen_tunable(cron_userdomain_transition, false)
-+gen_tunable(cron_userdomain_transition, true)
++gen_tunable(cron_system_cronjob_use_shares, false)
  
  ## <desc>
  ##	<p>
@@ -18442,7 +18450,7 @@ index 7de3859..0ee059a 100644
  type cron_log_t;
  logging_log_file(cron_log_t)
  
-@@ -71,6 +71,9 @@ domain_cron_exemption_source(crond_t)
+@@ -71,6 +79,9 @@ domain_cron_exemption_source(crond_t)
  type crond_initrc_exec_t;
  init_script_file(crond_initrc_exec_t)
  
@@ -18452,7 +18460,7 @@ index 7de3859..0ee059a 100644
  type crond_tmp_t;
  files_tmp_file(crond_tmp_t)
  files_poly_parent(crond_tmp_t)
-@@ -92,15 +95,17 @@ typealias crontab_t alias { user_crontab_t staff_crontab_t };
+@@ -92,15 +103,17 @@ typealias crontab_t alias { user_crontab_t staff_crontab_t };
  typealias crontab_t alias { auditadm_crontab_t secadm_crontab_t };
  typealias crontab_tmp_t alias { user_crontab_tmp_t staff_crontab_tmp_t };
  typealias crontab_tmp_t alias { auditadm_crontab_tmp_t secadm_crontab_tmp_t };
@@ -18473,7 +18481,7 @@ index 7de3859..0ee059a 100644
  
  type system_cronjob_lock_t alias system_crond_lock_t;
  files_lock_file(system_cronjob_lock_t)
-@@ -108,94 +113,34 @@ files_lock_file(system_cronjob_lock_t)
+@@ -108,94 +121,34 @@ files_lock_file(system_cronjob_lock_t)
  type system_cronjob_tmp_t alias system_crond_tmp_t;
  files_tmp_file(system_cronjob_tmp_t)
  
@@ -18580,7 +18588,7 @@ index 7de3859..0ee059a 100644
  selinux_get_fs_mount(admin_crontab_t)
  selinux_validate_context(admin_crontab_t)
  selinux_compute_access_vector(admin_crontab_t)
-@@ -204,22 +149,26 @@ selinux_compute_relabel_context(admin_crontab_t)
+@@ -204,22 +157,26 @@ selinux_compute_relabel_context(admin_crontab_t)
  selinux_compute_user_contexts(admin_crontab_t)
  
  tunable_policy(`fcron_crond',`
@@ -18610,7 +18618,7 @@ index 7de3859..0ee059a 100644
  allow crond_t self:shm create_shm_perms;
  allow crond_t self:sem create_sem_perms;
  allow crond_t self:msgq create_msgq_perms;
-@@ -227,7 +176,7 @@ allow crond_t self:msg { send receive };
+@@ -227,7 +184,7 @@ allow crond_t self:msg { send receive };
  allow crond_t self:key { search write link };
  dontaudit crond_t self:netlink_audit_socket nlmsg_tty_audit;
  
@@ -18619,7 +18627,7 @@ index 7de3859..0ee059a 100644
  logging_log_filetrans(crond_t, cron_log_t, file)
  
  manage_files_pattern(crond_t, crond_var_run_t, crond_var_run_t)
-@@ -237,73 +186,68 @@ manage_files_pattern(crond_t, cron_spool_t, cron_spool_t)
+@@ -237,73 +194,68 @@ manage_files_pattern(crond_t, cron_spool_t, cron_spool_t)
  
  manage_dirs_pattern(crond_t, crond_tmp_t, crond_tmp_t)
  manage_files_pattern(crond_t, crond_tmp_t, crond_tmp_t)
@@ -18723,7 +18731,7 @@ index 7de3859..0ee059a 100644
  auth_use_nsswitch(crond_t)
  
  logging_send_audit_msgs(crond_t)
-@@ -312,41 +256,46 @@ logging_set_loginuid(crond_t)
+@@ -312,41 +264,46 @@ logging_set_loginuid(crond_t)
  
  seutil_read_config(crond_t)
  seutil_read_default_contexts(crond_t)
@@ -18786,7 +18794,7 @@ index 7de3859..0ee059a 100644
  ')
  
  optional_policy(`
-@@ -354,103 +303,135 @@ optional_policy(`
+@@ -354,103 +311,141 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -18916,6 +18924,12 @@ index 7de3859..0ee059a 100644
 +# for this purpose.
 +allow system_cronjob_t system_cron_spool_t:file entrypoint;
 +
++tunable_policy(`cron_system_cronjob_use_shares',`
++    fs_fusefs_entrypoint(system_cronjob_t)
++    fs_nfs_entrypoint(system_cronjob_t)
++    fs_cifs_entrypoint(system_cronjob_t)
++')
++
 +# Permit a transition from the crond_t domain to this domain.
 +# The transition is requested explicitly by the modified crond 
 +# via setexeccon.  There is no way to set up an automatic
@@ -18953,7 +18967,7 @@ index 7de3859..0ee059a 100644
  allow system_cronjob_t cron_spool_t:dir list_dir_perms;
  allow system_cronjob_t cron_spool_t:file rw_file_perms;
  
-@@ -461,11 +442,11 @@ kernel_read_network_state(system_cronjob_t)
+@@ -461,11 +456,11 @@ kernel_read_network_state(system_cronjob_t)
  kernel_read_system_state(system_cronjob_t)
  kernel_read_software_raid_state(system_cronjob_t)
  
@@ -18966,7 +18980,7 @@ index 7de3859..0ee059a 100644
  corenet_all_recvfrom_netlabel(system_cronjob_t)
  corenet_tcp_sendrecv_generic_if(system_cronjob_t)
  corenet_udp_sendrecv_generic_if(system_cronjob_t)
-@@ -485,6 +466,7 @@ fs_getattr_all_symlinks(system_cronjob_t)
+@@ -485,6 +480,7 @@ fs_getattr_all_symlinks(system_cronjob_t)
  fs_getattr_all_pipes(system_cronjob_t)
  fs_getattr_all_sockets(system_cronjob_t)
  
@@ -18974,7 +18988,7 @@ index 7de3859..0ee059a 100644
  domain_dontaudit_read_all_domains_state(system_cronjob_t)
  
  files_exec_etc_files(system_cronjob_t)
-@@ -495,17 +477,22 @@ files_getattr_all_files(system_cronjob_t)
+@@ -495,17 +491,22 @@ files_getattr_all_files(system_cronjob_t)
  files_getattr_all_symlinks(system_cronjob_t)
  files_getattr_all_pipes(system_cronjob_t)
  files_getattr_all_sockets(system_cronjob_t)
@@ -18999,7 +19013,7 @@ index 7de3859..0ee059a 100644
  
  auth_use_nsswitch(system_cronjob_t)
  
-@@ -516,20 +503,26 @@ logging_read_generic_logs(system_cronjob_t)
+@@ -516,20 +517,26 @@ logging_read_generic_logs(system_cronjob_t)
  logging_send_audit_msgs(system_cronjob_t)
  logging_send_syslog_msg(system_cronjob_t)
  
@@ -19029,7 +19043,7 @@ index 7de3859..0ee059a 100644
  	selinux_validate_context(system_cronjob_t)
  	selinux_compute_access_vector(system_cronjob_t)
  	selinux_compute_create_context(system_cronjob_t)
-@@ -539,10 +532,18 @@ tunable_policy(`cron_can_relabel',`
+@@ -539,10 +546,18 @@ tunable_policy(`cron_can_relabel',`
  ')
  
  optional_policy(`
@@ -19048,7 +19062,7 @@ index 7de3859..0ee059a 100644
  ')
  
  optional_policy(`
-@@ -551,10 +552,6 @@ optional_policy(`
+@@ -551,10 +566,6 @@ optional_policy(`
  
  optional_policy(`
  	dbus_system_bus_client(system_cronjob_t)
@@ -19059,7 +19073,7 @@ index 7de3859..0ee059a 100644
  ')
  
  optional_policy(`
-@@ -591,6 +588,7 @@ optional_policy(`
+@@ -591,6 +602,7 @@ optional_policy(`
  optional_policy(`
  	mta_read_config(system_cronjob_t)
  	mta_send_mail(system_cronjob_t)
@@ -19067,7 +19081,7 @@ index 7de3859..0ee059a 100644
  ')
  
  optional_policy(`
-@@ -598,7 +596,23 @@ optional_policy(`
+@@ -598,7 +610,23 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -19091,7 +19105,7 @@ index 7de3859..0ee059a 100644
  ')
  
  optional_policy(`
-@@ -607,7 +621,12 @@ optional_policy(`
+@@ -607,7 +635,12 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -19104,7 +19118,7 @@ index 7de3859..0ee059a 100644
  ')
  
  optional_policy(`
-@@ -615,12 +634,27 @@ optional_policy(`
+@@ -615,12 +648,27 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -19134,7 +19148,7 @@ index 7de3859..0ee059a 100644
  #
  
  allow cronjob_t self:process { signal_perms setsched };
-@@ -628,12 +662,32 @@ allow cronjob_t self:fifo_file rw_fifo_file_perms;
+@@ -628,12 +676,32 @@ allow cronjob_t self:fifo_file rw_fifo_file_perms;
  allow cronjob_t self:unix_stream_socket create_stream_socket_perms;
  allow cronjob_t self:unix_dgram_socket create_socket_perms;
  
@@ -19168,7 +19182,7 @@ index 7de3859..0ee059a 100644
  corenet_all_recvfrom_netlabel(cronjob_t)
  corenet_tcp_sendrecv_generic_if(cronjob_t)
  corenet_udp_sendrecv_generic_if(cronjob_t)
-@@ -641,66 +695,141 @@ corenet_tcp_sendrecv_generic_node(cronjob_t)
+@@ -641,66 +709,141 @@ corenet_tcp_sendrecv_generic_node(cronjob_t)
  corenet_udp_sendrecv_generic_node(cronjob_t)
  corenet_tcp_sendrecv_all_ports(cronjob_t)
  corenet_udp_sendrecv_all_ports(cronjob_t)
@@ -19643,7 +19657,7 @@ index b25b01d..6b7d687 100644
  ')
 +
 diff --git a/ctdb.te b/ctdb.te
-index 001b502..61a9e2d 100644
+index 001b502..bbf96d9 100644
 --- a/ctdb.te
 +++ b/ctdb.te
 @@ -24,6 +24,9 @@ files_tmp_file(ctdbd_tmp_t)
@@ -19730,7 +19744,11 @@ index 001b502..61a9e2d 100644
  optional_policy(`
  	consoletype_exec(ctdbd_t)
  ')
-@@ -109,6 +132,7 @@ optional_policy(`
+@@ -106,9 +129,11 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++    samba_signull_smbd(ctdbd_t)
  	samba_initrc_domtrans(ctdbd_t)
  	samba_domtrans_net(ctdbd_t)
  	samba_rw_var_files(ctdbd_t)
@@ -26094,7 +26112,7 @@ index 9a21639..26c5986 100644
  ')
 +
 diff --git a/drbd.te b/drbd.te
-index f2516cc..70ddc24 100644
+index f2516cc..b371be4 100644
 --- a/drbd.te
 +++ b/drbd.te
 @@ -18,17 +18,20 @@ files_type(drbd_var_lib_t)
@@ -26120,7 +26138,7 @@ index f2516cc..70ddc24 100644
  
  manage_dirs_pattern(drbd_t, drbd_var_lib_t, drbd_var_lib_t)
  manage_files_pattern(drbd_t, drbd_var_lib_t, drbd_var_lib_t)
-@@ -38,18 +41,36 @@ files_var_lib_filetrans(drbd_t, drbd_var_lib_t, dir)
+@@ -38,18 +41,37 @@ files_var_lib_filetrans(drbd_t, drbd_var_lib_t, dir)
  manage_files_pattern(drbd_t, drbd_lock_t, drbd_lock_t)
  files_lock_filetrans(drbd_t, drbd_lock_t, file)
  
@@ -26153,6 +26171,7 @@ index f2516cc..70ddc24 100644
 +modutils_exec_insmod(drbd_t)
 +
 +storage_raw_read_fixed_disk(drbd_t)
++storage_raw_write_fixed_disk(drbd_t)
  
  sysnet_dns_name_resolve(drbd_t)
 +
@@ -54483,7 +54502,7 @@ index 0641e97..ed3394e 100644
 +	admin_pattern($1, nrpe_etc_t)
  ')
 diff --git a/nagios.te b/nagios.te
-index 7b3e682..40e93b4 100644
+index 7b3e682..e4b8c8a 100644
 --- a/nagios.te
 +++ b/nagios.te
 @@ -5,6 +5,25 @@ policy_module(nagios, 1.13.0)
@@ -54721,6 +54740,15 @@ index 7b3e682..40e93b4 100644
  ')
  
  ########################################
+@@ -214,7 +271,7 @@ optional_policy(`
+ # Nrpe local policy
+ #
+ 
+-allow nrpe_t self:capability { setuid setgid };
++allow nrpe_t self:capability { setuid setgid kill };
+ dontaudit nrpe_t self:capability { sys_tty_config sys_resource };
+ allow nrpe_t self:process { setpgid signal_perms setsched setrlimit };
+ allow nrpe_t self:fifo_file rw_fifo_file_perms;
 @@ -229,9 +286,9 @@ files_pid_filetrans(nrpe_t, nrpe_var_run_t, file)
  
  domtrans_pattern(nrpe_t, nagios_checkdisk_plugin_exec_t, nagios_checkdisk_plugin_t)
@@ -64919,10 +64947,10 @@ index 0000000..80246e6
 +
 diff --git a/pcp.te b/pcp.te
 new file mode 100644
-index 0000000..8ec1e54
+index 0000000..7a3dc05
 --- /dev/null
 +++ b/pcp.te
-@@ -0,0 +1,236 @@
+@@ -0,0 +1,240 @@
 +policy_module(pcp, 1.0.0)
 +
 +########################################
@@ -65060,6 +65088,10 @@ index 0000000..8ec1e54
 +storage_getattr_fixed_disk_dev(pcp_pmcd_t)
 +
 +userdom_read_user_tmp_files(pcp_pmcd_t)
++
++optional_policy(`
++    mysql_stream_connect(pcp_pmcd_t)
++')
 +
 +optional_policy(`
 +    dbus_system_bus_client(pcp_pmcd_t)
@@ -73259,10 +73291,10 @@ index cc426e6..fe5d842 100644
 +')
 diff --git a/prosody.fc b/prosody.fc
 new file mode 100644
-index 0000000..96a0d9f
+index 0000000..c056a2f
 --- /dev/null
 +++ b/prosody.fc
-@@ -0,0 +1,8 @@
+@@ -0,0 +1,10 @@
 +/usr/bin/prosody		--	gen_context(system_u:object_r:prosody_exec_t,s0)
 +/usr/bin/prosodyctl     --	gen_context(system_u:object_r:prosody_exec_t,s0)
 +
@@ -73271,6 +73303,8 @@ index 0000000..96a0d9f
 +/var/lib/prosody(/.*)?		gen_context(system_u:object_r:prosody_var_lib_t,s0)
 +
 +/var/run/prosody(/.*)?		gen_context(system_u:object_r:prosody_var_run_t,s0)
++
++/var/log/prosody(/.*)?		gen_context(system_u:object_r:prosody_log_t,s0)
 diff --git a/prosody.if b/prosody.if
 new file mode 100644
 index 0000000..44ed5ad
@@ -73514,10 +73548,10 @@ index 0000000..44ed5ad
 +')
 diff --git a/prosody.te b/prosody.te
 new file mode 100644
-index 0000000..ad32ffe
+index 0000000..f48f1b9
 --- /dev/null
 +++ b/prosody.te
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,85 @@
 +policy_module(prosody, 1.0.0)
 +
 +########################################
@@ -73537,6 +73571,9 @@ index 0000000..ad32ffe
 +type prosody_exec_t;
 +init_daemon_domain(prosody_t, prosody_exec_t)
 +
++type prosody_log_t;
++logging_log_file(prosody_log_t)
++
 +type prosody_var_lib_t;
 +files_type(prosody_var_lib_t)
 +
@@ -73550,7 +73587,7 @@ index 0000000..ad32ffe
 +#
 +# prosody local policy
 +#
-+allow prosody_t self:capability { setuid setgid };
++allow prosody_t self:capability { setuid setgid dac_read_search dac_override };
 +allow prosody_t self:process { signal_perms execmem };
 +allow prosody_t self:tcp_socket create_stream_socket_perms;
 +
@@ -73564,6 +73601,11 @@ index 0000000..ad32ffe
 +manage_lnk_files_pattern(prosody_t, prosody_var_run_t, prosody_var_run_t)
 +files_pid_filetrans(prosody_t, prosody_var_run_t, { dir file lnk_file })
 +
++manage_dirs_pattern(prosody_t, prosody_log_t, prosody_log_t)
++manage_files_pattern(prosody_t, prosody_log_t, prosody_log_t)
++setattr_files_pattern(prosody_t, prosody_log_t, prosody_log_t)
++logging_log_filetrans(prosody_t, prosody_log_t, { file dir })
++
 +can_exec(prosody_t, prosody_exec_t)
 +
 +kernel_read_system_state(prosody_t)
@@ -73572,11 +73614,13 @@ index 0000000..ad32ffe
 +corecmd_exec_shell(prosody_t)
 +
 +corenet_udp_bind_generic_node(prosody_t)
++corenet_tcp_connect_postgresql_port(prosody_t)
 +corenet_tcp_connect_jabber_interserver_port(prosody_t)
 +corenet_tcp_connect_jabber_client_port(prosody_t)
 +corenet_tcp_bind_jabber_client_port(prosody_t)
 +corenet_tcp_bind_jabber_interserver_port(prosody_t)
 +corenet_tcp_bind_jabber_router_port(prosody_t)
++
 +tunable_policy(`prosody_bind_http_port',`
 +    corenet_tcp_bind_http_port(prosody_t)
 +')
@@ -88717,7 +88761,7 @@ index b8b66ff..a93346e 100644
 +/var/lib/samba/scripts(/.*)?		gen_context(system_u:object_r:samba_unconfined_script_exec_t,s0)
 +')
 diff --git a/samba.if b/samba.if
-index 50d07fb..59296a2 100644
+index 50d07fb..556b25d 100644
 --- a/samba.if
 +++ b/samba.if
 @@ -1,8 +1,12 @@
@@ -89168,8 +89212,27 @@ index 50d07fb..59296a2 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -507,8 +624,7 @@ interface(`samba_signal_smbd',`
+@@ -505,10 +622,26 @@ interface(`samba_signal_smbd',`
+ 	allow $1 smbd_t:process signal;
+ ')
  
++######################################
++## <summary>
++##	Allow domain to signull samba
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`samba_signull_smbd',`
++	gen_require(`
++		type smbd_t;
++	')
++	allow $1 smbd_t:process signull;
++')
++
  ########################################
  ## <summary>
 -##	Do not audit attempts to inherit
@@ -89178,7 +89241,7 @@ index 50d07fb..59296a2 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -526,7 +642,7 @@ interface(`samba_dontaudit_use_fds',`
+@@ -526,7 +659,7 @@ interface(`samba_dontaudit_use_fds',`
  
  ########################################
  ## <summary>
@@ -89187,7 +89250,7 @@ index 50d07fb..59296a2 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -544,7 +660,7 @@ interface(`samba_write_smbmount_tcp_sockets',`
+@@ -544,7 +677,7 @@ interface(`samba_write_smbmount_tcp_sockets',`
  
  ########################################
  ## <summary>
@@ -89196,7 +89259,7 @@ index 50d07fb..59296a2 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -560,49 +676,47 @@ interface(`samba_rw_smbmount_tcp_sockets',`
+@@ -560,49 +693,47 @@ interface(`samba_rw_smbmount_tcp_sockets',`
  	allow $1 smbmount_t:tcp_socket { read write };
  ')
  
@@ -89265,7 +89328,7 @@ index 50d07fb..59296a2 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -618,16 +732,16 @@ interface(`samba_getattr_winbind_exec',`
+@@ -618,16 +749,16 @@ interface(`samba_getattr_winbind_exec',`
  #
  interface(`samba_run_winbind_helper',`
  	gen_require(`
@@ -89285,7 +89348,7 @@ index 50d07fb..59296a2 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -637,17 +751,16 @@ interface(`samba_run_winbind_helper',`
+@@ -637,17 +768,16 @@ interface(`samba_run_winbind_helper',`
  #
  interface(`samba_read_winbind_pid',`
  	gen_require(`
@@ -89307,7 +89370,7 @@ index 50d07fb..59296a2 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -657,17 +770,61 @@ interface(`samba_read_winbind_pid',`
+@@ -657,17 +787,61 @@ interface(`samba_read_winbind_pid',`
  #
  interface(`samba_stream_connect_winbind',`
  	gen_require(`
@@ -89374,7 +89437,7 @@ index 50d07fb..59296a2 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -676,7 +833,7 @@ interface(`samba_stream_connect_winbind',`
+@@ -676,7 +850,7 @@ interface(`samba_stream_connect_winbind',`
  ## </param>
  ## <param name="role">
  ##	<summary>
@@ -89383,15 +89446,17 @@ index 50d07fb..59296a2 100644
  ##	</summary>
  ## </param>
  ## <rolecap/>
-@@ -689,11 +846,29 @@ interface(`samba_admin',`
+@@ -689,11 +863,29 @@ interface(`samba_admin',`
  		type samba_etc_t, samba_share_t, samba_initrc_exec_t;
  		type swat_var_run_t, swat_tmp_t, winbind_log_t;
  		type winbind_var_run_t, winbind_tmp_t;
 -		type smbd_keytab_t;
 +		type smbd_keytab_t, samba_unit_file_t;
 +        type samba_unconfined_script_t;
-+	')
-+
+ 	')
+ 
+-	allow $1 { nmbd_t smbd_t }:process { ptrace signal_perms };
+-	ps_process_pattern($1, { nmbd_t smbd_t })
 +	allow $1 smbd_t:process signal_perms;
 +	ps_process_pattern($1, smbd_t)
 +
@@ -89399,10 +89464,8 @@ index 50d07fb..59296a2 100644
 +		allow $1 smbd_t:process ptrace;
 +		allow $1 nmbd_t:process ptrace;
 +		allow $1 samba_unconfined_script_t:process ptrace;
- 	')
- 
--	allow $1 { nmbd_t smbd_t }:process { ptrace signal_perms };
--	ps_process_pattern($1, { nmbd_t smbd_t })
++	')
++
 +	allow $1 nmbd_t:process signal_perms;
 +	ps_process_pattern($1, nmbd_t)
 +
@@ -89416,7 +89479,7 @@ index 50d07fb..59296a2 100644
  
  	init_labeled_script_domtrans($1, samba_initrc_exec_t)
  	domain_system_change_exemption($1)
-@@ -703,23 +878,34 @@ interface(`samba_admin',`
+@@ -703,23 +895,34 @@ interface(`samba_admin',`
  	files_list_etc($1)
  	admin_pattern($1, { samba_etc_t smbd_keytab_t })
  
@@ -89427,11 +89490,11 @@ index 50d07fb..59296a2 100644
 -	files_list_var($1)
 -	admin_pattern($1, { samba_share_t samba_var_t samba_secrets_t })
 +	admin_pattern($1, samba_secrets_t)
++
++	admin_pattern($1, samba_share_t)
  
 -	files_list_spool($1)
 -	admin_pattern($1, smbd_spool_t)
-+	admin_pattern($1, samba_share_t)
-+
 +	admin_pattern($1, samba_var_t)
 +	files_list_var($1)
  
