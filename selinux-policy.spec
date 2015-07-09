@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 134%{?dist}
+Release: 135%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,30 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Thu Jul 09 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-135
+- Update mta_filetrans_named_content() interface to cover more db files.
+- Revert "Remove ftpd_use_passive_mode boolean. It does not make sense due to ephemeral port handling."
+- Allow pcp domains to connect to own process using unix_stream_socket.
+- Typo in abrt.te
+- Allow  abrt-upload-watch service to dbus chat with ABRT daemon and fsetid capability to allow run reporter-upload correctly.
+- Add nagios_domtrans_unconfined_plugins() interface.
+- Add nagios_domtrans_unconfined_plugins() interface.
+- Add new boolean - httpd_run_ipa to allow httpd process to run IPA helper and dbus chat with oddjob.
+- Add support for oddjob based helper in FreeIPA. BZ(1238165)
+- Allow dnssec_trigger_t create dnssec_trigger_tmp_t files in /var/tmp/ BZ(1240840)
+- Allow ctdb_t sending signull to smbd_t, for checking if smbd process exists. BZ(1224879)
+- Fix cron_system_cronjob_use_shares boolean to call fs interfaces which contain only entrypoint permission.
+- Add cron_system_cronjob_use_shares boolean to allow system cronjob to be executed from shares - NFS, CIFS, FUSE. It requires "entrypoint" permissios on nfs_t, cifs_t and fusefs_t SELinux types.
+- nrpe needs kill capability to make gluster moniterd nodes working.
+- Revert "Dontaudit ctbd_t sending signull to smbd_t."
+- Fix interface corenet_tcp_connect_postgresql_port_port(prosody_t)
+- Allow prosody connect to postgresql port.
+- Fix logging_syslogd_run_nagios_plugins calling in logging.te
+- Add logging_syslogd_run_nagios_plugins boolean for rsyslog to allow transition to nagios unconfined plugins.
+- Add support for oddjob based helper in FreeIPA. BZ(1238165)
+- Add new interfaces
+- Add fs_fusefs_entry_type() interface.
+
 * Thu Jul 02 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-134
 - Allow ctdb_t sending signull to smbd_t, for checking if smbd process exists. BZ(1224879)
 - Fix cron_system_cronjob_use_shares boolean to call fs interfaces which contain only entrypoint permission.
