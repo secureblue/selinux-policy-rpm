@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 135%{?dist}
+Release: 136%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,29 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Tue Jul 14 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-136
+- Add samba_unconfined_script_exec_t to samba_admin header.
+- Add jabberd_lock_t label to jabberd_admin header.
+- Add rpm_var_run_t label to rpm_admin header.
+- Make all interfaces related to openshift_cache_t as deprecated.
+- Remove non exits nfsd_ro_t label.
+- Label /usr/afs/ as afs_files_t Allow afs_bosserver_t create afs_config_t and afs_dbdir_t dirs under afs_files_t Allow afs_bosserver_t read kerberos config
+- Fix *_admin intefaces where body is not consistent with header.
+- Allow networkmanager read rfcomm port.
+- Fix nova_domain_template interface, Fix typo bugs in nova policy
+- Create nova sublabels.
+- Merge all nova_* labels under one nova_t.
+- Add cobbler_var_lib_t to "/var/lib/tftpboot/boot(/.*)?"
+- Allow dnssec_trigger_t relabelfrom dnssec_trigger_var_run_t files.
+- Fix label openstack-nova-metadata-api binary file
+- Allow nova_t to bind on geneve tcp port, and all udp ports
+- Label swift-container-reconciler binary as swift_t.
+- Allow glusterd to execute showmount in the showmount domain.
+- Allow NetworkManager_t send signull to dnssec_trigger_t.
+- Add support for openstack-nova-* packages.
+- Allow audisp-remote searching devpts.
+- Label 6080 tcp port as geneve
+
 * Thu Jul 09 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-135
 - Update mta_filetrans_named_content() interface to cover more db files.
 - Revert "Remove ftpd_use_passive_mode boolean. It does not make sense due to ephemeral port handling."
