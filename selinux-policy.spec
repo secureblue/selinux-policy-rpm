@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 137%{?dist}.1
+Release: 138%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -273,7 +273,6 @@ fi;
 
 %define postInstall() \
 . %{_sysconfdir}/selinux/config; \
-(cd /etc/selinux/%2/modules/active/modules; rm -f vbetool.pp l2tpd.pp shutdown.pp amavis.pp clamav.pp gnomeclock.pp nsplugin.pp matahari.pp xfs.pp kudzu.pp kerneloops.pp execmem.pp openoffice.pp ada.pp tzdata.pp hal.pp hotplug.pp howl.pp java.pp mono.pp moilscanner.pp gamin.pp audio_entropy.pp audioentropy.pp iscsid.pp polkit_auth.pp polkit.pp rtkit_daemon.pp ModemManager.pp telepathysofiasip.pp ethereal.pp passanger.pp qemu.pp qpidd.pp pyzor.pp razor.pp pki-selinux.pp phpfpm.pp consoletype.pp ctdbd.pp fcoemon.pp isnsd.pp rgmanager.pp corosync.pp aisexec.pp pacemaker.pp pkcsslotd.pp smstools.pp ) \
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
    /usr/sbin/semodule -B -n -s %2; \
@@ -475,17 +474,22 @@ exit 0
 restorecon -R -p /home
 exit 0
 
-%triggerpostun targeted -- selinux-policy-targeted < 3.13.1-137.1
-set -x
+%triggerpostun targeted -- selinux-policy-targeted < 3.13.1-138
+CR=$'\n'
+INPUT=""
 for i in `find /etc/selinux/targeted/modules/active/modules/ -name \*disabled`; do
-	module=`basename $i | sed 's/.pp.disabled//'`
-	if [ -d /var/lib/selinux/targeted/active/modules/100/$module ]; then
-		semodule -d $module
-	fi
+    module=`basename $i | sed 's/.pp.disabled//'`
+    if [ -d /var/lib/selinux/targeted/active/modules/100/$module ]; then
+        touch /var/lib/selinux/targeted/active/modules/disabled/$p
+    fi
 done
 for i in `find /etc/selinux/targeted/modules/active/modules/ -name \*.pp`; do
-	semodule -i $i
+    INPUT="${INPUT}${CR}module -N -a $i"
 done
+echo "$INPUT" | %{_sbindir}/semanage import -S targeted -N
+if /usr/sbin/selinuxenabled ; then
+        /usr/sbin/load_policy
+fi
 exit 0
 
 %files targeted -f %{buildroot}/%{_usr}/share/selinux/targeted/nonbasemodules.lst
@@ -518,18 +522,21 @@ SELinux Reference policy minimum base module.
 %pre minimum
 %preInstall minimum
 if [ $1 -ne 1 ]; then
-   /usr/sbin/semodule -s minimum -l 2>/dev/null | awk '{ if ($3 != "Disabled") print $1; }' > /usr/share/selinux/minimum/instmodules.lst
+    /usr/sbin/semodule -s minimum --list-modules=full | awk '{ if ($4 != "disabled") print $2; }' > /usr/share/selinux/minimum/instmodules.lst
 fi
 
 %post minimum
 contribpackages=`cat /usr/share/selinux/minimum/modules-contrib.lst`
 basepackages=`cat /usr/share/selinux/minimum/modules-base.lst`
+if [ ! -d /var/lib/selinux/minimum/active/modules/disabled ]; then
+    mkdir /var/lib/selinux/minimum/active/modules/disabled
+fi
 if [ $1 -eq 1 ]; then
 for p in $contribpackages; do
-	touch /etc/selinux/minimum/modules/active/modules/$p.disabled
+    touch /var/lib/selinux/minimum/active/modules/disabled/$p
 done
-for p in $basepackages apache.pp dbus.pp inetd.pp kerberos.pp mta.pp nis.pp; do
-	rm -f /etc/selinux/minimum/modules/active/modules/$p.disabled
+for p in $basepackages apache dbus inetd kerberos mta nis; do
+    rm -f /var/lib/selinux/minimum/active/modules/disabled/$p
 done
 /usr/sbin/semanage import -S minimum -f - << __eof
 login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
@@ -540,13 +547,34 @@ __eof
 else
 instpackages=`cat /usr/share/selinux/minimum/instmodules.lst`
 for p in $contribpackages; do
-    touch /etc/selinux/minimum/modules/active/modules/$p.disabled
+    touch /var/lib/selinux/minimum/active/modules/disabled/$p
 done
 for p in $instpackages apache dbus inetd kerberos mta nis; do
-    rm -f /etc/selinux/minimum/modules/active/modules/$p.pp.disabled
+    rm -f /var/lib/selinux/minimum/active/modules/disabled/$p
 done
 /usr/sbin/semodule -B -s minimum
 %relabel minimum
+fi
+exit 0
+
+%triggerpostun minimum -- selinux-policy-minimum < 3.13.1-138
+if [ `ls -A /var/lib/selinux/minimum/active/modules/disabled/` ]; then
+    rm -f /var/lib/selinux/minimum/active/modules/disabled/*
+fi
+CR=$'\n'
+INPUT=""
+for i in `find /etc/selinux/minimum/modules/active/modules/ -name \*disabled`; do
+    module=`basename $i | sed 's/.pp.disabled//'`
+    if [ -d /var/lib/selinux/minimum/active/modules/100/$module ]; then
+        touch /var/lib/selinux/minimum/active/modules/disabled/$p
+    fi
+done
+for i in `find /etc/selinux/minimum/modules/active/modules/ -name \*.pp`; do
+    INPUT="${INPUT}${CR}module -N -a $i"
+done
+echo "$INPUT" | %{_sbindir}/semanage import -S minimum -N
+if /usr/sbin/selinuxenabled ; then
+    /usr/sbin/load_policy
 fi
 exit 0
 
@@ -584,6 +612,26 @@ SELinux Reference policy mls base module.
 
 %post mls 
 %postInstall $1 mls
+
+
+%triggerpostun mls -- selinux-policy-mls < 3.13.1-138
+CR=$'\n'
+INPUT=""
+for i in `find /etc/selinux/mls/modules/active/modules/ -name \*disabled`; do
+    module=`basename $i | sed 's/.pp.disabled//'`
+    if [ -d /var/lib/selinux/mls/active/modules/100/$module ]; then
+        touch /var/lib/selinux/mls/active/modules/disabled/$p
+    fi
+done
+for i in `find /etc/selinux/mls/modules/active/modules/ -name \*.pp`; do
+    INPUT="${INPUT}${CR}module -N -a $i"
+done
+echo "$INPUT" | %{_sbindir}/semanage import -S mls -N
+if /usr/sbin/selinuxenabled ; then
+        /usr/sbin/load_policy
+fi
+exit 0
+
 
 %files mls -f %{buildroot}/%{_usr}/share/selinux/mls/nonbasemodules.lst
 %defattr(-,root,root,-)
