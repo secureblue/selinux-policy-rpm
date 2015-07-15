@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 136%{?dist}
+Release: 137%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -602,6 +602,10 @@ SELinux Reference policy mls base module.
 %endif
 
 %changelog
+* Wed Jul 15 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-137
+- inn daemon should create innd_log_t objects in var_log_t instead of innd_var_run_t
+- Fix rule definitions for httpd_can_sendmail boolean. We need to distinguish between base and contrib.
+
 * Tue Jul 14 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-136
 - Add samba_unconfined_script_exec_t to samba_admin header.
 - Add jabberd_lock_t label to jabberd_admin header.
