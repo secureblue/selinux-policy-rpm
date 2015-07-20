@@ -645,6 +645,38 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 20 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-138
+- Add fixes for selinux-policy packages to reflect the latest changes related to policy module store migration.
+- Prepare selinux-policy package for SELinux store migration
+- gnome_dontaudit_search_config() needs to be a part of optinal_policy in pegasus.te
+- Allow glusterd to manage nfsd and rpcd services.
+- Allow smbd_t and nmbd_t to manage winbind_var_run_t files/socktes/dirs.
+- Add samba_manage_winbind_pid() interface
+- Allow networkmanager to  communicate via dbus with systemd_hostanmed.
+- Allow stream connect logrotate to prosody.
+- Add prosody_stream_connect() interface.
+-  httpd should be able to send signal/signull to httpd_suexec_t, instead of httpd_suexec_exec_t.
+- Allow prosody to create own tmp files/dirs.
+- Allow keepalived request kernel load module
+- kadmind should not read generic files in /usr
+- Allow kadmind_t access to /etc/krb5.keytab
+- Add more fixes to kerberos.te
+- Add labeling for /var/tmp/kadmin_0 and /var/tmp/kiprop_0
+- Add lsmd_t to nsswitch_domain.
+- Allow pegasus_openlmi_storage_t create mdadm.conf.anacbak file in /etc.
+- Add fixes to pegasus_openlmi_domain
+- Allow Glance Scrubber to connect to commplex_main port
+- Allow RabbitMQ to connect to amqp port
+- Allow isnsd read access on the file /proc/net/unix
+- Allow qpidd access to /proc/<pid>/net/psched
+- Allow openshift_initrc_t to communicate with firewalld over dbus.
+- Allow ctdbd_t send signull to samba_unconfined_net_t.
+- Add samba_signull_unconfined_net()
+- Add samba_signull_winbind()
+- Revert "Add interfaces winbind_signull(), samba_unconfined_net_signull()."
+- Fix ctdb policy
+- Label /var/db/ as system_db_t.
+
 * Wed Jul 15 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-137
 - inn daemon should create innd_log_t objects in var_log_t instead of innd_var_run_t
 - Fix rule definitions for httpd_can_sendmail boolean. We need to distinguish between base and contrib.
