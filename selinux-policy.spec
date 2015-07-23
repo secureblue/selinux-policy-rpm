@@ -121,8 +121,6 @@ SELinux policy development and man page package
 
 %files devel
 %defattr(-,root,root,-)
-%{_mandir}/man*/*
-%{_mandir}/ru/*/*
 %dir %{_usr}/share/selinux/devel
 %dir %{_usr}/share/selinux/devel/include
 %{_usr}/share/selinux/devel/include/*
@@ -148,6 +146,8 @@ SELinux policy documentation package
 
 %files doc
 %defattr(-,root,root,-)
+%{_mandir}/man*/*
+%{_mandir}/ru/*/*
 %doc %{_usr}/share/doc/%{name}
 %attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
 
