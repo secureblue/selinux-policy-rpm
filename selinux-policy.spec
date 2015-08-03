@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 138%{?dist}
+Release: 139%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,44 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 04 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-139
+- Add header for sslh.if file
+- Fix sslh_admin() interface
+- Clean up sslh.if
+- Fix typo in pdns.if
+- Allow qpid to create lnk_files in qpid_var_lib_t.
+- Allow httpd_suexec_t to read and write Apache stream sockets
+- Merge pull request #21 from hogarthj/rawhide-contrib
+- Allow virt_qemu_ga_t domtrans to passwd_t.
+- use read and manage files_patterns and the description for the admin interface
+- Merge pull request #17 from rubenk/pdns-policy
+- Allow redis to read kernel parameters.
+- Label /etc/rt dir as httpd_sys_rw_content_t BZ(#1185500)
+- Allow hostapd to manage sock file in /va/run/hostapd Add fsetid cap. for hostapd Add net_raw cap. for hostpad BZ(#1237343)
+- Allow bumblebee to seng kill signal to xserver
+- glusterd call pcs utility which calls find for cib.* files and runs pstree under glusterd. Dontaudit access to security files and update gluster boolean to reflect these changes.
+- Allow drbd to get attributes from filesystems.
+- Allow drbd to read configuration options used when loading modules.
+- fix the description for the write config files, add systemd administration support and fix a missing gen_require in the admin interface
+- Added Booleans: pcp_read_generic_logs.
+- Allow pcp_pmcd daemon to read postfix config files. Allow pcp_pmcd daemon to search postfix spool dirs.
+- Allow glusterd to communicate with cluster domains over stream socket.
+- fix copy paste error with writing the admin interface
+- fix up the regex in sslh.fc, add sslh_admin() interface
+- adding selinux policy files for sslh
+- Remove diplicate sftpd_write_ssh_home boolean rule.
+- Revert "Allow smbd_t and nmbd_t to manage winbind_var_run_t files/socktes/dirs."
+- gnome_dontaudit_search_config() needs to be a part of optinal_policy in pegasus.te
+- Allow glusterd to manage nfsd and rpcd services.
+- Add kdbus.pp policy to allow access /sys/fs/kdbus. It needs to go with own module because this is workaround for now to avoid SELinux in enforcing mode.
+- kdbusfs should not be accessible for now by default for shipped policies. It should be moved to kdbus.pp
+- kdbusfs should not be accessible for now.
+- Add support for /sys/fs/kdbus and allow login_pgm domain to access it.
+- Allow sysadm to administrate ldap environment and allow to bind ldap port to allow to setup an LDAP server (389ds).
+- Label /usr/sbin/chpasswd as passwd_exec_t.
+- Allow audisp_remote_t to read/write user domain pty.
+- Allow audisp_remote_t to start power unit files domain to allow halt system.
+
 * Mon Jul 20 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-138
 - Add fixes for selinux-policy packages to reflect the latest changes related to policy module store migration.
 - Prepare selinux-policy package for SELinux store migration
