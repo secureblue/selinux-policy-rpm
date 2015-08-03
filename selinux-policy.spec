@@ -476,10 +476,6 @@ exit 0
 rm -f /etc/selinux/*/modules/active/modules/sandbox.pp.disabled 2>/dev/null
 exit 0
 
-%triggerpostun targeted -- selinux-policy-targeted < 3.12.1-75
-restorecon -R -p /home
-exit 0
-
 %triggerpostun targeted -- selinux-policy-targeted < 3.13.1-138
 CR=$'\n'
 INPUT=""
