@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 139%{?dist}
+Release: 140%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,14 @@ exit 0
 %endif
 
 %changelog
+* Wed Aug 05 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-140
+- firewalld needs to relabel own config files. BZ(#1250537)
+- Allow rhsmcertd to send signull to unconfined_service
+- Allow lsm_plugin_t to rw raw_fixed_disk.
+- Allow lsm_plugin_t to read sysfs, read hwdata, rw to scsi_generic_device
+- Allow openhpid to use libsnmp_bc plugin (allow read snmp lib files).
+
+
 * Tue Aug 04 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-139
 - Add header for sslh.if file
 - Fix sslh_admin() interface
