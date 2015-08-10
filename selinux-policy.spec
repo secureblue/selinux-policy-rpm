@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 140%{?dist}
+Release: 141%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,37 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 10 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-141
+- Allow chronyd to execute mkdir command.
+- Allow chronyd_t to read dhcpc state.
+- Label /usr/libexec/chrony-helper as chronyd_exec_t
+- Allow openhpid liboa_soap plugin to read resolv.conf file.
+- Allow openhpid liboa_soap plugin to read generic certs.
+- Allow openhpid use libwatchdog plugin. (Allow openhpid_t rw watchdog device)
+- Allow logrotate to reload services.
+- Allow apcupsd_t to read /sys/devices
+- Allow kpropd to connect to kropd tcp port.
+- Allow lsmd also setuid capability. Some commands need to executed under root privs. Other commands are executed under unprivileged user.
+- Allow snapperd to pass data (one way only) via pipe negotiated over dbus.
+- Add snapper_read_inherited_pipe() interface.
+- Add missing ";" in kerberos.te
+- Add support for /var/lib/kdcproxy and label it as krb5kdc_var_lib_t. It needs to be accessible by useradd_t.
+- Add support for /etc/sanlock which is writable by sanlock daemon.
+- Allow mdadm to access /dev/random and add support to create own files/dirs as mdadm_tmpfs_t.
+-  Add labels for /dev/memory_bandwith and /dev/vhci. Thanks ssekidde
+- Add interface to read/write watchdog device.
+- Add transition rule for iptables_var_lib_t
+- Allow useradd add homedir located in /var/lib/kdcproxy in ipa-server RPM scriplet.
+- Revert "Allow grubby to manage and create /run/blkid with correct labeling"
+- Allow grubby to manage and create /run/blkid with correct labeling
+- Add fstools_filetrans_named_content_fsadm() and call it for named_filetrans_domain domains. We need to be sure that /run/blkid is created with correct labeling.
+- arping running as netutils_t needs to access /etc/ld.so.cache in MLS.
+- Allow sysadm to execute systemd-sysctl in the sysadm_t domain. It is needed for ifup command in MLS mode.
+- Add systemd_exec_sysctl() and systemd_domtrans_sysctl() interfaces.
+- Allow udev, lvm and fsadm to access systemd-cat in /var/tmp/dracut if 'dracut -fv' is executed in MLS.
+- Allow admin SELinu users to communicate with kernel_t. It is needed to access /run/systemd/journal/stdout if 'dracut -vf' is executed. We allow it for other SELinux users.
+- depmod runs as insmod_t and it needs to manage user tmp files which was allowed for depmod_t. It is needed by dracut command for SELinux restrictive policy (confined users, MLS).
+
 * Wed Aug 05 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-140
 - firewalld needs to relabel own config files. BZ(#1250537)
 - Allow rhsmcertd to send signull to unconfined_service
