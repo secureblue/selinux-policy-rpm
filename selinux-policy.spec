@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 141%{?dist}
+Release: 142%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,40 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 18 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-142
+- Allow samba_net_t to manage samba_var_t sock files.
+- Allow httpd daemon to manage httpd_var_lib_t lnk_files.
+- Allow collectd stream connect to pdns.(BZ #1191044)
+- Add interface pdns_stream_connect()
+- Merge branch 'rawhide-contrib' of github.com:fedora-selinux/selinux-policy into rawhide-contrib
+- Allow chronyd exec systemctl
+- Merge pull request #30 from vmojzis/rawhide-contrib
+- Hsqldb policy upgrade -Allow sock_file management
+- Add inteface chronyd_signal Allow timemaster_t send generic signals to chronyd_t.
+- Hsqldb policy upgrade.  -Disallow hsqldb_tmp_t link_file management
+- Hsqldb policy upgrade:  -Remove tmp link_file transition  -Add policy summary  -Remove redundant parameter for "hsqldb_admin" interface
+- Label /var/run/chrony-helper dir as chronyd_var_run_t.
+- Allow lldpad_t to getattr tmpfs_t. Label /dev/shm/lldpad.* as lldapd_tmpfs_t
+- Fix label on /var/tmp/kiprop_0
+- Add mountpoint dontaudit access check in rhsmcertd policy.
+- Allow pcp_domain to manage pcp_var_lib_t lnk_files.
+- Allow chronyd to execute mkdir command.
+- Allow chronyd_t to read dhcpc state.
+- Label /usr/libexec/chrony-helper as chronyd_exec_t
+- Allow openhpid liboa_soap plugin to read resolv.conf file.
+- Allow openhpid liboa_soap plugin to read generic certs.
+- Allow openhpid use libwatchdog plugin. (Allow openhpid_t rw watchdog device)
+- Allow logrotate to reload services.
+- Allow apcupsd_t to read /sys/devices
+- Allow kpropd to connect to kropd tcp port.
+- Allow systemd_networkd to send logs to syslog.
+- Added interface fs_dontaudit_write_configfs_dirs
+- Allow audisp client to read system state.
+- Label /var/run/xtables.lock as iptables_var_run_t.
+-  Add labels for /dev/memory_bandwith and /dev/vhci. Thanks ssekidde
+- Add interface to read/write watchdog device.
+- Add transition rule for iptables_var_lib_t
+
 * Mon Aug 10 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-141
 - Allow chronyd to execute mkdir command.
 - Allow chronyd_t to read dhcpc state.
