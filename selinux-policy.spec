@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 142%{?dist}
+Release: 143%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,35 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 21 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-143
+- Add ipmievd policy creaed by vmojzis@redhat.com
+- Call kernel_load_module(vmware_host_t) to satisfy neverallow assertion for sys_moudle in MLS where unconfined is disabled.
+- Allow NetworkManager to write audit log messages
+- Add new policy for ipmievd (ipmitool).
+- mirrormanager needs to be application domain and cron_system_entry needs to be called in optional block.
+- Allow sandbox domain to be also /dev/mem writer
+- Fix neverallow assertion for sys_module capability for openvswitch.
+- kernel_load_module() needs to be called out of boolean for svirt_lxc_net_t.
+- Fix neverallow assertion for sys_module capability.
+- Add more attributes for sandbox domains to avoid neverallow assertion issues.  
+- Add neverallow asserition fixes related to storage.
+- Allow exec pidof under hypervkvp domain. Allow hypervkvp daemon create connection to the system DBUS
+- Allow openhpid_t to read system state.
+- Add temporary fixes for sandbox related to #1103622. It allows to run everything under one sandbox type.
+- Added labels for files provided by rh-nginx18 collection
+- Dontaudit block_suspend capability for ipa_helper_t, this is kernel bug. Allow ipa_helper_t capability net_admin. Allow ipa_helper_t to list /tmp. Allow ipa_helper_t to read rpm db.
+- Allow rhsmcertd exec rhsmcertd_var_run_t files and rhsmcerd_tmp_t files. This rules are in hide_broken_sympthons until we find better solution.
+- Update files_manage_all_files to contain auth_reader_shadow and auth_writer_shadow tosatisfy neverallow assertions.
+- Update files_relabel_all_files() interface to contain auth_relabelto_shadow() interface to satisfy neverallow assertion.
+- seunshare domains needs to have set_curr_context attribute to resolve neverallow assertion issues.
+- Add dev_raw_memory_writer() interface
+- Add auth_reader_shadow() and auth_writer_shadow() interfaces
+- Add dev_raw_memory_reader() interface.
+- Add storage_rw_inherited_scsi_generic() interface.
+- Update files_relabel_non_auth_files() to contain seutil_relabelto_bin_policy() to make neverallow assertion working.
+- Update kernel_read_all_proc() interface to contain can_dump_kernel and can_receive_kernel_messages attributes  to fix neverallow violated issue for proc_kcore_t and proc_kmsg_t.
+- Update storage_rw_inherited_fixed_disk_dev() interface to use proper attributes to fix neverallow violated issues caused by neverallow check during build process.
+
 * Tue Aug 18 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-142
 - Allow samba_net_t to manage samba_var_t sock files.
 - Allow httpd daemon to manage httpd_var_lib_t lnk_files.
