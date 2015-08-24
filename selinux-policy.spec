@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 143%{?dist}
+Release: 144%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,15 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 24 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-144
+- Allow pmlogger to create pmlogger.primary.socket link file. BZ(1254080)
+- Allow NetworkManager send sigkill to dnssec-trigger. BZ(1251764)
+- Add interface dnssec_trigger_sigkill
+- Allow smsd use usb ttys. BZ(#1250536)
+- Fix postfix_spool_maildrop_t,postfix_spool_flush_t contexts in postfix.fc file.
+- Revert default_range change in targeted policy
+- Allow systemd-sysctl cap. sys_ptrace  BZ(1253926)
+
 * Fri Aug 21 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-143
 - Add ipmievd policy creaed by vmojzis@redhat.com
 - Call kernel_load_module(vmware_host_t) to satisfy neverallow assertion for sys_moudle in MLS where unconfined is disabled.
