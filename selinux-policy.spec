@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 144%{?dist}
+Release: 145%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,15 @@ exit 0
 %endif
 
 %changelog
+* Sun Aug 30 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-145
+- Allow watchdog execute fenced python script.
+- Added inferface watchdog_unconfined_exec_read_lnk_files()
+- Allow pmweb daemon to exec shell. BZ(1256127)
+- Allow pmweb daemon to read system state. BZ(#1256128)
+- Add file transition that cermonger can create /run/ipa/renewal.lock with label ipa_var_run_t.
+- Revert "Revert default_range change in targeted policy"
+- Allow dhcpc_t domain transition to chronyd_t
+
 * Mon Aug 24 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-144
 - Allow pmlogger to create pmlogger.primary.socket link file. BZ(1254080)
 - Allow NetworkManager send sigkill to dnssec-trigger. BZ(1251764)

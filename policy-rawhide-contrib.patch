@@ -11947,7 +11947,7 @@ index 008f8ef..144c074 100644
  	admin_pattern($1, certmonger_var_run_t)
  ')
 diff --git a/certmonger.te b/certmonger.te
-index 550b287..fc5b086 100644
+index 550b287..943af3b 100644
 --- a/certmonger.te
 +++ b/certmonger.te
 @@ -18,6 +18,9 @@ files_type(certmonger_var_lib_t)
@@ -12036,7 +12036,7 @@ index 550b287..fc5b086 100644
  ')
  
  optional_policy(`
-@@ -92,11 +109,57 @@ optional_policy(`
+@@ -92,11 +109,58 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -12050,6 +12050,7 @@ index 550b287..fc5b086 100644
 +optional_policy(`
 +    ipa_manage_lib(certmonger_t)
 +    ipa_manage_pid_files(certmonger_t)
++    ipa_filetrans_pid(certmonger_t,"renewal.lock")
 +')
 +
 +optional_policy(`
@@ -37061,10 +37062,10 @@ index 0000000..db194ec
 +
 diff --git a/ipa.if b/ipa.if
 new file mode 100644
-index 0000000..71bde7d
+index 0000000..904782d
 --- /dev/null
 +++ b/ipa.if
-@@ -0,0 +1,155 @@
+@@ -0,0 +1,178 @@
 +## <summary>Policy for IPA services.</summary>
 +
 +########################################
@@ -37220,6 +37221,29 @@ index 0000000..71bde7d
 +    manage_dirs_pattern($1, ipa_var_run_t, ipa_var_run_t)
 +')
 +
++########################################
++## <summary>
++##	Create specified objects in generic
++##	pid directories with the ipa pid file type.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <param name="name" optional="true">
++##	<summary>
++##	The name of the object being created.
++##	</summary>
++## </param>
++#
++interface(`ipa_filetrans_pid',`
++	gen_require(`
++		type ipa_var_run_t;
++	')
++
++	files_pid_filetrans($1, ipa_var_run_t, file, $2)
++')
 diff --git a/ipa.te b/ipa.te
 new file mode 100644
 index 0000000..694c092
@@ -66020,10 +66044,10 @@ index 0000000..80246e6
 +
 diff --git a/pcp.te b/pcp.te
 new file mode 100644
-index 0000000..684f7b0
+index 0000000..5b5747f
 --- /dev/null
 +++ b/pcp.te
-@@ -0,0 +1,260 @@
+@@ -0,0 +1,264 @@
 +policy_module(pcp, 1.0.0)
 +
 +########################################
@@ -66216,6 +66240,10 @@ index 0000000..684f7b0
 +#
 +# pcp_pmwebd local  policy
 +#
++
++kernel_read_system_state(pcp_pmwebd_t)
++
++corecmd_exec_shell(pcp_pmwebd_t)
 +
 +corenet_tcp_bind_generic_node(pcp_pmwebd_t)
 +
@@ -83184,10 +83212,10 @@ index c8a1e16..2d409bf 100644
  	xen_domtrans_xm(rgmanager_t)
  ')
 diff --git a/rhcs.fc b/rhcs.fc
-index 47de2d6..eb08783 100644
+index 47de2d6..9ecda11 100644
 --- a/rhcs.fc
 +++ b/rhcs.fc
-@@ -1,31 +1,93 @@
+@@ -1,31 +1,95 @@
 -/etc/rc\.d/init\.d/dlm	--	gen_context(system_u:object_r:dlm_controld_initrc_exec_t,s0)
 -/etc/rc\.d/init\.d/foghorn	--	gen_context(system_u:object_r:foghorn_initrc_exec_t,s0)
 +/usr/sbin/dlm_controld			--	gen_context(system_u:object_r:dlm_controld_exec_t,s0)
@@ -83276,6 +83304,8 @@ index 47de2d6..eb08783 100644
 +/usr/sbin/pacemaker_remoted --  gen_context(system_u:object_r:cluster_exec_t,s0)
 +
 +/usr/share/corosync/corosync    --  gen_context(system_u:object_r:cluster_exec_t,s0)
++
++/usr/share/cluster/fence_scsi_check.*   --  gen_context(system_u:object_r:fenced_exec_t,s0)
 +
 +/usr/lib/pcsd/pcsd          --  gen_context(system_u:object_r:cluster_exec_t,s0)
 +
@@ -84152,7 +84182,7 @@ index c8bdea2..29df561 100644
 +    allow $1 cluster_unit_file_t:service all_service_perms;
  ')
 diff --git a/rhcs.te b/rhcs.te
-index 6cf79c4..448a0c5 100644
+index 6cf79c4..9d253c3 100644
 --- a/rhcs.te
 +++ b/rhcs.te
 @@ -20,6 +20,35 @@ gen_tunable(fenced_can_network_connect, false)
@@ -84582,24 +84612,26 @@ index 6cf79c4..448a0c5 100644
  ')
  
  optional_policy(`
-@@ -190,12 +484,13 @@ optional_policy(`
+@@ -190,12 +484,17 @@ optional_policy(`
  ')
  
  optional_policy(`
 -	gnome_read_generic_home_content(fenced_t)
-+	lvm_domtrans(fenced_t)
-+	lvm_read_config(fenced_t)
-+    lvm_stream_connect(fenced_t)
++    libs_exec_ldconfig(fenced_t)
  ')
  
  optional_policy(`
--	lvm_domtrans(fenced_t)
--	lvm_read_config(fenced_t)
+ 	lvm_domtrans(fenced_t)
+ 	lvm_read_config(fenced_t)
++    lvm_stream_connect(fenced_t)
++')
++
++optional_policy(`
 +    sanlock_domtrans(fenced_t)
  ')
  
  optional_policy(`
-@@ -203,6 +498,13 @@ optional_policy(`
+@@ -203,6 +502,17 @@ optional_policy(`
  	snmp_manage_var_lib_dirs(fenced_t)
  ')
  
@@ -84610,10 +84642,14 @@ index 6cf79c4..448a0c5 100644
 +	virt_stream_connect(fenced_t)
 +')
 +
++optional_policy(`
++	watchdog_unconfined_exec_read_lnk_files(fenced_t)
++')
++
  #######################################
  #
  # foghorn local policy
-@@ -221,16 +523,18 @@ corenet_sendrecv_agentx_client_packets(foghorn_t)
+@@ -221,16 +531,18 @@ corenet_sendrecv_agentx_client_packets(foghorn_t)
  corenet_tcp_connect_agentx_port(foghorn_t)
  corenet_tcp_sendrecv_agentx_port(foghorn_t)
  
@@ -84634,7 +84670,7 @@ index 6cf79c4..448a0c5 100644
  	snmp_stream_connect(foghorn_t)
  ')
  
-@@ -247,16 +551,20 @@ stream_connect_pattern(gfs_controld_t, dlm_controld_var_run_t, dlm_controld_var_
+@@ -247,16 +559,20 @@ stream_connect_pattern(gfs_controld_t, dlm_controld_var_run_t, dlm_controld_var_
  stream_connect_pattern(gfs_controld_t, fenced_var_run_t, fenced_var_run_t, fenced_t)
  stream_connect_pattern(gfs_controld_t, groupd_var_run_t, groupd_var_run_t, groupd_t)
  
@@ -84656,7 +84692,7 @@ index 6cf79c4..448a0c5 100644
  optional_policy(`
  	lvm_exec(gfs_controld_t)
  	dev_rw_lvm_control(gfs_controld_t)
-@@ -275,10 +583,57 @@ domtrans_pattern(groupd_t, fenced_exec_t, fenced_t)
+@@ -275,10 +591,57 @@ domtrans_pattern(groupd_t, fenced_exec_t, fenced_t)
  
  dev_list_sysfs(groupd_t)
  
@@ -84716,7 +84752,7 @@ index 6cf79c4..448a0c5 100644
  ######################################
  #
  # qdiskd local policy
-@@ -292,7 +647,6 @@ manage_dirs_pattern(qdiskd_t, qdiskd_var_lib_t, qdiskd_var_lib_t)
+@@ -292,7 +655,6 @@ manage_dirs_pattern(qdiskd_t, qdiskd_var_lib_t, qdiskd_var_lib_t)
  manage_sock_files_pattern(qdiskd_t, qdiskd_var_lib_t, qdiskd_var_lib_t)
  files_var_lib_filetrans(qdiskd_t, qdiskd_var_lib_t, { file dir sock_file })
  
@@ -84724,7 +84760,7 @@ index 6cf79c4..448a0c5 100644
  kernel_read_software_raid_state(qdiskd_t)
  kernel_getattr_core_if(qdiskd_t)
  
-@@ -321,6 +675,8 @@ storage_raw_write_fixed_disk(qdiskd_t)
+@@ -321,6 +683,8 @@ storage_raw_write_fixed_disk(qdiskd_t)
  
  auth_use_nsswitch(qdiskd_t)
  
@@ -112151,11 +112187,37 @@ index eecd0e0..8df2e8c 100644
  /var/log/watchdog.*	gen_context(system_u:object_r:watchdog_log_t,s0)
  
  /var/run/watchdog\.pid	--	gen_context(system_u:object_r:watchdog_var_run_t,s0)
+diff --git a/watchdog.if b/watchdog.if
+index 6461a77..146852e 100644
+--- a/watchdog.if
++++ b/watchdog.if
+@@ -37,3 +37,21 @@ interface(`watchdog_admin',`
+ 	files_search_pids($1)
+ 	admin_pattern($1, watchdog_var_run_t)
+ ')
++
++#######################################
++## <summary>
++##  Allow read watchdog_unconfined_t lnk files.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`watchdog_unconfined_exec_read_lnk_files',`
++	gen_require(`
++		type watchdog_unconfined_exec_t;
++	')
++
++	allow $1 watchdog_unconfined_exec_t:lnk_file read_lnk_file_perms;
++')
 diff --git a/watchdog.te b/watchdog.te
-index 3548317..a6d1675 100644
+index 3548317..fc3da17 100644
 --- a/watchdog.te
 +++ b/watchdog.te
-@@ -12,29 +12,41 @@ init_daemon_domain(watchdog_t, watchdog_exec_t)
+@@ -12,34 +12,47 @@ init_daemon_domain(watchdog_t, watchdog_exec_t)
  type watchdog_initrc_exec_t;
  init_script_file(watchdog_initrc_exec_t)
  
@@ -112183,12 +112245,12 @@ index 3548317..a6d1675 100644
  allow watchdog_t self:fifo_file rw_fifo_file_perms;
  allow watchdog_t self:tcp_socket { accept listen };
 +allow watchdog_t self:rawip_socket create_socket_perms;
-+
-+manage_files_pattern(watchdog_t, watchdog_cache_t, watchdog_cache_t)
-+manage_dirs_pattern(watchdog_t, watchdog_cache_t, watchdog_cache_t)
  
 -allow watchdog_t watchdog_log_t:file { append_file_perms create_file_perms setattr_file_perms };
 -logging_log_filetrans(watchdog_t, watchdog_log_t, file)
++manage_files_pattern(watchdog_t, watchdog_cache_t, watchdog_cache_t)
++manage_dirs_pattern(watchdog_t, watchdog_cache_t, watchdog_cache_t)
++
 +manage_files_pattern(watchdog_t,watchdog_log_t,watchdog_log_t)
 +manage_dirs_pattern(watchdog_t,watchdog_log_t,watchdog_log_t)
 +logging_log_filetrans(watchdog_t, watchdog_log_t,{dir file})
@@ -112200,7 +112262,13 @@ index 3548317..a6d1675 100644
  kernel_read_system_state(watchdog_t)
  kernel_read_kernel_sysctls(watchdog_t)
  kernel_unmount_proc(watchdog_t)
-@@ -63,7 +75,6 @@ domain_signull_all_domains(watchdog_t)
+ 
+ corecmd_exec_shell(watchdog_t)
++corecmd_exec_bin(watchdog_t)
+ 
+ corenet_all_recvfrom_unlabeled(watchdog_t)
+ corenet_all_recvfrom_netlabel(watchdog_t)
+@@ -63,7 +76,6 @@ domain_signull_all_domains(watchdog_t)
  domain_signal_all_domains(watchdog_t)
  domain_kill_all_domains(watchdog_t)
  
@@ -112208,7 +112276,7 @@ index 3548317..a6d1675 100644
  files_manage_etc_runtime_files(watchdog_t)
  files_etc_filetrans_etc_runtime(watchdog_t, file)
  
-@@ -72,17 +83,20 @@ fs_getattr_all_fs(watchdog_t)
+@@ -72,17 +84,20 @@ fs_getattr_all_fs(watchdog_t)
  fs_search_auto_mountpoints(watchdog_t)
  
  auth_append_login_records(watchdog_t)
@@ -112231,10 +112299,24 @@ index 3548317..a6d1675 100644
  	mta_send_mail(watchdog_t)
  ')
  
-@@ -97,3 +111,28 @@ optional_policy(`
+@@ -91,9 +106,42 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++    rhcs_domtrans_fenced(watchdog_t)
++')
++
++optional_policy(`
+ 	seutil_sigchld_newrole(watchdog_t)
+ ')
+ 
  optional_policy(`
  	udev_read_db(watchdog_t)
  ')
++
++optional_policy(`
++	watchdog_unconfined_exec_read_lnk_files(watchdog_t)
++')
 +
 +########################################
 +#
