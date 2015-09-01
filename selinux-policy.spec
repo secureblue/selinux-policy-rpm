@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 145%{?dist}
+Release: 146%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,19 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 01 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-146
+- Allow passenger to getattr filesystem xattr
+- Revert "Allow pegasus_openlmi_storage_t create mdadm.conf.anacbak file in /etc."
+- Label mdadm.conf.anackbak as mdadm_conf_t file.
+- Allow dnssec-ttrigger to relabel net_conf_t files. BZ(1251765)
+- Allow dnssec-trigger to exec pidof. BZ(#1256737)
+- Allow blueman to create own tmp files in /tmp. (#1234647)
+- Add new audit_read access vector in capability2 class
+- Add "binder" security class and access vectors
+- Update netlink socket classes.
+- Allow getty to read network state. BZ(#1255177)
+- Remove labeling for /var/db/.*\.db as etc_t to label db files as system_db_t.
+
 * Sun Aug 30 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-145
 - Allow watchdog execute fenced python script.
 - Added inferface watchdog_unconfined_exec_read_lnk_files()
