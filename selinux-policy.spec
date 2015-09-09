@@ -499,12 +499,13 @@ exit 0
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/sysadm_u 
 %fileList targeted
-# %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/permissivedomains
 %{_usr}/share/selinux/targeted/base.lst
 %{_usr}/share/selinux/targeted/modules-base.lst
 %{_usr}/share/selinux/targeted/modules-contrib.lst
 %{_usr}/share/selinux/targeted/nonbasemodules.lst
 %{_sharedstatedir}/selinux/targeted/active/commit_num
+%{_sharedstatedir}/selinux/targeted/active/users_extra
+%{_sharedstatedir}/selinux/targeted/active/homedir_template
 %endif
 
 %if %{BUILD_MINIMUM}
@@ -585,12 +586,13 @@ exit 0
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/sysadm_u 
 %fileList minimum
-# %verify(not md5 size mtime) %{_sysconfdir}/selinux/minimum/modules/active/modules/permissivedomains.pp
 %{_usr}/share/selinux/minimum/base.lst
 %{_usr}/share/selinux/minimum/modules-base.lst
 %{_usr}/share/selinux/minimum/modules-contrib.lst
 %{_usr}/share/selinux/minimum/nonbasemodules.lst
 %{_sharedstatedir}/selinux/minimum/active/commit_num
+%{_sharedstatedir}/selinux/minimum/active/homedir_template
+%{_sharedstatedir}/selinux/minimum/active/users_extra
 %endif
 
 %if %{BUILD_MLS}
@@ -644,6 +646,8 @@ exit 0
 %{_usr}/share/selinux/mls/modules-contrib.lst
 %{_usr}/share/selinux/mls/nonbasemodules.lst
 %{_sharedstatedir}/selinux/mls/active/commit_num
+%{_sharedstatedir}/selinux/mls/active/users_extra
+%{_sharedstatedir}/selinux/mls/active/homedir_template
 %endif
 
 %changelog
