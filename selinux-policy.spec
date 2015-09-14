@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 146%{?dist}
+Release: 147%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -651,6 +651,23 @@ exit 0
 %endif
 
 %changelog
+* Mon Sep 14 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-147
+- named wants to access /proc/sys/net/ipv4/ip_local_port_range to get ehphemeral range. BZ(#1260272)
+- Allow user screen domains to list directorires in HOMEDIR wit user_home_t labeling.
+- Dontaudit fenced search gnome config
+- Allow teamd running as NetworkManager_t to access netlink_generic_socket to allow multiple network interfaces to be teamed together. BZ(#1259180)
+- Fix for watchdog_unconfined_exec_read_lnk_files, Add also dir search perms in watchdog_unconfined_exec_t.
+- Sanlock policy update. #1255307   - New sub-domain for sanlk-reset daemon
+- Fix labeling for fence_scsi_check script
+- Allow openhpid to read system state Aloow openhpid to connect to tcp http port.
+- Allow openhpid to read snmp var lib files.
+- Allow openvswitch_t domains read kernel dependencies due to openvswitch run modprobe
+- Fix regexp in chronyd.fc file
+- systemd-logind needs to be able to act with /usr/lib/systemd/system/poweroff.target to allow shutdown system. BZ(#1260175)
+- Allow systemd-udevd to access netlink_route_socket to change names for network interfaces without unconfined.pp module. It affects also MLS.
+- Allow unconfined_t domains to create /var/run/xtables.lock with iptables_var_run_t
+- Remove bin_t label for /usr/share/cluster/fence_scsi_check\.pl
+
 * Tue Sep 01 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-146
 - Allow passenger to getattr filesystem xattr
 - Revert "Allow pegasus_openlmi_storage_t create mdadm.conf.anacbak file in /etc."
