@@ -51,7 +51,7 @@ Source23: users-targeted
 Source25: users-minimum
 Source26: file_contexts.subs_dist
 Source27: selinux-policy.conf
-Source28: permissivedomains.pp
+Source28: permissivedomains.cil
 Source29: serefpolicy-contrib-%{version}.tgz
 Source30: booleans.subs_dist
 Source33: manpages_html.tgz
@@ -180,6 +180,7 @@ install -m0644 selinux_config/file_contexts.subs_dist %{buildroot}%{_sysconfdir}
 install -m0644 selinux_config/setrans-%1.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
 install -m0644 selinux_config/customizable_types %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local \
+touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local.bin \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/file_contexts.homedirs.bin \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/file_contexts.bin \
 cp %{SOURCE30} %{buildroot}%{_sysconfdir}/selinux/%1 \
@@ -227,6 +228,7 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.bin \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs* \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local \
+%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local.bin \
 # %ghost %{_sysconfdir}/selinux/%1/contexts/files/*.bin \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
 %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs_dist \
@@ -342,10 +344,13 @@ make clean
 %if %{BUILD_TARGETED}
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
-cp %{SOURCE28} %{buildroot}/%{_usr}/share/selinux/targeted
+cp %{SOURCE28} %{buildroot}/
 %makeCmds targeted mcs n allow
 %makeModulesConf targeted base contrib
 %installCmds targeted mcs n allow
+# install permissivedomains.cil
+semodule -p %{buildroot} -X 100 -i %{buildroot}/permissivedomains.cil
+rm -rf %{buildroot}/permissivedomains.cil
 # recreate sandbox.pp
 rm -rf %{buildroot}%{_sharedstatedir}/selinux/targeted/active/modules/100/sandbox
 make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} MLS_CATS=1024 MCS_CATS=1024 sandbox.pp
@@ -358,7 +363,6 @@ mv sandbox.pp %{buildroot}/usr/share/selinux/packages/sandbox.pp
 # Build minimum policy
 # Commented out because only minimum ref policy currently builds
 mkdir -p %{buildroot}%{_usr}/share/selinux/minimum
-cp %{SOURCE28} %{buildroot}/%{_usr}/share/selinux/minimum
 %makeCmds minimum mcs n allow
 %makeModulesConf targeted base contrib
 %installCmds minimum mcs n allow
@@ -499,6 +503,7 @@ exit 0
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/sysadm_u 
 %fileList targeted
+%verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/permissivedomains
 %{_usr}/share/selinux/targeted/base.lst
 %{_usr}/share/selinux/targeted/modules-base.lst
 %{_usr}/share/selinux/targeted/modules-contrib.lst
