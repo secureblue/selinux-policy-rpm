@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 147%{?dist}
+Release: 148%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -656,6 +656,37 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 22 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-148
+- Update config.tgz to reflect changes in default context for SELinux users related to pam_selinux.so which is now used in systemd-users.
+- Added support for permissive domains
+- Allow rpcbind_t domain to change file owner and group
+- rpm-ostree has a daemon mode now and need to speak to polkit/logind for authorization. BZ(#1264988)
+- Allow dnssec-trigger to send generic signal to Network-Manager. BZ(#1242578)
+- Allow smbcontrol to create a socket in /var/samba which uses for a communication with smbd, nmbd and winbind.
+- Revert "Add apache_read_pid_files() interface"
+- Allow dirsrv-admin read httpd pid files.
+- Add apache_read_pid_files() interface
+- Add label for dirsrv-admin unit file.
+- Allow qpid daemon to connect on amqp tcp port.
+- Allow dirsrvadmin-script read /etc/passwd file Allow dirsrvadmin-script exec systemctl
+- Add labels for afs binaries: dafileserver, davolserver, salvageserver, dasalvager
+- Add lsmd_plugin_t sys_admin capability, Allow lsmd_plugin_t getattr from sysfs filesystem.
+- Allow rhsmcertd_t send signull to unconfined_service_t domains.
+- Revert "Allow pcp to read docker lib files."
+- Label /usr/libexec/dbus-1/dbus-daemon-launch-helper  as dbusd_exec_t to have systemd dbus services running in the correct domain instead of unconfined_service_t if unconfined.pp module is enabled. BZ(#1262993)
+- Allow pcp to read docker lib files.
+- Revert "init_t needs to be login_pgm domain because of systemd-users + pam_selinux.so"
+- Add login_userdomain attribute also for unconfined_t.
+- Add userdom_login_userdomain() interface.
+- Label /etc/ipa/nssdb dir as cert_t
+- init_t needs to be login_pgm domain because of systemd-users + pam_selinux.so
+- Add interface unconfined_server_signull() to allow domains send signull to unconfined_service_t
+- Call userdom_transition_login_userdomain() instead of userdom_transition() in init.te related to pam_selinux.so+systemd-users.
+- Add userdom_transition_login_userdomain() interface
+- Allow user domains with login_userdomain to have entrypoint access on init_exec. It is needed by pam_selinux.so call in systemd-users. BZ(#1263350)
+- Add init_entrypoint_exec() interface.
+- Allow init_t to have transition allow rule for userdomain if pam_selinux.so is used in /etc/pam.d/systemd-user. It ensures that systemd user sessions will run with correct userdomain types instead of init_t. BZ(#1263350)
+
 * Mon Sep 14 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-147
 - named wants to access /proc/sys/net/ipv4/ip_local_port_range to get ehphemeral range. BZ(#1260272)
 - Allow user screen domains to list directorires in HOMEDIR wit user_home_t labeling.
