@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 148%{?dist}
+Release: 149%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -656,6 +656,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 29 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-149
+- Add few rules related to new policy for pkcs11proxyd
+- Added new policy for pkcs11proxyd daemon
+- We need to require sandbox_web_type attribute in sandbox_x_domain_template().
+- Dontaudit abrt_t to rw lvm_lock_t dir.
+- Allow abrt_d domain to write to kernel msg device.
+- Add interface lvm_dontaudit_rw_lock_dir()
+- Merge pull request #35 from lkundrak/lr-libreswan
+
 * Tue Sep 22 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-148
 - Update config.tgz to reflect changes in default context for SELinux users related to pam_selinux.so which is now used in systemd-users.
 - Added support for permissive domains
