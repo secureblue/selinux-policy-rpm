@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 149%{?dist}
+Release: 150%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -656,6 +656,20 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 02 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-150
+- Allow acpid to attempt to connect to the Linux kernel via generic netlink socket.
+- Clean up pkcs11proxyd policy.
+- We need to require sandbox_web_type attribute in sandbox_x_domain_template().
+- Revert "depmod is a symlink to insmod so it runs as insmod_t. It causes that dep kernel modules files are not created with the correct labeling modules_dep_t. This fix adds filenamtrans rules for insmod_t."
+- depmod is a symlink to insmod so it runs as insmod_t. It causes that dep kernel modules files are not created with the correct labeling modules_dep_t. This fix adds filenamtrans rules for insmod_t.
+- Update files_read_kernel_modules() to contain modutils_read_module_deps() calling because module deps labeling has been updated and it allows to avoid regressions.
+- Update modules_filetrans_named_content() interface to cover more modules.* files.
+- New policy for systemd-machined. #1255305
+- In Rawhide/F24, we added pam_selinux.so support for systemd-users to have user sessions running under correct SELinux labeling. It also supports another new feature with systemd+dbus and we have sessions dbuses running with the correct labeling - unconfined_dbus_t for example.
+- Allow systemd-logind read access to efivarfs - Linux Kernel configuration options for UEFI systems (UEFI Runtime Variables). #1244973, #1267207 (partial solution)
+- Merge pull request #42 from vmojzis/rawhide-base
+- Add interface to allow reading files in efivarfs - contains Linux Kernel configuration options for UEFI systems (UEFI Runtime Variables)
+
 * Tue Sep 29 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-149
 - Add few rules related to new policy for pkcs11proxyd
 - Added new policy for pkcs11proxyd daemon
