@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 150%{?dist}
+Release: 151%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -656,6 +656,12 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 02 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-151
+- Update modules_filetrans_named_content() to make sure we don't get modules_dep labeling by filename transitions.
+- Remove /usr/lib/modules/[^/]+/modules\..+ labeling
+- Add modutils_read_module_deps_files() which is called from files_read_kernel_modules() for module deps which are still labeled as modules_dep_t.
+- Remove modules_dep_t labeling for kernel module deps. depmod is a symlink to kmod which is labeled as insmod_exec_t which handles modules_object_t and there is no transition to modules_dep_t. Also some of these module deps are placed by cpio during install/update of kernel package.
+
 * Fri Oct 02 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-150
 - Allow acpid to attempt to connect to the Linux kernel via generic netlink socket.
 - Clean up pkcs11proxyd policy.
