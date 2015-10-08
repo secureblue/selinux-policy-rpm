@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 151%{?dist}
+Release: 152%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -656,6 +656,17 @@ exit 0
 %endif
 
 %changelog
+* Thu Oct 08 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-152
+- Allow pcp_pmlogger to read system state. BZ(1258699)
+- Allow cupsd to connect on socket. BZ(1258089)
+- Allow named to bind on ephemeral ports. BZ(#1259766)
+- Allow iscsid create netlink iscsid sockets.
+- We need allow connect to xserver for all sandbox_x domain because we have one type for all sandbox processes.
+- Allow NetworkManager_t and policykit_t read access to systemd-machined pid files. #1255305
+- Add missing labeling for /usr/libexec/abrt-hook-ccpp as a part of #1245477 and #1242467 bugs.
+- Allow search dirs in sysfs types in kernel_read_security_state.
+- Fix kernel_read_security_state interface that source domain of this interface can search sysctl_fs_t dirs.
+
 * Fri Oct 02 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-151
 - Update modules_filetrans_named_content() to make sure we don't get modules_dep labeling by filename transitions.
 - Remove /usr/lib/modules/[^/]+/modules\..+ labeling
