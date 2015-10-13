@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 152%{?dist}
+Release: 153%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -656,6 +656,24 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 13 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-153
+- Allow abrt_t to read sysctl_net_t files. BZ(#1194280)
+- Merge branch 'rawhide-contrib' of github.com:fedora-selinux/selinux-policy into rawhide-contrib
+- Add abrt_stub interface.
+- Add support for new mock location - /usr/libexec/mock/mock. BZ(#1270972)
+- Allow usbmuxd to access /run/udev/data/+usb:*. BZ(#1269633)
+- Allow qemu-bridge-helper to read /dev/random and /dev/urandom. BZ(#1267217)
+- Allow sssd_t to manage samba var files/dirs to SSSD's GPO support which is enabled against an Active Directory domain. BZ(#1225200).
+- Add samba_manage_var_dirs() interface.
+- Allow pcp_pmlogger to exec bin_t BZ(#1258698)
+- Allow spamd to read system network state. BZ(1260234)
+- Allow fcoemon to create netlink scsitransport sockets BZ(#1260882)
+- Allow networkmanager to create networkmanager_var_lib_t files. BZ(1270201)
+- Allow systemd-networkd to read XEN state for Xen hypervisor. BZ(#1269916)
+- Add fs_read_xenfs_files() interface.
+- Allow systemd_machined_t to send dbus msgs to all users and read/write /dev/ptmx to make 'machinectl shell' working correctly.
+- Allow systemd running as init_t to override the default context for key creation. BZ(#1267850)
+
 * Thu Oct 08 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-152
 - Allow pcp_pmlogger to read system state. BZ(1258699)
 - Allow cupsd to connect on socket. BZ(1258089)
