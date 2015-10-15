@@ -56,6 +56,7 @@ Source29: serefpolicy-contrib-%{version}.tgz
 Source30: booleans.subs_dist
 Source33: manpages_html.tgz
 Source34: manpages_man.tgz
+Source35: docker-selinux.tgz
 Url: http://github.com/TresysTechnology/refpolicy/wiki
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
@@ -308,6 +309,7 @@ done
 %prep 
 %setup -n serefpolicy-contrib-%{version} -q -b 29
 %patch1 -p1
+tar -xf %{SOURCE35}
 contrib_path=`pwd`
 %setup -n serefpolicy-%{version} -q
 %patch -p1
