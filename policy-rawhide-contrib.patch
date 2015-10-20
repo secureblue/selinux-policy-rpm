@@ -3430,10 +3430,10 @@ index 0000000..6183b21
 +	spamassassin_read_pid_files(antivirus_domain)
 +')
 diff --git a/apache.fc b/apache.fc
-index 7caefc3..77e26bf 100644
+index 7caefc3..b25689b 100644
 --- a/apache.fc
 +++ b/apache.fc
-@@ -1,162 +1,210 @@
+@@ -1,162 +1,211 @@
 -HOME_DIR/((www)|(web)|(public_html))(/.+)?	gen_context(system_u:object_r:httpd_user_content_t,s0)
 -HOME_DIR/((www)|(web)|(public_html))/cgi-bin(/.+)?	gen_context(system_u:object_r:httpd_user_script_exec_t,s0)
 +HOME_DIR/((www)|(web)|(public_html))(/.+)? gen_context(system_u:object_r:httpd_user_content_t,s0)
@@ -3596,6 +3596,7 @@ index 7caefc3..77e26bf 100644
 +/usr/share/glpi(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
 +/usr/share/htdig(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
 +/usr/share/icecast(/.*)?		gen_context(system_u:object_r:httpd_sys_content_t,s0)
++/usr/share/nginx/html(/.*)?		gen_context(system_u:object_r:httpd_sys_content_t,s0)
 +/usr/share/ntop/html(/.*)?		gen_context(system_u:object_r:httpd_sys_content_t,s0)
 +/usr/share/openca/htdocs(/.*)?		gen_context(system_u:object_r:httpd_sys_content_t,s0)
 +/usr/share/selinux-policy[^/]*/html(/.*)? gen_context(system_u:object_r:httpd_sys_content_t,s0)
@@ -13058,10 +13059,10 @@ index 0000000..5955ff0
 +	gnome_dontaudit_write_config_files(chrome_sandbox_nacl_t)
 +')
 diff --git a/chronyd.fc b/chronyd.fc
-index 4e4143e..36ee9e1 100644
+index 4e4143e..f03dba0 100644
 --- a/chronyd.fc
 +++ b/chronyd.fc
-@@ -1,13 +1,17 @@
+@@ -1,13 +1,18 @@
 -/etc/chrony\.keys	--	gen_context(system_u:object_r:chronyd_keys_t,s0)
 +/etc/chrony\.keys.*	--	gen_context(system_u:object_r:chronyd_keys_t,s0)
  
@@ -13077,6 +13078,7 @@ index 4e4143e..36ee9e1 100644
  /var/log/chrony(/.*)?	gen_context(system_u:object_r:chronyd_var_log_t,s0)
  
 -/var/run/chronyd(/.*)	gen_context(system_u:object_r:chronyd_var_run_t,s0)
++/var/run/chrony(/.*)?	gen_context(system_u:object_r:chronyd_var_run_t,s0)
 +/var/run/chronyd(/.*)?	gen_context(system_u:object_r:chronyd_var_run_t,s0)
 +/var/run/chrony-helper(/.*)?	gen_context(system_u:object_r:chronyd_var_run_t,s0)
  /var/run/chronyd\.pid	--	gen_context(system_u:object_r:chronyd_var_run_t,s0)
@@ -13277,7 +13279,7 @@ index 32e8265..c5a2913 100644
 +	allow $1 chronyd_unit_file_t:service all_service_perms;
  ')
 diff --git a/chronyd.te b/chronyd.te
-index e5b621c..337110c 100644
+index e5b621c..135100a 100644
 --- a/chronyd.te
 +++ b/chronyd.te
 @@ -18,6 +18,9 @@ files_type(chronyd_keys_t)
@@ -13296,11 +13298,11 @@ index e5b621c..337110c 100644
  
 -allow chronyd_t self:capability { dac_override ipc_lock setuid setgid sys_resource sys_time };
 -allow chronyd_t self:process { getcap setcap setrlimit signal };
-+allow chronyd_t self:capability { dac_override ipc_lock fsetid setuid setgid sys_nice sys_resource sys_time };
++allow chronyd_t self:capability { dac_override ipc_lock fsetid setuid setgid sys_nice sys_resource sys_time chown };
 +allow chronyd_t self:process { getsched setsched getcap setcap setrlimit signal };
  allow chronyd_t self:shm create_shm_perms;
 +allow chronyd_t self:udp_socket create_socket_perms;
-+allow chronyd_t self:unix_dgram_socket create_socket_perms;
++allow chronyd_t self:unix_dgram_socket { create_socket_perms sendto };
  allow chronyd_t self:fifo_file rw_fifo_file_perms;
  
 +allow chronyd_t chronyd_keys_t:file append_file_perms;
@@ -13308,7 +13310,7 @@ index e5b621c..337110c 100644
  allow chronyd_t chronyd_keys_t:file read_file_perms;
  
  manage_dirs_pattern(chronyd_t, chronyd_tmpfs_t, chronyd_tmpfs_t)
-@@ -76,18 +83,36 @@ corenet_sendrecv_chronyd_server_packets(chronyd_t)
+@@ -76,18 +83,38 @@ corenet_sendrecv_chronyd_server_packets(chronyd_t)
  corenet_udp_bind_chronyd_port(chronyd_t)
  corenet_udp_sendrecv_chronyd_port(chronyd_t)
  
@@ -13332,6 +13334,8 @@ index e5b621c..337110c 100644
 +sysnet_read_dhcpc_state(chronyd_t)
 +
 +systemd_exec_systemctl(chronyd_t)
++
++userdom_dgram_send(chronyd_t)
  
  optional_policy(`
  	gpsd_rw_shm(chronyd_t)
@@ -54701,10 +54705,10 @@ index 687af38..5381f1b 100644
 +	mysql_stream_connect($1)
  ')
 diff --git a/mysql.te b/mysql.te
-index 7584bbe..c2babeb 100644
+index 7584bbe..dbbdb99 100644
 --- a/mysql.te
 +++ b/mysql.te
-@@ -6,20 +6,15 @@ policy_module(mysql, 1.14.1)
+@@ -6,20 +6,22 @@ policy_module(mysql, 1.14.1)
  #
  
  ## <desc>
@@ -54719,7 +54723,13 @@ index 7584bbe..c2babeb 100644
  gen_tunable(mysql_connect_any, false)
  
 -attribute_role mysqld_roles;
--
++## <desc>
++## <p>
++## Allow mysqld to connect to http port
++## </p>
++## </desc>
++gen_tunable(mysql_connect_http, false)
+ 
  type mysqld_t;
  type mysqld_exec_t;
  init_daemon_domain(mysqld_t, mysqld_exec_t)
@@ -54728,7 +54738,7 @@ index 7584bbe..c2babeb 100644
  
  type mysqld_safe_t;
  type mysqld_safe_exec_t;
-@@ -27,7 +22,6 @@ init_daemon_domain(mysqld_safe_t, mysqld_safe_exec_t)
+@@ -27,7 +29,6 @@ init_daemon_domain(mysqld_safe_t, mysqld_safe_exec_t)
  
  type mysqld_var_run_t;
  files_pid_file(mysqld_var_run_t)
@@ -54736,7 +54746,7 @@ index 7584bbe..c2babeb 100644
  
  type mysqld_db_t;
  files_type(mysqld_db_t)
-@@ -38,6 +32,9 @@ files_config_file(mysqld_etc_t)
+@@ -38,6 +39,9 @@ files_config_file(mysqld_etc_t)
  type mysqld_home_t;
  userdom_user_home_content(mysqld_home_t)
  
@@ -54746,7 +54756,7 @@ index 7584bbe..c2babeb 100644
  type mysqld_initrc_exec_t;
  init_script_file(mysqld_initrc_exec_t)
  
-@@ -62,28 +59,29 @@ files_pid_file(mysqlmanagerd_var_run_t)
+@@ -62,28 +66,29 @@ files_pid_file(mysqlmanagerd_var_run_t)
  # Local policy
  #
  
@@ -54783,7 +54793,7 @@ index 7584bbe..c2babeb 100644
  logging_log_filetrans(mysqld_t, mysqld_log_t, { dir file })
  
  manage_dirs_pattern(mysqld_t, mysqld_tmp_t, mysqld_tmp_t)
-@@ -95,50 +93,60 @@ manage_files_pattern(mysqld_t, mysqld_var_run_t, mysqld_var_run_t)
+@@ -95,50 +100,64 @@ manage_files_pattern(mysqld_t, mysqld_var_run_t, mysqld_var_run_t)
  manage_sock_files_pattern(mysqld_t, mysqld_var_run_t, mysqld_var_run_t)
  files_pid_filetrans(mysqld_t, mysqld_var_run_t, { dir file sock_file })
  
@@ -54859,10 +54869,14 @@ index 7584bbe..c2babeb 100644
  	corenet_tcp_connect_all_ports(mysqld_t)
 -	corenet_tcp_sendrecv_all_ports(mysqld_t)
 +	corenet_sendrecv_all_client_packets(mysqld_t)
++')
++
++tunable_policy(`mysql_connect_http',`
++	corenet_tcp_connect_http_port(mysqld_t)
  ')
  
  optional_policy(`
-@@ -146,6 +154,10 @@ optional_policy(`
+@@ -146,6 +165,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -54873,7 +54887,7 @@ index 7584bbe..c2babeb 100644
  	seutil_sigchld_newrole(mysqld_t)
  ')
  
-@@ -155,21 +167,18 @@ optional_policy(`
+@@ -155,21 +178,18 @@ optional_policy(`
  
  #######################################
  #
@@ -54900,7 +54914,7 @@ index 7584bbe..c2babeb 100644
  
  list_dirs_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
  manage_files_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
-@@ -177,9 +186,7 @@ manage_lnk_files_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
+@@ -177,9 +197,7 @@ manage_lnk_files_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
  logging_log_filetrans(mysqld_safe_t, mysqld_log_t, file)
  
  manage_files_pattern(mysqld_safe_t, mysqld_var_run_t, mysqld_var_run_t)
@@ -54911,7 +54925,7 @@ index 7584bbe..c2babeb 100644
  
  kernel_read_system_state(mysqld_safe_t)
  kernel_read_kernel_sysctls(mysqld_safe_t)
-@@ -187,21 +194,29 @@ kernel_read_kernel_sysctls(mysqld_safe_t)
+@@ -187,21 +205,29 @@ kernel_read_kernel_sysctls(mysqld_safe_t)
  corecmd_exec_bin(mysqld_safe_t)
  corecmd_exec_shell(mysqld_safe_t)
  
@@ -54927,9 +54941,9 @@ index 7584bbe..c2babeb 100644
 +files_dontaudit_access_check_root(mysqld_safe_t)
  files_dontaudit_search_all_mountpoints(mysqld_safe_t)
 +files_dontaudit_getattr_all_dirs(mysqld_safe_t)
- 
-+files_write_root_dirs(mysqld_safe_t)
 +
++files_write_root_dirs(mysqld_safe_t)
+ 
 +logging_log_filetrans(mysqld_safe_t, mysqld_log_t, file)
  logging_send_syslog_msg(mysqld_safe_t)
  
@@ -54947,7 +54961,7 @@ index 7584bbe..c2babeb 100644
  
  optional_policy(`
  	hostname_exec(mysqld_safe_t)
-@@ -209,7 +224,7 @@ optional_policy(`
+@@ -209,7 +235,7 @@ optional_policy(`
  
  ########################################
  #
@@ -54956,7 +54970,7 @@ index 7584bbe..c2babeb 100644
  #
  
  allow mysqlmanagerd_t self:capability { dac_override kill };
-@@ -218,11 +233,12 @@ allow mysqlmanagerd_t self:fifo_file rw_fifo_file_perms;
+@@ -218,11 +244,12 @@ allow mysqlmanagerd_t self:fifo_file rw_fifo_file_perms;
  allow mysqlmanagerd_t self:tcp_socket create_stream_socket_perms;
  allow mysqlmanagerd_t self:unix_stream_socket create_stream_socket_perms;
  
@@ -54974,7 +54988,7 @@ index 7584bbe..c2babeb 100644
  
  domtrans_pattern(mysqlmanagerd_t, mysqld_exec_t, mysqld_t)
  
-@@ -230,31 +246,20 @@ manage_files_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t)
+@@ -230,31 +257,20 @@ manage_files_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t)
  manage_sock_files_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t)
  filetrans_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t, { file sock_file })
  
@@ -91644,7 +91658,7 @@ index 50d07fb..e9569d2 100644
 +	allow $1 samba_unit_file_t:service all_service_perms;
  ')
 diff --git a/samba.te b/samba.te
-index 2b7c441..bf7a710 100644
+index 2b7c441..0232e85 100644
 --- a/samba.te
 +++ b/samba.te
 @@ -6,99 +6,86 @@ policy_module(samba, 1.16.3)
@@ -92769,7 +92783,7 @@ index 2b7c441..bf7a710 100644
  manage_lnk_files_pattern(winbind_t, samba_log_t, samba_log_t)
  
  manage_dirs_pattern(winbind_t, samba_var_t, samba_var_t)
-@@ -873,38 +962,41 @@ files_var_filetrans(winbind_t, samba_var_t, dir, "samba")
+@@ -873,38 +962,42 @@ files_var_filetrans(winbind_t, samba_var_t, dir, "samba")
  
  rw_files_pattern(winbind_t, smbd_tmp_t, smbd_tmp_t)
  
@@ -92802,6 +92816,7 @@ index 2b7c441..bf7a710 100644
  kernel_read_kernel_sysctls(winbind_t)
  kernel_read_system_state(winbind_t)
 +kernel_read_usermodehelper_state(winbind_t)
++kernel_signull(winbind_t)
  
  corecmd_exec_bin(winbind_t)
  
@@ -92822,7 +92837,7 @@ index 2b7c441..bf7a710 100644
  corenet_tcp_connect_smbd_port(winbind_t)
  corenet_tcp_connect_epmap_port(winbind_t)
  corenet_tcp_connect_all_unreserved_ports(winbind_t)
-@@ -912,38 +1004,52 @@ corenet_tcp_connect_all_unreserved_ports(winbind_t)
+@@ -912,38 +1005,52 @@ corenet_tcp_connect_all_unreserved_ports(winbind_t)
  dev_read_sysfs(winbind_t)
  dev_read_urand(winbind_t)
  
@@ -92881,7 +92896,7 @@ index 2b7c441..bf7a710 100644
  ')
  
  optional_policy(`
-@@ -959,31 +1065,36 @@ optional_policy(`
+@@ -959,31 +1066,36 @@ optional_policy(`
  # Winbind helper local policy
  #
  
@@ -92925,7 +92940,7 @@ index 2b7c441..bf7a710 100644
  
  optional_policy(`
  	apache_append_log(winbind_helper_t)
-@@ -997,25 +1108,38 @@ optional_policy(`
+@@ -997,25 +1109,38 @@ optional_policy(`
  
  ########################################
  #

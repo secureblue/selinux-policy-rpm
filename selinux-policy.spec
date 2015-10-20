@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 153%{?dist}
+Release: 154%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -656,6 +656,18 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 20 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-154
+- Allow winbindd to send signull to kernel. BZ(#1269193)
+- Merge branch 'rawhide-contrib-chrony' into rawhide-contrib
+- Fixes for chrony version 2.2 BZ(#1259636)
+  * Allow chrony chown capability
+  * Allow sendto dgram_sockets to itself and to unconfined_t domains.
+- Merge branch 'rawhide-contrib-chrony' into rawhide-contrib
+- Add boolean allowing mysqld to connect to http port. #1262125
+- Merge pull request #52 from 1dot75cm/rawhide-base
+- Allow systemd_hostnamed to read xenfs_t files. BZ(#1233877)
+- Fix attribute in corenetwork.if.in
+
 * Tue Oct 13 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-153
 - Allow abrt_t to read sysctl_net_t files. BZ(#1194280)
 - Merge branch 'rawhide-contrib' of github.com:fedora-selinux/selinux-policy into rawhide-contrib
