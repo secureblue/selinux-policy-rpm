@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 154%{?dist}
+Release: 155%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -658,6 +658,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 20 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-155
+- Build including docker selinux interfaces.
+
 * Tue Oct 20 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-154
 - Allow winbindd to send signull to kernel. BZ(#1269193)
 - Merge branch 'rawhide-contrib-chrony' into rawhide-contrib
