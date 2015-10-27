@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 155%{?dist}
+Release: 156%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -661,6 +661,21 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 27 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-156
+- Allow fail2ban-client to execute ldconfig. #1268715
+- Add interface virt_sandbox_domain()
+- Use mmap_file_perms instead of exec_file_perms in setroubleshoot policy to shave off the execute_no_trans permission. Based on a github communication with Dominick Grift.
+-all userdom_dontaudit_user_getattr_tmp_sockets instead() of usedom_dontaudit_user_getattr_tmp_sockets().
+- Rename usedom_dontaudit_user_getattr_tmp_sockets() to userdom_dontaudit_user_getattr_tmp_sockets().
+- Remove auth_login_pgm_domain(init_t) which has been added by accident.
+- init_t needs to able to change SELinux identity because it is used as login_pgm domain because of systemd-user and PAM. It allows security_compute_user() returns a list of possible context and then a correct default label is returned by "selinux.get_default_context(sel_user,fromcon)" defined in the policy user config files.
+- Add interface auth_use_nsswitch() to systemd_domain_template.
+- Revert "auth_use_nsswitch can be used with attribute systemd_domain."
+- auth_use_nsswitch can be used with attribute systemd_domain.
+- ipsec: fix stringSwan charon-nm
+- docker is communicating with systemd-machined
+- Add missing systemd_dbus_chat_machined, needed by docker
+
 * Tue Oct 20 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-155
 - Build including docker selinux interfaces.
 
