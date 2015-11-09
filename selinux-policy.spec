@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 156%{?dist}
+Release: 157%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -661,6 +661,11 @@ exit 0
 %endif
 
 %changelog
+* Mon Nov 09 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-157
+- The ABRT coredump handler has code to emulate default core file creation The handler runs in a separate process with abrt_dump_oops_t SELinux process type. abrt-hook-ccpp also saves the core dump file in the very same way as kernel does and a user can specify CWD location for a coredump. abrt-hook-ccpp has been made as a SELinux aware apps to create this coredumps with correct labeling and with this commit the policy rules have been updated to allow access all non security files on a system.
+- Since /dev/log is a symlink, we need to allow relabelto also symlink. This commit update logging_relabel_devlog_dev() interface to allow it.
+- systemd-user has pam_selinux support and needs to able to compute user security context if init_t is not unconfined domain.
+
 * Tue Oct 27 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-156
 - Allow fail2ban-client to execute ldconfig. #1268715
 - Add interface virt_sandbox_domain()
