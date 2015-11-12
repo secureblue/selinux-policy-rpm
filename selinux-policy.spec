@@ -495,6 +495,9 @@ done
 for i in `find /etc/selinux/targeted/modules/active/modules/ -name \*.pp`; do
     INPUT="${INPUT}${CR}module -N -a $i"
 done
+for i in $(find /etc/selinux/targeted/modules/active -name \*.local); do
+    cp $i /var/lib/selinux/targeted/active
+done
 echo "$INPUT" | %{_sbindir}/semanage import -S targeted -N
 if /usr/sbin/selinuxenabled ; then
         /usr/sbin/load_policy
