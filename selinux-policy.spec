@@ -524,7 +524,7 @@ exit 0
 Summary: SELinux minimum base policy
 Provides: selinux-policy-base = %{version}-%{release}
 Group: System Environment/Base
-Requires(post): policycoreutils-python >= %{POLICYCOREUTILSVER}
+Requires(post): policycoreutils-python-utils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 Requires: selinux-policy = %{version}-%{release}
