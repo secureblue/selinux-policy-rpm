@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 158%{?dist}
+Release: 159%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -664,6 +664,22 @@ exit 0
 %endif
 
 %changelog
+* Fri Nov 20 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-159
+- Allow antivirus_t to bind to all unreserved ports. Clamd binds to random unassigned port (by default in range 1024-2048)
+- Allow abrt-hook-ccpp to change SELinux user identity for created objects.
+- Allow abrt-hook-ccpp to get attributes of all processes because of core_pattern.
+- Allow setuid/setgid capabilities for abrt-hook-ccpp.
+- Add default labeling for /etc/Pegasus/cimserver_current.conf. It is a correct patch instead of the current /etc/Pegasus/pegasus_current.conf.
+- Allow fenced node dbus msg when using foghorn witch configured foghorn, snmpd, and snmptrapd.
+- cockpit has grown content in /var/run directory
+- Add support for /dev/mptctl device used to check RAID status.
+- Allow systemd-hostnamed to communicate with dhcp via dbus.
+- systemd-logind remove all IPC objects owned by a user on a logout. This covers also SysV memory. This change allows to destroy unpriviledged user SysV shared memory segments.
+- Add userdom_destroy_unpriv_user_shared_mem() interface.
+- Label /var/run/systemd/shutdown directory as systemd_logind_var_run_t to allow systemd-logind to access it if shutdown is invoked.
+- Access needed by systemd-machine to manage docker containers
+- Allow systemd-logind to read /run/utmp when shutdown is invoked.
+
 * Tue Nov 10 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-158
 - Merge pull request #48 from lkundrak/contrib-openfortivpn
 - unbound wants to use ephemeral ports as a default configuration. Allow to use also udp sockets.
