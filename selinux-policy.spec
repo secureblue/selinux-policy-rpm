@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 159%{?dist}
+Release: 160%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -664,6 +664,14 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 24 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-160
+- Allow apcupsd sending mails about battery state. BZ(1274018)
+- Allow pcp_pmcd_t domain transition to lvm_t. BZ(1277779)
+- Merge pull request #68 from rhatdan/rawhide-contrib
+- Allow antivirus_t to bind to all unreserved ports. Clamd binds to random unassigned port (by default in range 1024-2048). #1248785
+-  Allow systemd-networkd to bind dhcpd ports if DHCP=yes in *.network conf file. BZ(#1280092)
+- systemd-tmpfiles performs operations on System V IPC objects which requires sys_admin capability. BZ(#1279269)
+
 * Fri Nov 20 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-159
 - Allow antivirus_t to bind to all unreserved ports. Clamd binds to random unassigned port (by default in range 1024-2048)
 - Allow abrt-hook-ccpp to change SELinux user identity for created objects.
