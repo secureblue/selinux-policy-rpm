@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 160%{?dist}
+Release: 161%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -664,6 +664,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Nov 30 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-161
+- Set default value as true in boolean mozilla_plugin_can_network_connect. BZ(1286177)
+
 * Tue Nov 24 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-160
 - Allow apcupsd sending mails about battery state. BZ(1274018)
 - Allow pcp_pmcd_t domain transition to lvm_t. BZ(1277779)
