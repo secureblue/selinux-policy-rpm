@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 161%{?dist}
+Release: 162%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -664,6 +664,16 @@ exit 0
 %endif
 
 %changelog
+* Mon Dec 07 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-162
+- Label /usr/sbin/lvmlockd binary file as lvm_exec_t. BZ(1287739)
+- Adding support for dbus communication between systemd-networkd and systemd-hostnamed. BZ(1279182)
+- Update init policy to have userdom_noatsecure_login_userdomain() and userdom_sigchld_login_userdomain() called for init_t.
+- init_t domain should be running without unconfined_domain attribute.
+- Add a new SELinux policy for /usr/lib/systemd/systemd-rfkill.
+- Update userdom_transition_login_userdomain() to have "sigchld" and "noatsecure" permissions.
+- systemd needs to access /dev/rfkill on early boot.
+- Allow dspam to read /etc/passwd
+
 * Mon Nov 30 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-161
 - Set default value as true in boolean mozilla_plugin_can_network_connect. BZ(1286177)
 
