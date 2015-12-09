@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 162%{?dist}
+Release: 163%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -664,6 +664,10 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec 09 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-163
+- Allow whack executed by sysadm SELinux user to access /var/run/pluto/pluto.ctl. It fixes "ipsec auto --status" executed by sysadm_t.
+- Add ipsec_read_pid() interface
+
 * Mon Dec 07 2015 Miroslav Grepl <mgrepl@redhat.com> 3.13.1-162
 - Label /usr/sbin/lvmlockd binary file as lvm_exec_t. BZ(1287739)
 - Adding support for dbus communication between systemd-networkd and systemd-hostnamed. BZ(1279182)
