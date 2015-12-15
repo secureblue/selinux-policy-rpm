@@ -3166,10 +3166,10 @@ index 0000000..36251b9
 +')
 diff --git a/antivirus.te b/antivirus.te
 new file mode 100644
-index 0000000..12349f3
+index 0000000..d8b04b5
 --- /dev/null
 +++ b/antivirus.te
-@@ -0,0 +1,272 @@
+@@ -0,0 +1,273 @@
 +policy_module(antivirus, 1.0.0)
 +
 +########################################
@@ -3284,6 +3284,7 @@ index 0000000..12349f3
 +
 +corenet_all_recvfrom_netlabel(antivirus_t)
 +corenet_tcp_bind_all_unreserved_ports(antivirus_t)
++corenet_dontaudit_tcp_bind_all_reserved_ports(antivirus_t)
 +corenet_tcp_sendrecv_generic_if(antivirus_t)
 +corenet_udp_sendrecv_generic_if(antivirus_t)
 +corenet_tcp_sendrecv_generic_node(antivirus_domain)
@@ -28268,7 +28269,7 @@ index 21d7b84..0e272bd 100644
  
  /etc/firewalld(/.*)?	gen_context(system_u:object_r:firewalld_etc_rw_t,s0)
 diff --git a/firewalld.if b/firewalld.if
-index c62c567..6460877 100644
+index c62c567..2d9e254 100644
 --- a/firewalld.if
 +++ b/firewalld.if
 @@ -2,7 +2,7 @@
@@ -28349,7 +28350,7 @@ index c62c567..6460877 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -51,18 +93,18 @@ interface(`firewalld_dbus_chat',`
+@@ -51,18 +93,37 @@ interface(`firewalld_dbus_chat',`
  ##	</summary>
  ## </param>
  #
@@ -28367,12 +28368,31 @@ index c62c567..6460877 100644
  ## <summary>
 -##	All of the rules required to
 -##	administrate an firewalld environment.
++##	Read firewalld PID files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`firewalld_read_pid_files',`
++	gen_require(`
++		type firewalld_var_run_t;
++	')
++
++	files_search_pids($1)
++	allow $1 firewalld_var_run_t:file read_file_perms;
++')
++
++########################################
++## <summary>
 +##	All of the rules required to administrate
 +##	an firewalld environment
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -79,14 +121,18 @@ interface(`firewalld_dontaudit_rw_tmp_files',`
+@@ -79,14 +140,18 @@ interface(`firewalld_dontaudit_rw_tmp_files',`
  interface(`firewalld_admin',`
  	gen_require(`
  		type firewalld_t, firewalld_initrc_exec_t;
@@ -28394,7 +28414,7 @@ index c62c567..6460877 100644
  	domain_system_change_exemption($1)
  	role_transition $2 firewalld_initrc_exec_t system_r;
  	allow $2 system_r;
-@@ -97,6 +143,9 @@ interface(`firewalld_admin',`
+@@ -97,6 +162,9 @@ interface(`firewalld_admin',`
  	logging_search_logs($1)
  	admin_pattern($1, firewalld_var_log_t)
  
@@ -28407,7 +28427,7 @@ index c62c567..6460877 100644
 +	allow $1 firewalld_unit_file_t:service all_service_perms;
  ')
 diff --git a/firewalld.te b/firewalld.te
-index 98072a3..1b550dd 100644
+index 98072a3..d5d852e 100644
 --- a/firewalld.te
 +++ b/firewalld.te
 @@ -21,9 +21,15 @@ logging_log_file(firewalld_var_log_t)
@@ -28435,7 +28455,7 @@ index 98072a3..1b550dd 100644
  
  allow firewalld_t firewalld_var_log_t:file append_file_perms;
  allow firewalld_t firewalld_var_log_t:file create_file_perms;
-@@ -48,8 +56,13 @@ manage_files_pattern(firewalld_t, firewalld_tmp_t, firewalld_tmp_t)
+@@ -48,8 +56,14 @@ manage_files_pattern(firewalld_t, firewalld_tmp_t, firewalld_tmp_t)
  files_tmp_filetrans(firewalld_t, firewalld_tmp_t, file)
  allow firewalld_t firewalld_tmp_t:file mmap_file_perms;
  
@@ -28444,12 +28464,14 @@ index 98072a3..1b550dd 100644
 +allow firewalld_t firewalld_tmpfs_t:file mmap_file_perms;
 +
  manage_files_pattern(firewalld_t, firewalld_var_run_t, firewalld_var_run_t)
- files_pid_filetrans(firewalld_t, firewalld_var_run_t, file)
+-files_pid_filetrans(firewalld_t, firewalld_var_run_t, file)
++manage_dirs_pattern(firewalld_t, firewalld_var_run_t, firewalld_var_run_t)
++files_pid_filetrans(firewalld_t, firewalld_var_run_t, { file dir })
 +can_exec(firewalld_t, firewalld_var_run_t)
  
  kernel_read_network_state(firewalld_t)
  kernel_read_system_state(firewalld_t)
-@@ -63,20 +76,19 @@ dev_search_sysfs(firewalld_t)
+@@ -63,20 +77,19 @@ dev_search_sysfs(firewalld_t)
  
  domain_use_interactive_fds(firewalld_t)
  
@@ -28476,7 +28498,7 @@ index 98072a3..1b550dd 100644
  
  optional_policy(`
  	dbus_system_domain(firewalld_t, firewalld_exec_t)
-@@ -95,6 +107,10 @@ optional_policy(`
+@@ -95,6 +108,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -99807,7 +99829,7 @@ index 1499b0b..6950cab 100644
 -	spamassassin_role($2, $1)
  ')
 diff --git a/spamassassin.te b/spamassassin.te
-index cc58e35..2794505 100644
+index cc58e35..d20d0ed 100644
 --- a/spamassassin.te
 +++ b/spamassassin.te
 @@ -7,50 +7,23 @@ policy_module(spamassassin, 2.6.1)
@@ -100351,7 +100373,7 @@ index cc58e35..2794505 100644
  corenet_all_recvfrom_netlabel(spamd_t)
  corenet_tcp_sendrecv_generic_if(spamd_t)
  corenet_udp_sendrecv_generic_if(spamd_t)
-@@ -331,78 +450,59 @@ corenet_udp_sendrecv_generic_node(spamd_t)
+@@ -331,78 +450,60 @@ corenet_udp_sendrecv_generic_node(spamd_t)
  corenet_tcp_sendrecv_all_ports(spamd_t)
  corenet_udp_sendrecv_all_ports(spamd_t)
  corenet_tcp_bind_generic_node(spamd_t)
@@ -100361,6 +100383,7 @@ index cc58e35..2794505 100644
  corenet_tcp_bind_spamd_port(spamd_t)
 -
 -corenet_sendrecv_razor_client_packets(spamd_t)
++corenet_tcp_connect_all_unreserved_ports(spamd_t)
 +corenet_tcp_connect_spamd_port(spamd_t)
  corenet_tcp_connect_razor_port(spamd_t)
 -
@@ -100455,7 +100478,7 @@ index cc58e35..2794505 100644
  ')
  
  optional_policy(`
-@@ -421,21 +521,13 @@ optional_policy(`
+@@ -421,21 +522,13 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -100479,7 +100502,7 @@ index cc58e35..2794505 100644
  ')
  
  optional_policy(`
-@@ -443,8 +535,8 @@ optional_policy(`
+@@ -443,8 +536,8 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -100489,7 +100512,7 @@ index cc58e35..2794505 100644
  ')
  
  optional_policy(`
-@@ -455,7 +547,17 @@ optional_policy(`
+@@ -455,7 +548,17 @@ optional_policy(`
  optional_policy(`
  	razor_domtrans(spamd_t)
  	razor_read_lib_files(spamd_t)
@@ -100508,7 +100531,7 @@ index cc58e35..2794505 100644
  ')
  
  optional_policy(`
-@@ -463,9 +565,9 @@ optional_policy(`
+@@ -463,9 +566,9 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -100519,7 +100542,7 @@ index cc58e35..2794505 100644
  ')
  
  optional_policy(`
-@@ -474,32 +576,32 @@ optional_policy(`
+@@ -474,32 +577,32 @@ optional_policy(`
  
  ########################################
  #
@@ -100562,7 +100585,7 @@ index cc58e35..2794505 100644
  
  corecmd_exec_bin(spamd_update_t)
  corecmd_exec_shell(spamd_update_t)
-@@ -508,25 +610,21 @@ dev_read_urand(spamd_update_t)
+@@ -508,25 +611,21 @@ dev_read_urand(spamd_update_t)
  
  domain_use_interactive_fds(spamd_update_t)
  

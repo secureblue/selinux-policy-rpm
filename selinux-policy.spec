@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 163%{?dist}
+Release: 164%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -664,6 +664,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 15 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-164
+- Allow firewalld to create firewalld_var_run_t directory. BZ(1291243)
+- Add interface firewalld_read_pid_files()
+- Allow iptables to read firewalld pid files. BZ(1291243)
+- Allow the user cronjobs to run in their userdomain
+- Label ssdm binaries storedin /etc/sddm/ as bin_t. BZ(1288111)
+- Merge pull request #81 from rhatdan/rawhide-base
+- New access needed by systemd domains
+
 * Wed Dec 09 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-163
 - Allow whack executed by sysadm SELinux user to access /var/run/pluto/pluto.ctl. It fixes "ipsec auto --status" executed by sysadm_t.
 - Add ipsec_read_pid() interface
