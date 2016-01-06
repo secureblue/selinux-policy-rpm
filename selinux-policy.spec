@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 164%{?dist}
+Release: 165%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -664,6 +664,18 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 06 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-165
+- Allow sddm-helper running as xdm_t to create .wayland-errors with correct labeling. BZ(#1291085)
+- Revert "Allow arping running as netutils_t sys_module capability for removing tap devices."
+- Allow arping running as netutils_t sys_module capability for removing tap devices.
+- Add userdom_connectto_stream() interface.
+- Allow systemd-logind to read /run/utmp. BZ(#1278662)
+- Allow sddm-helper running as xdm_t to create .wayland-errors with correct labeling. BZ(#1291085)
+- Revert "Allow arping running as netutils_t sys_module capability for removing tap devices."
+- Allow arping running as netutils_t sys_module capability for removing tap devices.
+- Add userdom_connectto_stream() interface.
+- Allow systemd-logind to read /run/utmp. BZ(#1278662)
+
 * Tue Dec 15 2015 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-164
 - Allow firewalld to create firewalld_var_run_t directory. BZ(1291243)
 - Add interface firewalld_read_pid_files()
