@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 165%{?dist}
+Release: 166%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -664,6 +664,25 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 13 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-166
+- Allow logrotate to systemctl rsyslog service. BZ(1284173)
+- Allow condor_master_t domain capability chown. BZ(1297048)
+- Allow chronyd to be dbus bus client. BZ(1297129)
+- Allow openvswitch read/write hugetlb filesystem.
+- Revert "Allow openvswitch read/write hugetlb filesystem."
+- Allow smbcontrol domain to send sigchld to ctdbd domain.
+- Allow openvswitch read/write hugetlb filesystem.
+- Merge branch 'rawhide-contrib' of github.com:fedora-selinux/selinux-policy into rawhide-contrib
+- Label /var/log/ipareplica-conncheck.log file as ipa_log_t Allow ipa_helper_t domain to manage logs labeledas ipa_log_t Allow ipa_helper_t to connect on http and kerberos_passwd ports. BZ(1289930)
+- Allow keepalived to connect to 3306/tcp port - mysqld_port_t.
+- Merge remote-tracking branch 'refs/remotes/origin/rawhide-contrib' into rawhide-contrib
+- Merge remote-tracking branch 'refs/remotes/origin/rawhide-contrib' into rawhide-contrib
+- Merge pull request #86 from rhatdan/rawhide-contrib
+- Label some new nsd binaries as nsd_exec_t Allow nsd domain net_admin cap. Create label nsd_tmp_t for nsd tmp files/dirs BZ (1293146)
+- Added interface logging_systemctl_syslogd
+- Label rsyslog unit file
+- Added policy for systemd-coredump service. Added domain transition from kernel_t to systemd_coredump_t. Allow syslogd_t domain to read/write tmpfs systemd-coredump files. Make new domain uconfined for now.
+
 * Wed Jan 06 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-165
 - Allow sddm-helper running as xdm_t to create .wayland-errors with correct labeling. BZ(#1291085)
 - Revert "Allow arping running as netutils_t sys_module capability for removing tap devices."
