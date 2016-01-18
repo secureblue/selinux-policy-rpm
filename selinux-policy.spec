@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 166%{?dist}
+Release: 167%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -664,6 +664,13 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 18 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-167
+- Add fwupd policy for daemon to allow session software to update device firmware
+- Label /usr/libexec/ipa/oddjob/org.freeipa.server.conncheck as ipa_helper_exec_t. BZ(1289930)
+- Allow systemd services to use PrivateNetwork feature
+- Add a type and genfscon for nsfs.
+- Fix SELinux context for rsyslog unit file. BZ(1284173)
+
 * Wed Jan 13 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-166
 - Allow logrotate to systemctl rsyslog service. BZ(1284173)
 - Allow condor_master_t domain capability chown. BZ(1297048)
