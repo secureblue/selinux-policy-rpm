@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 167%{?dist}
+Release: 168%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -664,6 +664,10 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 20 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-168
+- Label virtlogd binary as virtd_exec_t. BZ(1291940)
+- Allow iptables to read nsfs files. BZ(1296826)
+
 * Mon Jan 18 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-167
 - Add fwupd policy for daemon to allow session software to update device firmware
 - Label /usr/libexec/ipa/oddjob/org.freeipa.server.conncheck as ipa_helper_exec_t. BZ(1289930)
