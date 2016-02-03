@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 168%{?dist}
+Release: 169%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -664,6 +664,16 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 03 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-169
+- Allow openvswitch domain capability sys_rawio.
+- Revert "Allow NetworkManager create dhcpc pid files. BZ(1229755)"
+- Allow openvswitch to manage hugetlfs files and dirs.
+- Allow NetworkManager create dhcpc pid files. BZ(1229755)
+- Allow apcupsd to read kernel network state. BZ(1282003)
+- Label /sys/kernel/debug/tracing filesystem
+- Add fs_manage_hugetlbfs_files() interface.
+- Add sysnet_filetrans_dhcpc_pid() interface.
+
 * Wed Jan 20 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-168
 - Label virtlogd binary as virtd_exec_t. BZ(1291940)
 - Allow iptables to read nsfs files. BZ(1296826)
