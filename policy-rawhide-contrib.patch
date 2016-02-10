@@ -589,7 +589,7 @@ index 058d908..ee0c559 100644
 +')
 +
 diff --git a/abrt.te b/abrt.te
-index eb50f07..5ad038c 100644
+index eb50f07..11582eb 100644
 --- a/abrt.te
 +++ b/abrt.te
 @@ -6,11 +6,10 @@ policy_module(abrt, 1.4.1)
@@ -839,9 +839,9 @@ index eb50f07..5ad038c 100644
 +logging_read_syslog_pid(abrt_t)
 +
 +auth_use_nsswitch(abrt_t)
- 
-+init_read_utmp(abrt_t)
 +
++init_read_utmp(abrt_t)
+ 
 +miscfiles_read_generic_certs(abrt_t)
  miscfiles_read_public_files(abrt_t)
 +miscfiles_dontaudit_access_check_cert(abrt_t)
@@ -1044,7 +1044,7 @@ index eb50f07..5ad038c 100644
  allow abrt_retrace_worker_t self:fifo_file rw_fifo_file_perms;
  
  domtrans_pattern(abrt_retrace_worker_t, abrt_retrace_coredump_exec_t, abrt_retrace_coredump_t)
-@@ -365,38 +468,71 @@ corecmd_exec_shell(abrt_retrace_worker_t)
+@@ -365,38 +468,76 @@ corecmd_exec_shell(abrt_retrace_worker_t)
  
  dev_read_urand(abrt_retrace_worker_t)
  
@@ -1109,6 +1109,7 @@ index eb50f07..5ad038c 100644
 +fs_getattr_all_fs(abrt_dump_oops_t)
  fs_list_inotifyfs(abrt_dump_oops_t)
 +fs_list_pstorefs(abrt_dump_oops_t)
++fs_getattr_nsfs_files(abrt_dump_oops_t)
 +
 +selinux_compute_create_context(abrt_dump_oops_t)
  
@@ -1117,10 +1118,14 @@ index eb50f07..5ad038c 100644
 +logging_send_syslog_msg(abrt_dump_oops_t)
 +
 +init_read_var_lib_files(abrt_dump_oops_t)
++
++optional_policy(`
++	xserver_exec(abrt_dump_oops_t)
++')
  
  #######################################
  #
-@@ -404,25 +540,60 @@ logging_read_generic_logs(abrt_dump_oops_t)
+@@ -404,25 +545,60 @@ logging_read_generic_logs(abrt_dump_oops_t)
  #
  
  allow abrt_watch_log_t self:fifo_file rw_fifo_file_perms;
@@ -1183,7 +1188,7 @@ index eb50f07..5ad038c 100644
  ')
  
  #######################################
-@@ -430,10 +601,7 @@ tunable_policy(`abrt_upload_watch_anon_write',`
+@@ -430,10 +606,7 @@ tunable_policy(`abrt_upload_watch_anon_write',`
  # Global local policy
  #
  
@@ -28320,7 +28325,7 @@ index 21d7b84..0e272bd 100644
  
  /etc/firewalld(/.*)?	gen_context(system_u:object_r:firewalld_etc_rw_t,s0)
 diff --git a/firewalld.if b/firewalld.if
-index c62c567..2d9e254 100644
+index c62c567..a74f123 100644
 --- a/firewalld.if
 +++ b/firewalld.if
 @@ -2,7 +2,7 @@
@@ -28401,7 +28406,7 @@ index c62c567..2d9e254 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -51,18 +93,37 @@ interface(`firewalld_dbus_chat',`
+@@ -51,18 +93,55 @@ interface(`firewalld_dbus_chat',`
  ##	</summary>
  ## </param>
  #
@@ -28413,12 +28418,10 @@ index c62c567..2d9e254 100644
  
 -	dontaudit $1 firewalld_tmp_t:file { read write };
 +	dontaudit $1 firewalld_tmp_t:file write;
- ')
- 
- ########################################
- ## <summary>
--##	All of the rules required to
--##	administrate an firewalld environment.
++')
++
++########################################
++## <summary>
 +##	Read firewalld PID files.
 +## </summary>
 +## <param name="domain">
@@ -28438,12 +28441,32 @@ index c62c567..2d9e254 100644
 +
 +########################################
 +## <summary>
++##	Dontaudit read and write leaked firewalld file descriptors 
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
++interface(`firewalld_dontaudit_leaks',`
++	gen_require(`
++		type firewalld_tmpfs_t;
++	')
++
++	dontaudit $1 firewalld_tmpfs_t:file rw_inherited_file_perms;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	All of the rules required to
+-##	administrate an firewalld environment.
 +##	All of the rules required to administrate
 +##	an firewalld environment
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -79,14 +140,18 @@ interface(`firewalld_dontaudit_rw_tmp_files',`
+@@ -79,14 +158,18 @@ interface(`firewalld_dontaudit_rw_tmp_files',`
  interface(`firewalld_admin',`
  	gen_require(`
  		type firewalld_t, firewalld_initrc_exec_t;
@@ -28465,7 +28488,7 @@ index c62c567..2d9e254 100644
  	domain_system_change_exemption($1)
  	role_transition $2 firewalld_initrc_exec_t system_r;
  	allow $2 system_r;
-@@ -97,6 +162,9 @@ interface(`firewalld_admin',`
+@@ -97,6 +180,9 @@ interface(`firewalld_admin',`
  	logging_search_logs($1)
  	admin_pattern($1, firewalld_var_log_t)
  
@@ -29656,12 +29679,14 @@ index 36838c2..8bfc879 100644
 -')
 diff --git a/fwupd.fc b/fwupd.fc
 new file mode 100644
-index 0000000..1f13f70
+index 0000000..859dc40
 --- /dev/null
 +++ b/fwupd.fc
-@@ -0,0 +1,8 @@
+@@ -0,0 +1,10 @@
 +/usr/lib/systemd/system/fwupd-offline-update.*		--	gen_context(system_u:object_r:fwupd_unit_file_t,s0)
 +/usr/lib/systemd/system/fwupd.*		--	gen_context(system_u:object_r:fwupd_unit_file_t,s0)
++
++/etc/pki/(fwupd|fwupd-metadata)(/.*)?		gen_context(system_u:object_r:fwupd_cert_t,s0)
 +
 +/usr/libexec/fwupd/fwupd		--	gen_context(system_u:object_r:fwupd_exec_t,s0)
 +
@@ -29936,10 +29961,10 @@ index 0000000..c4d2c2d
 +')
 diff --git a/fwupd.te b/fwupd.te
 new file mode 100644
-index 0000000..53ba6cd
+index 0000000..3dd3dc8
 --- /dev/null
 +++ b/fwupd.te
-@@ -0,0 +1,50 @@
+@@ -0,0 +1,60 @@
 +policy_module(fwupd, 1.0.0)
 +
 +########################################
@@ -29953,6 +29978,9 @@ index 0000000..53ba6cd
 +
 +type fwupd_cache_t;
 +files_type(fwupd_cache_t)
++
++type fwupd_cert_t;
++miscfiles_cert_type(fwupd_cert_t)
 +
 +type fwupd_var_lib_t;
 +files_type(fwupd_var_lib_t)
@@ -29973,6 +30001,10 @@ index 0000000..53ba6cd
 +manage_lnk_files_pattern(fwupd_t, fwupd_cache_t, fwupd_cache_t)
 +files_var_filetrans(fwupd_t, fwupd_cache_t, { dir })
 +
++allow fwupd_t fwupd_cert_t:dir list_dir_perms;
++read_files_pattern(fwupd_t, fwupd_cert_t, fwupd_cert_t)
++read_lnk_files_pattern(fwupd_t, fwupd_cert_t, fwupd_cert_t)
++
 +manage_dirs_pattern(fwupd_t, fwupd_var_lib_t, fwupd_var_lib_t)
 +manage_files_pattern(fwupd_t, fwupd_var_lib_t, fwupd_var_lib_t)
 +manage_lnk_files_pattern(fwupd_t, fwupd_var_lib_t, fwupd_var_lib_t)
@@ -29989,6 +30021,9 @@ index 0000000..53ba6cd
 +
 +optional_policy(`
 +	dbus_system_domain(fwupd_t,fwupd_exec_t)
++	optional_policy(`
++		policykit_dbus_chat(fwupd_t)
++	')
 +')
 diff --git a/games.if b/games.if
 index e2a3e0d..50ebd40 100644
@@ -74520,7 +74555,7 @@ index cd8b8b9..2cfa88a 100644
 +	allow $1 pppd_unit_file_t:service all_service_perms;
  ')
 diff --git a/ppp.te b/ppp.te
-index d616ca3..8ccefd5 100644
+index d616ca3..e4fc9c0 100644
 --- a/ppp.te
 +++ b/ppp.te
 @@ -6,41 +6,47 @@ policy_module(ppp, 1.14.0)
@@ -74649,13 +74684,14 @@ index d616ca3..8ccefd5 100644
  
  manage_dirs_pattern(pppd_t, pppd_var_run_t, pppd_var_run_t)
  manage_files_pattern(pppd_t, pppd_var_run_t, pppd_var_run_t)
-+manage_sock_files_pattern(pppd_t, pppd_var_run_t, pppd_var_run_t)
- files_pid_filetrans(pppd_t, pppd_var_run_t, { dir file })
- 
+-files_pid_filetrans(pppd_t, pppd_var_run_t, { dir file })
+-
 -can_exec(pppd_t, pppd_exec_t)
 -
 -domtrans_pattern(pppd_t, pptp_exec_t, pptp_t)
--
++manage_sock_files_pattern(pppd_t, pppd_var_run_t, pppd_var_run_t)
++files_pid_filetrans(pppd_t, pppd_var_run_t, { dir file sock_file })
+ 
  allow pppd_t pptp_t:process signal;
  
 +# for SSP
@@ -75040,7 +75076,7 @@ index 20d4697..e6605c1 100644
 +	files_etc_filetrans($1, prelink_cache_t, file, "prelink.cache")
 +')
 diff --git a/prelink.te b/prelink.te
-index 8e26216..d59dc50 100644
+index 8e26216..98068fc 100644
 --- a/prelink.te
 +++ b/prelink.te
 @@ -6,13 +6,10 @@ policy_module(prelink, 1.11.0)
@@ -75186,7 +75222,8 @@ index 8e26216..d59dc50 100644
  
  optional_policy(`
  	allow prelink_cron_system_t self:capability setuid;
- 	allow prelink_cron_system_t self:process { setsched setfscreate signal };
+-	allow prelink_cron_system_t self:process { setsched setfscreate signal };
++	allow prelink_cron_system_t self:process { setsched setfscreate signal setrlimit };
  	allow prelink_cron_system_t self:fifo_file rw_fifo_file_perms;
 -	allow prelink_cron_system_t self:unix_dgram_socket create_socket_perms;
 +	allow prelink_cron_system_t self:unix_dgram_socket { write bind create setopt };
@@ -107315,22 +107352,23 @@ index 9b95c3e..a892845 100644
  	init_labeled_script_domtrans($1, ulogd_initrc_exec_t)
  	domain_system_change_exemption($1)
 diff --git a/ulogd.te b/ulogd.te
-index de35e5f..51f2763 100644
+index de35e5f..91cac11 100644
 --- a/ulogd.te
 +++ b/ulogd.te
-@@ -29,8 +29,10 @@ logging_log_file(ulogd_var_log_t)
+@@ -29,8 +29,11 @@ logging_log_file(ulogd_var_log_t)
  allow ulogd_t self:capability { net_admin setuid setgid sys_nice };
  allow ulogd_t self:process setsched;
  allow ulogd_t self:netlink_nflog_socket create_socket_perms;
 +allow ulogd_t self:netlink_route_socket r_netlink_socket_perms;
  allow ulogd_t self:netlink_socket create_socket_perms;
 -allow ulogd_t self:tcp_socket create_stream_socket_perms;
++allow ulogd_t self:netlink_netfilter_socket create_socket_perms;
 +allow ulogd_t self:tcp_socket { create_stream_socket_perms connect };
 +allow ulogd_t self:udp_socket create_socket_perms;
  
  read_files_pattern(ulogd_t, ulogd_etc_t, ulogd_etc_t)
  
-@@ -42,10 +44,7 @@ create_files_pattern(ulogd_t, ulogd_var_log_t, ulogd_var_log_t)
+@@ -42,10 +45,7 @@ create_files_pattern(ulogd_t, ulogd_var_log_t, ulogd_var_log_t)
  setattr_files_pattern(ulogd_t, ulogd_var_log_t, ulogd_var_log_t)
  logging_log_filetrans(ulogd_t, ulogd_var_log_t, file)
  

@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 169%{?dist}
+Release: 170%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -664,6 +664,24 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 10 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-170
+- Allow abrt_dump_oops_t to getattr filesystem nsfs files. rhbz#1300334
+- Allow ulogd_t to create netlink_netfilter sockets. rhbz#1305426
+- Create new type fwupd_cert_t Label /etc/pki/(fwupd|fwupd-metadata) dirs as fwupd_cert_t Allow fwupd_t domain to read fwupd_cert_t files|lnk_files rhbz#1303533
+- Add interface to dontaudit leaked files from firewalld
+- fwupd needs to dbus chat with policykit
+- Allow fwupd domain transition to gpg domain. Fwupd signing firmware updates by gpg. rhbz#1303531
+- Allow abrt_dump_oops_t to check permissions for a /usr/bin/Xorg. rhbz#1284967
+- Allow prelink_cron_system_t domain set resource limits. BZ(1190364)
+- Allow pppd_t domain to create sockfiles in /var/run labeled as pppd_var_run_t label. BZ(1302666)
+- Fix wrong name for openqa_websockets tcp port.
+- Allow run sshd-keygen on second boot if first boot fails after some reason and content is not syncedon the disk. These changes are reflecting this commit in sshd. http://pkgs.fedoraproject.org/cgit/rpms/openssh.git/commit/?id=af94f46861844cbd6ba4162115039bebcc8f78ba rhbz#1299106
+- Add interface ssh_getattr_server_keys() interface. rhbz#1299106
+- Added Label openqa for tcp port (9526) Added Label openqa-websockets for tcp port (9527) rhbz#1277312
+- Add interface fs_getattr_nsfs_files()
+- Add interface xserver_exec().
+- Revert "Allow all domains some process flags."BZ(1190364)
+
 * Wed Feb 03 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-169
 - Allow openvswitch domain capability sys_rawio.
 - Revert "Allow NetworkManager create dhcpc pid files. BZ(1229755)"
