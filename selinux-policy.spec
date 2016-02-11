@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 170%{?dist}
+Release: 171%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -664,6 +664,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 11 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-171
+- Allow setroubleshoot_fixit_t to use temporary files
+
 * Wed Feb 10 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-170
 - Allow abrt_dump_oops_t to getattr filesystem nsfs files. rhbz#1300334
 - Allow ulogd_t to create netlink_netfilter sockets. rhbz#1305426
