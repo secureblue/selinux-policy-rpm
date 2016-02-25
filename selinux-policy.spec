@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 171%{?dist}
+Release: 172%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -673,6 +673,22 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 25 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-172
+- Fix macro name from snmp_manage_snmp_var_lib_files to snmp_manage_var_lib_files in cupsd policy.
+- Allow hplip driver to write to its MIB index files stored in the /var/lib/net-snmp/mib_indexes. Resolves: rhbz#1291033
+- Allow collectd setgid capability Resolves:#1310896
+- Allow adcli running as sssd_t to write krb5.keytab file.
+- Allow abrt-hook-ccpp to getattr on all executables. BZ(1284304)
+- Allow kexec to read kernel module files in /usr/lib/modules.
+- Add httpd_log_t for /var/log/graphite-web rhbz#1306981
+- Remove redudant rules and fix _admin interface.
+- Add SELinux policy for LTTng 2.x central tracing registry session daemon.
+- Allow create mongodb unix dgram sockets. rhbz#1306819
+- Support for InnoDB Tablespace Encryption.
+- Dontaudit leaded file descriptors from firewalld
+- Add port for rkt services
+- Add support for the default lttng-sessiond port - tcp/5345.  This port is used by LTTng 2.x central tracing registry session daemon.
+
 * Thu Feb 11 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-171
 - Allow setroubleshoot_fixit_t to use temporary files
 
