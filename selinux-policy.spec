@@ -13,9 +13,9 @@
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
-%define POLICYVER 29
-%define POLICYCOREUTILSVER 2.4-0
-%define CHECKPOLICYVER 2.4-0
+%define POLICYVER 30
+%define POLICYCOREUTILSVER 2.5
+%define CHECKPOLICYVER 2.5
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
@@ -517,6 +517,9 @@ exit 0
 %{_sharedstatedir}/selinux/targeted/active/commit_num
 %{_sharedstatedir}/selinux/targeted/active/users_extra
 %{_sharedstatedir}/selinux/targeted/active/homedir_template
+%{_sharedstatedir}/selinux/targeted/active/seusers
+%{_sharedstatedir}/selinux/targeted/active/file_contexts
+%{_sharedstatedir}/selinux/targeted/active/policy.kern
 %endif
 
 %if %{BUILD_MINIMUM}
@@ -605,6 +608,9 @@ exit 0
 %{_sharedstatedir}/selinux/minimum/active/commit_num
 %{_sharedstatedir}/selinux/minimum/active/homedir_template
 %{_sharedstatedir}/selinux/minimum/active/users_extra
+%{_sharedstatedir}/selinux/minimum/active/seusers
+%{_sharedstatedir}/selinux/minimum/active/file_contexts
+%{_sharedstatedir}/selinux/minimum/active/policy.kern
 %endif
 
 %if %{BUILD_MLS}
@@ -661,6 +667,9 @@ exit 0
 %{_sharedstatedir}/selinux/mls/active/commit_num
 %{_sharedstatedir}/selinux/mls/active/users_extra
 %{_sharedstatedir}/selinux/mls/active/homedir_template
+%{_sharedstatedir}/selinux/mls/active/seusers
+%{_sharedstatedir}/selinux/mls/active/file_contexts
+%{_sharedstatedir}/selinux/mls/active/policy.kern
 %endif
 
 %changelog
