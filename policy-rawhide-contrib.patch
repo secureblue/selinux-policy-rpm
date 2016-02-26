@@ -87836,6 +87836,250 @@ index 0000000..aa2d09e
 +
 +type rkhunter_var_lib_t;
 +files_type(rkhunter_var_lib_t)
+diff --git a/rkt.fc b/rkt.fc
+new file mode 100644
+index 0000000..1941457
+--- /dev/null
++++ b/rkt.fc
+@@ -0,0 +1,11 @@
++/usr/bin/rkt		--	gen_context(system_u:object_r:rkt_exec_t,s0)
++
++/usr/lib/systemd/system/rkt-gc.service		--	gen_context(system_u:object_r:rkt_unit_file_t,s0)
++
++/usr/lib/systemd/system/rkt-gc.timer		--	gen_context(system_u:object_r:rkt_unit_file_t,s0)
++
++/usr/lib/systemd/system/rkt-metadata.service		--	gen_context(system_u:object_r:rkt_unit_file_t,s0)
++
++/usr/lib/systemd/system/rkt-metadata.socket		--	gen_context(system_u:object_r:rkt_unit_file_t,s0)
++
++/var/lib/rkt(/.*)?		gen_context(system_u:object_r:rkt_var_lib_t,s0)
+diff --git a/rkt.if b/rkt.if
+new file mode 100644
+index 0000000..8f367ed
+--- /dev/null
++++ b/rkt.if
+@@ -0,0 +1,177 @@
++## <summary>CLI for running app containers</summary>
++
++########################################
++## <summary>
++##	Execute rkt_exec_t in the rkt domain.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`rkt_domtrans',`
++	gen_require(`
++		type rkt_t, rkt_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	domtrans_pattern($1, rkt_exec_t, rkt_t)
++')
++
++######################################
++## <summary>
++##	Execute rkt in the caller domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`rkt_exec',`
++	gen_require(`
++		type rkt_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	can_exec($1, rkt_exec_t)
++')
++
++########################################
++## <summary>
++##	Search rkt lib directories.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`rkt_search_lib',`
++	gen_require(`
++		type rkt_var_lib_t;
++	')
++
++	allow $1 rkt_var_lib_t:dir search_dir_perms;
++	files_search_var_lib($1)
++')
++
++########################################
++## <summary>
++##	Read rkt lib files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`rkt_read_lib_files',`
++	gen_require(`
++		type rkt_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++	read_files_pattern($1, rkt_var_lib_t, rkt_var_lib_t)
++')
++
++########################################
++## <summary>
++##	Manage rkt lib files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`rkt_manage_lib_files',`
++	gen_require(`
++		type rkt_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++	manage_files_pattern($1, rkt_var_lib_t, rkt_var_lib_t)
++')
++
++########################################
++## <summary>
++##	Manage rkt lib directories.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`rkt_manage_lib_dirs',`
++	gen_require(`
++		type rkt_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++	manage_dirs_pattern($1, rkt_var_lib_t, rkt_var_lib_t)
++')
++
++########################################
++## <summary>
++##	Execute rkt server in the rkt domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed to transition.
++##	</summary>
++## </param>
++#
++interface(`rkt_systemctl',`
++	gen_require(`
++		type rkt_t;
++		type rkt_unit_file_t;
++	')
++
++	systemd_exec_systemctl($1)
++        systemd_read_fifo_file_passwd_run($1)
++	allow $1 rkt_unit_file_t:file read_file_perms;
++	allow $1 rkt_unit_file_t:service manage_service_perms;
++
++	ps_process_pattern($1, rkt_t)
++')
++
++
++########################################
++## <summary>
++##	All of the rules required to administrate
++##	an rkt environment
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`rkt_admin',`
++	gen_require(`
++		type rkt_t;
++		type rkt_var_lib_t;
++	type rkt_unit_file_t;
++	')
++
++	allow $1 rkt_t:process { signal_perms };
++	ps_process_pattern($1, rkt_t)
++
++    tunable_policy(`deny_ptrace',`',`
++        allow $1 rkt_t:process ptrace;
++    ')
++
++	files_search_var_lib($1)
++	admin_pattern($1, rkt_var_lib_t)
++
++	rkt_systemctl($1)
++	admin_pattern($1, rkt_unit_file_t)
++	allow $1 rkt_unit_file_t:service all_service_perms;
++	optional_policy(`
++		systemd_passwd_agent_exec($1)
++		systemd_read_fifo_file_passwd_run($1)
++	')
++')
+diff --git a/rkt.te b/rkt.te
+new file mode 100644
+index 0000000..4e962a7
+--- /dev/null
++++ b/rkt.te
+@@ -0,0 +1,38 @@
++policy_module(rkt, 1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++type rkt_t;
++type rkt_exec_t;
++init_daemon_domain(rkt_t, rkt_exec_t)
++
++type rkt_var_lib_t;
++files_type(rkt_var_lib_t)
++
++type rkt_unit_file_t;
++systemd_unit_file(rkt_unit_file_t)
++
++########################################
++#
++# rkt local policy
++#
++allow rkt_t self:capability net_admin;
++allow rkt_t self:fifo_file rw_fifo_file_perms;
++allow rkt_t self:unix_stream_socket create_stream_socket_perms;
++allow rkt_t self:tcp_socket create_stream_socket_perms;
++
++manage_dirs_pattern(rkt_t, rkt_var_lib_t, rkt_var_lib_t)
++manage_files_pattern(rkt_t, rkt_var_lib_t, rkt_var_lib_t)
++manage_lnk_files_pattern(rkt_t, rkt_var_lib_t, rkt_var_lib_t)
++files_var_lib_filetrans(rkt_t, rkt_var_lib_t, { dir file lnk_file })
++
++kernel_read_net_sysctls(rkt_t)
++
++corenet_tcp_bind_generic_node(rkt_t)
++
++domain_use_interactive_fds(rkt_t)
++
++sysnet_dns_name_resolve(rkt_t)
 diff --git a/rlogin.fc b/rlogin.fc
 index f111877..e361ee9 100644
 --- a/rlogin.fc
