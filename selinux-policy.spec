@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 172%{?dist}
+Release: 173%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -673,6 +673,16 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 26 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-173
+- Allow amanda to manipulate the tape changer to load the necessary tapes. rhbz#1311759
+- Allow keepalived to create netlink generic sockets. rhbz#1311756
+- Allow modemmanager to read /etc/passwd file.
+- Label all files named /var/run/.*nologin.* as systemd_logind_var_run_t.
+- Add filename transition to interface systemd_filetrans_named_content() that domain will create rfkill dir labeled as systemd_rfkill_var_lib_t instead of init_var_lib_t. rhbz #1290255
+- Allow systemd-logind to create .#nologinXXXXXX labeled as systemd_logind_var_run_t in /var/run/systemd/ rhbz#1285019
+- Allow systemd_networkd_t to write kmsg, when kernel was started with following params: systemd.debug systemd.log_level=debug systemd.log_target=kmsg rhbz#1311444
+- Allow ipsec to read home certs, when connecting to VPN. rhbz#1301319
+
 * Thu Feb 25 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-172
 - Fix macro name from snmp_manage_snmp_var_lib_files to snmp_manage_var_lib_files in cupsd policy.
 - Allow hplip driver to write to its MIB index files stored in the /var/lib/net-snmp/mib_indexes. Resolves: rhbz#1291033
