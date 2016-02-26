@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 173%{?dist}
+Release: 174%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -673,6 +673,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 26 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-174
+- Revert "Allow systemd-logind to create .#nologinXXXXXX labeled as systemd_logind_var_run_t in /var/run/systemd/ rhbz#1285019"
+- Allow systemd-logind to create .#nologinXXXXXX labeled as systemd_logind_var_run_t in /var/run/ rhbz#1285019
+
 * Fri Feb 26 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-173
 - Allow amanda to manipulate the tape changer to load the necessary tapes. rhbz#1311759
 - Allow keepalived to create netlink generic sockets. rhbz#1311756
