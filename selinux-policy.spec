@@ -253,9 +253,6 @@ fi; \
 if /sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null;then \
     continue; \
 fi; \
-if /sbin/restorecon -R /home/*/.config 2> /dev/null;then \
-    continue; \
-fi;
 
 %define preInstall() \
 if [ $1 -ne 1 ] && [ -s /etc/selinux/config ]; then \
