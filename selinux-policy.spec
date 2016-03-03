@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 175%{?dist}
+Release: 176%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -670,6 +670,21 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 03 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-176
+- Add new boolean tmpreaper_use_cifs() to allow tmpreaper to run on local directories being shared with Samba.
+- Merge pull request #105 from rhatdan/NO_NEW_PRIV
+- Fix new rkt policy
+- Remove some redundant rules.
+- Fix cosmetic issues in interface file.
+- Merge pull request #100 from rhatdan/rawhide-contrib
+- Add interface fs_setattr_cifs_dirs().
+- Merge pull request #106 from rhatdan/NO_NEW_PRIV_BASE
+- Fixed to make SELinux work with docker and prctl(NO_NEW_PRIVS)
+-Build file_contexts.bin file_context.local.bin file_context.homedir.bin during build phase.
+ This fix issue in Fedora live images when selinux-policy-targeted is not installed but just unpackaged, since there's no .bin files,
+ file_contexts is parsed in selabel_open().
+Resolves: rhbz#1314372
+
 * Fri Feb 26 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-175
 - Fix new rkt policy (Remove some redundant rules, Fix cosmetic issues in interface file)
 - Add policy for rkt services
