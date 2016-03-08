@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 176%{?dist}
+Release: 177%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -670,6 +670,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Mar 08 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-177
+- Allow spice-vdagent to getattr on tmpfs_t filesystems Resolves: rhbz#1276251
+- Allow sending dbus msgs between firewalld and system_cronjob domains.
+- Allow zabbix-agentd to connect to following tcp sockets. One of zabbix-agentd functions is get service status of ftp,http,innd,pop,smtp protocols. rhbz#1315354
+- Allow snapperd mounton permissions for snapperd_data_t. BZ(#1314972)
+- Add support for systemd-gpt-auto-generator. rhbz#1314968
+- Add interface dev_read_nvme() to allow reading Non-Volatile Memory Host Controller devices.
+- Add support for systemd-hwdb daemon. rhbz#1306243
+
 * Thu Mar 03 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-176
 - Add new boolean tmpreaper_use_cifs() to allow tmpreaper to run on local directories being shared with Samba.
 - Merge pull request #105 from rhatdan/NO_NEW_PRIV
