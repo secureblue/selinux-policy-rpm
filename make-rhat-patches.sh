@@ -21,7 +21,8 @@ git rev-parse --verify origin/${FEDORA_VERSION}-contrib; git diff 64302b790bf2b3
 popd > /dev/null
 
 pushd docker-selinux > /dev/null
-git checkout -b ${DOCKER_FEDORA_VERSION} -t origin/${DOCKER_FEDORA_VERSION} -q
+# Actual docker-selinux files are in master branch
+#git checkout -b ${DOCKER_FEDORA_VERSION} -t origin/${DOCKER_FEDORA_VERSION} -q
 tar -czf docker-selinux.tgz docker.if docker.te docker.fc
 popd > /dev/null
 
