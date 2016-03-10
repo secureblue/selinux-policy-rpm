@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 177%{?dist}
+Release: 178%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -670,6 +670,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 10 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-178
+- Label tcp port 5355 as llmnr-> Link-Local Multicast Name Resolution
+- Add support systemd-resolved.
+
 * Tue Mar 08 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-177
 - Allow spice-vdagent to getattr on tmpfs_t filesystems Resolves: rhbz#1276251
 - Allow sending dbus msgs between firewalld and system_cronjob domains.
