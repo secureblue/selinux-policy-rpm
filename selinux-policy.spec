@@ -240,7 +240,18 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/guest_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/xguest_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/user_u \
-%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u 
+%config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u \
+%{_usr}/share/selinux/%1/base.lst \
+%{_usr}/share/selinux/%1/modules-base.lst \
+%{_usr}/share/selinux/%1/modules-contrib.lst \
+%{_usr}/share/selinux/%1/nonbasemodules.lst \
+%{_sharedstatedir}/selinux/%1/active/commit_num \
+%{_sharedstatedir}/selinux/%1/active/users_extra \
+%{_sharedstatedir}/selinux/%1/active/homedir_template \
+%{_sharedstatedir}/selinux/%1/active/seusers \
+%{_sharedstatedir}/selinux/%1/active/file_contexts \
+%{_sharedstatedir}/selinux/%1/active/policy.kern \
+%nil
 
 %define relabel() \
 . %{_sysconfdir}/selinux/config; \
@@ -507,16 +518,6 @@ exit 0
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/sysadm_u 
 %fileList targeted
 %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/permissivedomains
-%{_usr}/share/selinux/targeted/base.lst
-%{_usr}/share/selinux/targeted/modules-base.lst
-%{_usr}/share/selinux/targeted/modules-contrib.lst
-%{_usr}/share/selinux/targeted/nonbasemodules.lst
-%{_sharedstatedir}/selinux/targeted/active/commit_num
-%{_sharedstatedir}/selinux/targeted/active/users_extra
-%{_sharedstatedir}/selinux/targeted/active/homedir_template
-%{_sharedstatedir}/selinux/targeted/active/seusers
-%{_sharedstatedir}/selinux/targeted/active/file_contexts
-%{_sharedstatedir}/selinux/targeted/active/policy.kern
 %endif
 
 %if %{BUILD_MINIMUM}
@@ -598,16 +599,6 @@ exit 0
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/sysadm_u 
 %fileList minimum
-%{_usr}/share/selinux/minimum/base.lst
-%{_usr}/share/selinux/minimum/modules-base.lst
-%{_usr}/share/selinux/minimum/modules-contrib.lst
-%{_usr}/share/selinux/minimum/nonbasemodules.lst
-%{_sharedstatedir}/selinux/minimum/active/commit_num
-%{_sharedstatedir}/selinux/minimum/active/homedir_template
-%{_sharedstatedir}/selinux/minimum/active/users_extra
-%{_sharedstatedir}/selinux/minimum/active/seusers
-%{_sharedstatedir}/selinux/minimum/active/file_contexts
-%{_sharedstatedir}/selinux/minimum/active/policy.kern
 %endif
 
 %if %{BUILD_MLS}
@@ -657,16 +648,6 @@ exit 0
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/mls/contexts/users/unconfined_u
 %fileList mls
-%{_usr}/share/selinux/mls/base.lst
-%{_usr}/share/selinux/mls/modules-base.lst
-%{_usr}/share/selinux/mls/modules-contrib.lst
-%{_usr}/share/selinux/mls/nonbasemodules.lst
-%{_sharedstatedir}/selinux/mls/active/commit_num
-%{_sharedstatedir}/selinux/mls/active/users_extra
-%{_sharedstatedir}/selinux/mls/active/homedir_template
-%{_sharedstatedir}/selinux/mls/active/seusers
-%{_sharedstatedir}/selinux/mls/active/file_contexts
-%{_sharedstatedir}/selinux/mls/active/policy.kern
 %endif
 
 %changelog
