@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 178%{?dist}
+Release: 179%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -670,6 +670,29 @@ exit 0
 %endif
 
 %changelog
+* Wed Mar 16 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-179
+- Add filename transition that /etc/princap will be created with cupsd_rw_etc_t label in cups_filetrans_named_content() interface.
+- Revert "Add filename transition that /etc/princap will be created with cupsd_rw_etc_t label in cups_filetrans_named_content."
+- Add filename transition that /etc/princap will be created with cupsd_rw_etc_t label in cups_filetrans_named_content.
+- Allow pcp_pmie and pcp_pmlogger to read all domains state.
+- Make fwupd domain unconfined. We need to discuss solution related to using gpg. rhbz#1316717
+- Merge pull request #108 from rhatdan/rkt
+- Merge pull request #109 from rhatdan/virt_sandbox
+- Add new interface to define virt_sandbox_network domains
+- Label /etc/redis-sentinel.conf as redis_conf_t. Allow redis_t write to redis_conf_t. Allow redis_t to connect on redis tcp port.
+- Fix typo in drbd policy
+- Remove declaration of empty booleans in virt policy.
+- Add new drbd file type: drbd_var_run_t. Allow drbd_t to manage drbd_var_run_t files/dirs.
+- Label /etc/ctdb/events.d/* as ctdb_exec_t. Allow ctdbd_t to setattr on ctdbd_exec_t files.
+- Additional rules to make rkt work in enforcing mode
+- Allow to log out to gdm after screen was resized in session via vdagent. Resolves: rhbz#1249020
+- Allow ipsec to use pam. rhbz#1317988
+- Allow systemd-gpt-generator to read fixed_disk_device_t. rhbz#1314968
+- Allow setrans daemon to read /proc/meminfo.
+- Merge pull request #107 from rhatdan/rkt-base
+- Allow systemd_notify_t to write to kmsg_device_t when 'systemd.log_target=kmsg' option is used.
+- Remove bin_t label for /etc/ctdb/events.d/. We need to label this scripts as ctdb_exec_t.
+
 * Thu Mar 10 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-178
 - Label tcp port 5355 as llmnr-> Link-Local Multicast Name Resolution
 - Add support systemd-resolved.
