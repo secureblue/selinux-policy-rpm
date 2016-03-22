@@ -114,6 +114,7 @@ fi;exit 0
 Summary: SELinux policy devel
 Group: System Environment/Base
 Requires(pre): selinux-policy = %{version}-%{release}
+Requires: selinux-policy = %{version}-%{release}
 Requires: m4 checkpolicy >= %{CHECKPOLICYVER}
 Requires: /usr/bin/make
 Requires(post): policycoreutils-devel >= %{POLICYCOREUTILSVER}
@@ -141,6 +142,7 @@ exit 0
 Summary: SELinux policy documentation
 Group: System Environment/Base
 Requires(pre): selinux-policy = %{version}-%{release}
+Requires: selinux-policy = %{version}-%{release}
 Requires: /usr/bin/xdg-open
 
 %description doc
