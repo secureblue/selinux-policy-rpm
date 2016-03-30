@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 179%{?dist}
+Release: 180%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -653,6 +653,44 @@ exit 0
 %endif
 
 %changelog
+* Wed Mar 30 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-180
+- Allow dovecot_auth_t domain to manage also dovecot_var_run_t fifo files. BZ(1320415)
+- Allow colord to read /etc/udev/hwdb.bin. rhzb#1316514
+- sandboxX.te: Allow sandbox domain to have entrypoint access only for executables and mountpoints.
+- Allow sandbox domain to have entrypoint access only for executables and mountpoints.
+- Allow bitlee to create bitlee_var_t dirs.
+- Allow CIM provider to read sssd public files.
+- Fix some broken interfaces in distro policy.
+- Allow power button to shutdown the laptop.
+- Allow lsm plugins to create named fixed disks. rhbz#1238066
+- Allow hyperv domains to rw hyperv devices. rhbz#1241636
+- Label /var/www/html(/.*)?/wp_backups(/.*)? as httpd_sys_rw_content_t.
+- Create conman_unconfined_script_t type for conman script stored in /use/share/conman/exec/
+- Allow rsync_export_all_ro boolean to read also non_auth_dirs/files/symlinks.
+- Allow pmdaapache labeled as pcp_pmcd_t access to port 80 for apache diagnostics
+- Label nagios scripts as httpd_sys_script_exec_t.
+- Allow nsd_t to bind on nsf_control tcp port. Allow nsd_crond_t to read nsd pid.
+- Fix couple of cosmetic thing in new virtlogd_t policy. rhbz #1311576
+- Merge pull request #104 from berrange/rawhide-contrib-virtlogd
+- Label /var/run/ecblp0 as cupsd_var_run_t due to this fifo_file is used by epson drivers. rhbz#1310336
+- Dontaudit logrotate to setrlimit itself. rhbz#1309604
+- Add filename transition that /etc/princap will be created with cupsd_rw_etc_t label in cups_filetrans_named_content() interface.
+- Allow pcp_pmie and pcp_pmlogger to read all domains state.
+- Allow systemd-gpt-generator to create and manage systemd gpt generator unit files. BZ(1319446)
+- Merge pull request #115 from rhatdan/nvidea
+- Label all nvidia binaries as xserver_exec_t
+- Add new systemd_hwdb_read_config() interface. rhbz#1316514
+- Add back corecmd_read_all_executables() interface.
+- Call files_type() instead of file_type() for unlabeled_t.
+- Add files_entrypoint_all_mountpoint() interface.
+- Make unlabeled only as a file_type type. It is a type for fallback if there is an issue with labeling.
+- Add corecmd_entrypoint_all_executables() interface.
+- Create hyperv* devices and create rw interfaces for this devices. rhbz#1309361
+- Add neverallow assertion for unlabaled_t to increase policy security.
+- Allow systemd-rfkill to create /var/lib/systemd/rfkill dir. rhbz#1319499
+- Label 8952 tcp port as nsd_control.
+- Allow to log out to gdm after screen was resized in session via vdagent. Resolves: rhbz#1249020
+
 * Wed Mar 16 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-179
 - Add filename transition that /etc/princap will be created with cupsd_rw_etc_t label in cups_filetrans_named_content() interface.
 - Revert "Add filename transition that /etc/princap will be created with cupsd_rw_etc_t label in cups_filetrans_named_content."
