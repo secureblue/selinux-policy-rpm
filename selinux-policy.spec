@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 180%{?dist}
+Release: 181%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -653,6 +653,17 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 01 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-181
+- Label /usr/libexec/rpm-ostreed as rpm_exec_t. BZ(1309075)
+- /bin/mailx is labeled sendmail_exec_t, and enters the sendmail_t domain on execution.  If /usr/sbin/sendmail does not have its own domain to transition to, and is not one of several products whose behavior is allowed by the sendmail_t policy, execution will fail. In this case we need to label /bin/mailx as bin_t. BZ(1323224)
+- Label all run tgtd files, not just socket files.
+- Allow prosody to stream connect to sasl. This will allow using cyrus authentication in prosody.
+- Allow prosody to listen on port 5000 for mod_proxy65. BZ(1322815)
+- Allow targetd to read/write to /dev/mapper/control device. BZ(1241415)
+- Label /etc/selinux/(minimum|mls|targeted)/active/ as semanage_store_t.
+- Allow systemd_resolved to read systemd_networkd run files. BZ(1322921)
+- New cgroup2 file system in Rawhide
+
 * Wed Mar 30 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-180
 - Allow dovecot_auth_t domain to manage also dovecot_var_run_t fifo files. BZ(1320415)
 - Allow colord to read /etc/udev/hwdb.bin. rhzb#1316514
