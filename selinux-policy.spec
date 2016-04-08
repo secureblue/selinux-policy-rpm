@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 181%{?dist}
+Release: 182%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -653,6 +653,15 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 08 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-182
+- rename several contrib modules according to their filenames
+- Add interface gnome_filetrans_cert_home_content()
+- By default container domains should not be allowed to create devices
+- Allow unconfined_t to create ~/.local/share/networkmanagement/certificates/ as home_cert_t instead of data_home_t.
+- Allow systemd_resolved_t to read /etc/passwd file. Allow systemd_resolved_t to write to kmsg_device_t when 'systemd.log_target=kmsg' option is used
+- Allow systemd gpt generator to read removable devices. BZ(1323458)
+- Allow systemd_gpt_generator_t sys_rawio capability. This access is needed to allow systemd gpt generator various device commands  BZ(1323454)
+
 * Fri Apr 01 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-181
 - Label /usr/libexec/rpm-ostreed as rpm_exec_t. BZ(1309075)
 - /bin/mailx is labeled sendmail_exec_t, and enters the sendmail_t domain on execution.  If /usr/sbin/sendmail does not have its own domain to transition to, and is not one of several products whose behavior is allowed by the sendmail_t policy, execution will fail. In this case we need to label /bin/mailx as bin_t. BZ(1323224)
