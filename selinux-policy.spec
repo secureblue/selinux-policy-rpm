@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 182%{?dist}
+Release: 183%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -653,6 +653,12 @@ exit 0
 %endif
 
 %changelog
+* Mon Apr 18 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-183
+- Allow modemmanager to talk to logind
+- Dontaudit tor daemon needs net_admin capability. rhbz#1311788
+- Allow GDM write to event devices. This rule is needed for GDM, because other display managers runs the X server as root, GDM instead runs the X server as the unprivileged user, within the user session. rhbz#1232042
+- Xorg now writes content in users homedir.
+
 * Fri Apr 08 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-182
 - rename several contrib modules according to their filenames
 - Add interface gnome_filetrans_cert_home_content()
