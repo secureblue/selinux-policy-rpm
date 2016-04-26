@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 183%{?dist}
+Release: 184%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -653,6 +653,19 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 26 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-184
+- Remove ftpd_home_dir() boolean from distro policy. Reason is that we cannot make this working due to m4 macro language limits.
+- Create new apache content template for files stored in user homedir. This change is needed to make working booleans: - httpd_enable_homedirs - httpd_read_user_content Resolves: rhbz#1330448
+- Label /usr/lib/snapper/systemd-helper as snapperd_exec_t. rhbz#1323732
+- Make virt_use_pcscd boolean off by default.
+- Create boolean to allow virtual machine use smartcards. rhbz#1029297
+- Allow snapperd to relabel btrfs snapshot subvolume to snapperd_data_t. rhbz#1323754
+- Allow mongod log to syslog.
+- Allow nsd daemon to create log file in /var/log as nsd_log_t
+- unlabeled_t can not be an entrypoint.
+- Modify interface den_read_nvme() to allow also read nvme_device_t block files. rhbz#1327909
+- Add new permissions stop/start to class system. rhbz#1324453
+
 * Mon Apr 18 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-183
 - Allow modemmanager to talk to logind
 - Dontaudit tor daemon needs net_admin capability. rhbz#1311788
