@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 184%{?dist}
+Release: 185%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -653,6 +653,12 @@ exit 0
 %endif
 
 %changelog
+* Wed Apr 27 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-185
+- Allow runnig php7 in fpm mode. From selinux-policy side, we need to allow httpd to read/write hugetlbfs.
+- Allow openvswitch daemons to run under openvswitch Linux user instead of root. This change needs allow set capabilities: chwon, setgid, setuid, setpcap. BZ(1330895)
+- Allow KDM to get status about power services. This change allow kdm to be able do shutdown BZ(1330970)
+- Add mls support for some db classes
+
 * Tue Apr 26 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-184
 - Remove ftpd_home_dir() boolean from distro policy. Reason is that we cannot make this working due to m4 macro language limits.
 - Create new apache content template for files stored in user homedir. This change is needed to make working booleans: - httpd_enable_homedirs - httpd_read_user_content Resolves: rhbz#1330448
