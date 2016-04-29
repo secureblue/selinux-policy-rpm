@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 185%{?dist}
+Release: 186%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -653,6 +653,12 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 29 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-186
+- Allow snapperd sys_admin capability Allow snapperd to set scheduler. BZ(1323732)
+- Label named-pkcs11 binary as named_exec_t. BZ(1331316)
+- Revert "Add new permissions stop/start to class system. rhbz#1324453"
+- Fix typo in module compilation message
+
 * Wed Apr 27 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-185
 - Allow runnig php7 in fpm mode. From selinux-policy side, we need to allow httpd to read/write hugetlbfs.
 - Allow openvswitch daemons to run under openvswitch Linux user instead of root. This change needs allow set capabilities: chwon, setgid, setuid, setpcap. BZ(1330895)
