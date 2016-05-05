@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 186%{?dist}
+Release: 187%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -653,6 +653,16 @@ exit 0
 %endif
 
 %changelog
+* Thu May 05 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-187
+- Allow stunnel create log files. BZ(1333033)
+- Label dev/shm/squid-cf__metadata.shm as squid_tmpfs_t. BZ(1331574)
+- Allow stunnel sys_nice capability. Stunnel sched_* syscalls in some cases. BZ(1332287)
+- Label /usr/bin/ganesha.nfsd as glusterd_exec_t to run ganesha as glusterd_t. Allow glusterd_t stream connect to rpbind_t. Allow cluster_t to create symlink /var/lib/nfs labeled as var_lib_nfs_t. Add interface rpc_filetrans_var_lib_nfs_content() Add new boolean: rpcd_use_fusefs to allow rpcd daemon use fusefs.
+- Allow systemd-user-sessions daemon to mamange systemd_logind_var_run_t pid files. BZ(1331980)
+- Modify kernel_steam_connect() interface by adding getattr permission. BZ(1331927)
+- Label /usr/sbin/xrdp* files as bin_t BZ(1258453)
+- Allow rpm-ostree domain transition to install_t domain from init_t. rhbz#1330318
+
 * Fri Apr 29 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-186
 - Allow snapperd sys_admin capability Allow snapperd to set scheduler. BZ(1323732)
 - Label named-pkcs11 binary as named_exec_t. BZ(1331316)
