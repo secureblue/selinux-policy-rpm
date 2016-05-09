@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 187%{?dist}
+Release: 188%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -653,6 +653,12 @@ exit 0
 %endif
 
 %changelog
+* Mon May 09 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-188
+- Label tcp port 8181 as intermapper_port_t.
+- Label /usr/libexec/storaged/storaged as lvm_exec_t to run storaged daemon in lvm_t SELinux domain. BZ(1333588)
+- Label tcp/udp port 2024 as xinuexpansion4_port_t
+- Label tcp port 7002 as afs_pt_port_t Label tcp/udp port 2023 as xinuexpansion3_port_t
+
 * Thu May 05 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-187
 - Allow stunnel create log files. BZ(1333033)
 - Label dev/shm/squid-cf__metadata.shm as squid_tmpfs_t. BZ(1331574)
