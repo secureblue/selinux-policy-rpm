@@ -328,12 +328,10 @@ refpolicy_path=`pwd`
 cp $contrib_path/* $refpolicy_path/policy/modules/contrib
 
 mkdir selinux_config
-for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE14} %{SOURCE15} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE21} %{SOURCE22} %{SOURCE23} %{SOURCE25} %{SOURCE26} %{SOURCE31} %{SOURCE32} %{SOURCE33} %{SOURCE34}  ;do
+for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE14} %{SOURCE15} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE21} %{SOURCE22} %{SOURCE23} %{SOURCE25} %{SOURCE26} %{SOURCE31} %{SOURCE32};do
  cp $i selinux_config
 done
 tar zxvf selinux_config/config.tgz
-tar -xf selinux_config/manpages_man.tgz
-tar -xf selinux_config/manpages_html.tgz
 
 %install
 # Build targeted policy
@@ -394,8 +392,8 @@ rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
 %endif
 
 mkdir -p %{buildroot}%{_mandir}
-mkdir -p  %{buildroot}/usr/share/man/man8/
-install -m 644 man8/* %{buildroot}/usr/share/man/man8/
+mkdir %{buildroot}/usr/share/man/man8/
+tar -xf ../manpages_man.tgz -C %{buildroot}/usr/share/man/man8/
 cp -R  man/* %{buildroot}%{_mandir}
 make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name} MLS_CATS=1024 MCS_CATS=1024 install-docs
 make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name} MLS_CATS=1024 MCS_CATS=1024 install-headers
@@ -407,10 +405,10 @@ install -m 644 doc/policy.* %{buildroot}%{_usr}/share/selinux/devel/
 echo  "xdg-open file:///usr/share/doc/selinux-policy/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 #/usr/bin/sepolicy manpage -a -p %{buildroot}/usr/share/man/man8/ -w -r %{buildroot}
-mkdir -p  %{buildroot}/usr/share/selinux/devel/html/
-install -m 644 html/* %{buildroot}/usr/share/selinux/devel/html/
-#mv %{buildroot}%{_usr}/share/man/man8/*.html %{buildroot}%{_usr}/share/selinux/devel/html
-#mv %{buildroot}%{_usr}/share/man/man8/style.css %{buildroot}%{_usr}/share/selinux/devel/html
+tar -xf ../manpages_html.tgz -C %{buildroot}/usr/share/man/man8/
+mkdir %{buildroot}%{_usr}/share/selinux/devel/html
+mv %{buildroot}%{_usr}/share/man/man8/*.html %{buildroot}%{_usr}/share/selinux/devel/html
+mv %{buildroot}%{_usr}/share/man/man8/style.css %{buildroot}%{_usr}/share/selinux/devel/html
 
 mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
 echo '%%_selinux_policy_version %{version}-%{release}' > %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
