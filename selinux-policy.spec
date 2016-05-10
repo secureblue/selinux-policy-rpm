@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 188%{?dist}
+Release: 189%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,9 @@ exit 0
 %endif
 
 %changelog
+* Tue May 10 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-189
+- Revert temporary fix: Replace generating man/html pages with pages from actual build. This is due to broken userspace with python3 in F23/Rawhide. Please Revert when userspace will be fixed
+
 * Mon May 09 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-188
 - Label tcp port 8181 as intermapper_port_t.
 - Label /usr/libexec/storaged/storaged as lvm_exec_t to run storaged daemon in lvm_t SELinux domain. BZ(1333588)
