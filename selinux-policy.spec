@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 189%{?dist}
+Release: 190%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,12 @@ exit 0
 %endif
 
 %changelog
+* Mon May 16 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-190
+- Label /var/log/ganesha.log as gluster_log_t Allow glusterd_t domain to create glusterd_log_t files. Label /var/run/ganesha.pid as gluster_var_run_t.
+- Allow zabbix to connect to postgresql port
+- Label /usr/libexec/openssh/sshd-keygen as sshd_keygen_exec_t. BZ(1335149)
+- Allow systemd to read efivarfs. Resolve: #121
+
 * Tue May 10 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-189
 - Revert temporary fix: Replace generating man/html pages with pages from actual build. This is due to broken userspace with python3 in F23/Rawhide. Please Revert when userspace will be fixed
 

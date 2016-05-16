@@ -31640,10 +31640,10 @@ index 5cd0909..bd3c3d2 100644
 +corenet_tcp_connect_glance_registry_port(glance_scrubber_t)
 diff --git a/glusterd.fc b/glusterd.fc
 new file mode 100644
-index 0000000..cbd6aa4
+index 0000000..52b4110
 --- /dev/null
 +++ b/glusterd.fc
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,22 @@
 +/etc/rc\.d/init\.d/gluster.*	--	gen_context(system_u:object_r:glusterd_initrc_exec_t,s0)
 +
 +/etc/glusterfs(/.*)?	gen_context(system_u:object_r:glusterd_conf_t,s0)
@@ -31659,17 +31659,19 @@ index 0000000..cbd6aa4
 +/var/lib/glusterd(/.*)?		gen_context(system_u:object_r:glusterd_var_lib_t,s0)
 +
 +/var/log/glusterfs(/.*)?	gen_context(system_u:object_r:glusterd_log_t,s0)
++/var/log/ganesha.log	--	gen_context(system_u:object_r:glusterd_log_t,s0)
 +
 +/var/run/gluster(/.*)?	gen_context(system_u:object_r:glusterd_var_run_t,s0)
 +/var/run/glusterd(/.*)?	gen_context(system_u:object_r:glusterd_var_run_t,s0)
 +/var/run/glusterd.*	--	gen_context(system_u:object_r:glusterd_var_run_t,s0)
 +/var/run/glusterd.*	-s	gen_context(system_u:object_r:glusterd_var_run_t,s0)
++/var/run/ganesha.*	--	gen_context(system_u:object_r:glusterd_var_run_t,s0)
 diff --git a/glusterd.if b/glusterd.if
 new file mode 100644
-index 0000000..fc9bf19
+index 0000000..764ae00
 --- /dev/null
 +++ b/glusterd.if
-@@ -0,0 +1,243 @@
+@@ -0,0 +1,261 @@
 +
 +## <summary>policy for glusterd</summary>
 +
@@ -31830,6 +31832,24 @@ index 0000000..fc9bf19
 +
 +######################################
 +## <summary>
++##  Dontaudit Read  /var/lib/glusterd files.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`glusterd_dontaudit_read_lib_dirs',`
++       gen_require(`
++               type glusterd_var_lib_t;
++       ')
++
++    dontaudit $1 glusterd_var_lib_t:dir list_dir_perms;
++')
++
++######################################
++## <summary>
 +##  Read and write /var/lib/glusterd files.
 +## </summary>
 +## <param name="domain">
@@ -31915,10 +31935,10 @@ index 0000000..fc9bf19
 +
 diff --git a/glusterd.te b/glusterd.te
 new file mode 100644
-index 0000000..afabf8c
+index 0000000..59e84ca
 --- /dev/null
 +++ b/glusterd.te
-@@ -0,0 +1,297 @@
+@@ -0,0 +1,295 @@
 +policy_module(glusterd, 1.1.3)
 +
 +## <desc>
@@ -32002,10 +32022,8 @@ index 0000000..afabf8c
 +allow glusterd_t glusterd_tmp_t:dir mounton;
 +
 +manage_dirs_pattern(glusterd_t, glusterd_log_t, glusterd_log_t)
-+append_files_pattern(glusterd_t, glusterd_log_t, glusterd_log_t)
-+create_files_pattern(glusterd_t, glusterd_log_t, glusterd_log_t)
-+setattr_files_pattern(glusterd_t, glusterd_log_t, glusterd_log_t)
-+logging_log_filetrans(glusterd_t, glusterd_log_t, dir)
++manage_files_pattern(glusterd_t, glusterd_log_t, glusterd_log_t)
++logging_log_filetrans(glusterd_t, glusterd_log_t, { file dir })
 +
 +manage_dirs_pattern(glusterd_t, glusterd_var_run_t, glusterd_var_run_t)
 +manage_files_pattern(glusterd_t, glusterd_var_run_t, glusterd_var_run_t)
@@ -45368,7 +45386,7 @@ index dd8e01a..9cd6b0b 100644
  ## <param name="domain">
  ##	<summary>
 diff --git a/logrotate.te b/logrotate.te
-index be0ab84..3c99496 100644
+index be0ab84..688605e 100644
 --- a/logrotate.te
 +++ b/logrotate.te
 @@ -5,16 +5,22 @@ policy_module(logrotate, 1.15.0)
@@ -45493,7 +45511,7 @@ index be0ab84..3c99496 100644
  files_manage_generic_spool(logrotate_t)
  files_manage_generic_spool_dirs(logrotate_t)
  files_getattr_generic_locks(logrotate_t)
-@@ -95,32 +126,52 @@ mls_process_write_to_clearance(logrotate_t)
+@@ -95,32 +126,54 @@ mls_process_write_to_clearance(logrotate_t)
  selinux_get_fs_mount(logrotate_t)
  selinux_get_enforce_mode(logrotate_t)
  
@@ -45524,6 +45542,8 @@ index be0ab84..3c99496 100644
 +miscfiles_read_hwdata(logrotate_t)
  
 -userdom_use_user_terminals(logrotate_t)
++term_dontaudit_use_unallocated_ttys(logrotate_t)
++
 +userdom_use_inherited_user_terminals(logrotate_t)
  userdom_list_user_home_dirs(logrotate_t)
  userdom_use_unpriv_users_fds(logrotate_t)
@@ -45552,7 +45572,7 @@ index be0ab84..3c99496 100644
  ')
  
  optional_policy(`
-@@ -135,16 +186,17 @@ optional_policy(`
+@@ -135,16 +188,17 @@ optional_policy(`
  
  optional_policy(`
  	apache_read_config(logrotate_t)
@@ -45572,7 +45592,7 @@ index be0ab84..3c99496 100644
  ')
  
  optional_policy(`
-@@ -170,6 +222,11 @@ optional_policy(`
+@@ -170,6 +224,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -45584,7 +45604,7 @@ index be0ab84..3c99496 100644
  	fail2ban_stream_connect(logrotate_t)
  ')
  
-@@ -178,7 +235,7 @@ optional_policy(`
+@@ -178,7 +237,7 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -45593,7 +45613,7 @@ index be0ab84..3c99496 100644
  ')
  
  optional_policy(`
-@@ -198,17 +255,18 @@ optional_policy(`
+@@ -198,17 +257,18 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -45615,7 +45635,7 @@ index be0ab84..3c99496 100644
  ')
  
  optional_policy(`
-@@ -216,6 +274,14 @@ optional_policy(`
+@@ -216,6 +276,14 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -45630,7 +45650,7 @@ index be0ab84..3c99496 100644
  	samba_exec_log(logrotate_t)
  ')
  
-@@ -228,26 +294,43 @@ optional_policy(`
+@@ -228,26 +296,43 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -117642,7 +117662,7 @@ index dd63de0..38ce620 100644
 -	admin_pattern($1, zabbix_tmpfs_t)
  ')
 diff --git a/zabbix.te b/zabbix.te
-index 7f496c6..b23f29d 100644
+index 7f496c6..fccb7b1 100644
 --- a/zabbix.te
 +++ b/zabbix.te
 @@ -6,27 +6,32 @@ policy_module(zabbix, 1.6.0)
@@ -117860,7 +117880,7 @@ index 7f496c6..b23f29d 100644
  
  corenet_sendrecv_zabbix_agent_server_packets(zabbix_agent_t)
  corenet_tcp_bind_zabbix_agent_port(zabbix_agent_t)
-@@ -170,6 +185,26 @@ corenet_sendrecv_ssh_client_packets(zabbix_agent_t)
+@@ -170,6 +185,30 @@ corenet_sendrecv_ssh_client_packets(zabbix_agent_t)
  corenet_tcp_connect_ssh_port(zabbix_agent_t)
  corenet_tcp_sendrecv_ssh_port(zabbix_agent_t)
  
@@ -117880,6 +117900,10 @@ index 7f496c6..b23f29d 100644
 +corenet_tcp_connect_pop_port(zabbix_agent_t)
 +corenet_tcp_sendrecv_pop_port(zabbix_agent_t)
 +
++corenet_sendrecv_postgresql_client_packets(zabbix_agent_t)
++corenet_tcp_connect_postgresql_port(zabbix_agent_t)
++corenet_tcp_sendrecv_postgresql_port(zabbix_agent_t)
++
 +corenet_sendrecv_smtp_client_packets(zabbix_agent_t)
 +corenet_tcp_connect_smtp_port(zabbix_agent_t)
 +corenet_tcp_sendrecv_smtp_port(zabbix_agent_t)
@@ -117887,7 +117911,7 @@ index 7f496c6..b23f29d 100644
  corenet_sendrecv_zabbix_client_packets(zabbix_agent_t)
  corenet_tcp_connect_zabbix_port(zabbix_agent_t)
  corenet_tcp_sendrecv_zabbix_port(zabbix_agent_t)
-@@ -177,21 +212,49 @@ corenet_tcp_sendrecv_zabbix_port(zabbix_agent_t)
+@@ -177,21 +216,49 @@ corenet_tcp_sendrecv_zabbix_port(zabbix_agent_t)
  dev_getattr_all_blk_files(zabbix_agent_t)
  dev_getattr_all_chr_files(zabbix_agent_t)
  
