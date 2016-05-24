@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 190%{?dist}
+Release: 191%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,18 @@ exit 0
 %endif
 
 %changelog
+* Tue May 24 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-191
+- Label /usr/share/ovirt-guest-agent/ovirt-guest-agent.py as rhev_agentd_exec_t
+- Allow dnssec_trigger_t to create lnk_file labeled as dnssec_trigger_var_run_t. BZ(1335954)
+- Allow ganesha-ha.sh script running under unconfined_t domain communicate with glusterd_t domains via dbus.
+- Allow ganesha daemon labeled as glusterd_t create /var/lib/nfs/ganesha dir labeled as var_lib_nfs_t.
+- Merge pull request #122 from NetworkManager/th/nm-dnsmasq-dbus
+- Merge pull request #125 from rhatdan/typebounds
+- Typebounds user domains
+- Allow systemd_resolved_t to check if ipv6 is disabled.
+- systemd added a new directory for unit files /run/systemd/transient. It should be labelled system_u:object_r:systemd_unit_file_t:s0, the same as /run/systemd/system, PID 1 will write units there. Resolves: #120
+- Label /dev/xen/privcmd as xen_device_t. BZ(1334115)
+
 * Mon May 16 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-190
 - Label /var/log/ganesha.log as gluster_log_t Allow glusterd_t domain to create glusterd_log_t files. Label /var/run/ganesha.pid as gluster_var_run_t.
 - Allow zabbix to connect to postgresql port

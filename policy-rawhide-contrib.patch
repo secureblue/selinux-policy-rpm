@@ -25419,7 +25419,7 @@ index 23ab808..84735a8 100644
 +/var/run/dnsmasq.*		gen_context(system_u:object_r:dnsmasq_var_run_t,s0)
  /var/run/libvirt/network(/.*)?	gen_context(system_u:object_r:dnsmasq_var_run_t,s0)
 diff --git a/dnsmasq.if b/dnsmasq.if
-index 19aa0b8..45c70c1 100644
+index 19aa0b8..a79982c 100644
 --- a/dnsmasq.if
 +++ b/dnsmasq.if
 @@ -10,7 +10,6 @@
@@ -25666,7 +25666,7 @@ index 19aa0b8..45c70c1 100644
  	init_labeled_script_domtrans($1, dnsmasq_initrc_exec_t)
  	domain_system_change_exemption($1)
  	role_transition $2 dnsmasq_initrc_exec_t system_r;
-@@ -281,9 +395,13 @@ interface(`dnsmasq_admin',`
+@@ -281,9 +395,36 @@ interface(`dnsmasq_admin',`
  	files_list_var_lib($1)
  	admin_pattern($1, dnsmasq_lease_t)
  
@@ -25680,9 +25680,32 @@ index 19aa0b8..45c70c1 100644
 +	dnsmasq_systemctl($1)
 +	admin_pattern($1, dnsmasq_unit_file_t)
 +	allow $1 dnsmasq_unit_file_t:service all_service_perms;
++')
++
++########################################
++## <summary>
++##	Send and receive messages from
++##	dnsmasq over dbus.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dnsmasq_dbus_chat',`
++	gen_require(`
++		type dnsmasq_t;
++		class dbus send_msg;
++	')
++
++	allow $1 dnsmasq_t:dbus send_msg;
++	allow dnsmasq_t $1:dbus send_msg;
  ')
++
++
 diff --git a/dnsmasq.te b/dnsmasq.te
-index 37a3b7b..921056a 100644
+index 37a3b7b..0a64088 100644
 --- a/dnsmasq.te
 +++ b/dnsmasq.te
 @@ -24,6 +24,9 @@ logging_log_file(dnsmasq_var_log_t)
@@ -25731,7 +25754,7 @@ index 37a3b7b..921056a 100644
  
  userdom_dontaudit_use_unpriv_user_fds(dnsmasq_t)
  userdom_dontaudit_search_user_home_dirs(dnsmasq_t)
-@@ -98,12 +105,21 @@ optional_policy(`
+@@ -98,12 +105,25 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -25741,20 +25764,24 @@ index 37a3b7b..921056a 100644
 +optional_policy(`
  	dbus_connect_system_bus(dnsmasq_t)
  	dbus_system_bus_client(dnsmasq_t)
++
++	optional_policy(`
++		networkmanager_dbus_chat(dnsmasq_t)
++	')
++')
++
++optional_policy(`
++	dnsmasq_domtrans(dnsmasq_t)
  ')
  
  optional_policy(`
 -	networkmanager_read_pid_files(dnsmasq_t)
-+	dnsmasq_domtrans(dnsmasq_t)
-+')
-+
-+optional_policy(`
 +	networkmanager_read_conf(dnsmasq_t)
 +	networkmanager_manage_pid_files(dnsmasq_t)
  ')
  
  optional_policy(`
-@@ -124,6 +140,14 @@ optional_policy(`
+@@ -124,6 +144,14 @@ optional_policy(`
  
  optional_policy(`
  	virt_manage_lib_files(dnsmasq_t)
@@ -25912,10 +25939,10 @@ index 0000000..d22ed69
 +')
 diff --git a/dnssec.te b/dnssec.te
 new file mode 100644
-index 0000000..181a31b
+index 0000000..f186d85
 --- /dev/null
 +++ b/dnssec.te
-@@ -0,0 +1,87 @@
+@@ -0,0 +1,88 @@
 +policy_module(dnssec, 1.0.0)
 +
 +########################################
@@ -25949,8 +25976,9 @@ index 0000000..181a31b
 +
 +manage_dirs_pattern(dnssec_trigger_t, dnssec_trigger_var_run_t, dnssec_trigger_var_run_t)
 +manage_files_pattern(dnssec_trigger_t, dnssec_trigger_var_run_t, dnssec_trigger_var_run_t)
++manage_lnk_files_pattern(dnssec_trigger_t, dnssec_trigger_var_run_t, dnssec_trigger_var_run_t)
 +allow dnssec_trigger_t dnssec_trigger_var_run_t:file  relabelfrom_file_perms;
-+files_pid_filetrans(dnssec_trigger_t, dnssec_trigger_var_run_t, { dir file })
++files_pid_filetrans(dnssec_trigger_t, dnssec_trigger_var_run_t, { dir file lnk_file })
 +
 +manage_files_pattern(dnssec_trigger_t,dnssec_trigger_tmp_t,dnssec_trigger_tmp_t)
 +manage_dirs_pattern(dnssec_trigger_t,dnssec_trigger_tmp_t,dnssec_trigger_tmp_t)
@@ -31935,10 +31963,10 @@ index 0000000..764ae00
 +
 diff --git a/glusterd.te b/glusterd.te
 new file mode 100644
-index 0000000..59e84ca
+index 0000000..33654d5
 --- /dev/null
 +++ b/glusterd.te
-@@ -0,0 +1,295 @@
+@@ -0,0 +1,297 @@
 +policy_module(glusterd, 1.1.3)
 +
 +## <desc>
@@ -32176,6 +32204,7 @@ index 0000000..59e84ca
 +optional_policy(`
 +    dbus_system_bus_client(glusterd_t)
 +    dbus_connect_system_bus(glusterd_t)
++	unconfined_dbus_chat(glusterd_t)
 +
 +    optional_policy(`
 +        policykit_dbus_chat(glusterd_t)
@@ -32221,6 +32250,7 @@ index 0000000..59e84ca
 +    rpc_domtrans_nfsd(glusterd_t)
 +    rpc_domtrans_rpcd(glusterd_t)
 +    rpc_manage_nfs_state_data(glusterd_t)
++	rpc_manage_nfs_state_data_dir(glusterd_t)
 +	rpcbind_stream_connect(glusterd_t)
 +')
 +
@@ -58382,7 +58412,7 @@ index 86dc29d..7380935 100644
 +	logging_log_filetrans($1, NetworkManager_var_lib_t, file, "wpa_supplicant.log")
  ')
 diff --git a/networkmanager.te b/networkmanager.te
-index 55f2009..2646460 100644
+index 55f2009..ab2d757 100644
 --- a/networkmanager.te
 +++ b/networkmanager.te
 @@ -9,15 +9,18 @@ type NetworkManager_t;
@@ -58640,7 +58670,7 @@ index 55f2009..2646460 100644
  	consoletype_exec(NetworkManager_t)
  ')
  
-@@ -210,16 +260,11 @@ optional_policy(`
+@@ -210,31 +260,34 @@ optional_policy(`
  optional_policy(`
  	dbus_system_domain(NetworkManager_t, NetworkManager_exec_t)
  
@@ -58659,7 +58689,12 @@ index 55f2009..2646460 100644
  	')
  ')
  
-@@ -231,10 +276,17 @@ optional_policy(`
+ optional_policy(`
+ 	dnsmasq_read_pid_files(NetworkManager_t)
++	dnsmasq_dbus_chat(NetworkManager_t)
+ 	dnsmasq_delete_pid_files(NetworkManager_t)
+ 	dnsmasq_domtrans(NetworkManager_t)
+ 	dnsmasq_initrc_domtrans(NetworkManager_t)
  	dnsmasq_kill(NetworkManager_t)
  	dnsmasq_signal(NetworkManager_t)
  	dnsmasq_signull(NetworkManager_t)
@@ -58678,7 +58713,7 @@ index 55f2009..2646460 100644
  ')
  
  optional_policy(`
-@@ -246,10 +298,26 @@ optional_policy(`
+@@ -246,10 +299,26 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -58705,7 +58740,7 @@ index 55f2009..2646460 100644
  ')
  
  optional_policy(`
-@@ -257,15 +325,19 @@ optional_policy(`
+@@ -257,15 +326,19 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -58727,7 +58762,7 @@ index 55f2009..2646460 100644
  ')
  
  optional_policy(`
-@@ -274,10 +346,17 @@ optional_policy(`
+@@ -274,10 +347,17 @@ optional_policy(`
  	nscd_signull(NetworkManager_t)
  	nscd_kill(NetworkManager_t)
  	nscd_initrc_domtrans(NetworkManager_t)
@@ -58745,7 +58780,7 @@ index 55f2009..2646460 100644
  ')
  
  optional_policy(`
-@@ -286,9 +365,12 @@ optional_policy(`
+@@ -286,9 +366,12 @@ optional_policy(`
  	openvpn_kill(NetworkManager_t)
  	openvpn_signal(NetworkManager_t)
  	openvpn_signull(NetworkManager_t)
@@ -58758,7 +58793,7 @@ index 55f2009..2646460 100644
  	policykit_domtrans_auth(NetworkManager_t)
  	policykit_read_lib(NetworkManager_t)
  	policykit_read_reload(NetworkManager_t)
-@@ -296,7 +378,7 @@ optional_policy(`
+@@ -296,7 +379,7 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -58767,7 +58802,7 @@ index 55f2009..2646460 100644
  ')
  
  optional_policy(`
-@@ -307,6 +389,7 @@ optional_policy(`
+@@ -307,6 +390,7 @@ optional_policy(`
  	ppp_signal(NetworkManager_t)
  	ppp_signull(NetworkManager_t)
  	ppp_read_config(NetworkManager_t)
@@ -58775,7 +58810,7 @@ index 55f2009..2646460 100644
  ')
  
  optional_policy(`
-@@ -320,14 +403,21 @@ optional_policy(`
+@@ -320,14 +404,21 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -58802,7 +58837,7 @@ index 55f2009..2646460 100644
  ')
  
  optional_policy(`
-@@ -338,6 +428,13 @@ optional_policy(`
+@@ -338,6 +429,13 @@ optional_policy(`
  	vpn_relabelfrom_tun_socket(NetworkManager_t)
  ')
  
@@ -58816,7 +58851,7 @@ index 55f2009..2646460 100644
  ########################################
  #
  # wpa_cli local policy
-@@ -357,6 +454,4 @@ rw_sock_files_pattern(wpa_cli_t, NetworkManager_var_run_t, NetworkManager_var_ru
+@@ -357,6 +455,4 @@ rw_sock_files_pattern(wpa_cli_t, NetworkManager_var_run_t, NetworkManager_var_ru
  init_dontaudit_use_fds(wpa_cli_t)
  init_use_script_ptys(wpa_cli_t)
  
@@ -86765,15 +86800,16 @@ index 6cf79c4..1a605f9 100644
  ')
 diff --git a/rhev.fc b/rhev.fc
 new file mode 100644
-index 0000000..4b66adf
+index 0000000..013d1d9
 --- /dev/null
 +++ b/rhev.fc
-@@ -0,0 +1,13 @@
+@@ -0,0 +1,14 @@
 +/usr/share/rhev-agent/rhev-agentd\.py	--	gen_context(system_u:object_r:rhev_agentd_exec_t,s0)
 +/usr/share/ovirt-guest-agent	--	 gen_context(system_u:object_r:rhev_agentd_exec_t,s0)
 +
 +/usr/share/rhev-agent/LockActiveSession\.py --  gen_context(system_u:object_r:rhev_agentd_exec_t,s0)
 +/usr/share/ovirt-guest-agent/LockActiveSession\.py  --  gen_context(system_u:object_r:rhev_agentd_exec_t,s0)
++/usr/share/ovirt-guest-agent/ovirt-guest-agent\.py  --  gen_context(system_u:object_r:rhev_agentd_exec_t,s0)
 +
 +/usr/lib/systemd/system/ovirt-guest-agent.*  --              gen_context(system_u:object_r:rhev_agentd_unit_file_t,s0)
 +
@@ -88928,7 +88964,7 @@ index a6fb30c..38a2f09 100644
 +/var/run/rpc\.statd\.pid --	gen_context(system_u:object_r:rpcd_var_run_t,s0)
 +
 diff --git a/rpc.if b/rpc.if
-index 0bf13c2..4f3c2b9 100644
+index 0bf13c2..ed393a0 100644
 --- a/rpc.if
 +++ b/rpc.if
 @@ -1,4 +1,4 @@
@@ -89240,7 +89276,7 @@ index 0bf13c2..4f3c2b9 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -326,12 +345,31 @@ interface(`rpc_search_nfs_state_data',`
+@@ -326,12 +345,50 @@ interface(`rpc_search_nfs_state_data',`
  	')
  
  	files_search_var_lib($1)
@@ -89270,11 +89306,30 @@ index 0bf13c2..4f3c2b9 100644
 +
 +########################################
 +## <summary>
++##	Manage NFS state data in /var/lib/nfs.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`rpc_manage_nfs_state_data_dir',`
++	gen_require(`
++		type var_lib_nfs_t;
++	')
++
++	files_search_var_lib($1)
++	allow $1 var_lib_nfs_t:dir manage_dir_perms;
++')
++
++########################################
++## <summary>
 +##	Read NFS state data in /var/lib/nfs.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -350,8 +388,7 @@ interface(`rpc_read_nfs_state_data',`
+@@ -350,8 +407,7 @@ interface(`rpc_read_nfs_state_data',`
  
  ########################################
  ## <summary>
@@ -89284,7 +89339,7 @@ index 0bf13c2..4f3c2b9 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -366,31 +403,68 @@ interface(`rpc_manage_nfs_state_data',`
+@@ -366,31 +422,68 @@ interface(`rpc_manage_nfs_state_data',`
  
  	files_search_var_lib($1)
  	manage_files_pattern($1, var_lib_nfs_t, var_lib_nfs_t)
@@ -89359,7 +89414,7 @@ index 0bf13c2..4f3c2b9 100644
  	')
  
  	allow $1 rpc_domain:process { ptrace signal_perms };
-@@ -411,7 +485,7 @@ interface(`rpc_admin',`
+@@ -411,7 +504,7 @@ interface(`rpc_admin',`
  	admin_pattern($1, rpcd_var_run_t)
  
  	files_list_all($1)
