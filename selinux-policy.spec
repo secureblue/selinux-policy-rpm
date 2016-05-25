@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 191%{?dist}
+Release: 192%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,10 @@ exit 0
 %endif
 
 %changelog
+* Wed May 25 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-192
+- Create new SELinux type for /usr/libexec/ipa/ipa-dnskeysyncd BZ(1333106)
+- Add SELinux policy for opendnssec service. BZ(1333106)
+
 * Tue May 24 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-191
 - Label /usr/share/ovirt-guest-agent/ovirt-guest-agent.py as rhev_agentd_exec_t
 - Allow dnssec_trigger_t to create lnk_file labeled as dnssec_trigger_var_run_t. BZ(1335954)

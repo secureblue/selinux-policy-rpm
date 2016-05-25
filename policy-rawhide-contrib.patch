@@ -9549,7 +9549,7 @@ index 2b9a3a1..49accb6 100644
 +/var/named/dynamic(/.*)?		gen_context(system_u:object_r:named_cache_t,s0)
 +')
 diff --git a/bind.if b/bind.if
-index 531a8f2..0b86f2f 100644
+index 531a8f2..3fcf187 100644
 --- a/bind.if
 +++ b/bind.if
 @@ -20,6 +20,30 @@ interface(`bind_initrc_domtrans',`
@@ -9617,7 +9617,7 @@ index 531a8f2..0b86f2f 100644
  ##	Search bind cache directories.
  ## </summary>
  ## <param name="domain">
-@@ -310,6 +354,27 @@ interface(`bind_read_zone',`
+@@ -310,6 +354,47 @@ interface(`bind_read_zone',`
  
  ########################################
  ## <summary>
@@ -9642,10 +9642,30 @@ index 531a8f2..0b86f2f 100644
 +
 +########################################
 +## <summary>
++##	Create, read, write, and delete
++##	bind zone files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`bind_manage_zone_dirs',`
++	gen_require(`
++		type named_zone_t;
++	')
++
++	files_search_var($1)
++	allow $1  named_zone_t:dir manage_dir_perms;
++')
++
++########################################
++## <summary>
  ##	Create, read, write, and delete
  ##	bind zone files.
  ## </summary>
-@@ -344,6 +409,25 @@ interface(`bind_udp_chat_named',`
+@@ -344,6 +429,25 @@ interface(`bind_udp_chat_named',`
  
  ########################################
  ## <summary>
@@ -9671,28 +9691,28 @@ index 531a8f2..0b86f2f 100644
  ##	All of the rules required to
  ##	administrate an bind environment.
  ## </summary>
-@@ -364,11 +448,17 @@ interface(`bind_admin',`
+@@ -364,11 +468,17 @@ interface(`bind_admin',`
  		type named_t, named_tmp_t, named_log_t;
  		type named_cache_t, named_zone_t, named_initrc_exec_t;
  		type dnssec_t, ndc_t, named_conf_t, named_var_run_t;
 -		type named_keytab_t;
 +		type named_keytab_t, named_unit_file_t;
-+	')
-+
+ 	')
+ 
+-	allow $1 { named_t ndc_t }:process { ptrace signal_perms };
+-	ps_process_pattern($1, { named_t ndc_t })
 +	allow $1 named_t:process signal_perms;
 +	ps_process_pattern($1, named_t)
 +
 +	tunable_policy(`deny_ptrace',`',`
 +		allow $1 named_t:process ptrace;
- 	')
- 
--	allow $1 { named_t ndc_t }:process { ptrace signal_perms };
--	ps_process_pattern($1, { named_t ndc_t })
++	')
++
 +	bind_run_ndc($1, $2)
  
  	init_labeled_script_domtrans($1, named_initrc_exec_t)
  	domain_system_change_exemption($1)
-@@ -384,11 +474,15 @@ interface(`bind_admin',`
+@@ -384,11 +494,15 @@ interface(`bind_admin',`
  	files_list_etc($1)
  	admin_pattern($1, { named_keytab_t named_conf_t })
  
@@ -9710,7 +9730,7 @@ index 531a8f2..0b86f2f 100644
 +	allow $1 named_unit_file_t:service all_service_perms;
  ')
 diff --git a/bind.te b/bind.te
-index 1241123..dcaf16b 100644
+index 1241123..bf5ad4a 100644
 --- a/bind.te
 +++ b/bind.te
 @@ -34,7 +34,7 @@ type named_checkconf_exec_t;
@@ -9800,10 +9820,14 @@ index 1241123..dcaf16b 100644
  	dbus_system_domain(named_t, named_exec_t)
  
  	init_dbus_chat_script(named_t)
-@@ -187,7 +206,13 @@ optional_policy(`
+@@ -187,7 +206,17 @@ optional_policy(`
  ')
  
  optional_policy(`
++    ipa_manage_lib(named_t)
++')
++
++optional_policy(`
 +    ipsec_rw_inherited_pipes(named_t)
 +')
 +
@@ -9814,7 +9838,7 @@ index 1241123..dcaf16b 100644
  	kerberos_use(named_t)
  ')
  
-@@ -215,7 +240,8 @@ optional_policy(`
+@@ -215,7 +244,8 @@ optional_policy(`
  #
  
  allow ndc_t self:capability { dac_override net_admin };
@@ -9824,7 +9848,7 @@ index 1241123..dcaf16b 100644
  allow ndc_t self:fifo_file rw_fifo_file_perms;
  allow ndc_t self:unix_stream_socket { accept listen };
  
-@@ -229,10 +255,9 @@ allow ndc_t named_conf_t:lnk_file read_lnk_file_perms;
+@@ -229,10 +259,9 @@ allow ndc_t named_conf_t:lnk_file read_lnk_file_perms;
  
  allow ndc_t named_zone_t:dir search_dir_perms;
  
@@ -9836,7 +9860,7 @@ index 1241123..dcaf16b 100644
  corenet_all_recvfrom_netlabel(ndc_t)
  corenet_tcp_sendrecv_generic_if(ndc_t)
  corenet_tcp_sendrecv_generic_node(ndc_t)
-@@ -242,6 +267,9 @@ corenet_tcp_bind_generic_node(ndc_t)
+@@ -242,6 +271,9 @@ corenet_tcp_bind_generic_node(ndc_t)
  corenet_tcp_connect_rndc_port(ndc_t)
  corenet_sendrecv_rndc_client_packets(ndc_t)
  
@@ -9846,7 +9870,7 @@ index 1241123..dcaf16b 100644
  domain_use_interactive_fds(ndc_t)
  
  files_search_pids(ndc_t)
-@@ -257,7 +285,7 @@ init_use_script_ptys(ndc_t)
+@@ -257,7 +289,7 @@ init_use_script_ptys(ndc_t)
  
  logging_send_syslog_msg(ndc_t)
  
@@ -37977,13 +38001,18 @@ index 0000000..61f2003
 +userdom_use_user_terminals(iotop_t)
 diff --git a/ipa.fc b/ipa.fc
 new file mode 100644
-index 0000000..ce135f3
+index 0000000..e1ddda0
 --- /dev/null
 +++ b/ipa.fc
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,19 @@
 +/usr/lib/systemd/system/ipa-otpd.*		--	gen_context(system_u:object_r:ipa_otpd_unit_file_t,s0)
 +
++/usr/lib/systemd/system/ipa-dnskeysyncd.*		--	gen_context(system_u:object_r:ipa_dnskey_unit_file_t,s0)
++
 +/usr/libexec/ipa-otpd		--	gen_context(system_u:object_r:ipa_otpd_exec_t,s0)
++
++/usr/libexec/ipa/ipa-dnskeysyncd		--	gen_context(system_u:object_r:ipa_dnskey_exec_t,s0)
++/usr/libexec/ipa/ipa-dnskeysync-replica		--	gen_context(system_u:object_r:ipa_dnskey_exec_t,s0)
 +
 +/usr/libexec/ipa/com\.redhat\.idm\.trust-fetch-domains --   gen_context(system_u:object_r:ipa_helper_exec_t,s0)
 +/usr/libexec/ipa/oddjob/com\.redhat\.idm\.trust-fetch-domains  --  gen_context(system_u:object_r:ipa_helper_exec_t,s0)
@@ -38181,10 +38210,10 @@ index 0000000..904782d
 +')
 diff --git a/ipa.te b/ipa.te
 new file mode 100644
-index 0000000..af46439
+index 0000000..5fad85e
 --- /dev/null
 +++ b/ipa.te
-@@ -0,0 +1,130 @@
+@@ -0,0 +1,195 @@
 +policy_module(ipa, 1.0.0)
 +
 +########################################
@@ -38201,8 +38230,15 @@ index 0000000..af46439
 +type ipa_otpd_exec_t;
 +init_daemon_domain(ipa_otpd_t, ipa_otpd_exec_t)
 +
++type ipa_dnskey_t, ipa_domain;
++type ipa_dnskey_exec_t;
++init_daemon_domain(ipa_dnskey_t, ipa_dnskey_exec_t)
++
 +type ipa_otpd_unit_file_t;
 +systemd_unit_file(ipa_otpd_unit_file_t)
++
++type ipa_dnskey_unit_file_t;
++systemd_unit_file(ipa_dnskey_unit_file_t)
 +
 +type ipa_log_t;
 +logging_log_file(ipa_log_t)
@@ -38219,6 +38255,9 @@ index 0000000..af46439
 +domain_obj_id_change_exemption(ipa_helper_t)
 +init_system_domain(ipa_helper_t, ipa_helper_exec_t)
 +role ipa_helper_roles types ipa_helper_t;
++
++type ipa_tmp_t;
++files_tmp_file(ipa_tmp_t)
 +
 +########################################
 +#
@@ -38314,6 +38353,61 @@ index 0000000..af46439
 +
 +optional_policy(`
 +    sssd_manage_lib_files(ipa_helper_t)
++')
++
++########################################
++#
++# ipa-dnskey local policy
++#
++allow ipa_dnskey_t self:tcp_socket create_stream_socket_perms;
++allow ipa_dnskey_t self:udp_socket create_socket_perms;
++allow ipa_dnskey_t self:unix_dgram_socket create_socket_perms;
++allow ipa_dnskey_t self:netlink_route_socket { create_netlink_socket_perms nlmsg_read };
++
++manage_files_pattern(ipa_dnskey_t, ipa_var_lib_t, ipa_var_lib_t)
++setattr_dirs_pattern(ipa_dnskey_t, ipa_var_lib_t, ipa_var_lib_t)
++list_dirs_pattern(ipa_dnskey_t, ipa_var_lib_t, ipa_var_lib_t)
++
++manage_files_pattern(ipa_dnskey_t, ipa_tmp_t, ipa_tmp_t)
++files_tmp_filetrans(ipa_dnskey_t, ipa_tmp_t, { file })
++
++kernel_dgram_send(ipa_dnskey_t)
++
++auth_use_nsswitch(ipa_dnskey_t)
++
++corecmd_exec_bin(ipa_dnskey_t)
++corecmd_exec_shell(ipa_dnskey_t)
++
++corenet_tcp_bind_generic_node(ipa_dnskey_t)
++corenet_tcp_connect_kerberos_port(ipa_dnskey_t)
++corenet_tcp_connect_rndc_port(ipa_dnskey_t)
++
++dev_read_rand(ipa_dnskey_t)
++
++libs_exec_ldconfig(ipa_dnskey_t)
++
++logging_send_syslog_msg(ipa_dnskey_t)
++
++miscfiles_read_certs(ipa_dnskey_t)
++
++sysnet_read_config(ipa_dnskey_t)
++
++optional_policy(`
++	bind_domtrans_ndc(ipa_dnskey_t)
++	bind_read_dnssec_keys(ipa_dnskey_t)
++	bind_manage_zone(ipa_dnskey_t)
++	bind_manage_zone_dirs(ipa_dnskey_t)
++')
++
++optional_policy(`
++	dirsrv_stream_connect(ipa_dnskey_t)
++')
++
++optional_policy(`
++	opendnssec_domtrans(ipa_dnskey_t)
++	opendnssec_manage_config(ipa_dnskey_t)
++	opendnssec_manage_var_files(ipa_dnskey_t)
++	opendnssec_filetrans_etc_content(ipa_dnskey_t)
 +')
 diff --git a/ipmievd.fc b/ipmievd.fc
 new file mode 100644
@@ -63355,6 +63449,299 @@ index 3b6920e..3e9b17f 100644
  userdom_dontaudit_use_unpriv_user_fds(openct_t)
  userdom_dontaudit_search_user_home_dirs(openct_t)
  
+diff --git a/opendnssec.fc b/opendnssec.fc
+new file mode 100644
+index 0000000..08d0e79
+--- /dev/null
++++ b/opendnssec.fc
+@@ -0,0 +1,14 @@
++/usr/lib/systemd/system/ods-enforcerd.service		--	gen_context(system_u:object_r:opendnssec_unit_file_t,s0)
++
++/usr/lib/systemd/system/ods-signerd.service		--	gen_context(system_u:object_r:opendnssec_unit_file_t,s0)
++
++/usr/sbin/ods-control	--	gen_context(system_u:object_r:opendnssec_exec_t,s0)
++/usr/sbin/ods-enforcerd	--	gen_context(system_u:object_r:opendnssec_exec_t,s0)
++/usr/sbin/ods-signer	--	gen_context(system_u:object_r:opendnssec_exec_t,s0)
++/usr/sbin/ods-signerd	--	gen_context(system_u:object_r:opendnssec_exec_t,s0)
++
++/etc/opendnssec(/.*)?		gen_context(system_u:object_r:opendnssec_conf_t,s0)
++
++/var/run/opendnssec(/.*)?		gen_context(system_u:object_r:opendnssec_var_run_t,s0)
++
++/var/opendnssec(/.*)?		gen_context(system_u:object_r:opendnssec_var_t,s0)
+diff --git a/opendnssec.if b/opendnssec.if
+new file mode 100644
+index 0000000..fb0141d
+--- /dev/null
++++ b/opendnssec.if
+@@ -0,0 +1,206 @@
++
++## <summary>policy for opendnssec</summary>
++
++########################################
++## <summary>
++##	Execute opendnssec_exec_t in the opendnssec domain.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`opendnssec_domtrans',`
++	gen_require(`
++		type opendnssec_t, opendnssec_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	domtrans_pattern($1, opendnssec_exec_t, opendnssec_t)
++')
++
++######################################
++## <summary>
++##	Execute opendnssec in the caller domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`opendnssec_exec',`
++	gen_require(`
++		type opendnssec_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	can_exec($1, opendnssec_exec_t)
++')
++
++########################################
++## <summary>
++##      Read the opendnssec configuration files.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++## <rolecap/>
++#
++interface(`opendnssec_read_config',`
++        gen_require(`
++                type opendnssec_conf_t;
++        ')
++
++        files_search_etc($1)
++        allow $1 opendnssec_conf_t:file read_file_perms;
++')
++
++########################################
++## <summary>
++##      Read the opendnssec configuration files.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++## <rolecap/>
++#
++interface(`opendnssec_manage_config',`
++        gen_require(`
++                type opendnssec_conf_t;
++        ')
++
++        files_search_etc($1)
++        allow $1 opendnssec_conf_t:file manage_file_perms;
++')
++
++########################################
++## <summary>
++##      Allow the specified domain to
++##      read and write opendnssec /var files.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`opendnssec_manage_var_files',`
++        gen_require(`
++                type opendnssec_var_t;
++        ')
++
++        files_search_var($1)
++        files_search_var_lib($1)
++        manage_files_pattern($1, opendnssec_var_t, opendnssec_var_t)
++')
++
++########################################
++## <summary>
++##	Read opendnssec PID files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`opendnssec_read_pid_files',`
++	gen_require(`
++		type opendnssec_var_run_t;
++	')
++
++	files_search_pids($1)
++	read_files_pattern($1, opendnssec_var_run_t, opendnssec_var_run_t)
++')
++
++########################################
++## <summary>
++##	Execute opendnssec server in the opendnssec domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed to transition.
++##	</summary>
++## </param>
++#
++interface(`opendnssec_systemctl',`
++	gen_require(`
++		type opendnssec_t;
++		type opendnssec_unit_file_t;
++	')
++
++	systemd_exec_systemctl($1)
++        systemd_read_fifo_file_passwd_run($1)
++	allow $1 opendnssec_unit_file_t:file read_file_perms;
++	allow $1 opendnssec_unit_file_t:service manage_service_perms;
++
++	ps_process_pattern($1, opendnssec_t)
++')
++
++
++########################################
++## <summary>
++##	All of the rules required to administrate
++##	an opendnssec environment
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	Role allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`opendnssec_admin',`
++	gen_require(`
++		type opendnssec_t;
++		type opendnssec_var_run_t;
++	type opendnssec_unit_file_t;
++	')
++
++	allow $1 opendnssec_t:process { signal_perms };
++	ps_process_pattern($1, opendnssec_t)
++
++    tunable_policy(`deny_ptrace',`',`
++        allow $1 opendnssec_t:process ptrace;
++    ')
++
++	files_search_pids($1)
++	admin_pattern($1, opendnssec_var_run_t)
++
++	opendnssec_systemctl($1)
++	admin_pattern($1, opendnssec_unit_file_t)
++	allow $1 opendnssec_unit_file_t:service all_service_perms;
++	optional_policy(`
++		systemd_passwd_agent_exec($1)
++		systemd_read_fifo_file_passwd_run($1)
++	')
++')
++
++########################################
++## <summary>
++##      Transition to quota named content
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`opendnssec_filetrans_etc_content',`
++        gen_require(`
++                type opendnssec_conf_t;
++        ')
++
++        files_etc_filetrans($1, opendnssec_conf_t, file)
++')
+diff --git a/opendnssec.te b/opendnssec.te
+new file mode 100644
+index 0000000..a0e817d
+--- /dev/null
++++ b/opendnssec.te
+@@ -0,0 +1,55 @@
++policy_module(opendnssec, 1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++type opendnssec_t;
++type opendnssec_exec_t;
++init_daemon_domain(opendnssec_t, opendnssec_exec_t)
++
++type opendnssec_conf_t;
++files_config_file(opendnssec_conf_t)
++
++type opendnssec_var_t;
++files_type(opendnssec_var_t)
++
++type opendnssec_var_run_t;
++files_pid_file(opendnssec_var_run_t)
++
++type opendnssec_unit_file_t;
++systemd_unit_file(opendnssec_unit_file_t)
++
++########################################
++#
++# opendnssec local policy
++#
++allow opendnssec_t self:capability { chown setgid setuid sys_chroot };
++allow opendnssec_t self:process { fork signal_perms };
++allow opendnssec_t self:fifo_file rw_fifo_file_perms;
++allow opendnssec_t self:unix_stream_socket create_stream_socket_perms;
++
++manage_files_pattern(opendnssec_t, opendnssec_conf_t,opendnssec_conf_t)
++manage_dirs_pattern(opendnssec_t, opendnssec_conf_t,opendnssec_conf_t)
++
++manage_dirs_pattern(opendnssec_t, opendnssec_var_t, opendnssec_var_t)
++manage_files_pattern(opendnssec_t, opendnssec_var_t, opendnssec_var_t)
++files_var_filetrans(opendnssec_t, opendnssec_var_t, dir)
++
++manage_dirs_pattern(opendnssec_t, opendnssec_var_run_t, opendnssec_var_run_t)
++manage_files_pattern(opendnssec_t, opendnssec_var_run_t, opendnssec_var_run_t)
++manage_lnk_files_pattern(opendnssec_t, opendnssec_var_run_t, opendnssec_var_run_t)
++manage_sock_files_pattern(opendnssec_t, opendnssec_var_run_t, opendnssec_var_run_t)
++files_pid_filetrans(opendnssec_t, opendnssec_var_run_t, { dir file lnk_file })
++
++auth_use_nsswitch(opendnssec_t)
++
++corecmd_exec_bin(opendnssec_t)
++
++logging_send_syslog_msg(opendnssec_t)
++
++optional_policy(`
++    ipa_manage_lib(opendnssec_t)
++')
++
 diff --git a/openfortivpn.fc b/openfortivpn.fc
 new file mode 100644
 index 0000000..2e4dd3f
