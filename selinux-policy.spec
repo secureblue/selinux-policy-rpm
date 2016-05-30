@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 192%{?dist}
+Release: 193%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,17 @@ exit 0
 %endif
 
 %changelog
+* Mon May 30 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-193
+- Directory Server (389-ds-base) has been updated to use systemd-ask-password. In order to function correctly we need the following added to dirsrv.te
+- Update opendnssec_manage_config() interface to allow caller domain also manage opendnssec_conf_t dirs
+- Allow gssproxy to get attributes on all filesystem object types. BZ(1333778)
+- Allow ipa_dnskey_t search httpd config files.
+- Dontaudit certmonger to write to etc_runtime_t
+- Update opendnssec_read_conf() interface to allow caller domain also read opendnssec_conf_t dirs.
+- Add interface ipa_delete_tmp()
+- Allow systemd_hostanmed_t to read /proc/sysinfo labeled as sysctl_t.
+- Allow systemd to remove ipa temp files during uinstalling ipa. BZ(1333106)
+
 * Wed May 25 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-192
 - Create new SELinux type for /usr/libexec/ipa/ipa-dnskeysyncd BZ(1333106)
 - Add SELinux policy for opendnssec service. BZ(1333106)
