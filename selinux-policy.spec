@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 193%{?dist}
+Release: 194%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun 07 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-194
+- Allow boinc to use dri devices. This allows use Boinc for a openCL GPU calculations. BZ(1340886)
+- Add nrpe_dontaudit_write_pipes()
+- Merge pull request #129 from rhatdan/onload
+- Add support for onloadfs
+- Merge pull request #127 from rhatdan/device-node
+- Additional access required for unconfined domains
+- Dontaudit ping attempts to write to nrpe unnamed pipes
+- Allow ifconfig_t to mounton also ifconfig_var_run_t dirs, not just files. Needed for: #ip netns add foo BZ(1340952)
 * Mon May 30 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-193
 - Directory Server (389-ds-base) has been updated to use systemd-ask-password. In order to function correctly we need the following added to dirsrv.te
 - Update opendnssec_manage_config() interface to allow caller domain also manage opendnssec_conf_t dirs
