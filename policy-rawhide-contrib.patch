@@ -32032,10 +32032,10 @@ index 0000000..764ae00
 +
 diff --git a/glusterd.te b/glusterd.te
 new file mode 100644
-index 0000000..33654d5
+index 0000000..c31e40e
 --- /dev/null
 +++ b/glusterd.te
-@@ -0,0 +1,297 @@
+@@ -0,0 +1,302 @@
 +policy_module(glusterd, 1.1.3)
 +
 +## <desc>
@@ -32100,7 +32100,7 @@ index 0000000..33654d5
 +allow glusterd_t self:capability { sys_admin sys_resource sys_ptrace dac_override chown dac_read_search fowner fsetid kill setgid setuid net_admin mknod net_raw };
 +
 +allow glusterd_t self:capability2 block_suspend;
-+allow glusterd_t self:process { getcap setcap setrlimit signal_perms setsched getsched };
++allow glusterd_t self:process { getcap setcap setrlimit signal_perms setsched getsched setfscreate};
 +allow glusterd_t self:sem create_sem_perms;
 +allow glusterd_t self:fifo_file rw_fifo_file_perms;
 +allow glusterd_t self:tcp_socket { accept listen };
@@ -32282,6 +32282,11 @@ index 0000000..33654d5
 +
 +optional_policy(`
 +    hostname_exec(glusterd_t)
++')
++
++
++optional_policy(`
++    kerberos_read_keytab(glusterd_t)
 +')
 +
 +optional_policy(`
@@ -37023,6 +37028,166 @@ index 0000000..28816b4
 +auth_use_nsswitch(hsqldb_t)
 +
 +sysnet_read_config(hsqldb_t)
+diff --git a/hwloc.fc b/hwloc.fc
+new file mode 100644
+index 0000000..d0c5a15
+--- /dev/null
++++ b/hwloc.fc
+@@ -0,0 +1,5 @@
++/usr/sbin/hwloc-dump-hwdata	--	gen_context(system_u:object_r:hwloc_dhwd_exec_t,s0)
++
++/usr/lib/systemd/system/hwloc-dump-hwdata.*	--	gen_context(system_u:object_r:hwloc_dhwd_unit_t,s0)
++
++/var/run/hwloc(/.*)?	gen_context(system_u:object_r:hwloc_var_run_t,s0)
+diff --git a/hwloc.if b/hwloc.if
+new file mode 100644
+index 0000000..c2349ec
+--- /dev/null
++++ b/hwloc.if
+@@ -0,0 +1,106 @@
++## <summary>Dump topology and locality information from hardware tables.</summary>
++
++########################################
++## <summary>
++##	Execute hwloc dhwd in the hwloc dhwd domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed to transition.
++##	</summary>
++## </param>
++#
++interface(`hwloc_domtrans_dhwd',`
++	gen_require(`
++		type hwloc_dhwd_t, hwloc_dhwd_exec_t;
++	')
++
++	domtrans_pattern($1, hwloc_dhwd_exec_t, hwloc_dhwd_t)
++')
++
++########################################
++## <summary>
++##	Execute hwloc dhwd in the hwloc dhwd domain, and
++##	allow the specified role the hwloc dhwd domain,
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed to transition.
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	Role allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`hwloc_run_dhwd',`
++	gen_require(`
++		attribute_role hwloc_dhwd_roles;
++	')
++
++	hwloc_domtrans_dhwd($1)
++	roleattribute $2 hwloc_dhwd_roles;
++')
++
++########################################
++## <summary>
++##	Execute hwloc dhwd in the caller domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`hwloc_exec_dhwd',`
++	gen_require(`
++		type hwloc_dhwd_exec_t;
++	')
++
++	can_exec($1, hwloc_dhwd_exec_t)
++')
++
++########################################
++## <summary>
++##	Read hwloc runtime files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`hwloc_read_runtime_files',`
++	gen_require(`
++		type hwloc_var_run_t;
++	')
++
++	files_search_pids($1)
++	read_files_pattern($1, hwloc_var_run_t, hwloc_var_run_t)
++')
++
++########################################
++## <summary>
++##	All of the rules required to
++##	administrate an hwloc environment.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`hwloc_admin',`
++	gen_require(`
++		type hwloc_dhwd_t, hwloc_var_run_t;
++	')
++
++	allow $1 hwloc_dhwd_t:process { ptrace signal_perms };
++	ps_process_pattern($1, hwloc_dhwd_t)
++
++	admin_pattern($1, hwloc_var_run_t)
++	files_pid_filetrans($1, hwloc_var_run_t, dir, "hwloc")
++')
+diff --git a/hwloc.te b/hwloc.te
+new file mode 100644
+index 0000000..0f45fd5
+--- /dev/null
++++ b/hwloc.te
+@@ -0,0 +1,31 @@
++policy_module(hwloc, 1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++attribute_role hwloc_dhwd_roles;
++roleattribute system_r hwloc_dhwd_roles;
++
++type hwloc_dhwd_t;
++type hwloc_dhwd_exec_t;
++init_system_domain(hwloc_dhwd_t, hwloc_dhwd_exec_t)
++role hwloc_dhwd_roles types hwloc_dhwd_t;
++
++type hwloc_var_run_t;
++files_pid_file(hwloc_var_run_t)
++
++type hwloc_dhwd_unit_t;
++systemd_unit_file(hwloc_dhwd_unit_t)
++
++########################################
++#
++# Local policy
++#
++
++allow hwloc_dhwd_t hwloc_var_run_t:dir manage_dir_perms;
++allow hwloc_dhwd_t hwloc_var_run_t:file manage_file_perms;
++files_pid_filetrans(hwloc_dhwd_t, hwloc_var_run_t, dir)
++
++dev_read_sysfs(hwloc_dhwd_t)
 diff --git a/hypervkvp.fc b/hypervkvp.fc
 index b46130e..e2ae3b2 100644
 --- a/hypervkvp.fc
@@ -48068,7 +48233,7 @@ index 0000000..8bc27f4
 +domain_use_interactive_fds(mcollective_t)
 +
 diff --git a/mediawiki.fc b/mediawiki.fc
-index 99f7c41..93ec6db 100644
+index 99f7c41..1745603 100644
 --- a/mediawiki.fc
 +++ b/mediawiki.fc
 @@ -1,8 +1,8 @@
@@ -48080,12 +48245,12 @@ index 99f7c41..93ec6db 100644
 +/usr/lib/mediawiki/math/texvc_tes	--	gen_context(system_u:object_r:mediawiki_script_exec_t,s0)
  
 -/usr/share/mediawiki(/.*)?	gen_context(system_u:object_r:httpd_mediawiki_content_t,s0)
-+/usr/share/mediawiki(/.*)?	gen_context(system_u:object_r:mediawiki_content_t,s0)
++/usr/share/mediawiki[0-9]?(/.*)?      gen_context(system_u:object_r:mediawiki_content_t,s0)
  
 -/var/www/wiki(/.*)?	gen_context(system_u:object_r:httpd_mediawiki_rw_content_t,s0)
 -/var/www/wiki/.*\.php	--	gen_context(system_u:object_r:httpd_mediawiki_content_t,s0)
-+/var/www/wiki(/.*)?	gen_context(system_u:object_r:mediawiki_rw_content_t,s0)
-+/var/www/wiki/.*\.php	--	gen_context(system_u:object_r:mediawiki_content_t,s0)
++/var/www/wiki[0-9]?(/.*)?     gen_context(system_u:object_r:mediawiki_rw_content_t,s0)
++/var/www/wiki[0-9]?\.php   --      gen_context(system_u:object_r:mediawiki_content_t,s0)
 diff --git a/mediawiki.if b/mediawiki.if
 index 9771b4b..9b183e6 100644
 --- a/mediawiki.if
@@ -85688,10 +85853,10 @@ index c8a1e16..2d409bf 100644
  	xen_domtrans_xm(rgmanager_t)
  ')
 diff --git a/rhcs.fc b/rhcs.fc
-index 47de2d6..dfb3396 100644
+index 47de2d6..bc62d96 100644
 --- a/rhcs.fc
 +++ b/rhcs.fc
-@@ -1,31 +1,95 @@
+@@ -1,31 +1,96 @@
 -/etc/rc\.d/init\.d/dlm	--	gen_context(system_u:object_r:dlm_controld_initrc_exec_t,s0)
 -/etc/rc\.d/init\.d/foghorn	--	gen_context(system_u:object_r:foghorn_initrc_exec_t,s0)
 +/usr/sbin/dlm_controld			--	gen_context(system_u:object_r:dlm_controld_exec_t,s0)
@@ -85782,6 +85947,7 @@ index 47de2d6..dfb3396 100644
 +/usr/share/corosync/corosync    --  gen_context(system_u:object_r:cluster_exec_t,s0)
 +
 +/usr/share/cluster/fence_scsi_check\.pl   --  gen_context(system_u:object_r:fenced_exec_t,s0)
++/usr/share/cluster/fence_scsi_check_hardreboot     --  gen_context(system_u:object_r:fenced_exec_t,s0)
 +
 +/usr/lib/pcsd/pcsd          --  gen_context(system_u:object_r:cluster_exec_t,s0)
 +
@@ -86679,7 +86845,7 @@ index c8bdea2..1574225 100644
 +    allow $1 cluster_unit_file_t:service all_service_perms;
  ')
 diff --git a/rhcs.te b/rhcs.te
-index 6cf79c4..1a605f9 100644
+index 6cf79c4..943fd8b 100644
 --- a/rhcs.te
 +++ b/rhcs.te
 @@ -20,6 +20,35 @@ gen_tunable(fenced_can_network_connect, false)
@@ -87047,7 +87213,7 @@ index 6cf79c4..1a605f9 100644
 -allow fenced_t self:process { getsched signal_perms };
 -allow fenced_t self:tcp_socket { accept listen };
 +allow fenced_t self:capability { net_admin sys_rawio sys_resource sys_admin };
-+allow fenced_t self:process { getsched setpgid signal_perms };
++allow fenced_t self:process { getsched setcap setpgid signal_perms };
 +
 +allow fenced_t self:tcp_socket create_stream_socket_perms;
 +allow fenced_t self:udp_socket create_socket_perms;
@@ -107668,7 +107834,7 @@ index 97cd155..49321a5 100644
  
  fs_search_auto_mountpoints(timidity_t)
 diff --git a/tmpreaper.te b/tmpreaper.te
-index 585a77f..948bc5b 100644
+index 585a77f..a7cb326 100644
 --- a/tmpreaper.te
 +++ b/tmpreaper.te
 @@ -5,9 +5,34 @@ policy_module(tmpreaper, 1.7.1)
@@ -107714,7 +107880,7 @@ index 585a77f..948bc5b 100644
  
  dev_read_urand(tmpreaper_t)
  
-@@ -27,15 +53,19 @@ corecmd_exec_shell(tmpreaper_t)
+@@ -27,15 +53,16 @@ corecmd_exec_shell(tmpreaper_t)
  
  fs_getattr_xattr_fs(tmpreaper_t)
  fs_list_all(tmpreaper_t)
@@ -107725,11 +107891,9 @@ index 585a77f..948bc5b 100644
 -files_getattr_all_files(tmpreaper_t)
  files_read_var_lib_files(tmpreaper_t)
  files_purge_tmp(tmpreaper_t)
+-files_setattr_all_tmp_dirs(tmpreaper_t)
 +files_delete_all_non_security_files(tmpreaper_t)
-+# why does it need setattr?
- files_setattr_all_tmp_dirs(tmpreaper_t)
-+files_setattr_isid_type_dirs(tmpreaper_t)
-+files_setattr_usr_dirs(tmpreaper_t)
++files_setattr_non_security_dirs(tmpreaper_t)
 +files_getattr_all_dirs(tmpreaper_t)
 +files_getattr_all_files(tmpreaper_t)
  
@@ -107738,7 +107902,7 @@ index 585a77f..948bc5b 100644
  mls_file_read_all_levels(tmpreaper_t)
  mls_file_write_all_levels(tmpreaper_t)
  
-@@ -45,7 +75,6 @@ init_use_inherited_script_ptys(tmpreaper_t)
+@@ -45,7 +72,6 @@ init_use_inherited_script_ptys(tmpreaper_t)
  
  logging_send_syslog_msg(tmpreaper_t)
  
@@ -107746,7 +107910,7 @@ index 585a77f..948bc5b 100644
  miscfiles_delete_man_pages(tmpreaper_t)
  
  ifdef(`distro_debian',`
-@@ -53,10 +82,33 @@ ifdef(`distro_debian',`
+@@ -53,10 +79,33 @@ ifdef(`distro_debian',`
  ')
  
  ifdef(`distro_redhat',`
@@ -107781,7 +107945,7 @@ index 585a77f..948bc5b 100644
  ')
  
  optional_policy(`
-@@ -64,6 +116,7 @@ optional_policy(`
+@@ -64,6 +113,7 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -107789,7 +107953,7 @@ index 585a77f..948bc5b 100644
  	apache_list_cache(tmpreaper_t)
  	apache_delete_cache_dirs(tmpreaper_t)
  	apache_delete_cache_files(tmpreaper_t)
-@@ -79,7 +132,19 @@ optional_policy(`
+@@ -79,7 +129,19 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -107810,7 +107974,7 @@ index 585a77f..948bc5b 100644
  ')
  
  optional_policy(`
-@@ -89,3 +154,8 @@ optional_policy(`
+@@ -89,3 +151,8 @@ optional_policy(`
  optional_policy(`
  	rpm_manage_cache(tmpreaper_t)
  ')

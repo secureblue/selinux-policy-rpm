@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 194%{?dist}
+Release: 195%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,17 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 08 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-195
+- Add hwloc-dump-hwdata SELinux policy
+- Add labels for mediawiki123
+- Fix label for all fence_scsi_check scripts
+- Allow setcap for fenced
+- Allow glusterd domain read krb5_keytab_t files.
+- Allow tmpreaper_t to read/setattr all non_security_file_type dirs
+- Update refpolicy to handle hwloc
+- Fix typo in files_setattr_non_security_dirs.
+- Add interface files_setattr_non_security_dirs()
+
 * Tue Jun 07 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-194
 - Allow boinc to use dri devices. This allows use Boinc for a openCL GPU calculations. BZ(1340886)
 - Add nrpe_dontaudit_write_pipes()
