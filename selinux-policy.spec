@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 195%{?dist}
+Release: 196%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,13 @@ exit 0
 %endif
 
 %changelog
+* Mon Jun 13 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-196
+- Allow svirt_sandbox_domains to r/w onload sockets
+- Add filetrans rule that NetworkManager_t can create net_conf_t files in /etc.
+- Add interface sysnet_filetrans_named_net_conf()
+- Rawhide fails to boot, systemd-logind needs to config transient config files
+- User Namespace is requires create on process domains
+
 * Thu Jun 08 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-195
 - Add hwloc-dump-hwdata SELinux policy
 - Add labels for mediawiki123
