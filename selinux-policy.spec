@@ -665,7 +665,7 @@ exit 0
 - Rawhide fails to boot, systemd-logind needs to config transient config files
 - User Namespace is requires create on process domains
 
-* Thu Jun 08 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-195
+* Wed Jun 08 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-195
 - Add hwloc-dump-hwdata SELinux policy
 - Add labels for mediawiki123
 - Fix label for all fence_scsi_check scripts
