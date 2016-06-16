@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 196%{?dist}
+Release: 197%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,17 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 16 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-197
+- Allow conman to kill conman_unconfined_script.
+- Make conman_unconfined_script_t as init_system_domain.
+- Allow init dbus chat with apmd.
+- Patch /var/lib/rpm is symlink to /usr/share/rpm on Atomic, due to this change we need to label also /usr/share/rpm as rpm_var_lib_t.
+- Dontaudit xguest_gkeyringd_t stream connect to system_dbusd_t
+- Allow collectd_t to stream connect to postgresql.
+- Allow mysqld_safe to inherit rlimit information from mysqld
+- Allow ip netns to mounton root fs and unmount proc_t fs.
+- Allow sysadm_t to run newaliases command.
+
 * Mon Jun 13 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-196
 - Allow svirt_sandbox_domains to r/w onload sockets
 - Add filetrans rule that NetworkManager_t can create net_conf_t files in /etc.

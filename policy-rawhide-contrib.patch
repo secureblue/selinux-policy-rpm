@@ -8167,7 +8167,7 @@ index 1a7a97e..2c7252a 100644
  	domain_system_change_exemption($1)
  	role_transition $2 apmd_initrc_exec_t system_r;
 diff --git a/apm.te b/apm.te
-index 7fd431b..708ae24 100644
+index 7fd431b..a1b6c41 100644
 --- a/apm.te
 +++ b/apm.te
 @@ -35,12 +35,15 @@ files_type(apmd_var_lib_t)
@@ -8229,16 +8229,17 @@ index 7fd431b..708ae24 100644
  
  corecmd_exec_all_executables(apmd_t)
  
-@@ -129,6 +133,8 @@ domain_dontaudit_list_all_domains_state(apmd_t)
+@@ -129,6 +133,9 @@ domain_dontaudit_list_all_domains_state(apmd_t)
  auth_use_nsswitch(apmd_t)
  
  init_domtrans_script(apmd_t)
 +init_read_utmp(apmd_t)
 +init_telinit(apmd_t)
++init_dbus_chat(apmd_t)
  
  libs_exec_ld_so(apmd_t)
  libs_exec_lib_files(apmd_t)
-@@ -136,17 +142,16 @@ libs_exec_lib_files(apmd_t)
+@@ -136,17 +143,16 @@ libs_exec_lib_files(apmd_t)
  logging_send_audit_msgs(apmd_t)
  logging_send_syslog_msg(apmd_t)
  
@@ -8258,7 +8259,7 @@ index 7fd431b..708ae24 100644
  
  optional_policy(`
  	automount_domtrans(apmd_t)
-@@ -206,11 +211,20 @@ optional_policy(`
+@@ -206,11 +212,20 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -15448,7 +15449,7 @@ index 954309e..6780142 100644
  ')
 +
 diff --git a/collectd.te b/collectd.te
-index 6471fa8..3f5989f 100644
+index 6471fa8..de0fd11 100644
 --- a/collectd.te
 +++ b/collectd.te
 @@ -26,43 +26,59 @@ files_type(collectd_var_lib_t)
@@ -15492,12 +15493,12 @@ index 6471fa8..3f5989f 100644
 +kernel_read_all_sysctls(collectd_t)
 +kernel_read_all_proc(collectd_t)
 +kernel_list_all_proc(collectd_t)
++
++auth_use_nsswitch(collectd_t)
  
 -kernel_read_network_state(collectd_t)
 -kernel_read_net_sysctls(collectd_t)
 -kernel_read_system_state(collectd_t)
-+auth_use_nsswitch(collectd_t)
-+
 +corenet_udp_bind_generic_node(collectd_t)
 +corenet_udp_bind_collectd_port(collectd_t)
  
@@ -15520,7 +15521,7 @@ index 6471fa8..3f5989f 100644
  
  logging_send_syslog_msg(collectd_t)
  
-@@ -74,17 +90,41 @@ tunable_policy(`collectd_tcp_network_connect',`
+@@ -74,17 +90,45 @@ tunable_policy(`collectd_tcp_network_connect',`
  	corenet_tcp_sendrecv_all_ports(collectd_t)
  ')
  
@@ -15535,6 +15536,10 @@ index 6471fa8..3f5989f 100644
 +
 +optional_policy(`
 +    netutils_domtrans_ping(collectd_t)
++')
++
++optional_policy(`
++	postgresql_stream_connect(collectd_t)
 +')
 +
 +optional_policy(`
@@ -16588,10 +16593,10 @@ index 0000000..1cc5fa4
 +')
 diff --git a/conman.te b/conman.te
 new file mode 100644
-index 0000000..722f400
+index 0000000..bce21bf
 --- /dev/null
 +++ b/conman.te
-@@ -0,0 +1,93 @@
+@@ -0,0 +1,96 @@
 +policy_module(conman, 1.0.0)
 +
 +########################################
@@ -16626,6 +16631,7 @@ index 0000000..722f400
 +type conman_unconfined_script_t;
 +type conman_unconfined_script_exec_t;
 +application_domain(conman_unconfined_script_t, conman_unconfined_script_exec_t)
++init_system_domain(conman_unconfined_script_t, conman_unconfined_script_exec_t)
 +
 +########################################
 +#
@@ -16638,6 +16644,8 @@ index 0000000..722f400
 +allow conman_t self:fifo_file rw_fifo_file_perms;
 +allow conman_t self:unix_stream_socket create_stream_socket_perms;
 +allow conman_t self:tcp_socket { accept listen create_socket_perms };
++
++allow conman_t conman_unconfined_script_t:process sigkill;
 +
 +manage_dirs_pattern(conman_t, conman_log_t, conman_log_t)
 +manage_files_pattern(conman_t, conman_log_t, conman_log_t)
@@ -32623,7 +32631,7 @@ index e39de43..5edcb83 100644
 +/usr/libexec/gnome-system-monitor-mechanism 	--      gen_context(system_u:object_r:gnomesystemmm_exec_t,s0)
 +/usr/libexec/kde(3|4)/ksysguardprocesslist_helper	--		gen_context(system_u:object_r:gnomesystemmm_exec_t,s0)
 diff --git a/gnome.if b/gnome.if
-index ab09d61..980f1f6 100644
+index ab09d61..cfd00e3 100644
 --- a/gnome.if
 +++ b/gnome.if
 @@ -1,52 +1,76 @@
@@ -32747,7 +32755,7 @@ index ab09d61..980f1f6 100644
  	########################################
  	#
  	# Gkeyringd policy
-@@ -89,37 +110,85 @@ template(`gnome_role_template',`
+@@ -89,37 +110,92 @@ template(`gnome_role_template',`
  
  	domtrans_pattern($3, gkeyringd_exec_t, $1_gkeyringd_t)
  
@@ -32806,10 +32814,17 @@ index ab09d61..980f1f6 100644
 -			gnome_dbus_chat_gkeyringd($1, $3)
 +			telepathy_mission_control_read_state($1_gkeyringd_t)
 +            telepathy_gabble_stream_connect_to($1_gkeyringd_t,gkeyringd_tmp_t,gkeyringd_tmp_t)
++		')
++	')
++
++	optional_policy(`
++		gen_require(`
++			type xguest_gkeyringd_t;
  		')
- 	')
- ')
- 
++		dbus_dontaudit_stream_connect_session_bus(xguest_gkeyringd_t)
++	')
++')
++
 +#######################################
 +## <summary>
 +##  Allow domain to run gkeyring in the $1_gkeyringd_t domain.
@@ -32834,11 +32849,11 @@ index ab09d61..980f1f6 100644
 +    gen_require(`
 +		type $1_gkeyringd_t;
 +		type gkeyringd_exec_t;
-+	')
+ 	')
 +	role $2 types $1_gkeyringd_t;
 +	domtrans_pattern($3, gkeyringd_exec_t, $1_gkeyringd_t)
-+')
-+
+ ')
+ 
  ########################################
  ## <summary>
 -##	Execute gconf in the caller domain.
@@ -32846,7 +32861,7 @@ index ab09d61..980f1f6 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -127,18 +196,18 @@ template(`gnome_role_template',`
+@@ -127,18 +203,18 @@ template(`gnome_role_template',`
  ##	</summary>
  ## </param>
  #
@@ -32870,7 +32885,7 @@ index ab09d61..980f1f6 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -146,119 +215,114 @@ interface(`gnome_exec_gconf',`
+@@ -146,119 +222,114 @@ interface(`gnome_exec_gconf',`
  ##	</summary>
  ## </param>
  #
@@ -33027,7 +33042,7 @@ index ab09d61..980f1f6 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -266,15 +330,21 @@ interface(`gnome_create_generic_home_dirs',`
+@@ -266,15 +337,21 @@ interface(`gnome_create_generic_home_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -33054,7 +33069,7 @@ index ab09d61..980f1f6 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -282,57 +352,89 @@ interface(`gnome_setattr_config_dirs',`
+@@ -282,57 +359,89 @@ interface(`gnome_setattr_config_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -33162,7 +33177,7 @@ index ab09d61..980f1f6 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -340,15 +442,18 @@ interface(`gnome_read_generic_home_content',`
+@@ -340,15 +449,18 @@ interface(`gnome_read_generic_home_content',`
  ##	</summary>
  ## </param>
  #
@@ -33186,7 +33201,7 @@ index ab09d61..980f1f6 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -356,22 +461,18 @@ interface(`gnome_manage_config',`
+@@ -356,22 +468,18 @@ interface(`gnome_manage_config',`
  ##	</summary>
  ## </param>
  #
@@ -33214,7 +33229,7 @@ index ab09d61..980f1f6 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -379,53 +480,37 @@ interface(`gnome_manage_generic_home_content',`
+@@ -379,53 +487,37 @@ interface(`gnome_manage_generic_home_content',`
  ##	</summary>
  ## </param>
  #
@@ -33276,7 +33291,7 @@ index ab09d61..980f1f6 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -433,17 +518,18 @@ interface(`gnome_home_filetrans',`
+@@ -433,17 +525,18 @@ interface(`gnome_home_filetrans',`
  ##	</summary>
  ## </param>
  #
@@ -33299,7 +33314,7 @@ index ab09d61..980f1f6 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -451,23 +537,18 @@ interface(`gnome_create_generic_gconf_home_dirs',`
+@@ -451,23 +544,18 @@ interface(`gnome_create_generic_gconf_home_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -33327,7 +33342,7 @@ index ab09d61..980f1f6 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -475,22 +556,18 @@ interface(`gnome_read_generic_gconf_home_content',`
+@@ -475,22 +563,18 @@ interface(`gnome_read_generic_gconf_home_content',`
  ##	</summary>
  ## </param>
  #
@@ -33354,7 +33369,7 @@ index ab09d61..980f1f6 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -498,79 +575,59 @@ interface(`gnome_manage_generic_gconf_home_content',`
+@@ -498,79 +582,59 @@ interface(`gnome_manage_generic_gconf_home_content',`
  ##	</summary>
  ## </param>
  #
@@ -33452,7 +33467,7 @@ index ab09d61..980f1f6 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -579,12 +636,12 @@ interface(`gnome_home_filetrans_gnome_home',`
+@@ -579,12 +643,12 @@ interface(`gnome_home_filetrans_gnome_home',`
  ## </param>
  ## <param name="private_type">
  ##	<summary>
@@ -33467,7 +33482,7 @@ index ab09d61..980f1f6 100644
  ##	</summary>
  ## </param>
  ## <param name="name" optional="true">
-@@ -593,18 +650,18 @@ interface(`gnome_home_filetrans_gnome_home',`
+@@ -593,18 +657,18 @@ interface(`gnome_home_filetrans_gnome_home',`
  ##	</summary>
  ## </param>
  #
@@ -33492,7 +33507,7 @@ index ab09d61..980f1f6 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -612,46 +669,80 @@ interface(`gnome_gconf_home_filetrans',`
+@@ -612,46 +676,58 @@ interface(`gnome_gconf_home_filetrans',`
  ##	</summary>
  ## </param>
  #
@@ -33517,11 +33532,15 @@ index ab09d61..980f1f6 100644
 +##  Read generic data home dirs.
  ## </summary>
 -## <param name="role_prefix">
+-##	<summary>
+-##	The prefix of the user domain (e.g., user
+-##	is the prefix for user_t).
+-##	</summary>
 +## <param name="domain">
 +##  <summary>
 +##  Domain allowed access.
 +##  </summary>
-+## </param>
+ ## </param>
 +#
 +interface(`gnome_read_generic_data_home_dirs',`
 +    gen_require(`
@@ -33535,30 +33554,6 @@ index ab09d61..980f1f6 100644
 +## <summary>
 +##	Manage gconf data home files
 +## </summary>
-+## <param name="domain">
- ##	<summary>
--##	The prefix of the user domain (e.g., user
--##	is the prefix for user_t).
-+##	Domain allowed access.
- ##	</summary>
- ## </param>
-+#
-+interface(`gnome_manage_data',`
-+	gen_require(`
-+		type data_home_t;
-+		type gconf_home_t;
-+	')
-+
-+	allow $1 gconf_home_t:dir search_dir_perms;
-+	manage_dirs_pattern($1, data_home_t, data_home_t)
-+	manage_files_pattern($1, data_home_t, data_home_t)
-+	manage_lnk_files_pattern($1, data_home_t, data_home_t)
-+')
-+
-+########################################
-+## <summary>
-+##	Read icc data home content.
-+## </summary>
  ## <param name="domain">
  ##	<summary>
  ##	Domain allowed access.
@@ -33566,15 +33561,44 @@ index ab09d61..980f1f6 100644
  ## </param>
  #
 -interface(`gnome_dbus_chat_gkeyringd',`
-+interface(`gnome_read_home_icc_data_content',`
++interface(`gnome_manage_data',`
  	gen_require(`
 -		type $1_gkeyringd_t;
 -		class dbus send_msg;
-+		type icc_data_home_t, gconf_home_t, data_home_t;
++		type data_home_t;
++		type gconf_home_t;
  	')
  
 -	allow $2 $1_gkeyringd_t:dbus send_msg;
 -	allow $1_gkeyringd_t $2:dbus send_msg;
++	allow $1 gconf_home_t:dir search_dir_perms;
++	manage_dirs_pattern($1, data_home_t, data_home_t)
++	manage_files_pattern($1, data_home_t, data_home_t)
++	manage_lnk_files_pattern($1, data_home_t, data_home_t)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Send and receive messages from all
+-##	gnome keyring daemon over dbus.
++##	Read icc data home content.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -659,59 +735,1090 @@ interface(`gnome_dbus_chat_gkeyringd',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`gnome_dbus_chat_all_gkeyringd',`
++interface(`gnome_read_home_icc_data_content',`
+ 	gen_require(`
+-		attribute gkeyringd_domain;
+-		class dbus send_msg;
++		type icc_data_home_t, gconf_home_t, data_home_t;
+ 	')
+ 
+-	allow $1 gkeyringd_domain:dbus send_msg;
+-	allow gkeyringd_domain $1:dbus send_msg;
 +	userdom_search_user_home_dirs($1)
 +	allow $1 { gconf_home_t data_home_t }:dir search_dir_perms;
 +	list_dirs_pattern($1, icc_data_home_t, icc_data_home_t)
@@ -33584,67 +33608,66 @@ index ab09d61..980f1f6 100644
  
  ########################################
  ## <summary>
--##	Send and receive messages from all
--##	gnome keyring daemon over dbus.
-+##	Read inherited icc data home files.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -659,46 +750,64 @@ interface(`gnome_dbus_chat_gkeyringd',`
- ##	</summary>
- ## </param>
- #
--interface(`gnome_dbus_chat_all_gkeyringd',`
-+interface(`gnome_read_inherited_home_icc_data_files',`
- 	gen_require(`
--		attribute gkeyringd_domain;
--		class dbus send_msg;
-+		type icc_data_home_t;
- 	')
- 
--	allow $1 gkeyringd_domain:dbus send_msg;
--	allow gkeyringd_domain $1:dbus send_msg;
-+	allow $1 icc_data_home_t:file read_inherited_file_perms;
- ')
- 
- ########################################
- ## <summary>
 -##	Connect to gnome keyring daemon
 -##	with a unix stream socket.
-+##	Create gconf_home_t objects in the /root directory
++##	Read inherited icc data home files.
  ## </summary>
 -## <param name="role_prefix">
 +## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+## <param name="object_class">
  ##	<summary>
 -##	The prefix of the user domain (e.g., user
 -##	is the prefix for user_t).
-+##	The class of the object to be created.
++##	Domain allowed access.
  ##	</summary>
  ## </param>
++#
++interface(`gnome_read_inherited_home_icc_data_files',`
++	gen_require(`
++		type icc_data_home_t;
++	')
++
++	allow $1 icc_data_home_t:file read_inherited_file_perms;
++')
++
++########################################
++## <summary>
++##	Create gconf_home_t objects in the /root directory
++## </summary>
+ ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
++## <param name="object_class">
++##	<summary>
++##	The class of the object to be created.
++##	</summary>
++## </param>
 +## <param name="name" optional="true">
 +##	<summary>
 +##	The name of the object being created.
 +##	</summary>
 +## </param>
-+#
+ #
+-interface(`gnome_stream_connect_gkeyringd',`
 +interface(`gnome_admin_home_gconf_filetrans',`
-+	gen_require(`
+ 	gen_require(`
+-		type $1_gkeyringd_t, gnome_keyring_tmp_t;
 +		type gconf_home_t;
-+	')
-+
+ 	')
+ 
+-	files_search_tmp($2)
+-	stream_connect_pattern($2, gnome_keyring_tmp_t, gnome_keyring_tmp_t, $1_gkeyringd_t)
 +	userdom_admin_home_dir_filetrans($1, gconf_home_t, $2, $3)
-+')
-+
-+########################################
-+## <summary>
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Connect to all gnome keyring daemon
+-##	with a unix stream socket.
 +##	Do not audit attempts to read
 +##	inherited gconf config files.
-+## </summary>
+ ## </summary>
  ## <param name="domain">
  ##	<summary>
 -##	Domain allowed access.
@@ -33652,35 +33675,31 @@ index ab09d61..980f1f6 100644
  ##	</summary>
  ## </param>
  #
--interface(`gnome_stream_connect_gkeyringd',`
-+interface(`gnome_dontaudit_read_inherited_gconf_config_files',`
- 	gen_require(`
--		type $1_gkeyringd_t, gnome_keyring_tmp_t;
-+		type gconf_etc_t;
- 	')
- 
--	files_search_tmp($2)
--	stream_connect_pattern($2, gnome_keyring_tmp_t, gnome_keyring_tmp_t, $1_gkeyringd_t)
-+	dontaudit $1 gconf_etc_t:file read_inherited_file_perms;
- ')
- 
- ########################################
- ## <summary>
--##	Connect to all gnome keyring daemon
--##	with a unix stream socket.
-+##	read gconf config files
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -706,12 +815,1003 @@ interface(`gnome_stream_connect_gkeyringd',`
- ##	</summary>
- ## </param>
- #
 -interface(`gnome_stream_connect_all_gkeyringd',`
-+interface(`gnome_read_gconf_config',`
++interface(`gnome_dontaudit_read_inherited_gconf_config_files',`
  	gen_require(`
 -		attribute gkeyringd_domain;
 -		type gnome_keyring_tmp_t;
++		type gconf_etc_t;
+ 	')
+ 
+-	files_search_tmp($1)
+-	stream_connect_pattern($1, gnome_keyring_tmp_t, gnome_keyring_tmp_t, gkeyringd_domain)
++	dontaudit $1 gconf_etc_t:file read_inherited_file_perms;
++')
++
++########################################
++## <summary>
++##	read gconf config files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`gnome_read_gconf_config',`
++	gen_require(`
 +		type gconf_etc_t;
 +	')
 +
@@ -33824,10 +33843,9 @@ index ab09d61..980f1f6 100644
 +interface(`gnome_list_gkeyringd_tmp_dirs',`
 +	gen_require(`
 +		type gkeyringd_tmp_t;
- 	')
- 
- 	files_search_tmp($1)
--	stream_connect_pattern($1, gnome_keyring_tmp_t, gnome_keyring_tmp_t, gkeyringd_domain)
++	')
++
++	files_search_tmp($1)
 +	allow $1 gkeyringd_tmp_t:dir list_dir_perms;
 +')
 +
@@ -56069,7 +56087,7 @@ index 687af38..5381f1b 100644
 +	mysql_stream_connect($1)
  ')
 diff --git a/mysql.te b/mysql.te
-index 7584bbe..dbbdb99 100644
+index 7584bbe..31069d2 100644
 --- a/mysql.te
 +++ b/mysql.te
 @@ -6,20 +6,22 @@ policy_module(mysql, 1.14.1)
@@ -56251,7 +56269,7 @@ index 7584bbe..dbbdb99 100644
  	seutil_sigchld_newrole(mysqld_t)
  ')
  
-@@ -155,21 +178,18 @@ optional_policy(`
+@@ -155,21 +178,20 @@ optional_policy(`
  
  #######################################
  #
@@ -56266,7 +56284,8 @@ index 7584bbe..dbbdb99 100644
  allow mysqld_safe_t self:fifo_file rw_fifo_file_perms;
  
 -allow mysqld_safe_t mysqld_t:process signull;
--
++allow mysqld_safe_t mysqld_t:process { rlimitinh };
+ 
  read_lnk_files_pattern(mysqld_safe_t, mysqld_db_t, mysqld_db_t)
 -manage_files_pattern(mysqld_safe_t, mysqld_db_t, mysqld_db_t)
 +delete_sock_files_pattern(mysqld_safe_t, mysqld_db_t, mysqld_db_t)
@@ -56278,7 +56297,7 @@ index 7584bbe..dbbdb99 100644
  
  list_dirs_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
  manage_files_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
-@@ -177,9 +197,7 @@ manage_lnk_files_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
+@@ -177,9 +199,7 @@ manage_lnk_files_pattern(mysqld_safe_t, mysqld_log_t, mysqld_log_t)
  logging_log_filetrans(mysqld_safe_t, mysqld_log_t, file)
  
  manage_files_pattern(mysqld_safe_t, mysqld_var_run_t, mysqld_var_run_t)
@@ -56289,7 +56308,7 @@ index 7584bbe..dbbdb99 100644
  
  kernel_read_system_state(mysqld_safe_t)
  kernel_read_kernel_sysctls(mysqld_safe_t)
-@@ -187,21 +205,29 @@ kernel_read_kernel_sysctls(mysqld_safe_t)
+@@ -187,21 +207,29 @@ kernel_read_kernel_sysctls(mysqld_safe_t)
  corecmd_exec_bin(mysqld_safe_t)
  corecmd_exec_shell(mysqld_safe_t)
  
@@ -56305,9 +56324,9 @@ index 7584bbe..dbbdb99 100644
 +files_dontaudit_access_check_root(mysqld_safe_t)
  files_dontaudit_search_all_mountpoints(mysqld_safe_t)
 +files_dontaudit_getattr_all_dirs(mysqld_safe_t)
-+
-+files_write_root_dirs(mysqld_safe_t)
  
++files_write_root_dirs(mysqld_safe_t)
++
 +logging_log_filetrans(mysqld_safe_t, mysqld_log_t, file)
  logging_send_syslog_msg(mysqld_safe_t)
  
@@ -56325,7 +56344,7 @@ index 7584bbe..dbbdb99 100644
  
  optional_policy(`
  	hostname_exec(mysqld_safe_t)
-@@ -209,7 +235,7 @@ optional_policy(`
+@@ -209,7 +237,7 @@ optional_policy(`
  
  ########################################
  #
@@ -56334,7 +56353,7 @@ index 7584bbe..dbbdb99 100644
  #
  
  allow mysqlmanagerd_t self:capability { dac_override kill };
-@@ -218,11 +244,12 @@ allow mysqlmanagerd_t self:fifo_file rw_fifo_file_perms;
+@@ -218,11 +246,12 @@ allow mysqlmanagerd_t self:fifo_file rw_fifo_file_perms;
  allow mysqlmanagerd_t self:tcp_socket create_stream_socket_perms;
  allow mysqlmanagerd_t self:unix_stream_socket create_stream_socket_perms;
  
@@ -56352,7 +56371,7 @@ index 7584bbe..dbbdb99 100644
  
  domtrans_pattern(mysqlmanagerd_t, mysqld_exec_t, mysqld_t)
  
-@@ -230,31 +257,20 @@ manage_files_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t)
+@@ -230,31 +259,20 @@ manage_files_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t)
  manage_sock_files_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t)
  filetrans_pattern(mysqlmanagerd_t, mysqld_var_run_t, mysqlmanagerd_var_run_t, { file sock_file })
  
@@ -90628,10 +90647,10 @@ index 54de77c..0ee4cc1 100644
  ifdef(`distro_debian',`
  	term_dontaudit_use_unallocated_ttys(rpcbind_t)
 diff --git a/rpm.fc b/rpm.fc
-index ebe91fc..913587c 100644
+index ebe91fc..6ba4338 100644
 --- a/rpm.fc
 +++ b/rpm.fc
-@@ -1,61 +1,78 @@
+@@ -1,61 +1,80 @@
 -/bin/rpm	--	gen_context(system_u:object_r:rpm_exec_t,s0)
  
 -/etc/rc\.d/init\.d/bcfg2	--	gen_context(system_u:object_r:rpm_initrc_exec_t,s0)
@@ -90666,6 +90685,11 @@ index ebe91fc..913587c 100644
 +/usr/libexec/pegasus/pycmpiLMI_Software-cimprovagt  --  gen_context(system_u:object_r:rpm_exec_t,s0)
 +
 +/usr/sbin/yum-complete-transaction --	gen_context(system_u:object_r:rpm_exec_t,s0)
++
++/usr/sbin/system-install-packages --	gen_context(system_u:object_r:rpm_exec_t,s0)
++/usr/sbin/yum-updatesd		--	gen_context(system_u:object_r:rpm_exec_t,s0)
++/usr/sbin/yum-cron		--	gen_context(system_u:object_r:rpm_exec_t,s0)
++/usr/sbin/packagekitd		--	gen_context(system_u:object_r:rpm_exec_t,s0)
  
 -/usr/sbin/bcfg2	--	gen_context(system_u:object_r:rpm_exec_t,s0)
 -/usr/sbin/pirut	--	gen_context(system_u:object_r:rpm_exec_t,s0)
@@ -90684,13 +90708,10 @@ index ebe91fc..913587c 100644
 -/usr/sbin/synaptic	--	gen_context(system_u:object_r:rpm_exec_t,s0)
 -/var/cache/PackageKit(/.*)?	gen_context(system_u:object_r:rpm_var_cache_t,s0)
 -/var/lib/PackageKit(/.*)?	gen_context(system_u:object_r:rpm_var_lib_t,s0)
-+/usr/sbin/system-install-packages --	gen_context(system_u:object_r:rpm_exec_t,s0)
-+/usr/sbin/yum-updatesd		--	gen_context(system_u:object_r:rpm_exec_t,s0)
-+/usr/sbin/yum-cron		--	gen_context(system_u:object_r:rpm_exec_t,s0)
-+/usr/sbin/packagekitd		--	gen_context(system_u:object_r:rpm_exec_t,s0)
-+
 +/usr/share/yumex/yumex-yum-backend --	gen_context(system_u:object_r:rpm_exec_t,s0)
 +/usr/share/yumex/yum_childtask\.py --	gen_context(system_u:object_r:rpm_exec_t,s0)
++
++/usr/share/rpm(/.*)?			gen_context(system_u:object_r:rpm_var_lib_t,s0)
 +
 +ifdef(`distro_redhat', `
 +/usr/sbin/bcfg2				--	gen_context(system_u:object_r:rpm_exec_t,s0)
