@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 197%{?dist}
+Release: 198%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,42 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 22 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-198
+- Allow firewalld_t to create entries in net_conf_t dirs.
+- Allow journalctl to read syslogd_var_run_t files. This allows to staff_t and sysadm_t to read journals
+- Allow rhsmcertd connect to port tcp 9090
+- Label for /bin/mail(x) was removed but /usr/bin/mail(x) not. This path is also needed to remove.
+- Label /usr/libexec/mimedefang-wrapper as spamd_exec_t.
+- Add new boolean spamd_update_can_network.
+- Add proper label for /var/log/proftpd.log
+- Allow rhsmcertd connect to tcp netport_port_t
+- Fix SELinux context for /usr/share/mirrormanager/server/mirrormanager to Label all binaries under dir as mirrormanager_exec_t.
+- Allow prosody to bind to fac_restore tcp port.
+- Fix SELinux context for usr/share/mirrormanager/server/mirrormanager
+- Allow ninfod to read raw packets
+- Fix broken hostapd policy
+- Allow hostapd to create netlink_generic sockets. BZ(1343683)
+- Merge pull request #133 from vinzent/allow_puppet_transition_to_shorewall
+- Allow pegasus get attributes from qemu binary files.
+- Allow tuned to use policykit. This change is required by cockpit.
+- Allow conman_t to read dir with conman_unconfined_script_t binary files.
+- Allow pegasus to read /proc/sysinfo.
+- Allow puppet_t transtition to shorewall_t
+- Allow conman to kill conman_unconfined_script.
+- Allow sysadm_role to run journalctl_t domain. This allows sysadm user to read journals.
+- Merge remote-tracking branch 'refs/remotes/origin/rawhide-base' into rawhide-base
+- Allow systemd to execute all init daemon executables.
+- Add init_exec_notrans_direct_init_entry() interface.
+- Label tcp ports:16379, 26379 as redis_port_t
+- Allow systemd to relabel /var and /var/lib directories during boot.
+- Add files_relabel_var_dirs() and files_relabel_var_dirs() interfaces.
+- Add files_relabelto_var_lib_dirs() interface.
+- Label tcp and udp port 5582 as fac_restore_port_t
+- Allow sysadm_t user to run postgresql-setup.
+- Allow sysadm_t user to dbus chat with oddjob_t. This allows confined admin run oddjob mkhomedirfor script.
+- Allow systemd-resolved to connect to llmnr tcp port. BZ(1344849)
+- Allow passwd_t also manage user_tmp_t dirs, this change is needed by gnome-keyringd
+
 * Thu Jun 16 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-197
 - Allow conman to kill conman_unconfined_script.
 - Make conman_unconfined_script_t as init_system_domain.
