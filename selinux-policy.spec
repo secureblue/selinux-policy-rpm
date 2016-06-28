@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 198%{?dist}
+Release: 199%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,26 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun 28 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-199
+- Label /var/lib/softhsm as named_cache_t. Allow named_t to manage named_cache_t dirs.
+- Allow glusterd daemon to get systemd status
+- Merge branch 'rawhide-contrib' of github.com:fedora-selinux/selinux-policy into rawhide-contrib
+- Merge pull request #135 from rhatdan/rawip_socket
+- Allow logrotate dbus-chat with system_logind daemon
+- Allow pcp_pmlogger to read kernel network state Allow pcp_pmcd to read cron pid files
+- Add interface cron_read_pid_files()
+- Allow pcp_pmlogger to create unix dgram sockets
+- Add interface dirsrv_run()
+- Remove non-existing jabberd_spool_t() interface and add new jabbertd_var_spool_t.
+- Remove non-existing interface salk_resetd_systemctl() and replace it with sanlock_systemctl_sanlk_resetd()
+- Create label for openhpid log files.
+- Container processes need to be able to listen on rawip sockets
+- Label /var/lib/ganglia as httpd_var_lib_t
+- Allow firewalld_t to create entries in net_conf_t dirs.
+- Allow journalctl to read syslogd_var_run_t files. This allows to staff_t and sysadm_t to read journals
+- Label /etc/dhcp/scripts dir as bin_t
+- Allow sysadm_role to run journalctl_t domain. This allows sysadm user to read journals.
+
 * Wed Jun 22 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-198
 - Allow firewalld_t to create entries in net_conf_t dirs.
 - Allow journalctl to read syslogd_var_run_t files. This allows to staff_t and sysadm_t to read journals
