@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 199%{?dist}
+Release: 200%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -647,6 +647,34 @@ exit 0
 %endif
 
 %changelog
+* Tue Jul 05 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-200
+- Fix typo in brltty policy
+- Add new SELinux module sbd
+- Allow pcp dmcache metrics collection
+- Allow pkcs_slotd_t to create dir in /var/lock Add label pkcs_slotd_log_t
+- Allow openvpn to create sock files labeled as openvpn_var_run_t
+- Allow hypervkvp daemon to getattr on  all filesystem types.
+- Allow firewalld to create net_conf_t files
+- Allow mock to use lvm
+- Allow mirromanager creating log files in /tmp
+- Allow vmtools_t to transition to rpm_script domain
+- Allow nsd daemon to manage nsd_conf_t dirs and files
+- Allow cluster to create dirs in /var/run labeled as cluster_var_run_t
+- Allow sssd read also sssd_conf_t dirs
+- Allow opensm daemon to rw infiniband_mgmt_device_t
+- Allow krb5kdc_t to communicate with sssd
+- Allow prosody to bind on prosody ports
+- Add dac_override caps for fail2ban-client Resolves: rhbz#1316678
+- dontaudit read access for svirt_t on the file /var/db/nscd/group Resolves: rhbz#1301637
+- Allow inetd child process to communicate via dbus with systemd-logind Resolves: rhbz#1333726
+- Add label for brltty log file Resolves: rhbz#1328818
+- Allow snort_t to communicate with sssd Resolves: rhbz#1284908
+- Add interface lttng_sessiond_tmpfs_t()
+- Dontaudit su_role_template interface to getattr /proc/kcore Dontaudit su_role_template interface to getattr /dev/initctl
+- Add interface lvm_getattr_exec_files()
+- Make label for new infiniband_mgmt deivices
+- Add prosody ports Resolves: rhbz#1304664
+
 * Tue Jun 28 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-199
 - Label /var/lib/softhsm as named_cache_t. Allow named_t to manage named_cache_t dirs.
 - Allow glusterd daemon to get systemd status
