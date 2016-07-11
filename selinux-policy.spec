@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 200%{?dist}
+Release: 201%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -648,6 +648,34 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 11 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-201
+- Allow lttng tools to block suspending
+- Allow creation of vpnaas in openstack
+- remove rules with compromised_kernel permission
+- Allow dnssec-trigger to chat with NetworkManager over DBUS BZ(1350100)
+- Allow virtual machines to rw infiniband devices. Resolves: rhbz#1210263
+- Update makefile to support snapperd_contexts file
+- Remove compromize_kernel permission Remove unused mac_admin permission Add undefined system permission
+- Remove duplicate declaration of class service
+- Fix typo in access_vectors file
+- Merge branch 'rawhide-base-modules-load' into rawhide-base
+- Add new policy for systemd-modules-load
+- Add systemd access vectors.
+- Revert "Revert "Revert "Missed this version of exec_all"""
+- Revert "Revert "Missed this version of exec_all""
+- Revert "Missed this version of exec_all"
+- Revert "Revert "Fix name of capability2 secure_firmware->compromise_kernel"" BZ(1351624) This reverts commit 3e0e7e70de481589440f3f79cccff08d6e62f644.
+- Revert "Fix name of capability2 secure_firmware->compromise_kernel" BZ(1351624) This reverts commit 7a0348a2d167a72c8ab8974a1b0fc33407f72c48.
+- Revert "Allow xserver to compromise_kernel access"BZ(1351624)
+- Revert "Allow anyone who can load a kernel module to compromise_kernel"BZ(1351624)
+- Revert "add ptrace_child access to process" (BZ1351624)
+- Add user namespace capability object classes.
+- Allow udev to manage systemd-hwdb files
+- Add interface systemd_hwdb_manage_config()
+- Fix paths to infiniband devices. This allows use more then two infiniband interfaces.
+- corecmd: Remove fcontext for /etc/sysconfig/libvirtd
+- iptables: add fcontext for nftables
+
 * Tue Jul 05 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-200
 - Fix typo in brltty policy
 - Add new SELinux module sbd

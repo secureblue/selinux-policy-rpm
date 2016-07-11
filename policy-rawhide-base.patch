@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index ec7b5cb..a027110 100644
+index ec7b5cb..e2936c6 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -61,6 +61,7 @@ SEMODULE ?= $(tc_usrsbindir)/semodule
@@ -15,7 +15,7 @@ index ec7b5cb..a027110 100644
  user_default_contexts := $(wildcard config/appconfig-$(TYPE)/*_default_contexts)
  user_default_contexts_names := $(addprefix $(contextpath)/users/,$(subst _default_contexts,,$(notdir $(user_default_contexts))))
 -appfiles := $(addprefix $(appdir)/,default_contexts default_type initrc_context failsafe_context userhelper_context removable_context dbus_contexts sepgsql_contexts x_contexts customizable_types securetty_types virtual_domain_context virtual_image_context) $(contextpath)/files/media $(fcsubspath) $(user_default_contexts_names)
-+appfiles := $(addprefix $(appdir)/,default_contexts default_type initrc_context failsafe_context userhelper_context removable_context dbus_contexts sepgsql_contexts x_contexts customizable_types securetty_types virtual_image_context virtual_domain_context lxc_contexts openssh_contexts systemd_contexts) $(contextpath)/files/media $(user_default_contexts_names)
++appfiles := $(addprefix $(appdir)/,default_contexts default_type initrc_context failsafe_context userhelper_context removable_context dbus_contexts sepgsql_contexts x_contexts customizable_types securetty_types virtual_image_context virtual_domain_context lxc_contexts openssh_contexts systemd_contexts snapperd_contexts) $(contextpath)/files/media $(user_default_contexts_names)
  net_contexts := $(builddir)net_contexts
  
  all_layers := $(shell find $(wildcard $(moddir)/*) -maxdepth 0 -type d)
@@ -877,47 +877,150 @@ index 3a45f23..ee7d7b3 100644
  constrain socket_class_set { create relabelto relabelfrom } 
  (
 diff --git a/policy/flask/access_vectors b/policy/flask/access_vectors
-index a94b169..2e137e6 100644
+index a94b169..7c036a8 100644
 --- a/policy/flask/access_vectors
 +++ b/policy/flask/access_vectors
-@@ -329,6 +329,7 @@ class process
- 	execheap
- 	setkeycreate
- 	setsockcreate
-+	ptrace_child
+@@ -121,6 +121,60 @@ common x_device
  }
  
- 
-@@ -393,6 +394,13 @@ class system
+ #
++# Define a common for capability access vectors.
++#
++common cap
++{
++	# The capabilities are defined in include/linux/capability.h
++	# Capabilities >= 32 are defined in the cap2 common.
++	# Care should be taken to ensure that these are consistent with
++	# those definitions. (Order matters)
++
++	chown
++	dac_override
++	dac_read_search
++	fowner
++	fsetid
++	kill
++	setgid
++	setuid
++	setpcap
++	linux_immutable
++	net_bind_service
++	net_broadcast
++	net_admin
++	net_raw
++	ipc_lock
++	ipc_owner
++	sys_module
++	sys_rawio
++	sys_chroot
++	sys_ptrace
++	sys_pacct
++	sys_admin
++	sys_boot
++	sys_nice
++	sys_resource
++	sys_time
++	sys_tty_config
++	mknod
++	lease
++	audit_write
++	audit_control
++	setfcap
++}
++
++common cap2
++{
++	mac_override	# unused by SELinux
++	mac_admin	# unused by SELinux
++	syslog
++	wake_alarm
++	block_suspend
++	audit_read
++}
++
++#
+ # Define the access vectors.
+ #
+ # class class_name [ inherits common_name ] { permission_name ... }
+@@ -393,62 +447,31 @@ class system
  	syslog_mod
  	syslog_console
  	module_request
++	# these are overloaded userspace
++	# permissions from systemd
 +	halt
 +	reboot
 +	status
++	start
++	stop
++	enable
++	disable
++	reload
 +	undefined
-+    enable
-+    disable
-+    reload
  }
  
  #
-@@ -443,10 +451,13 @@ class capability
- class capability2 
+-# Define the access vector interpretation for controling capabilies
++# Define the access vector interpretation for controlling capabilities
+ #
+ 
+ class capability
+-{
+-	# The capabilities are defined in include/linux/capability.h
+-	# Capabilities >= 32 are defined in the capability2 class.
+-	# Care should be taken to ensure that these are consistent with
+-	# those definitions. (Order matters)
++inherits cap
+ 
+-	chown           
+-	dac_override    
+-	dac_read_search 
+-	fowner          
+-	fsetid          
+-	kill            
+-	setgid           
+-	setuid           
+-	setpcap          
+-	linux_immutable  
+-	net_bind_service 
+-	net_broadcast    
+-	net_admin        
+-	net_raw          
+-	ipc_lock         
+-	ipc_owner        
+-	sys_module       
+-	sys_rawio        
+-	sys_chroot       
+-	sys_ptrace       
+-	sys_pacct        
+-	sys_admin        
+-	sys_boot         
+-	sys_nice         
+-	sys_resource     
+-	sys_time         
+-	sys_tty_config  
+-	mknod
+-	lease
+-	audit_write
+-	audit_control
+-	setfcap
+-}
+-
+-class capability2 
++class capability2
++inherits cap2
  {
- 	mac_override	# unused by SELinux
+-	mac_override	# unused by SELinux
 -	mac_admin	# unused by SELinux
-+	mac_admin
- 	syslog
- 	wake_alarm
+-	syslog
+-	wake_alarm
+-	block_suspend
 +	epolwakeup
- 	block_suspend
-+	compromise_kernel
-+	audit_read
  }
- 
+-
  #
-@@ -690,6 +701,8 @@ class nscd
+ # Define the access vector interpretation for controlling
+ # changes to passwd information.
+@@ -690,6 +713,8 @@ class nscd
  	shmemhost
  	getserv
  	shmemserv
@@ -926,7 +1029,7 @@ index a94b169..2e137e6 100644
  }
  
  # Define the access vector interpretation for controlling
-@@ -831,6 +844,38 @@ inherits socket
+@@ -831,6 +856,38 @@ inherits socket
  	attach_queue
  }
  
@@ -965,7 +1068,7 @@ index a94b169..2e137e6 100644
  class x_pointer
  inherits x_device
  
-@@ -865,3 +910,18 @@ inherits database
+@@ -865,3 +922,28 @@ inherits database
  	implement
  	execute
  }
@@ -984,8 +1087,18 @@ index a94b169..2e137e6 100644
 +{
 +	read
 +}
++
++#
++# Define the access vector interpretation for controlling capabilities
++# in user namespaces
++#
++class cap_userns
++inherits cap
++
++class cap2_userns
++inherits cap2
 diff --git a/policy/flask/security_classes b/policy/flask/security_classes
-index 14a4799..9bb9aa4 100644
+index 14a4799..6e16f5e 100644
 --- a/policy/flask/security_classes
 +++ b/policy/flask/security_classes
 @@ -121,6 +121,18 @@ class kernel_service
@@ -1007,7 +1120,7 @@ index 14a4799..9bb9aa4 100644
  # Still More SE-X Windows stuff
  class x_pointer			# userspace
  class x_keyboard		# userspace
-@@ -131,4 +143,11 @@ class db_view			# userspace
+@@ -131,4 +143,15 @@ class db_view			# userspace
  class db_sequence		# userspace
  class db_language		# userspace
  
@@ -1017,6 +1130,10 @@ index 14a4799..9bb9aa4 100644
 +# gssd services 
 +class proxy
 +
++
++# Capability checks when on a non-init user namespace
++class cap_userns
++class cap2_userns
 +
  # FLASK
 diff --git a/policy/global_booleans b/policy/global_booleans
@@ -3537,7 +3654,7 @@ index 7590165..d81185e 100644
 +	fs_mounton_fusefs(seunshare_domain)
  ')
 diff --git a/policy/modules/kernel/corecommands.fc b/policy/modules/kernel/corecommands.fc
-index 33e0f8d..48f001d 100644
+index 33e0f8d..3437271 100644
 --- a/policy/modules/kernel/corecommands.fc
 +++ b/policy/modules/kernel/corecommands.fc
 @@ -1,9 +1,10 @@
@@ -3594,7 +3711,7 @@ index 33e0f8d..48f001d 100644
  
  /etc/netplug\.d(/.*)? 	 		gen_context(system_u:object_r:bin_t,s0)
  
-@@ -101,8 +118,6 @@ ifdef(`distro_redhat',`
+@@ -101,11 +118,8 @@ ifdef(`distro_redhat',`
  
  /etc/rc\.d/init\.d/functions	--	gen_context(system_u:object_r:bin_t,s0)
  
@@ -3602,8 +3719,11 @@ index 33e0f8d..48f001d 100644
 -
  /etc/sysconfig/crond		--	gen_context(system_u:object_r:bin_t,s0)
  /etc/sysconfig/init		--	gen_context(system_u:object_r:bin_t,s0)
- /etc/sysconfig/libvirtd		--	gen_context(system_u:object_r:bin_t,s0)
-@@ -116,6 +131,9 @@ ifdef(`distro_redhat',`
+-/etc/sysconfig/libvirtd		--	gen_context(system_u:object_r:bin_t,s0)
+ /etc/sysconfig/netconsole	--	gen_context(system_u:object_r:bin_t,s0)
+ /etc/sysconfig/readonly-root 	--	gen_context(system_u:object_r:bin_t,s0)
+ 
+@@ -116,6 +130,9 @@ ifdef(`distro_redhat',`
  
  /etc/vmware-tools(/.*)?			gen_context(system_u:object_r:bin_t,s0)
  
@@ -3613,7 +3733,7 @@ index 33e0f8d..48f001d 100644
  /etc/X11/xdm/GiveConsole	--	gen_context(system_u:object_r:bin_t,s0)
  /etc/X11/xdm/TakeConsole	--	gen_context(system_u:object_r:bin_t,s0)
  /etc/X11/xdm/Xsetup_0		--	gen_context(system_u:object_r:bin_t,s0)
-@@ -128,6 +146,8 @@ ifdef(`distro_debian',`
+@@ -128,6 +145,8 @@ ifdef(`distro_debian',`
  /etc/mysql/debian-start		--	gen_context(system_u:object_r:bin_t,s0)
  ')
  
@@ -3622,7 +3742,7 @@ index 33e0f8d..48f001d 100644
  #
  # /lib
  #
-@@ -135,10 +155,12 @@ ifdef(`distro_debian',`
+@@ -135,10 +154,12 @@ ifdef(`distro_debian',`
  /lib/nut/.*			--	gen_context(system_u:object_r:bin_t,s0)
  /lib/readahead(/.*)?			gen_context(system_u:object_r:bin_t,s0)
  /lib/security/pam_krb5/pam_krb5_storetmp -- gen_context(system_u:object_r:bin_t,s0)
@@ -3636,7 +3756,7 @@ index 33e0f8d..48f001d 100644
  
  ifdef(`distro_gentoo',`
  /lib/dhcpcd/dhcpcd-run-hooks	--	gen_context(system_u:object_r:bin_t,s0)
-@@ -149,10 +171,12 @@ ifdef(`distro_gentoo',`
+@@ -149,10 +170,12 @@ ifdef(`distro_gentoo',`
  /lib/rcscripts/net\.modules\.d/helpers\.d/udhcpc-.* -- gen_context(system_u:object_r:bin_t,s0)
  ')
  
@@ -3650,7 +3770,7 @@ index 33e0f8d..48f001d 100644
  /sbin/.*				gen_context(system_u:object_r:bin_t,s0)
  /sbin/insmod_ksymoops_clean	--	gen_context(system_u:object_r:bin_t,s0)
  /sbin/mkfs\.cramfs		--	gen_context(system_u:object_r:bin_t,s0)
-@@ -168,6 +192,7 @@ ifdef(`distro_gentoo',`
+@@ -168,6 +191,7 @@ ifdef(`distro_gentoo',`
  /opt/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
  
  /opt/google/talkplugin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
@@ -3658,7 +3778,7 @@ index 33e0f8d..48f001d 100644
  
  /opt/gutenprint/cups/lib/filter(/.*)?	gen_context(system_u:object_r:bin_t,s0)
  
-@@ -179,34 +204,50 @@ ifdef(`distro_gentoo',`
+@@ -179,34 +203,50 @@ ifdef(`distro_gentoo',`
  /opt/vmware/workstation/lib/lib/wrapper-gtk24\.sh -- gen_context(system_u:object_r:bin_t,s0)
  ')
  
@@ -3718,7 +3838,7 @@ index 33e0f8d..48f001d 100644
  /usr/lib/dpkg/.+		--	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/emacsen-common/.*		gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/gimp/.*/plug-ins(/.*)?		gen_context(system_u:object_r:bin_t,s0)
-@@ -218,19 +259,32 @@ ifdef(`distro_gentoo',`
+@@ -218,19 +258,32 @@ ifdef(`distro_gentoo',`
  /usr/lib/mailman/mail(/.*)?		gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/mediawiki/math/texvc.*		gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/misc/sftp-server	--	gen_context(system_u:object_r:bin_t,s0)
@@ -3758,7 +3878,7 @@ index 33e0f8d..48f001d 100644
  /usr/lib/xfce4/exo-1/exo-compose-mail-1 -- gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/xfce4/exo-1/exo-helper-1 --	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/xfce4/panel/migrate	--	gen_context(system_u:object_r:bin_t,s0)
-@@ -245,26 +299,40 @@ ifdef(`distro_gentoo',`
+@@ -245,26 +298,40 @@ ifdef(`distro_gentoo',`
  /usr/lib/debug/sbin(/.*)?	--	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/debug/usr/bin(/.*)?	--	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/debug/usr/sbin(/.*)?	--	gen_context(system_u:object_r:bin_t,s0)
@@ -3804,7 +3924,7 @@ index 33e0f8d..48f001d 100644
  /usr/sbin/scponlyc		--	gen_context(system_u:object_r:shell_exec_t,s0)
  /usr/sbin/sesh			--	gen_context(system_u:object_r:shell_exec_t,s0)
  /usr/sbin/smrsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
-@@ -280,10 +348,14 @@ ifdef(`distro_gentoo',`
+@@ -280,10 +347,14 @@ ifdef(`distro_gentoo',`
  /usr/share/cluster/.*\.sh		gen_context(system_u:object_r:bin_t,s0)
  /usr/share/cluster/ocf-shellfuncs --	gen_context(system_u:object_r:bin_t,s0)
  /usr/share/cluster/svclib_nfslock --	gen_context(system_u:object_r:bin_t,s0)
@@ -3819,7 +3939,7 @@ index 33e0f8d..48f001d 100644
  /usr/share/gnucash/finance-quote-check -- gen_context(system_u:object_r:bin_t,s0)
  /usr/share/gnucash/finance-quote-helper -- gen_context(system_u:object_r:bin_t,s0)
  /usr/share/hal/device-manager/hal-device-manager -- gen_context(system_u:object_r:bin_t,s0)
-@@ -298,16 +370,22 @@ ifdef(`distro_gentoo',`
+@@ -298,16 +369,22 @@ ifdef(`distro_gentoo',`
  /usr/share/selinux/devel/policygentool -- gen_context(system_u:object_r:bin_t,s0)
  /usr/share/smolt/client(/.*)?		gen_context(system_u:object_r:bin_t,s0)
  /usr/share/shorewall/compiler\.pl --	gen_context(system_u:object_r:bin_t,s0)
@@ -3844,7 +3964,7 @@ index 33e0f8d..48f001d 100644
  
  ifdef(`distro_debian',`
  /usr/lib/ConsoleKit/.*		--	gen_context(system_u:object_r:bin_t,s0)
-@@ -325,20 +403,27 @@ ifdef(`distro_redhat', `
+@@ -325,20 +402,27 @@ ifdef(`distro_redhat', `
  /etc/gdm/[^/]+			-d	gen_context(system_u:object_r:bin_t,s0)
  /etc/gdm/[^/]+/.*			gen_context(system_u:object_r:bin_t,s0)
  
@@ -3873,7 +3993,7 @@ index 33e0f8d..48f001d 100644
  /usr/share/pwlib/make/ptlib-config --	gen_context(system_u:object_r:bin_t,s0)
  /usr/share/pydict/pydict\.py	--	gen_context(system_u:object_r:bin_t,s0)
  /usr/share/rhn/rhn_applet/applet\.py -- gen_context(system_u:object_r:bin_t,s0)
-@@ -346,6 +431,7 @@ ifdef(`distro_redhat', `
+@@ -346,6 +430,7 @@ ifdef(`distro_redhat', `
  /usr/share/ssl/misc(/.*)?		gen_context(system_u:object_r:bin_t,s0)
  /usr/share/switchdesk/switchdesk-gui\.py -- gen_context(system_u:object_r:bin_t,s0)
  /usr/share/system-config-date/system-config-date\.py -- gen_context(system_u:object_r:bin_t,s0)
@@ -3881,7 +4001,7 @@ index 33e0f8d..48f001d 100644
  /usr/share/system-config-selinux/polgen\.py -- gen_context(system_u:object_r:bin_t,s0)
  /usr/share/system-config-selinux/system-config-selinux\.py -- gen_context(system_u:object_r:bin_t,s0)
  /usr/share/system-config-display/system-config-display -- gen_context(system_u:object_r:bin_t,s0)
-@@ -387,17 +473,34 @@ ifdef(`distro_suse', `
+@@ -387,17 +472,34 @@ ifdef(`distro_suse', `
  #
  # /var
  #
@@ -3918,7 +4038,7 @@ index 33e0f8d..48f001d 100644
 +/usr/lib/ruby/gems/.*/agents(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 +/usr/lib/virtualbox/VBoxManage		--	gen_context(system_u:object_r:bin_t,s0)
 diff --git a/policy/modules/kernel/corecommands.if b/policy/modules/kernel/corecommands.if
-index 9e9263a..f0aef3e 100644
+index 9e9263a..cb42593 100644
 --- a/policy/modules/kernel/corecommands.if
 +++ b/policy/modules/kernel/corecommands.if
 @@ -8,6 +8,22 @@
@@ -4144,18 +4264,7 @@ index 9e9263a..f0aef3e 100644
  ')
  
  ########################################
-@@ -1012,6 +1065,10 @@ interface(`corecmd_exec_all_executables',`
- 	can_exec($1, exec_type)
- 	list_dirs_pattern($1, bin_t, bin_t)
- 	read_lnk_files_pattern($1, bin_t, exec_type)
-+
-+	ifdef(`enable_mls',`',`
-+		files_exec_all_base_ro_files($1)
-+	')
- ')
- 
- ########################################
-@@ -1049,6 +1106,7 @@ interface(`corecmd_manage_all_executables',`
+@@ -1049,6 +1102,7 @@ interface(`corecmd_manage_all_executables',`
  		type bin_t;
  	')
  
@@ -4163,7 +4272,7 @@ index 9e9263a..f0aef3e 100644
  	manage_files_pattern($1, bin_t, exec_type)
  	manage_lnk_files_pattern($1, bin_t, bin_t)
  ')
-@@ -1091,3 +1149,74 @@ interface(`corecmd_mmap_all_executables',`
+@@ -1091,3 +1145,74 @@ interface(`corecmd_mmap_all_executables',`
  
  	mmap_files_pattern($1, bin_t, exec_type)
  ')
@@ -6307,7 +6416,7 @@ index 3f6e168..340e49f 100644
  ')
  
 diff --git a/policy/modules/kernel/devices.fc b/policy/modules/kernel/devices.fc
-index b31c054..ed25075 100644
+index b31c054..ab7c054 100644
 --- a/policy/modules/kernel/devices.fc
 +++ b/policy/modules/kernel/devices.fc
 @@ -15,15 +15,18 @@
@@ -6331,24 +6440,20 @@ index b31c054..ed25075 100644
  /dev/efirtc		-c	gen_context(system_u:object_r:clock_device_t,s0)
  /dev/elographics/e2201	-c	gen_context(system_u:object_r:mouse_device_t,s0)
  /dev/em8300.*		-c	gen_context(system_u:object_r:v4l_device_t,s0)
-@@ -44,6 +47,16 @@
+@@ -44,6 +47,12 @@
  /dev/hwrng		-c	gen_context(system_u:object_r:random_device_t,s0)
  /dev/i915		-c	gen_context(system_u:object_r:dri_device_t,s0)
  /dev/inportbm		-c	gen_context(system_u:object_r:mouse_device_t,s0)
 +/dev/infiniband/.*	-c	gen_context(system_u:object_r:infiniband_device_t,mls_systemhigh)
-+/dev/infiniband/issm0		-c	gen_context(system_u:object_r:infiniband_mgmt_device_t,mls_systemhigh)
-+/dev/infiniband/issm1		-c	gen_context(system_u:object_r:infiniband_mgmt_device_t,mls_systemhigh)
-+/dev/infiniband/umad0		-c	gen_context(system_u:object_r:infiniband_mgmt_device_t,mls_systemhigh)
-+/dev/infiniband/umad1		-c	gen_context(system_u:object_r:infiniband_mgmt_device_t,mls_systemhigh)
++/dev/infiniband/issm[0-9]+		-c	gen_context(system_u:object_r:infiniband_mgmt_device_t,mls_systemhigh)
++/dev/infiniband/umad[0-9]+		-c	gen_context(system_u:object_r:infiniband_mgmt_device_t,mls_systemhigh)
 +/dev/infiniband/.*	-b	gen_context(system_u:object_r:infiniband_device_t,mls_systemhigh)
-+/dev/infiniband/issm0		-b	gen_context(system_u:object_r:infiniband_mgmt_device_t,mls_systemhigh)
-+/dev/infiniband/issm1		-b	gen_context(system_u:object_r:infiniband_mgmt_device_t,mls_systemhigh)
-+/dev/infiniband/umad0		-b	gen_context(system_u:object_r:infiniband_mgmt_device_t,mls_systemhigh)
-+/dev/infiniband/umad1		-b	gen_context(system_u:object_r:infiniband_mgmt_device_t,mls_systemhigh)
++/dev/infiniband/issm[0-9]+		-b	gen_context(system_u:object_r:infiniband_mgmt_device_t,mls_systemhigh)
++/dev/infiniband/umad[0-9]+		-b	gen_context(system_u:object_r:infiniband_mgmt_device_t,mls_systemhigh)
  /dev/ipmi[0-9]+		-c	gen_context(system_u:object_r:ipmi_device_t,s0)
  /dev/ipmi/[0-9]+	-c	gen_context(system_u:object_r:ipmi_device_t,s0)
  /dev/irlpt[0-9]+	-c	gen_context(system_u:object_r:printer_device_t,s0)
-@@ -61,8 +74,10 @@
+@@ -61,8 +70,10 @@
  /dev/loop-control	-c	gen_context(system_u:object_r:loop_control_device_t,s0)
  /dev/lp.*		-c	gen_context(system_u:object_r:printer_device_t,s0)
  /dev/mcelog		-c	gen_context(system_u:object_r:kmsg_device_t,mls_systemhigh)
@@ -6360,7 +6465,7 @@ index b31c054..ed25075 100644
  /dev/mergemem		-c	gen_context(system_u:object_r:memory_device_t,mls_systemhigh)
  /dev/mga_vid.*		-c	gen_context(system_u:object_r:xserver_misc_device_t,s0)
  /dev/mice		-c	gen_context(system_u:object_r:mouse_device_t,s0)
-@@ -72,7 +87,9 @@
+@@ -72,7 +83,9 @@
  /dev/mixer.*		-c	gen_context(system_u:object_r:sound_device_t,s0)
  /dev/mmetfgrab		-c	gen_context(system_u:object_r:scanner_device_t,s0)
  /dev/modem		-c	gen_context(system_u:object_r:modem_device_t,s0)
@@ -6370,7 +6475,7 @@ index b31c054..ed25075 100644
  /dev/msr.*		-c	gen_context(system_u:object_r:cpu_device_t,s0)
  /dev/net/vhost		-c	gen_context(system_u:object_r:vhost_device_t,s0)
  /dev/network_latency	-c	gen_context(system_u:object_r:netcontrol_device_t,s0)
-@@ -80,6 +97,8 @@
+@@ -80,6 +93,8 @@
  /dev/noz.* 		-c	gen_context(system_u:object_r:modem_device_t,s0)
  /dev/null		-c	gen_context(system_u:object_r:null_device_t,s0)
  /dev/nvidia.*		-c	gen_context(system_u:object_r:xserver_misc_device_t,s0)
@@ -6379,7 +6484,7 @@ index b31c054..ed25075 100644
  /dev/nvram		-c	gen_context(system_u:object_r:nvram_device_t,mls_systemhigh)
  /dev/oldmem		-c	gen_context(system_u:object_r:memory_device_t,mls_systemhigh)
  /dev/opengl		-c	gen_context(system_u:object_r:xserver_misc_device_t,s0)
-@@ -90,6 +109,7 @@
+@@ -90,6 +105,7 @@
  /dev/pmu		-c	gen_context(system_u:object_r:power_device_t,s0)
  /dev/port		-c	gen_context(system_u:object_r:memory_device_t,mls_systemhigh)
  /dev/pps.*		-c	gen_context(system_u:object_r:clock_device_t,s0)
@@ -6387,7 +6492,7 @@ index b31c054..ed25075 100644
  /dev/(misc/)?psaux	-c	gen_context(system_u:object_r:mouse_device_t,s0)
  /dev/rmidi.*		-c	gen_context(system_u:object_r:sound_device_t,s0)
  /dev/radeon		-c	gen_context(system_u:object_r:dri_device_t,s0)
-@@ -106,6 +126,7 @@
+@@ -106,6 +122,7 @@
  /dev/snapshot		-c	gen_context(system_u:object_r:apm_bios_t,s0)
  /dev/sndstat		-c	gen_context(system_u:object_r:sound_device_t,s0)
  /dev/sonypi		-c	gen_context(system_u:object_r:v4l_device_t,s0)
@@ -6395,7 +6500,7 @@ index b31c054..ed25075 100644
  /dev/tlk[0-3]		-c	gen_context(system_u:object_r:v4l_device_t,s0)
  /dev/tpm[0-9]*		-c	gen_context(system_u:object_r:tpm_device_t,s0)
  /dev/uinput		-c	gen_context(system_u:object_r:event_device_t,s0)
-@@ -118,6 +139,12 @@
+@@ -118,6 +135,12 @@
  ifdef(`distro_suse', `
  /dev/usbscanner		-c	gen_context(system_u:object_r:scanner_device_t,s0)
  ')
@@ -6408,7 +6513,7 @@ index b31c054..ed25075 100644
  /dev/vhost-net		-c	gen_context(system_u:object_r:vhost_device_t,s0)
  /dev/vbi.*		-c	gen_context(system_u:object_r:v4l_device_t,s0)
  /dev/vbox.*		-c	gen_context(system_u:object_r:xserver_misc_device_t,s0)
-@@ -129,12 +156,14 @@ ifdef(`distro_suse', `
+@@ -129,12 +152,14 @@ ifdef(`distro_suse', `
  /dev/vttuner		-c	gen_context(system_u:object_r:v4l_device_t,s0)
  /dev/vtx.*		-c	gen_context(system_u:object_r:v4l_device_t,s0)
  /dev/watchdog.*		-c	gen_context(system_u:object_r:watchdog_device_t,s0)
@@ -6423,7 +6528,7 @@ index b31c054..ed25075 100644
  /dev/card.*		-c	gen_context(system_u:object_r:xserver_misc_device_t,s0)
  /dev/cmx.*		-c	gen_context(system_u:object_r:smartcard_device_t,s0)
  
-@@ -172,15 +201,21 @@ ifdef(`distro_suse', `
+@@ -172,15 +197,21 @@ ifdef(`distro_suse', `
  /dev/touchscreen/ucb1x00 -c	gen_context(system_u:object_r:mouse_device_t,s0)
  /dev/touchscreen/mk712	-c	gen_context(system_u:object_r:mouse_device_t,s0)
  
@@ -6445,7 +6550,7 @@ index b31c054..ed25075 100644
  
  ifdef(`distro_debian',`
  # this is a static /dev dir "backup mount"
-@@ -198,12 +233,27 @@ ifdef(`distro_debian',`
+@@ -198,12 +229,27 @@ ifdef(`distro_debian',`
  /lib/udev/devices/null	-c	gen_context(system_u:object_r:null_device_t,s0)
  /lib/udev/devices/zero	-c	gen_context(system_u:object_r:zero_device_t,s0)
  
@@ -22247,7 +22352,7 @@ index e100d88..1428581 100644
 +')
 +
 diff --git a/policy/modules/kernel/kernel.te b/policy/modules/kernel/kernel.te
-index 8dbab4c..5b93205 100644
+index 8dbab4c..5deb336 100644
 --- a/policy/modules/kernel/kernel.te
 +++ b/policy/modules/kernel/kernel.te
 @@ -25,6 +25,9 @@ attribute kern_unconfined;
@@ -22542,7 +22647,7 @@ index 8dbab4c..5b93205 100644
  ########################################
  #
  # Unlabeled process local policy
-@@ -399,14 +491,39 @@ if( ! secure_mode_insmod ) {
+@@ -399,14 +491,38 @@ if( ! secure_mode_insmod ) {
  # Rules for unconfined acccess to this module
  #
  
@@ -22571,7 +22676,6 @@ index 8dbab4c..5b93205 100644
 +
 +if( ! secure_mode_insmod ) {
 +    allow can_load_kernmodule self:capability sys_module;
-+    allow can_load_kernmodule self:capability2 compromise_kernel;
 +    # load_module() calls stop_machine() which
 +    # calls sched_setscheduler()
 +    allow can_load_kernmodule self:capability sys_nice;
@@ -31241,7 +31345,7 @@ index 6bf0ecc..e6be63a 100644
 +')
 +
 diff --git a/policy/modules/services/xserver.te b/policy/modules/services/xserver.te
-index 8b40377..5d9d50d 100644
+index 8b40377..a1eab03 100644
 --- a/policy/modules/services/xserver.te
 +++ b/policy/modules/services/xserver.te
 @@ -26,28 +26,66 @@ gen_require(`
@@ -32267,7 +32371,7 @@ index 8b40377..5d9d50d 100644
 +allow xserver_t self:capability { sys_ptrace dac_override fowner fsetid setgid setuid ipc_owner sys_rawio sys_admin sys_nice sys_tty_config mknod net_bind_service };
 +
  dontaudit xserver_t self:capability chown;
-+allow xserver_t self:capability2 compromise_kernel;
++#allow xserver_t self:capability2 compromise_kernel;
 +
  allow xserver_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
  allow xserver_t self:fd use;
@@ -38978,15 +39082,16 @@ index 312cd04..102b975 100644
 +userdom_use_inherited_user_terminals(setkey_t)
 +userdom_read_user_tmp_files(setkey_t)
 diff --git a/policy/modules/system/iptables.fc b/policy/modules/system/iptables.fc
-index 73a1c4e..ec4c7c7 100644
+index 73a1c4e..a143623 100644
 --- a/policy/modules/system/iptables.fc
 +++ b/policy/modules/system/iptables.fc
-@@ -1,22 +1,43 @@
+@@ -1,22 +1,45 @@
  /etc/rc\.d/init\.d/ip6?tables	--	gen_context(system_u:object_r:iptables_initrc_exec_t,s0)
 -/etc/rc\.d/init\.d/ebtables	--	gen_context(system_u:object_r:iptables_initrc_exec_t,s0)
 -/etc/sysconfig/ip6?tables.*	--	gen_context(system_u:object_r:iptables_conf_t,s0)
 -/etc/sysconfig/system-config-firewall.* -- gen_context(system_u:object_r:iptables_conf_t,s0)
 +/etc/rc\.d/init\.d/ebtables		--  gen_context(system_u:object_r:iptables_initrc_exec_t,s0)
++/etc/rc\.d/init\.d/nftables	--	gen_context(system_u:object_r:iptables_initrc_exec_t,s0)
  
 -/sbin/ebtables			--	gen_context(system_u:object_r:iptables_exec_t,s0)
 +/usr/lib/systemd/system/arptables.*     --  gen_context(system_u:object_r:iptables_unit_file_t,s0)
@@ -39017,6 +39122,7 @@ index 73a1c4e..ec4c7c7 100644
 -/sbin/ipvsadm-save		--	gen_context(system_u:object_r:iptables_exec_t,s0)
 -/sbin/xtables-multi		--	gen_context(system_u:object_r:iptables_exec_t,s0)
 +/sbin/ipvsadm-save		    --	gen_context(system_u:object_r:iptables_exec_t,s0)
++/sbin/nft			--	gen_context(system_u:object_r:iptables_exec_t,s0)
 +/sbin/xtables-multi		    --	gen_context(system_u:object_r:iptables_exec_t,s0)
  
 -/usr/sbin/conntrack		--	gen_context(system_u:object_r:iptables_exec_t,s0)
@@ -46612,10 +46718,10 @@ index a392fc4..79fadfc 100644
 +')
 diff --git a/policy/modules/system/systemd.fc b/policy/modules/system/systemd.fc
 new file mode 100644
-index 0000000..6cf3942
+index 0000000..8b77d7a
 --- /dev/null
 +++ b/policy/modules/system/systemd.fc
-@@ -0,0 +1,69 @@
+@@ -0,0 +1,71 @@
 +HOME_DIR/\.local/share/systemd(/.*)?		gen_context(system_u:object_r:systemd_home_t,s0)
 +/root/\.local/share/systemd(/.*)?		gen_context(system_u:object_r:systemd_home_t,s0)
 +
@@ -46642,6 +46748,7 @@ index 0000000..6cf3942
 +/usr/lib/systemd/system/systemd-machined\.service	--	gen_context(system_u:object_r:systemd_machined_unit_file_t,s0)
 +/usr/lib/systemd/system/systemd-networkd\.service     gen_context(system_u:object_r:systemd_networkd_unit_file_t,s0)
 +/usr/lib/systemd/system/systemd-resolved\.service     gen_context(system_u:object_r:systemd_resolved_unit_file_t,s0)
++/usr/lib/systemd/system/systemd-modules-load\.service     gen_context(system_u:object_r:systemd_modules_load_unit_file_t,s0)
 +/usr/lib/systemd/system/systemd-vconsole-setup\.service		gen_context(system_u:object_r:systemd_vconsole_unit_file_t,s0)
 +/usr/lib/systemd/system/systemd-rfkill\.service	--	gen_context(system_u:object_r:systemd_rfkill_unit_file_t,s0)
 +/usr/lib/systemd/system/systemd-time.*\.service	--	gen_context(system_u:object_r:systemd_timedated_unit_file_t,s0)
@@ -46664,6 +46771,7 @@ index 0000000..6cf3942
 +/usr/lib/systemd/systemd-networkd   --  gen_context(system_u:object_r:systemd_networkd_exec_t,s0)
 +/usr/lib/systemd/systemd-tmpfiles --	gen_context(system_u:object_r:systemd_tmpfiles_exec_t,s0)
 +/usr/lib/systemd/systemd-coredump	--	gen_context(system_u:object_r:systemd_coredump_exec_t,s0)
++/usr/lib/systemd/systemd-modules-load	--	gen_context(system_u:object_r:systemd_modules_load_exec_t,s0)
 +/usr/lib/systemd/system-generators/systemd-gpt-auto-generator	--	gen_context(system_u:object_r:systemd_gpt_generator_exec_t,s0)
 +/usr/lib/systemd/systemd-resolve(d|-host)			gen_context(system_u:object_r:systemd_resolved_exec_t,s0)
 +
@@ -46687,10 +46795,10 @@ index 0000000..6cf3942
 +/var/run/initramfs(/.*)?	<<none>>
 diff --git a/policy/modules/system/systemd.if b/policy/modules/system/systemd.if
 new file mode 100644
-index 0000000..ebd6cc8
+index 0000000..513b97b
 --- /dev/null
 +++ b/policy/modules/system/systemd.if
-@@ -0,0 +1,1716 @@
+@@ -0,0 +1,1738 @@
 +## <summary>SELinux policy for systemd components</summary>
 +
 +######################################
@@ -48407,12 +48515,34 @@ index 0000000..ebd6cc8
 +	files_search_etc($1)
 +	allow $1 systemd_hwdb_etc_t:file read_file_perms;
 +')
++
++########################################
++## <summary>
++##	Allow process to manage hwdb config file.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`systemd_hwdb_manage_config',`
++	gen_require(`
++		type systemd_hwdb_etc_t;
++	')
++
++	files_search_etc($1)
++	manage_files_pattern($1, systemd_hwdb_etc_t, systemd_hwdb_etc_t)
++	allow $1 systemd_hwdb_etc_t:file {relabelfrom relabelto};
++	files_etc_filetrans($1, systemd_hwdb_etc_t, file)
++')
 diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
 new file mode 100644
-index 0000000..f26d95b
+index 0000000..7877160
 --- /dev/null
 +++ b/policy/modules/system/systemd.te
-@@ -0,0 +1,939 @@
+@@ -0,0 +1,957 @@
 +policy_module(systemd, 1.0.0)
 +
 +#######################################
@@ -48473,6 +48603,11 @@ index 0000000..f26d95b
 +
 +type systemd_resolved_unit_file_t;
 +systemd_unit_file(systemd_resolved_unit_file_t)
++
++systemd_domain_template(systemd_modules_load)
++
++type systemd_modules_load_unit_file_t;
++systemd_unit_file(systemd_modules_load_unit_file_t)
 +
 +# domain for systemd-tty-ask-password-agent and systemd-gnome-ask-password-agent
 +# systemd components
@@ -49352,6 +49487,19 @@ index 0000000..f26d95b
 +
 +read_files_pattern(systemd_domain, systemd_home_t, systemd_home_t)
 +read_lnk_files_pattern(systemd_domain, systemd_home_t, systemd_home_t)
++
++#######################################
++#
++# systemd_modules_load domain
++#
++
++kernel_dgram_send(systemd_modules_load_t)
++
++dev_read_sysfs(systemd_modules_load_t)
++
++files_read_kernel_modules(systemd_modules_load_t)
++modutils_list_module_config(systemd_modules_load_t)
++
 diff --git a/policy/modules/system/udev.fc b/policy/modules/system/udev.fc
 index f41857e..49fd32e 100644
 --- a/policy/modules/system/udev.fc
@@ -49650,7 +49798,7 @@ index 9a1650d..d7e8a01 100644
  
  ########################################
 diff --git a/policy/modules/system/udev.te b/policy/modules/system/udev.te
-index 39f185f..5658ab4 100644
+index 39f185f..b41b341 100644
 --- a/policy/modules/system/udev.te
 +++ b/policy/modules/system/udev.te
 @@ -17,16 +17,17 @@ init_daemon_domain(udev_t, udev_exec_t)
@@ -49680,7 +49828,7 @@ index 39f185f..5658ab4 100644
  
 -allow udev_t self:capability { chown dac_override dac_read_search fowner fsetid sys_admin mknod net_raw net_admin sys_nice sys_rawio sys_resource setuid setgid sys_nice sys_ptrace };
 +allow udev_t self:capability { chown dac_override dac_read_search fowner fsetid sys_admin mknod net_raw net_admin sys_nice sys_rawio sys_resource setuid setgid sys_nice };
-+allow udev_t self:capability2 { block_suspend compromise_kernel };
++allow udev_t self:capability2 { block_suspend };
  dontaudit udev_t self:capability sys_tty_config;
 -allow udev_t self:capability2 block_suspend;
 -allow udev_t self:process ~{ setcurrent setexec setfscreate setrlimit execmem execstack execheap };
@@ -49812,7 +49960,7 @@ index 39f185f..5658ab4 100644
  
  seutil_read_config(udev_t)
  seutil_read_default_contexts(udev_t)
-@@ -169,9 +193,13 @@ sysnet_read_dhcpc_pid(udev_t)
+@@ -169,9 +193,14 @@ sysnet_read_dhcpc_pid(udev_t)
  sysnet_delete_dhcpc_pid(udev_t)
  sysnet_signal_dhcpc(udev_t)
  sysnet_manage_config(udev_t)
@@ -49821,13 +49969,14 @@ index 39f185f..5658ab4 100644
 +
 +systemd_login_read_pid_files(udev_t)
 +systemd_getattr_unit_files(udev_t)
++systemd_hwdb_manage_config(udev_t)
  
  userdom_dontaudit_search_user_home_content(udev_t)
 +userdom_rw_inherited_user_tmp_pipes(udev_t)
  
  ifdef(`distro_debian',`
  	files_pid_filetrans(udev_t, udev_var_run_t, dir, "xen-hotplug")
-@@ -195,16 +223,9 @@ ifdef(`distro_gentoo',`
+@@ -195,16 +224,9 @@ ifdef(`distro_gentoo',`
  ')
  
  ifdef(`distro_redhat',`
@@ -49846,7 +49995,7 @@ index 39f185f..5658ab4 100644
  
  	# for arping used for static IP addresses on PCMCIA ethernet
  	netutils_domtrans(udev_t)
-@@ -242,6 +263,7 @@ optional_policy(`
+@@ -242,6 +264,7 @@ optional_policy(`
  
  optional_policy(`
  	cups_domtrans_config(udev_t)
@@ -49854,7 +50003,7 @@ index 39f185f..5658ab4 100644
  ')
  
  optional_policy(`
-@@ -249,17 +271,31 @@ optional_policy(`
+@@ -249,17 +272,31 @@ optional_policy(`
  	dbus_use_system_bus_fds(udev_t)
  
  	optional_policy(`
@@ -49888,7 +50037,7 @@ index 39f185f..5658ab4 100644
  ')
  
  optional_policy(`
-@@ -289,6 +325,10 @@ optional_policy(`
+@@ -289,6 +326,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -49899,7 +50048,7 @@ index 39f185f..5658ab4 100644
  	openct_read_pid_files(udev_t)
  	openct_domtrans(udev_t)
  ')
-@@ -303,6 +343,15 @@ optional_policy(`
+@@ -303,6 +344,15 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -49915,7 +50064,7 @@ index 39f185f..5658ab4 100644
  	unconfined_signal(udev_t)
  ')
  
-@@ -315,6 +364,7 @@ optional_policy(`
+@@ -315,6 +365,7 @@ optional_policy(`
  	kernel_read_xen_state(udev_t)
  	xen_manage_log(udev_t)
  	xen_read_image_files(udev_t)
