@@ -648,6 +648,12 @@ exit 0
 %endif
 
 %changelog
+* Wed Jul 13 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-202
+- Allow systemd_logind_t to start init_t BZ(1355861)
+- Add init_start() interface
+- Allow sysadm user to run systemd-tmpfiles
+- Add interface systemd_tmpfiles_run
+
 * Mon Jul 11 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-201
 - Allow lttng tools to block suspending
 - Allow creation of vpnaas in openstack
