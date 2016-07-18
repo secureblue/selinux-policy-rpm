@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 202%{?dist}
+Release: 203%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -648,6 +648,17 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 18 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-203
+- Allow hypervkvp domain to run restorecon.
+- Allow firewalld to manage net_conf_t files
+- Remove double graphite-web context declaration
+- Fix typo in rhsmcertd SELinux policy
+- Allow logrotate read logs inside containers.
+- Allow sssd to getattr on fs_t
+- Allow opendnssec domain to manage bind chace files
+- Allow systemd to get status of systemd-logind daemon
+- Label more ndctl devices not just ndctl0
+
 * Wed Jul 13 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-202
 - Allow systemd_logind_t to start init_t BZ(1355861)
 - Add init_start() interface
