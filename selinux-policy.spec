@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 203%{?dist}
+Release: 204%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -648,6 +648,20 @@ exit 0
 %endif
 
 %changelog
+* Tue Jul 26 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-204
+- Allow lsmd_plugin_t to exec ldconfig.
+- Allow vnstatd domain to read /sys/class/net/ files
+- Remove duplicate allow rules in spamassassin SELinux module
+- Allow spamc_t and spamd_t domains create .spamassassin file in user homedirs
+- Allow ipa_dnskey domain to search cache dirs
+- Allow dogtag-ipa-ca-renew-agent-submit labeled as certmonger_t to create /var/log/ipa/renew.log file
+- Allow ipa-dnskey read system state.
+- Allow sshd setcap capability. This is needed due to latest changes in sshd Resolves: rhbz#1356245
+- Add interface to write to nsfs inodes
+- Allow init_t domain to read rpm db. This is needed due dnf-upgrade process failing. BZ(1349721)
+- Allow systemd_modules_load_t to read /etc/modprobe.d/lockd.conf
+- sysadmin should be allowed to use docker.
+
 * Mon Jul 18 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-203
 - Allow hypervkvp domain to run restorecon.
 - Allow firewalld to manage net_conf_t files

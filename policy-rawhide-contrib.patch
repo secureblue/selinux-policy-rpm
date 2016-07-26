@@ -12256,7 +12256,7 @@ index 008f8ef..144c074 100644
  	admin_pattern($1, certmonger_var_run_t)
  ')
 diff --git a/certmonger.te b/certmonger.te
-index 550b287..ea704c2 100644
+index 550b287..f37b9b0 100644
 --- a/certmonger.te
 +++ b/certmonger.te
 @@ -18,6 +18,9 @@ files_type(certmonger_var_lib_t)
@@ -12346,7 +12346,7 @@ index 550b287..ea704c2 100644
  ')
  
  optional_policy(`
-@@ -92,11 +110,58 @@ optional_policy(`
+@@ -92,11 +110,60 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -12359,8 +12359,10 @@ index 550b287..ea704c2 100644
 +
 +optional_policy(`
 +    ipa_manage_lib(certmonger_t)
++    ipa_manage_log(certmonger_t)
 +    ipa_manage_pid_files(certmonger_t)
 +    ipa_filetrans_pid(certmonger_t,"renewal.lock")
++	ipa_named_filetrans_log_dir(certmonger_t)
 +')
 +
 +optional_policy(`
@@ -37452,10 +37454,10 @@ index 6517fad..f183748 100644
 +	allow $1 hypervkvp_unit_file_t:service all_service_perms;
  ')
 diff --git a/hypervkvp.te b/hypervkvp.te
-index 4eb7041..b7b9201 100644
+index 4eb7041..d750c5c 100644
 --- a/hypervkvp.te
 +++ b/hypervkvp.te
-@@ -5,24 +5,148 @@ policy_module(hypervkvp, 1.0.0)
+@@ -5,24 +5,150 @@ policy_module(hypervkvp, 1.0.0)
  # Declarations
  #
  
@@ -37493,7 +37495,7 @@ index 4eb7041..b7b9201 100644
  #
 -# Local policy
 +# hyperv domain local policy
- #
++#
 +
 +allow hyperv_domain self:capability net_admin;
 +allow hyperv_domain self:netlink_socket create_socket_perms;
@@ -37507,7 +37509,7 @@ index 4eb7041..b7b9201 100644
 +dev_read_sysfs(hyperv_domain)
 +
 +########################################
- #
++#
 +# hypervkvp local policy
 +#
 +
@@ -37553,6 +37555,8 @@ index 4eb7041..b7b9201 100644
 +
 +modutils_domtrans_insmod(hypervkvp_t)
 +
++seutil_domtrans_setfiles(hypervkvp_t)
++
 +sysnet_dns_name_resolve(hypervkvp_t)
 +sysnet_domtrans_dhcpc(hypervkvp_t)
 +sysnet_domtrans_ifconfig(hypervkvp_t)
@@ -37596,14 +37600,14 @@ index 4eb7041..b7b9201 100644
 +')
 +
 +########################################
-+#
+ #
 +# hypervvssd local policy
-+#
-+
-+allow hypervvssd_t self:capability sys_admin;
+ #
  
 -allow hypervkvpd_t self:fifo_file rw_fifo_file_perms;
 -allow hypervkvpd_t self:unix_stream_socket create_stream_socket_perms;
++allow hypervvssd_t self:capability sys_admin;
++
 +dev_rw_hypervvssd(hypervvssd_t)
  
 -logging_send_syslog_msg(hypervkvpd_t)
@@ -38312,10 +38316,10 @@ index 0000000..61f2003
 +userdom_use_user_terminals(iotop_t)
 diff --git a/ipa.fc b/ipa.fc
 new file mode 100644
-index 0000000..e1ddda0
+index 0000000..1131ca0
 --- /dev/null
 +++ b/ipa.fc
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,21 @@
 +/usr/lib/systemd/system/ipa-otpd.*		--	gen_context(system_u:object_r:ipa_otpd_unit_file_t,s0)
 +
 +/usr/lib/systemd/system/ipa-dnskeysyncd.*		--	gen_context(system_u:object_r:ipa_dnskey_unit_file_t,s0)
@@ -38331,16 +38335,18 @@ index 0000000..e1ddda0
 +
 +/var/lib/ipa(/.*)?              gen_context(system_u:object_r:ipa_var_lib_t,s0)
 +
++/var/log/ipa(/.*)?              gen_context(system_u:object_r:ipa_log_t,s0)
++
 +/var/log/ipareplica-conncheck.log	--	gen_context(system_u:object_r:ipa_log_t,s0)
 +
 +/var/run/ipa(/.*)?              gen_context(system_u:object_r:ipa_var_run_t,s0)
 +
 diff --git a/ipa.if b/ipa.if
 new file mode 100644
-index 0000000..ee3a606
+index 0000000..1a30961
 --- /dev/null
 +++ b/ipa.if
-@@ -0,0 +1,197 @@
+@@ -0,0 +1,235 @@
 +## <summary>Policy for IPA services.</summary>
 +
 +########################################
@@ -38461,6 +38467,25 @@ index 0000000..ee3a606
 +
 +########################################
 +## <summary>
++##	Allow domain to manage ipa log files/dirs.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`ipa_manage_log',`
++	gen_require(`
++		type ipa_log_t;
++	')
++
++    manage_files_pattern($1, ipa_log_t, ipa_log_t)
++    manage_dirs_pattern($1, ipa_log_t, ipa_log_t)
++')
++
++########################################
++## <summary>
 +##	Allow domain to manage ipa lib files/dirs.
 +## </summary>
 +## <param name="domain">
@@ -38538,12 +38563,31 @@ index 0000000..ee3a606
 +	files_search_tmp($1)
 +	allow $1 ipa_tmp_t:file unlink;
 +')
++
++########################################
++## <summary>
++##	Create log files with a named file
++##	type transition.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`ipa_named_filetrans_log_dir',`
++	gen_require(`
++		type ipa_log_t;
++	')
++
++	logging_log_named_filetrans($1, ipa_log_t, dir, "ipa")
++')
 diff --git a/ipa.te b/ipa.te
 new file mode 100644
-index 0000000..3ca42f7
+index 0000000..e3b22a3
 --- /dev/null
 +++ b/ipa.te
-@@ -0,0 +1,199 @@
+@@ -0,0 +1,201 @@
 +policy_module(ipa, 1.0.0)
 +
 +########################################
@@ -38702,6 +38746,7 @@ index 0000000..3ca42f7
 +files_tmp_filetrans(ipa_dnskey_t, ipa_tmp_t, { file })
 +
 +kernel_dgram_send(ipa_dnskey_t)
++kernel_read_system_state(ipa_dnskey_t)
 +
 +auth_use_nsswitch(ipa_dnskey_t)
 +
@@ -38731,6 +38776,7 @@ index 0000000..3ca42f7
 +	bind_read_dnssec_keys(ipa_dnskey_t)
 +	bind_manage_zone(ipa_dnskey_t)
 +	bind_manage_zone_dirs(ipa_dnskey_t)
++	bind_search_cache(ipa_dnskey_t)
 +')
 +
 +optional_policy(`
@@ -46754,7 +46800,7 @@ index d314333..27ede09 100644
 +	')
  ')
 diff --git a/lsm.te b/lsm.te
-index 4ec0eea..db7c68b 100644
+index 4ec0eea..693d9ae 100644
 --- a/lsm.te
 +++ b/lsm.te
 @@ -4,6 +4,13 @@ policy_module(lsm, 1.0.0)
@@ -46796,7 +46842,7 @@ index 4ec0eea..db7c68b 100644
  allow lsmd_t self:unix_stream_socket create_stream_socket_perms;
  
  manage_dirs_pattern(lsmd_t, lsmd_var_run_t, lsmd_var_run_t)
-@@ -26,4 +44,69 @@ manage_lnk_files_pattern(lsmd_t, lsmd_var_run_t, lsmd_var_run_t)
+@@ -26,4 +44,71 @@ manage_lnk_files_pattern(lsmd_t, lsmd_var_run_t, lsmd_var_run_t)
  manage_sock_files_pattern(lsmd_t, lsmd_var_run_t, lsmd_var_run_t)
  files_pid_filetrans(lsmd_t, lsmd_var_run_t, { dir file sock_file })
  
@@ -46854,6 +46900,8 @@ index 4ec0eea..db7c68b 100644
 +
 +init_stream_connect(lsmd_plugin_t)
 +init_dontaudit_rw_stream_socket(lsmd_plugin_t)
++
++libs_exec_ldconfig(lsmd_plugin_t)
 +
 +logging_send_syslog_msg(lsmd_plugin_t)
 +
@@ -101860,7 +101908,7 @@ index e9bd097..5724bcf 100644
 +/usr/bin/pyzor		--	gen_context(system_u:object_r:spamc_exec_t,s0)
 +/usr/bin/pyzord		--	gen_context(system_u:object_r:spamd_exec_t,s0)
 diff --git a/spamassassin.if b/spamassassin.if
-index 1499b0b..6950cab 100644
+index 1499b0b..e695a62 100644
 --- a/spamassassin.if
 +++ b/spamassassin.if
 @@ -2,39 +2,45 @@
@@ -102244,7 +102292,7 @@ index 1499b0b..6950cab 100644
 +    ')
 +
 +    userdom_user_home_dir_filetrans($1, spamc_home_t, dir, ".pyzor")
-+    userdom_user_home_dir_filetrans($1, spamc_home_t, file, ".spamassassin")
++    userdom_user_home_dir_filetrans($1, spamc_home_t, dir, ".spamassassin")
 +    userdom_user_home_dir_filetrans($1, spamc_home_t, dir, ".spamd")
 +    userdom_user_home_dir_filetrans($1, spamc_home_t, dir, ".razor")
 +')
@@ -102265,7 +102313,7 @@ index 1499b0b..6950cab 100644
 +    ')
 +
 +    userdom_admin_home_dir_filetrans($1, spamc_home_t, dir, ".pyzor")
-+    userdom_admin_home_dir_filetrans($1, spamc_home_t, file, ".spamassassin")
++    userdom_admin_home_dir_filetrans($1, spamc_home_t, dir, ".spamassassin")
 +    userdom_admin_home_dir_filetrans($1, spamc_home_t, dir, ".spamd")
 +    userdom_admin_home_dir_filetrans($1, spamc_home_t, dir, ".razor")
 +')
@@ -102315,7 +102363,7 @@ index 1499b0b..6950cab 100644
 -	spamassassin_role($2, $1)
  ')
 diff --git a/spamassassin.te b/spamassassin.te
-index cc58e35..7e5c719 100644
+index cc58e35..d844f55 100644
 --- a/spamassassin.te
 +++ b/spamassassin.te
 @@ -7,50 +7,30 @@ policy_module(spamassassin, 2.6.1)
@@ -102395,7 +102443,7 @@ index cc58e35..7e5c719 100644
  type spamd_initrc_exec_t;
  init_script_file(spamd_initrc_exec_t)
  
-@@ -72,87 +46,199 @@ type spamd_log_t;
+@@ -72,87 +46,197 @@ type spamd_log_t;
  logging_log_file(spamd_log_t)
  
  type spamd_spool_t;
@@ -102532,8 +102580,6 @@ index cc58e35..7e5c719 100644
 +manage_lnk_files_pattern(spamd_t, spamassassin_home_t, spamassassin_home_t)
 +manage_fifo_files_pattern(spamd_t, spamassassin_home_t, spamassassin_home_t)
 +manage_sock_files_pattern(spamd_t, spamassassin_home_t, spamassassin_home_t)
-+userdom_user_home_dir_filetrans(spamd_t, spamassassin_home_t, dir, ".spamassassin")
-+userdom_admin_home_dir_filetrans(spamd_t, spamassassin_home_t, dir, ".spamassassin")
 +userdom_home_manager(spamassassin_t)
 +
  kernel_read_kernel_sysctls(spamassassin_t)
@@ -102617,7 +102663,7 @@ index cc58e35..7e5c719 100644
  		nis_use_ypbind_uncond(spamassassin_t)
  	')
  ')
-@@ -160,6 +246,8 @@ optional_policy(`
+@@ -160,6 +244,8 @@ optional_policy(`
  optional_policy(`
  	mta_read_config(spamassassin_t)
  	sendmail_stub(spamassassin_t)
@@ -102626,7 +102672,7 @@ index cc58e35..7e5c719 100644
  ')
  
  ########################################
-@@ -167,72 +255,95 @@ optional_policy(`
+@@ -167,72 +253,95 @@ optional_policy(`
  # Client local policy
  #
  
@@ -102753,7 +102799,7 @@ index cc58e35..7e5c719 100644
  
  optional_policy(`
  	abrt_stream_connect(spamc_t)
-@@ -243,6 +354,7 @@ optional_policy(`
+@@ -243,6 +352,7 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -102761,7 +102807,7 @@ index cc58e35..7e5c719 100644
  	evolution_stream_connect(spamc_t)
  ')
  
-@@ -251,11 +363,18 @@ optional_policy(`
+@@ -251,11 +361,18 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -102781,7 +102827,7 @@ index cc58e35..7e5c719 100644
  ')
  
  optional_policy(`
-@@ -267,36 +386,40 @@ optional_policy(`
+@@ -267,36 +384,40 @@ optional_policy(`
  
  ########################################
  #
@@ -102839,7 +102885,7 @@ index cc58e35..7e5c719 100644
  logging_log_filetrans(spamd_t, spamd_log_t, file)
  
  manage_dirs_pattern(spamd_t, spamd_spool_t, spamd_spool_t)
-@@ -308,7 +431,8 @@ manage_dirs_pattern(spamd_t, spamd_tmp_t, spamd_tmp_t)
+@@ -308,7 +429,8 @@ manage_dirs_pattern(spamd_t, spamd_tmp_t, spamd_tmp_t)
  manage_files_pattern(spamd_t, spamd_tmp_t, spamd_tmp_t)
  files_tmp_filetrans(spamd_t, spamd_tmp_t, { file dir })
  
@@ -102849,7 +102895,7 @@ index cc58e35..7e5c719 100644
  manage_files_pattern(spamd_t, spamd_var_lib_t, spamd_var_lib_t)
  manage_lnk_files_pattern(spamd_t, spamd_var_lib_t, spamd_var_lib_t)
  
-@@ -317,12 +441,14 @@ manage_files_pattern(spamd_t, spamd_var_run_t, spamd_var_run_t)
+@@ -317,12 +439,14 @@ manage_files_pattern(spamd_t, spamd_var_run_t, spamd_var_run_t)
  manage_sock_files_pattern(spamd_t, spamd_var_run_t, spamd_var_run_t)
  files_pid_filetrans(spamd_t, spamd_var_run_t, { file dir })
  
@@ -102866,7 +102912,7 @@ index cc58e35..7e5c719 100644
  corenet_all_recvfrom_netlabel(spamd_t)
  corenet_tcp_sendrecv_generic_if(spamd_t)
  corenet_udp_sendrecv_generic_if(spamd_t)
-@@ -331,78 +457,60 @@ corenet_udp_sendrecv_generic_node(spamd_t)
+@@ -331,78 +455,60 @@ corenet_udp_sendrecv_generic_node(spamd_t)
  corenet_tcp_sendrecv_all_ports(spamd_t)
  corenet_udp_sendrecv_all_ports(spamd_t)
  corenet_tcp_bind_generic_node(spamd_t)
@@ -102971,7 +103017,7 @@ index cc58e35..7e5c719 100644
  ')
  
  optional_policy(`
-@@ -421,21 +529,13 @@ optional_policy(`
+@@ -421,21 +527,13 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -102995,7 +103041,7 @@ index cc58e35..7e5c719 100644
  ')
  
  optional_policy(`
-@@ -443,8 +543,8 @@ optional_policy(`
+@@ -443,8 +541,8 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -103005,7 +103051,7 @@ index cc58e35..7e5c719 100644
  ')
  
  optional_policy(`
-@@ -455,7 +555,17 @@ optional_policy(`
+@@ -455,7 +553,17 @@ optional_policy(`
  optional_policy(`
  	razor_domtrans(spamd_t)
  	razor_read_lib_files(spamd_t)
@@ -103024,7 +103070,7 @@ index cc58e35..7e5c719 100644
  ')
  
  optional_policy(`
-@@ -463,9 +573,9 @@ optional_policy(`
+@@ -463,9 +571,9 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -103035,7 +103081,7 @@ index cc58e35..7e5c719 100644
  ')
  
  optional_policy(`
-@@ -474,32 +584,32 @@ optional_policy(`
+@@ -474,32 +582,32 @@ optional_policy(`
  
  ########################################
  #
@@ -103078,7 +103124,7 @@ index cc58e35..7e5c719 100644
  
  corecmd_exec_bin(spamd_update_t)
  corecmd_exec_shell(spamd_update_t)
-@@ -508,25 +618,26 @@ dev_read_urand(spamd_update_t)
+@@ -508,25 +616,26 @@ dev_read_urand(spamd_update_t)
  
  domain_use_interactive_fds(spamd_update_t)
  
@@ -115879,7 +115925,7 @@ index 137ac44..b644854 100644
  	domain_system_change_exemption($1)
  	role_transition $2 vnstatd_initrc_exec_t system_r;
 diff --git a/vnstatd.te b/vnstatd.te
-index e2220ae..0dcf5f6 100644
+index e2220ae..85f393b 100644
 --- a/vnstatd.te
 +++ b/vnstatd.te
 @@ -36,7 +36,7 @@ allow vnstatd_t self:unix_stream_socket { accept listen };
@@ -115891,12 +115937,16 @@ index e2220ae..0dcf5f6 100644
  
  manage_files_pattern(vnstatd_t, vnstatd_var_run_t, vnstatd_var_run_t)
  manage_dirs_pattern(vnstatd_t, vnstatd_var_run_t, vnstatd_var_run_t)
-@@ -47,14 +47,10 @@ kernel_read_system_state(vnstatd_t)
+@@ -45,16 +45,14 @@ files_pid_filetrans(vnstatd_t, vnstatd_var_run_t, { dir file })
+ kernel_read_network_state(vnstatd_t)
+ kernel_read_system_state(vnstatd_t)
  
- domain_use_interactive_fds(vnstatd_t)
+-domain_use_interactive_fds(vnstatd_t)
++dev_read_sysfs(vnstatd_t)
  
 -files_read_etc_files(vnstatd_t)
--
++domain_use_interactive_fds(vnstatd_t)
+ 
  fs_getattr_xattr_fs(vnstatd_t)
  
  logging_send_syslog_msg(vnstatd_t)
@@ -115906,7 +115956,7 @@ index e2220ae..0dcf5f6 100644
  ########################################
  #
  # Client local policy
-@@ -64,23 +60,19 @@ allow vnstat_t self:process signal;
+@@ -64,23 +62,19 @@ allow vnstat_t self:process signal;
  allow vnstat_t self:fifo_file rw_fifo_file_perms;
  allow vnstat_t self:unix_stream_socket { accept listen };
  
