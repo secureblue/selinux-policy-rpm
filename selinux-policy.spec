@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 204%{?dist}
+Release: 205%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -648,6 +648,17 @@ exit 0
 %endif
 
 %changelog
+* Fri Jul 29 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-205
+- Dontaudit mock_build_t can list all ptys.
+- Allow ftpd_t to mamange userhome data without any boolean.
+- Add logrotate permissions for creating netlink selinux sockets.
+- Add new MLS attribute to allow relabeling objects higher than system low. This exception is needed for package managers when processing sensitive data.
+- Label all VBox libraries stored in /var/lib/VBoxGuestAdditions/lib/ as textrel_shlib_t BZ(1356654)
+- Allow systemd gpt generator to run fstools BZ(1353585)
+- Label /usr/lib/systemd/libsystemd-shared-231.so as lib_t. BZ(1360716)
+- Allow gnome-keyring also manage user_tmp_t sockets.
+- Allow systemd to mounton /etc filesystem. BZ(1341753)
+
 * Tue Jul 26 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-204
 - Allow lsmd_plugin_t to exec ldconfig.
 - Allow vnstatd domain to read /sys/class/net/ files
