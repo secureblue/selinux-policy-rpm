@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 205%{?dist}
+Release: 206%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -648,6 +648,16 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 02 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-206
+- collectd: update policy for 5.5
+- Allow puppet_t transtition to shorewall_t
+- Grant certmonger "chown" capability
+- Boinc updates from Russell Coker.
+- Allow sshd setcap capability. This is needed due to latest changes in sshd.
+- Revert "Allow sshd setcap capability. This is needed due to latest changes in sshd"
+- Revert "Fix typo in ssh policy"
+- Get attributes of generic ptys, from Russell Coker.
+
 * Fri Jul 29 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-205
 - Dontaudit mock_build_t can list all ptys.
 - Allow ftpd_t to mamange userhome data without any boolean.
