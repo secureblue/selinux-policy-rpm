@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 206%{?dist}
+Release: 207%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -648,6 +648,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 04 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-207
+- Fix filesystem inteface file, we don't have nsfs_fs_t type, just nsfs_t
+
 * Tue Aug 02 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-206
 - collectd: update policy for 5.5
 - Allow puppet_t transtition to shorewall_t
