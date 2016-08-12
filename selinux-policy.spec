@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 207%{?dist}
+Release: 208%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -648,6 +648,52 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 12 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-208
+- Allow cups_config_t domain also mange sock_files. BZ(1361299)
+- Add wake_alarm capability to fprintd domain BZ(1362430)
+- Allow firewalld_t to relabel net_conf_t files. BZ(1365178)
+- Allow nut_upsmon_t domain to chat with logind vie dbus about scheduleing a shutdown when UPS battery is low. BZ(1361802)
+- Allow virtual machines to use dri devices. This allows use openCL GPU calculations. BZ(1337333)
+- Allow crond and cronjob domains to creating mail_home_rw_t objects in admin_home_t BZ(1366173)
+- Dontaudit mock to write to generic certs.
+- Add labeling for corosync-qdevice and corosync-qnetd daemons, to run as cluster_t
+- Revert "Label corosync-qnetd and corosync-qdevice as corosync_t domain"
+- Merge pull request #144 from rhatdan/modemmanager
+- Allow modemmanager to write to systemd inhibit pipes
+- Label corosync-qnetd and corosync-qdevice as corosync_t domain
+- Allow ipa_helper to read network state
+- Label oddjob_reqiest as oddjob_exec_t
+- Add interface oddjob_run()
+- Allow modemmanager chat with systemd_logind via dbus
+- Allow NetworkManager chat with puppetagent via dbus
+- Allow NetworkManager chat with kdumpctl via dbus
+- Allow sbd send msgs to syslog Allow sbd create dgram sockets. Allow sbd to communicate with kernel via dgram socket Allow sbd r/w kernel sysctls.
+- Allow ipmievd_t domain to re-create ipmi devices Label /usr/libexec/openipmi-helper as ipmievd_exec_t
+- Allow rasdaemon to use tracefs filesystem
+- Fix typo bug in dirsrv policy
+- Some logrotate scripts run su and then su runs unix_chkpwd. Allow logrotate_t domain to check passwd.
+- Add ipc_lock capability to sssd domain. Allow sssd connect to http_cache_t
+- Allow dirsrv to read dirsrv_share_t content
+- Allow virtlogd_t to append svirt_image_t files.
+- Allow hypervkvp domain to read hugetlbfs dir/files.
+- Allow mdadm daemon to read nvme_device_t blk files
+- Allow systemd_resolved to connect on system bus. BZ(1366334)
+- Allow systemd to create netlink_route_socket and communicate with systemd_networkd BZ(1306344)
+- Allow systemd-modules-load to load kernel modules in early boot. BZ(1322625)
+- label tcp/udp port 853 as dns_port_t. BZ(1365609)
+- Merge pull request #145 from rhatdan/init
+- systemd is doing a gettattr on blk and chr devices in /run
+- Allow selinuxusers and unconfineduser to run oddjob_request
+- Allow sshd server to acces to Crypto Express 4 (CEX4) devices.
+- Fix typo in device interfaces
+- Add interfaces for managing ipmi devices
+- Add interfaces to allow mounting/umounting tracefs filesystem
+- Add interfaces to allow rw tracefs filesystem
+- Merge branch 'rawhide-base' of github.com:fedora-selinux/selinux-policy into rawhide-base
+- Merge pull request #138 from rhatdan/userns
+- Allow iptables to creating netlink generic sockets.
+- Fix filecontext for systemd shared lib.
+
 * Thu Aug 04 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-207
 - Fix filesystem inteface file, we don't have nsfs_fs_t type, just nsfs_t
 
