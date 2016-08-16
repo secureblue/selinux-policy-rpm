@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 208%{?dist}
+Release: 209%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -648,6 +648,23 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 16 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-209
+- Fix lsm SELinux module
+- Dontaudit firewalld to create dirs in /root/ BZ(1340611)
+- Label /run/corosync-qdevice and /run/corosync-qnetd as corosync_var_run_t
+- Allow fprintd and cluster domains to cummunicate via dbus BZ(1355774)
+- Allow cupsd_config_t domain to read cupsd_var_run_t sock_file. BZ(1361299)
+- Add sys_admin capability to sbd domain
+- Allow vdagent to comunnicate with systemd-logind via dbus
+- Allow lsmd_plugin_t domain to create fixed_disk device.
+- Allow opendnssec domain to create and manage own tmp dirs/files
+- Allow opendnssec domain to read system state
+- Allow systemd_logind stop system init_t
+- Add interface init_stop()
+- Add interface userdom_dontaudit_create_admin_dir()
+- Label /var/run/storaged as lvm_var_run_t.
+- Allow unconfineduser to run ipa_helper_t.
+
 * Fri Aug 12 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-208
 - Allow cups_config_t domain also mange sock_files. BZ(1361299)
 - Add wake_alarm capability to fprintd domain BZ(1362430)
