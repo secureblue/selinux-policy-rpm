@@ -61,6 +61,8 @@ Source35: docker-selinux.tgz
 # http://bugzilla.redhat.com/1290659
 Source100: selinux-factory-reset
 Source101: selinux-factory-reset@.service
+# Provide rpm macros for packages installing SELinux modules
+Source102: rpm.macros
 
 Url: http://github.com/TresysTechnology/refpolicy/wiki
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -432,7 +434,8 @@ mv %{buildroot}%{_usr}/share/man/man8/*.html %{buildroot}%{_usr}/share/selinux/d
 mv %{buildroot}%{_usr}/share/man/man8/style.css %{buildroot}%{_usr}/share/selinux/devel/html
 
 mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
-echo '%%_selinux_policy_version %{version}-%{release}' > %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
+install -m 644 %{SOURCE102} %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
+sed -i 's/SELINUXPOLICYVERSION/%{version}-%{release}/' %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
 
 
 rm -rf selinux_config
