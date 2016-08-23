@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 209%{?dist}
+Release: 210%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -648,6 +648,19 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 23 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-210
+- Add few interfaces to cloudform.if file
+- Label /var/run/corosync-qnetd and /var/run/corosync-qdevice as cluster_var_run_t. Note: corosync policy is now par of rhcs module
+- Allow krb5kdc_t to read krb4kdc_conf_t dirs.
+- Update networkmanager_filetrans_named_content() interface to allow source domain to create also temad dir in /var/run.
+- Make confined users working again
+- Fix hypervkvp module
+- Allow ipmievd domain to create lock files in /var/lock/subsys/
+- Update policy for ipmievd daemon. Contain:    Allowing reading sysfs, passwd,kernel modules   Execuring bin_t,insmod_t
+- A new version of cloud-init that supports the effort to provision RHEL Atomic on Microsoft Azure requires some a new rules that allows dhclient/dhclient hooks to call cloud-init.
+- Allow systemd to stop systemd-machined daemon. This allows stop virtual machines.
+- Label /usr/libexec/iptables/iptables.init as iptables_exec_t Allow iptables creating lock file in /var/lock/subsys/
+
 * Tue Aug 16 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-209
 - Fix lsm SELinux module
 - Dontaudit firewalld to create dirs in /root/ BZ(1340611)
