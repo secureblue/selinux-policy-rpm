@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 210%{?dist}
+Release: 211%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -648,6 +648,23 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 25 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-211
+- Add new domain ipa_ods_exporter_t BZ(1366640)
+- Create new interface opendnssec_stream_connect()
+- Allow systemd-machined to communicate to lxc container using dbus
+- Dontaudit accountsd domain creating dirs in /root
+- Add new policy for Disk Manager called udisks2
+- Dontaudit firewalld wants write to /root
+- Label /etc/pki/pki-tomcat/ca/ as pki_tomcat_cert_t
+- Allow certmonger to manage all systemd unit files
+- Allow ipa_helper_t stream connect to dirsrv_t domain
+- Update oracleasm SELinux module
+- label /var/lib/kubelet as svirt_sandbox_file_t
+- Allow systemd to create blk and chr files with correct label in /var/run/systemd/inaccessible BZ(1367280)
+- Label /usr/libexec/gsd-backlight-helper as xserver_exec_t. This allows also confined users to manage screen brightness
+- Add new userdom_dontaudit_manage_admin_dir() interface
+- Label /dev/oracleasmfs as oracleasmfs_t. Add few interfaces related to oracleasmfs_t type
+
 * Tue Aug 23 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-210
 - Add few interfaces to cloudform.if file
 - Label /var/run/corosync-qnetd and /var/run/corosync-qdevice as cluster_var_run_t. Note: corosync policy is now par of rhcs module
