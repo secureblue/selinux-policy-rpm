@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 211%{?dist}
+Release: 212%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -648,6 +648,20 @@ exit 0
 %endif
 
 %changelog
+* Wed Aug 31 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-212
+- udisk2 module is part of devicekit module now
+- Fix file context for /etc/pki/pki-tomcat/ca/
+- new interface oddjob_mkhomedir_entrypoint()
+- Allow mdadm to get attributes from all devices.
+- Label /etc/puppetlabs as puppet_etc_t.
+- quota: allow init to run quota tools
+- Add new domain ipa_ods_exporter_t BZ(1366640)
+- Create new interface opendnssec_stream_connect()
+- Allow VirtualBox to manage udev rules.
+- Allow systemd_resolved to send dbus msgs to userdomains
+- Make entrypoint oddjob_mkhomedir_exec_t for unconfined_t
+- Label all files in /dev/oracleasmfs/ as oracleasmfs_t
+
 * Thu Aug 25 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-211
 - Add new domain ipa_ods_exporter_t BZ(1366640)
 - Create new interface opendnssec_stream_connect()
