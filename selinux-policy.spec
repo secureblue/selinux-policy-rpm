@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 212%{?dist}
+Release: 213%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -648,6 +648,12 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 02 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-213
+- Label /var/lib/docker/vfs as svirt_sandbox_file_t in virt SELinux module
+- Label /usr/bin/pappet as puppetagent_exec_t
+- Allow amanda to create dir in /var/lib/ with amanda_var_lib_t label
+- Allow run sulogin_t in range mls_systemlow-mls_systemhigh.
+
 * Wed Aug 31 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-212
 - udisk2 module is part of devicekit module now
 - Fix file context for /etc/pki/pki-tomcat/ca/
