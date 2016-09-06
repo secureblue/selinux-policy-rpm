@@ -468,7 +468,7 @@ Obsoletes: mod_fcgid-selinux <= %{version}-%{release}
 Obsoletes: cachefilesd-selinux <= 0.10-1
 Conflicts:  seedit
 Conflicts:  389-ds-base < 1.2.7, 389-admin < 1.1.12
-Conflicts: docker-selinux <= 1.9.0-9
+Conflicts: docker-selinux < 2:1.12.1-21
 
 %description targeted
 SELinux Reference policy targeted base module.
