@@ -56,6 +56,12 @@ Source29: serefpolicy-contrib-%{version}.tgz
 Source30: booleans.subs_dist
 
 Source35: docker-selinux.tgz
+
+# Do a factory reset when there's no policy.kern file in a store
+# http://bugzilla.redhat.com/1290659
+Source100: selinux-factory-reset
+Source101: selinux-factory-reset@.service
+
 Url: http://github.com/TresysTechnology/refpolicy/wiki
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
@@ -253,6 +259,10 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %{_sharedstatedir}/selinux/%1/active/seusers \
 %{_sharedstatedir}/selinux/%1/active/file_contexts \
 %{_sharedstatedir}/selinux/%1/active/policy.kern \
+%{_datadir}/selinux/%1 \
+%{_libexecdir}/selinux/selinux-factory-reset \
+%{_unitdir}/selinux-factory-reset@.service \
+%{_unitdir}/basic.target.wants/selinux-factory-reset@%1.service \
 %nil
 
 %define relabel() \
@@ -312,7 +322,18 @@ for i in $contrib_modules $base_modules; do \
     if [ $i != "sandbox" ];then \
         echo "%verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/100/$i" >> %{buildroot}/%{_usr}/share/selinux/%1/nonbasemodules.lst \
     fi; \
-done
+done;
+
+%define installFactoryResetFiles() \
+mkdir -p %{buildroot}%{_datadir}/selinux/%1/default \
+cp -R --preserve=mode,ownership,timestamps,links %{buildroot}%{_sharedstatedir}/selinux/%1/active %{buildroot}%{_datadir}/selinux/%1/default/ \
+find %{buildroot}%{_datadir}/selinux/%1/default/ -name hll | xargs rm \
+find %{buildroot}%{_datadir}/selinux/%1/default/ -name lang_ext | xargs sed -i 's/pp/cil/' \
+mkdir -p %{buildroot}/%{_libexecdir}/selinux/ \
+install -p %{SOURCE100} %{buildroot}/%{_libexecdir}/selinux/ \
+mkdir   -m 755 -p %{buildroot}/%{_unitdir}/basic.target.wants/ \
+install -m 644 -p %{SOURCE101} %{buildroot}/%{_unitdir}/ \
+ln -s ../selinux-factory-reset@.service %{buildroot}/%{_unitdir}/basic.target.wants/selinux-factory-reset@%1.service
 
 %build
 
@@ -365,8 +386,9 @@ rm -rf %{buildroot}/permissivedomains.cil
 rm -rf %{buildroot}%{_sharedstatedir}/selinux/targeted/active/modules/100/sandbox
 make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} MLS_CATS=1024 MCS_CATS=1024 sandbox.pp
 mv sandbox.pp %{buildroot}/usr/share/selinux/packages/sandbox.pp
-%modulesList targeted 
+%modulesList targeted
 %nonBaseModulesList targeted
+%installFactoryResetFiles targeted
 %endif
 
 %if %{BUILD_MINIMUM}
@@ -380,6 +402,7 @@ rm -f %{buildroot}/%{_sysconfdir}/selinux/minimum/modules/active/modules/sandbox
 rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
 %modulesList minimum
 %nonBaseModulesList minimum
+%installFactoryResetFiles minimum
 %endif
 
 %if %{BUILD_MLS}
@@ -389,6 +412,7 @@ rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
 %installCmds mls mls n deny
 %modulesList mls
 %nonBaseModulesList mls
+%installFactoryResetFiles mls
 %endif
 
 mkdir -p %{buildroot}%{_mandir}
