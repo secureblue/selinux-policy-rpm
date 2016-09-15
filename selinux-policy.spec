@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 213%{?dist}
+Release: 214%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -492,7 +492,7 @@ Obsoletes: mod_fcgid-selinux <= %{version}-%{release}
 Obsoletes: cachefilesd-selinux <= 0.10-1
 Conflicts:  seedit
 Conflicts:  389-ds-base < 1.2.7, 389-admin < 1.1.12
-Conflicts: docker-selinux < 2:1.12.1-21
+Conflicts: docker-selinux < 2:1.12.1-22
 
 %description targeted
 SELinux Reference policy targeted base module.
@@ -672,6 +672,36 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 15 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-214
+- Allow attach usb device to virtual machine BZ(1276873)
+- Dontaudit mozilla_plugin to sys_ptrace
+- Allow nut_upsdrvctl_t domain to read udev db BZ(1375636)
+- Fix typo
+- Allow geoclue to send msgs to syslog. BZ(1371818)
+- Allow abrt to read rpm_tmp_t dirs
+- Add interface rpm_read_tmp_files()
+- Remove labels for somr docker sandbox files for now. This needs to be reverted after fixes in docker-selinux
+- Update oracleasm SELinux module that can manage oracleasmfs_t blk files. Add dac_override cap to oracleasm_t domain.
+- Add few rules to pcp SELinux module to make ti able to start pcp_pmlogger service
+- Revert "label /var/lib/kubelet as svirt_sandbox_file_t"
+- Remove file context for /var/lib/kubelet. This filecontext is part of docker now
+- Add oracleasm_conf_t type and allow oracleasm_t to create /dev/oracleasm
+- Label /usr/share/pcp/lib/pmie as pmie_exec_t and /usr/share/pcp/lib/pmlogger as pmlogger_exec_t
+- Allow mdadm_t to getattr all device nodes
+- Dontaudit gkeyringd_domain to connect to system_dbusd_t
+- Add interface dbus_dontaudit_stream_connect_system_dbusd()
+- Allow guest-set-user-passwd to set users password.
+- Allow domains using kerberos to read also kerberos config dirs
+- Allow add new interface to new namespace BZ(1375124)
+- Allow systemd to relalbel files stored in /run/systemd/inaccessible/
+-  Add interface fs_getattr_tmpfs_blk_file()
+- Dontaudit domain to create any file in /proc. This is kernel bug.
+- Improve regexp for power_unit_file_t files. To catch just systemd power unit files.
+- Add new interface fs_getattr_oracleasmfs_fs()
+- Add interface fs_manage_oracleasm()
+- Label /dev/kfd as hsa_device_t
+- Update seutil_manage_file_contexts() interface that caller domain can also manage file_context_t dirs
+
 * Fri Sep 02 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-213
 - Label /var/lib/docker/vfs as svirt_sandbox_file_t in virt SELinux module
 - Label /usr/bin/pappet as puppetagent_exec_t
