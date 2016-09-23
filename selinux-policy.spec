@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 214%{?dist}
+Release: 215%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,18 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 23 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-215
+- Make tor_var_run_t as mountpoint. BZ(1368621)
+- Fix typo in ftpd SELinux module.
+- Allow cockpit-session to reset expired passwords BZ(1374262)
+- Allow ftp daemon to manage apache_user_content
+- Label /etc/sysconfig/oracleasm as oracleasm_conf_t
+- Allow oracleasm to rw inherited fixed disk device
+- Allow collectd to connect on unix_stream_socket
+- Add abrt_dump_oops_t kill user namespace capability. BZ(1376868)
+- Dontaudit systemd is mounting unlabeled dirs BZ(1367292)
+- Add interface files_dontaudit_mounton_isid()
+
 * Thu Sep 15 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-214
 - Allow attach usb device to virtual machine BZ(1276873)
 - Dontaudit mozilla_plugin to sys_ptrace
