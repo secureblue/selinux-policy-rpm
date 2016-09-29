@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 215%{?dist}
+Release: 216%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,13 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 29 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-216
+- Allow devicekit to chat with policykit via DBUS. BZ(1377113)
+- Add interface virt_rw_stream_sockets_svirt() BZ(1379314)
+- Allow xdm_t to read mount pid files. BZ(1377113)
+- Allow staff to rw svirt unix stream sockets. BZ(1379314)
+- Allow staff_t to read tmpfs files BZ(1378446)
+
 * Fri Sep 23 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-215
 - Make tor_var_run_t as mountpoint. BZ(1368621)
 - Fix typo in ftpd SELinux module.
