@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 216%{?dist}
+Release: 218%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -59,8 +59,8 @@ Source35: docker-selinux.tgz
 
 # Do a factory reset when there's no policy.kern file in a store
 # http://bugzilla.redhat.com/1290659
-Source100: selinux-factory-reset
-Source101: selinux-factory-reset@.service
+#Source100: selinux-factory-reset
+#Source101: selinux-factory-reset@.service
 # Provide rpm macros for packages installing SELinux modules
 Source102: rpm.macros
 
@@ -262,9 +262,9 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %{_sharedstatedir}/selinux/%1/active/file_contexts \
 %{_sharedstatedir}/selinux/%1/active/policy.kern \
 %{_datadir}/selinux/%1 \
-%{_libexecdir}/selinux/selinux-factory-reset \
-%{_unitdir}/selinux-factory-reset@.service \
-%{_unitdir}/basic.target.wants/selinux-factory-reset@%1.service \
+#%{_libexecdir}/selinux/selinux-factory-reset \
+#%{_unitdir}/selinux-factory-reset@.service \
+#%{_unitdir}/basic.target.wants/selinux-factory-reset@%1.service \
 %nil
 
 %define relabel() \
@@ -332,10 +332,10 @@ cp -R --preserve=mode,ownership,timestamps,links %{buildroot}%{_sharedstatedir}/
 find %{buildroot}%{_datadir}/selinux/%1/default/ -name hll | xargs rm \
 find %{buildroot}%{_datadir}/selinux/%1/default/ -name lang_ext | xargs sed -i 's/pp/cil/' \
 mkdir -p %{buildroot}/%{_libexecdir}/selinux/ \
-install -p %{SOURCE100} %{buildroot}/%{_libexecdir}/selinux/ \
-mkdir   -m 755 -p %{buildroot}/%{_unitdir}/basic.target.wants/ \
-install -m 644 -p %{SOURCE101} %{buildroot}/%{_unitdir}/ \
-ln -s ../selinux-factory-reset@.service %{buildroot}/%{_unitdir}/basic.target.wants/selinux-factory-reset@%1.service
+#install -p %{SOURCE100} %{buildroot}/%{_libexecdir}/selinux/ \
+#mkdir   -m 755 -p %{buildroot}/%{_unitdir}/basic.target.wants/ \
+#install -m 644 -p %{SOURCE101} %{buildroot}/%{_unitdir}/ \
+#ln -s ../selinux-factory-reset@.service %{buildroot}/%{_unitdir}/basic.target.wants/selinux-factory-reset@%1.service
 
 %build
 
@@ -675,7 +675,11 @@ exit 0
 %endif
 
 %changelog
-* Thu Sep 29 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-216
+* Wed Oct 05 2016 Colin Walters <walters@redhat.com> - 3.13.1-218
+- Revert addition of systemd service for factory reset, since it is
+  basically worse than what we had before.  BZ(1290659)
+
+* Fri Sep 30 2016 Lukas Vrabec <lvrabec@redhat.com> 3.13.1-216
 - Allow devicekit to chat with policykit via DBUS. BZ(1377113)
 - Add interface virt_rw_stream_sockets_svirt() BZ(1379314)
 - Allow xdm_t to read mount pid files. BZ(1377113)
