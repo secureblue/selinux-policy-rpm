@@ -55,7 +55,7 @@ Source28: permissivedomains.cil
 Source29: serefpolicy-contrib-%{version}.tgz
 Source30: booleans.subs_dist
 
-Source35: docker-selinux.tgz
+Source35: container-selinux.tgz
 
 # Do a factory reset when there's no policy.kern file in a store
 # http://bugzilla.redhat.com/1290659
@@ -495,7 +495,7 @@ Obsoletes: mod_fcgid-selinux <= %{version}-%{release}
 Obsoletes: cachefilesd-selinux <= 0.10-1
 Conflicts:  seedit
 Conflicts:  389-ds-base < 1.2.7, 389-admin < 1.1.12
-Conflicts: docker-selinux < 2:1.12.1-22
+Conflicts: container-selinux < 2:1.12.1-22
 
 %description targeted
 SELinux Reference policy targeted base module.
@@ -554,7 +554,7 @@ Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 Requires: selinux-policy = %{version}-%{release}
 Conflicts:  seedit
-Conflicts: docker-selinux <= 1.9.0-9
+Conflicts: container-selinux <= 1.9.0-9
 
 %description minimum
 SELinux Reference policy minimum base module.
@@ -637,7 +637,7 @@ Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
 Requires: selinux-policy = %{version}-%{release}
 Conflicts:  seedit
-Conflicts: docker-selinux <= 1.9.0-9
+Conflicts: container-selinux <= 1.9.0-9
 
 %description mls 
 SELinux Reference policy mls base module.
