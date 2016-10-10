@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 218%{?dist}
+Release: 219%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,24 @@ exit 0
 %endif
 
 %changelog
+* Mon Oct 10 2016 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-219
+- Dontaudit leaked file descriptors for thumb. BZ(1383071)
+- Fix typo in cobbler SELinux module
+- Merge pull request #165 from rhatdan/container
+- Allow cockpit_ws_t to manage cockpit_lib_t dirs and files. BZ(1375156)
+- Allow cobblerd_t to delete dirs labeled as tftpdir_rw_t
+- Rename svirt_lxc_net_t to container_t
+- Rename docker.pp to container.pp, causes change in interface name
+- Allow httpd_t domain to list inotify filesystem.
+- Fix couple AVC to start roundup properly
+- Allow dovecot_t send signull to dovecot_deliver_t
+- Add sys_ptrace capability to pegasus domain
+- Allow firewalld to stream connect to NetworkManager. BZ(1380954)
+- rename docker intefaces to container
+- Merge pull request #164 from rhatdan/docker-base
+- Rename docker.pp to container.pp, causes change in interface name
+- Allow gvfs to read /dev/nvme* devices BZ(1380951)
+
 * Wed Oct 05 2016 Colin Walters <walters@redhat.com> - 3.13.1-218
 - Revert addition of systemd service for factory reset, since it is
   basically worse than what we had before.  BZ(1290659)
