@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 219%{?dist}
+Release: 220%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,25 @@ exit 0
 %endif
 
 %changelog
+* Sun Oct 16 2016 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-220
+- Disable container_runtime_typebounds() due to typebounds issues which can not be resolved during build.
+- Disable unconfined_typebounds in sandbox.te due to entrypoint check which exceed for sandbox domains unconfined_t domain.
+- Disable unconfined_typebounds due to entrypoint check which exceed for sandbox domains unconfined_t domain.
+- Merge pull request #167 from rhatdan/container
+- Add transition rules for sandbox domains
+- container_typebounds() should be part of sandbox domain template
+- Fix broken container_* interfaces
+- unconfined_typebounds() should be part of sandbox domain template
+- Fixed unrecognized characters at sandboxX module
+- unconfined_typebounds() should be part of sandbox domain template
+- svirt_file_type is atribute no type.
+- Merge pull request #166 from rhatdan/container
+- Allow users to transition from unconfined_t to container types
+- Add dbus_stream_connect_system_dbusd() interface.
+- Merge pull request #152 from rhatdan/network_filetrans
+- Fix typo in filesystem module
+- Allow nss_plugin to resolve host names via the systemd-resolved. BZ(1383473)
+
 * Mon Oct 10 2016 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-219
 - Dontaudit leaked file descriptors for thumb. BZ(1383071)
 - Fix typo in cobbler SELinux module
