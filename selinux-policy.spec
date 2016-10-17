@@ -675,6 +675,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Oct 17 2016 Miroslav Grepl <mgrepl@redhat.com> - 3.13.1-221
+- Add container_file_t into contexts/customizable_types.
+
 * Sun Oct 16 2016 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-220
 - Disable container_runtime_typebounds() due to typebounds issues which can not be resolved during build.
 - Disable unconfined_typebounds in sandbox.te due to entrypoint check which exceed for sandbox domains unconfined_t domain.
