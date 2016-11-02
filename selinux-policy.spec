@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 221%{?dist}
+Release: 222%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,29 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov 02 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-222
+- Allow abrt_dump_oops_t to drop capabilities. bz(1391040)
+- Add named_t domain net_raw capability bz(1389240)
+- Allow geoclue to read system info. bz(1389320)
+- Make openfortivpn_t as init_deamon_domain. bz(1159899)
+- Allow nfsd domain to create nfsd_unit_file_t files. bz(1382487)
+- Merge branch 'rawhide-contrib' of github.com:fedora-selinux/selinux-policy into rawhide-contrib
+- Add interace lldpad_relabel_tmpfs
+- Merge pull request #155 from rhatdan/sandbox_nfs
+- Add pscsd_t wake_alarm capability2
+- Allow sandbox domains to mount fuse file systems
+- Add boolean to allow sandbox domains to mount nfs
+- Allow hypervvssd_t to read all dirs.
+- Allow isnsd_t to connect to isns_port_t
+- Merge branch 'rawhide-contrib' of github.com:fedora-selinux/selinux-policy into rawhide-contrib
+- Allow GlusterFS with RDMA transport to be started correctly. It requires ipc_lock capability together with rw permission on rdma_cm device.
+- Make tor_var_lib_t and tor_var_log_t as mountpoints.
+- Allow systemd-rfkill to write to /proc/kmsg bz(1388669)
+- Allow init_t to relabel /dev/shm/lldpad.state
+- Merge pull request #168 from rhatdan/docker
+- Label tcp 51954 as isns_port_t
+- Lots of new domains like OCID and RKT are user container processes
+
 * Mon Oct 17 2016 Miroslav Grepl <mgrepl@redhat.com> - 3.13.1-221
 - Add container_file_t into contexts/customizable_types.
 
