@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 222%{?dist}
+Release: 223%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,17 @@ exit 0
 %endif
 
 %changelog
+* Mon Nov 07 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-223
+- nmbd_t needs net_admin capability like smbd
+- Add interface chronyd_manage_pid() Allow logrotate to manage chrony pids
+- Add wake_alarm capability2 to openct_t domain
+- Allow abrt_t to getattr on nsfs_t files.
+- Add cupsd_t domain wake_alarm capability.
+- Allow sblim_reposd_t domain to read cert_f files.
+- Allow abrt_dump_oops_t to drop capabilities. bz(1391040)
+- Revert "Allow abrt_dump_oops_t to drop capabilities. bz(1391040)"
+- Allow isnsd_t to accept tcp connections
+
 * Wed Nov 02 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-222
 - Allow abrt_dump_oops_t to drop capabilities. bz(1391040)
 - Add named_t domain net_raw capability bz(1389240)
