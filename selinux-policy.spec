@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 223%{?dist}
+Release: 224%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 08 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-224
+- Allow watching netflix using Firefox
+
 * Mon Nov 07 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-223
 - nmbd_t needs net_admin capability like smbd
 - Add interface chronyd_manage_pid() Allow logrotate to manage chrony pids
