@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 225%{?dist}
+Release: 226%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,11 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov 16 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-226
+- Adding policy for tlp
+- Add interface  dev_manage_sysfs()
+- Allow ifconfig domain to manage tlp pid files.
+
 * Wed Nov 09 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-225
 - Allow systemd_logind_t domain to communicate with devicekit_t domain via dbus bz(1393373)
 
