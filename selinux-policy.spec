@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 226%{?dist}
+Release: 227%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,18 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 29 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-227
+- Dontaudit logrotate_t to getattr nsfs_t BZ(1399081)
+- Allow pmie daemon to send signal pcmd daemon BZ(1398078)
+- Allow spamd_t to manage /var/spool/mail. BZ(1398437)
+- Label /run/rpc.statd.lock as rpcd_lock_t and allow rpcd_t domain to manage it. BZ(1397254)
+- Merge pull request #171 from t-woerner/rawhide-contrib
+- Allow firewalld to getattr open search read modules_object_t:dir
+- Allow systemd create /dev/log in own mount-namespace. BZ(1383867)
+- Add interface fs_dontaudit_getattr_nsfs_files()
+- Label /usr/lib/systemd/resolv.conf as lib_t to allow all domains read this file. BZ(1398853)
+- Dontaudit systemd_journal sys_ptrace userns capability. BZ(1374187)
+
 * Wed Nov 16 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-226
 - Adding policy for tlp
 - Add interface  dev_manage_sysfs()
