@@ -647,7 +647,7 @@ SELinux Reference policy mls base module.
 
 %post mls 
 %postInstall $1 mls
-
+exit 0
 
 %triggerpostun mls -- selinux-policy-mls < 3.13.1-138
 CR=$'\n'
