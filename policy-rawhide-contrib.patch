@@ -3203,7 +3203,7 @@ index 0000000..36251b9
 +')
 diff --git a/antivirus.te b/antivirus.te
 new file mode 100644
-index 0000000..d8b04b5
+index 0000000..6bd2eb9
 --- /dev/null
 +++ b/antivirus.te
 @@ -0,0 +1,273 @@
@@ -3223,7 +3223,7 @@ index 0000000..d8b04b5
 +
 +## <desc>
 +##  <p>
-+##  Determine whether can antivirus programs use JIT compiler.
++##  Determine whether antivirus programs can use JIT compiler.
 +##  </p>
 +## </desc>
 +gen_tunable(antivirus_use_jit, false)
@@ -14188,9 +14188,18 @@ index 4cc4a5c..a6c6322 100644
 +
  ')
 diff --git a/clamav.te b/clamav.te
-index ce3836a..94aa8a6 100644
+index ce3836a..8dc2b45 100644
 --- a/clamav.te
 +++ b/clamav.te
+@@ -18,7 +18,7 @@ gen_tunable(clamav_read_all_non_security_files_clamscan, false)
+ 
+ ## <desc>
+ ##	<p>
+-##	Determine whether can clamd use JIT compiler.
++##	Determine whether clamd can use JIT compiler.
+ ##	</p>
+ ## </desc>
+ gen_tunable(clamd_use_jit, false)
 @@ -38,6 +38,9 @@ files_config_file(clamd_etc_t)
  type clamd_initrc_exec_t;
  init_script_file(clamd_initrc_exec_t)
@@ -30368,10 +30377,10 @@ index 0000000..859dc40
 +/var/lib/fwupd(/.*)?		gen_context(system_u:object_r:fwupd_var_lib_t,s0)
 diff --git a/fwupd.if b/fwupd.if
 new file mode 100644
-index 0000000..c4d2c2d
+index 0000000..daef190
 --- /dev/null
 +++ b/fwupd.if
-@@ -0,0 +1,260 @@
+@@ -0,0 +1,281 @@
 +
 +## <summary>fwupd is a daemon to allow session software to update device firmware</summary>
 +
@@ -30631,6 +30640,27 @@ index 0000000..c4d2c2d
 +		systemd_passwd_agent_exec($1)
 +		systemd_read_fifo_file_passwd_run($1)
 +	')
++')
++
++########################################
++## <summary>
++##	Send and receive messages from
++##	fwupd over dbus.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`fwupd_dbus_chat',`
++	gen_require(`
++		type fwupd_t;
++		class dbus send_msg;
++	')
++
++	allow $1 fwupd_t:dbus send_msg;
++	allow fwupd_t $1:dbus send_msg;
 +')
 diff --git a/fwupd.te b/fwupd.te
 new file mode 100644
@@ -79739,7 +79769,7 @@ index 7cb8b1f..bef7217 100644
 +    allow $1 puppet_var_run_t:dir search_dir_perms;
  ')
 diff --git a/puppet.te b/puppet.te
-index 618dcfe..9f36ed5 100644
+index 618dcfe..bba4a3e 100644
 --- a/puppet.te
 +++ b/puppet.te
 @@ -6,25 +6,32 @@ policy_module(puppet, 1.4.0)
@@ -80212,7 +80242,7 @@ index 618dcfe..9f36ed5 100644
  
  selinux_validate_context(puppetmaster_t)
  
-@@ -314,26 +342,31 @@ auth_use_nsswitch(puppetmaster_t)
+@@ -314,26 +342,32 @@ auth_use_nsswitch(puppetmaster_t)
  logging_send_syslog_msg(puppetmaster_t)
  
  miscfiles_read_generic_certs(puppetmaster_t)
@@ -80240,6 +80270,7 @@ index 618dcfe..9f36ed5 100644
  
  optional_policy(`
 -	mysql_stream_connect(puppetmaster_t)
++	systemd_dbus_chat_timedated(puppetagent_t)
 +	systemd_dbus_chat_timedated(puppetmaster_t)
  ')
  
@@ -80249,7 +80280,7 @@ index 618dcfe..9f36ed5 100644
  ')
  
  optional_policy(`
-@@ -342,3 +375,9 @@ optional_policy(`
+@@ -342,3 +376,9 @@ optional_policy(`
  	rpm_exec(puppetmaster_t)
  	rpm_read_db(puppetmaster_t)
  ')
@@ -108362,18 +108393,20 @@ index 5406b6e..dc5b46e 100644
  	admin_pattern($1, tgtd_tmpfs_t)
  ')
 diff --git a/tgtd.te b/tgtd.te
-index d010963..3822bc7 100644
+index d010963..e7e55c7 100644
 --- a/tgtd.te
 +++ b/tgtd.te
-@@ -29,7 +29,7 @@ files_pid_file(tgtd_var_run_t)
+@@ -29,8 +29,8 @@ files_pid_file(tgtd_var_run_t)
  # Local policy
  #
  
 -allow tgtd_t self:capability sys_resource;
+-allow tgtd_t self:capability2 block_suspend;
 +allow tgtd_t self:capability { dac_override ipc_lock sys_resource sys_rawio sys_admin };
- allow tgtd_t self:capability2 block_suspend;
++allow tgtd_t self:capability2 { block_suspend wake_alarm };
  allow tgtd_t self:process { setrlimit signal };
  allow tgtd_t self:fifo_file rw_fifo_file_perms;
+ allow tgtd_t self:netlink_route_socket r_netlink_socket_perms;
 @@ -56,15 +56,16 @@ files_pid_filetrans(tgtd_t,tgtd_var_run_t, { file sock_file })
  
  kernel_read_system_state(tgtd_t)

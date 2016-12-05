@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 227%{?dist}
+Release: 228%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,25 @@ exit 0
 %endif
 
 %changelog
+* Mon Dec 05 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-228
+- Fix some boolean descriptions.
+- Add fwupd_dbus_chat() interface
+- Allow tgtd_t domain wake_alarm
+- Merge pull request #172 from vinzent/allow_puppetagent_timedated
+- Dontaudit logrotate_t to getattr nsfs_t BZ(1399081)
+- Allow systemd_machined_t to start unit files labeled as init_var_run_t
+- Add init_manage_config_transient_files() interface
+- In Atomic /usr/local is a soft symlink to /var/usrlocal, so the default policy to apply bin_t on /usr/...bin doesn't work and binaries dumped here get mislabeled as var_t.
+- Allow systemd to raise rlimit to all domains.BZ(1365435)
+- Add interface domain_setrlimit_all_domains() interface
+- Allow staff_t user to chat with fwupd_t domain via dbus
+- Update logging_create_devlog_dev() interface to allow calling domain create also sock_file dev-log. BZ(1393774)
+- Allow systemd-networkd to read network state BZ(1400016)
+- Allow systemd-resolved bind to dns port. BZ(1400023)
+- Allow systemd create /dev/log in own mount-namespace. BZ(1383867)
+- Add interface fs_dontaudit_getattr_nsfs_files()
+- Label /usr/lib/systemd/resolv.conf as lib_t to allow all domains read this file. BZ(1398853)
+
 * Tue Nov 29 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-227
 - Dontaudit logrotate_t to getattr nsfs_t BZ(1399081)
 - Allow pmie daemon to send signal pcmd daemon BZ(1398078)
