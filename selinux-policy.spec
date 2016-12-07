@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 228%{?dist}
+Release: 229%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,15 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec 07 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-229
+- Label /usr/bin/rpcbind as rpcbind_exec_t. Label /usr/lib/systemd/systemd/rpcbind.service
+- Allot tlp domain to create unix_dgram sockets BZ(1401233)
+- Allow antivirus domain to create lnk_files in /tmp
+- Allow cupsd_t to create lnk_files in /tmp. BZ(1401634)
+- Allow svnserve_t domain to read /dev/random BZ(1401827)
+- Allow lircd to use nsswitch. BZ(1401375)
+- Allow hostname_t domain to manage cluster_tmp_t files
+
 * Mon Dec 05 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-228
 - Fix some boolean descriptions.
 - Add fwupd_dbus_chat() interface
