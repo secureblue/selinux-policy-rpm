@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 229%{?dist}
+Release: 230%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,11 @@ exit 0
 %endif
 
 %changelog
+* Thu Dec 08 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-230
+- Label /usr/bin/rpcbind as rpcbind_exec_t
+- Dontaudit mozilla plugin rawip socket creation. BZ(1275961)
+- Merge pull request #174 from rhatdan/netlink
+
 * Wed Dec 07 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-229
 - Label /usr/bin/rpcbind as rpcbind_exec_t. Label /usr/lib/systemd/systemd/rpcbind.service
 - Allot tlp domain to create unix_dgram sockets BZ(1401233)
