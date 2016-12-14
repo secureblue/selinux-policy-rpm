@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 230%{?dist}
+Release: 231%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,14 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec 14 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-231
+- Allow pptp_t to read /dev/random BZ(1404248)
+- Allow glusterd_t send signals to userdomain. Label new glusterd binaries as glusterd_exec_t
+- Allow systemd to stop glusterd_t domains.
+- Merge branch 'rawhide-base' of github.com:fedora-selinux/selinux-policy into rawhide-base
+- Label /usr/sbin/sln as ldconfig_exec_t BZ(1378323)
+- Revert "Allow an domain that has an entrypoint from a type to be allowed to execute the entrypoint without a transition,  I can see no case where this is  a bad thing, and elminiates a whole class of AVCs."
+
 * Thu Dec 08 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-230
 - Label /usr/bin/rpcbind as rpcbind_exec_t
 - Dontaudit mozilla plugin rawip socket creation. BZ(1275961)

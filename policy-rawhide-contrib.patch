@@ -20522,7 +20522,7 @@ index b25b01d..06895f3 100644
  ')
 +
 diff --git a/ctdb.te b/ctdb.te
-index 001b502..47199aa 100644
+index 001b502..9892b34 100644
 --- a/ctdb.te
 +++ b/ctdb.te
 @@ -24,6 +24,9 @@ files_tmp_file(ctdbd_tmp_t)
@@ -20576,7 +20576,7 @@ index 001b502..47199aa 100644
  kernel_read_network_state(ctdbd_t)
  kernel_read_system_state(ctdbd_t)
  kernel_rw_net_sysctls(ctdbd_t)
-@@ -72,9 +89,13 @@ corenet_all_recvfrom_netlabel(ctdbd_t)
+@@ -72,10 +89,16 @@ corenet_all_recvfrom_netlabel(ctdbd_t)
  corenet_tcp_sendrecv_generic_if(ctdbd_t)
  corenet_tcp_sendrecv_generic_node(ctdbd_t)
  corenet_tcp_bind_generic_node(ctdbd_t)
@@ -20588,9 +20588,12 @@ index 001b502..47199aa 100644
 +corenet_tcp_bind_smbd_port(ctdbd_t)
 +corenet_tcp_connect_ctdb_port(ctdbd_t)
  corenet_tcp_sendrecv_ctdb_port(ctdbd_t)
++corenet_tcp_connect_gluster_port(ctdbd_t)
++corenet_tcp_connect_nfs_port(ctdbd_t)
  
  corecmd_exec_bin(ctdbd_t)
-@@ -85,14 +106,18 @@ dev_read_urand(ctdbd_t)
+ corecmd_exec_shell(ctdbd_t)
+@@ -85,14 +108,18 @@ dev_read_urand(ctdbd_t)
  
  domain_dontaudit_read_all_domains_state(ctdbd_t)
  
@@ -20611,10 +20614,14 @@ index 001b502..47199aa 100644
  optional_policy(`
  	consoletype_exec(ctdbd_t)
  ')
-@@ -106,9 +131,16 @@ optional_policy(`
+@@ -106,9 +133,20 @@ optional_policy(`
  ')
  
  optional_policy(`
++    rpc_read_nfs_state_data(ctdbd_t)
++')
++
++optional_policy(`
 +    samba_signull_smbd(ctdbd_t)
  	samba_initrc_domtrans(ctdbd_t)
  	samba_domtrans_net(ctdbd_t)
@@ -32116,10 +32123,10 @@ index 5cd0909..bd3c3d2 100644
 +corenet_tcp_connect_glance_registry_port(glance_scrubber_t)
 diff --git a/glusterd.fc b/glusterd.fc
 new file mode 100644
-index 0000000..52b4110
+index 0000000..a3633cd
 --- /dev/null
 +++ b/glusterd.fc
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,29 @@
 +/etc/rc\.d/init\.d/gluster.*	--	gen_context(system_u:object_r:glusterd_initrc_exec_t,s0)
 +
 +/etc/glusterfs(/.*)?	gen_context(system_u:object_r:glusterd_conf_t,s0)
@@ -32127,6 +32134,13 @@ index 0000000..52b4110
 +
 +/usr/sbin/glusterd	--	gen_context(system_u:object_r:glusterd_initrc_exec_t,s0)
 +/usr/sbin/glusterfsd	--	gen_context(system_u:object_r:glusterd_exec_t,s0)
++
++/usr/sbin/glustereventsd   -- 	gen_context(system_u:object_r:glusterd_exec_t,s0)
++/usr/sbin/gluster-eventsapi   -- 	gen_context(system_u:object_r:glusterd_exec_t,s0)
++
++
++/usr/libexec/glusterfs/peer_eventsapi.py    -- 	gen_context(system_u:object_r:glusterd_exec_t,s0)
++/usr/libexec/glusterfs/events/glustereventsd.py   -- 	gen_context(system_u:object_r:glusterd_exec_t,s0)
 +
 +/usr/bin/ganesha.nfsd	--	gen_context(system_u:object_r:glusterd_exec_t,s0)
 +
@@ -32411,10 +32425,10 @@ index 0000000..764ae00
 +
 diff --git a/glusterd.te b/glusterd.te
 new file mode 100644
-index 0000000..0a33da3
+index 0000000..40c6ade
 --- /dev/null
 +++ b/glusterd.te
-@@ -0,0 +1,305 @@
+@@ -0,0 +1,307 @@
 +policy_module(glusterd, 1.1.3)
 +
 +## <desc>
@@ -32604,6 +32618,7 @@ index 0000000..0a33da3
 +init_rw_script_tmp_files(glusterd_t)
 +init_manage_script_status_files(glusterd_t)
 +init_status(glusterd_t)
++init_stop_transient_unit(glusterd_t)
 +
 +systemd_config_systemd_services(glusterd_t)
 +systemd_signal_passwd_agent(glusterd_t)
@@ -32622,6 +32637,7 @@ index 0000000..0a33da3
 +userdom_delete_user_tmp_files(glusterd_t)
 +userdom_rw_user_tmp_files(glusterd_t)
 +userdom_kill_all_users(glusterd_t)
++userdom_signal_unpriv_users(glusterd_t)
 +
 +mount_domtrans(glusterd_t)
 +
@@ -76636,7 +76652,7 @@ index cd8b8b9..2cfa88a 100644
 +	allow $1 pppd_unit_file_t:service all_service_perms;
  ')
 diff --git a/ppp.te b/ppp.te
-index d616ca3..b03d137 100644
+index d616ca3..76f9b25 100644
 --- a/ppp.te
 +++ b/ppp.te
 @@ -6,41 +6,47 @@ policy_module(ppp, 1.14.0)
@@ -76911,7 +76927,7 @@ index d616ca3..b03d137 100644
  
  allow pptp_t pppd_etc_t:dir list_dir_perms;
  allow pptp_t pppd_etc_t:file read_file_perms;
-@@ -236,45 +266,45 @@ allow pptp_t pppd_etc_t:lnk_file read_lnk_file_perms;
+@@ -236,45 +266,46 @@ allow pptp_t pppd_etc_t:lnk_file read_lnk_file_perms;
  allow pptp_t pppd_etc_rw_t:dir list_dir_perms;
  allow pptp_t pppd_etc_rw_t:file read_file_perms;
  allow pptp_t pppd_etc_rw_t:lnk_file read_lnk_file_perms;
@@ -76942,6 +76958,7 @@ index d616ca3..b03d137 100644
 +dev_read_sysfs(pptp_t)
 +dev_read_rand(pptp_t)
 +dev_read_urand(pptp_t)
++dev_read_rand(pptp_t)
 +
  corecmd_exec_shell(pptp_t)
  corecmd_read_bin_symlinks(pptp_t)
@@ -76970,7 +76987,7 @@ index d616ca3..b03d137 100644
  fs_getattr_all_fs(pptp_t)
  fs_search_auto_mountpoints(pptp_t)
  
-@@ -282,12 +312,12 @@ term_ioctl_generic_ptys(pptp_t)
+@@ -282,12 +313,12 @@ term_ioctl_generic_ptys(pptp_t)
  term_search_ptys(pptp_t)
  term_use_ptmx(pptp_t)
  
@@ -76985,7 +77002,7 @@ index d616ca3..b03d137 100644
  sysnet_exec_ifconfig(pptp_t)
  
  userdom_dontaudit_use_unpriv_user_fds(pptp_t)
-@@ -299,6 +329,10 @@ optional_policy(`
+@@ -299,6 +330,10 @@ optional_policy(`
  ')
  
  optional_policy(`
