@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 231%{?dist}
+Release: 232%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,17 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 06 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-232
+- Add tlp_var_lib_t label for /var/lib/tlp directory BZ(1409977)
+- Allow tlp_t domain to read proc_net_t BZ(1403487)
+- Merge pull request #179 from rhatdan/virt1
+- Allow tlp_t domain to read/write cpu microcode BZ(1403103)
+- Allow virt domain to use interited virtlogd domains fifo_file
+- Fixes for containers
+- Allow glusterd_t to bind on glusterd_port_t udp ports.
+- Update ctdbd_t policy to reflect all changes.
+- Allow ctdbd_t domain transition to rpcd_t
+
 * Wed Dec 14 2016 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-231
 - Allow pptp_t to read /dev/random BZ(1404248)
 - Allow glusterd_t send signals to userdomain. Label new glusterd binaries as glusterd_exec_t

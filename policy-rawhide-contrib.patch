@@ -20522,7 +20522,7 @@ index b25b01d..06895f3 100644
  ')
 +
 diff --git a/ctdb.te b/ctdb.te
-index 001b502..9892b34 100644
+index 001b502..ac0508e 100644
 --- a/ctdb.te
 +++ b/ctdb.te
 @@ -24,6 +24,9 @@ files_tmp_file(ctdbd_tmp_t)
@@ -20576,7 +20576,7 @@ index 001b502..9892b34 100644
  kernel_read_network_state(ctdbd_t)
  kernel_read_system_state(ctdbd_t)
  kernel_rw_net_sysctls(ctdbd_t)
-@@ -72,10 +89,16 @@ corenet_all_recvfrom_netlabel(ctdbd_t)
+@@ -72,27 +89,38 @@ corenet_all_recvfrom_netlabel(ctdbd_t)
  corenet_tcp_sendrecv_generic_if(ctdbd_t)
  corenet_tcp_sendrecv_generic_node(ctdbd_t)
  corenet_tcp_bind_generic_node(ctdbd_t)
@@ -20593,7 +20593,10 @@ index 001b502..9892b34 100644
  
  corecmd_exec_bin(ctdbd_t)
  corecmd_exec_shell(ctdbd_t)
-@@ -85,14 +108,18 @@ dev_read_urand(ctdbd_t)
++corecmd_getattr_all_executables(ctdbd_t)
+ 
+ dev_read_sysfs(ctdbd_t)
+ dev_read_urand(ctdbd_t)
  
  domain_dontaudit_read_all_domains_state(ctdbd_t)
  
@@ -20614,10 +20617,12 @@ index 001b502..9892b34 100644
  optional_policy(`
  	consoletype_exec(ctdbd_t)
  ')
-@@ -106,9 +133,20 @@ optional_policy(`
+@@ -106,9 +134,22 @@ optional_policy(`
  ')
  
  optional_policy(`
++    rpc_domtrans_rpcd(ctdbd_t)
++    rpc_manage_nfs_state_data_dir(ctdbd_t)
 +    rpc_read_nfs_state_data(ctdbd_t)
 +')
 +
@@ -32425,10 +32430,10 @@ index 0000000..764ae00
 +
 diff --git a/glusterd.te b/glusterd.te
 new file mode 100644
-index 0000000..40c6ade
+index 0000000..03db2af
 --- /dev/null
 +++ b/glusterd.te
-@@ -0,0 +1,307 @@
+@@ -0,0 +1,308 @@
 +policy_module(glusterd, 1.1.3)
 +
 +## <desc>
@@ -32563,6 +32568,7 @@ index 0000000..40c6ade
 +
 +corenet_tcp_connect_gluster_port(glusterd_t)
 +corenet_tcp_bind_gluster_port(glusterd_t)
++corenet_udp_bind_gluster_port(glusterd_t)
 +
 +# replacement for rpc.mountd
 +corenet_sendrecv_all_server_packets(glusterd_t)
@@ -109138,13 +109144,15 @@ index 97cd155..49321a5 100644
  fs_search_auto_mountpoints(timidity_t)
 diff --git a/tlp.fc b/tlp.fc
 new file mode 100644
-index 0000000..8b8cf4a
+index 0000000..eef708d
 --- /dev/null
 +++ b/tlp.fc
-@@ -0,0 +1,5 @@
+@@ -0,0 +1,7 @@
 +/usr/lib/systemd/system/((tlp-sleep.*)|(tlp.*))		--	gen_context(system_u:object_r:tlp_unit_file_t,s0)
 +
 +/usr/sbin/tlp		--	gen_context(system_u:object_r:tlp_exec_t,s0)
++
++/var/lib/tlp(/.*)?		gen_context(system_u:object_r:tlp_var_lib_t,s0)
 +
 +/var/run/tlp(/.*)?		gen_context(system_u:object_r:tlp_var_run_t,s0)
 diff --git a/tlp.if b/tlp.if
@@ -109339,10 +109347,10 @@ index 0000000..46f12a4
 +')
 diff --git a/tlp.te b/tlp.te
 new file mode 100644
-index 0000000..98e708a
+index 0000000..0183c55
 --- /dev/null
 +++ b/tlp.te
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,65 @@
 +policy_module(tlp, 1.0.0)
 +
 +########################################
@@ -109357,6 +109365,9 @@ index 0000000..98e708a
 +type tlp_var_run_t;
 +files_pid_file(tlp_var_run_t)
 +
++type tlp_var_lib_t;
++files_type(tlp_var_lib_t)
++
 +type tlp_unit_file_t;
 +systemd_unit_file(tlp_unit_file_t)
 +
@@ -109368,12 +109379,18 @@ index 0000000..98e708a
 +allow tlp_t self:unix_stream_socket create_stream_socket_perms;
 +allow tlp_t self:udp_socket create_socket_perms;
 +allow tlp_t self:unix_dgram_socket create_socket_perms;
++allow tlp_t self:netlink_generic_socket create_socket_perms;
 +
 +manage_dirs_pattern(tlp_t, tlp_var_run_t, tlp_var_run_t)
 +manage_files_pattern(tlp_t, tlp_var_run_t, tlp_var_run_t)
 +files_pid_filetrans(tlp_t, tlp_var_run_t, { dir file })
 +
++manage_dirs_pattern(tlp_t, tlp_var_lib_t, tlp_var_lib_t)
++manage_files_pattern(tlp_t, tlp_var_lib_t, tlp_var_lib_t)
++files_var_lib_filetrans(tlp_t, tlp_var_lib_t, dir)
++
 +kernel_read_system_state(tlp_t)
++kernel_read_network_state(tlp_t)
 +kernel_read_fs_sysctls(tlp_t)
 +kernel_rw_fs_sysctls(tlp_t)
 +kernel_rw_kernel_sysctl(tlp_t)
@@ -109385,6 +109402,7 @@ index 0000000..98e708a
 +
 +dev_list_sysfs(tlp_t)
 +dev_manage_sysfs(tlp_t)
++dev_rw_cpu_microcode(tlp_t)
 +
 +files_read_kernel_modules(tlp_t)
 +
@@ -114622,7 +114640,7 @@ index facdee8..2cff369 100644
 +	domtrans_pattern($1,container_file_t, $2)
  ')
 diff --git a/virt.te b/virt.te
-index f03dcf5..9bde200 100644
+index f03dcf5..587e30f 100644
 --- a/virt.te
 +++ b/virt.te
 @@ -1,451 +1,403 @@
@@ -115393,18 +115411,19 @@ index f03dcf5..9bde200 100644
 -manage_dirs_pattern(virtd_t, virtd_lxc_var_run_t, virtd_lxc_var_run_t)
 -manage_files_pattern(virtd_t, virtd_lxc_var_run_t, virtd_lxc_var_run_t)
 -filetrans_pattern(virtd_t, virt_var_run_t, virtd_lxc_var_run_t, dir, "lxc")
+-
+-stream_connect_pattern(virtd_t, virtd_lxc_var_run_t, virtd_lxc_var_run_t, virtd_lxc_t)
+-stream_connect_pattern(virtd_t, svirt_var_run_t, svirt_var_run_t, virt_domain)
 +manage_dirs_pattern(virtd_t, virt_lxc_var_run_t, virt_lxc_var_run_t)
 +manage_files_pattern(virtd_t, virt_lxc_var_run_t, virt_lxc_var_run_t)
 +filetrans_pattern(virtd_t, virt_var_run_t, virt_lxc_var_run_t, dir, "lxc")
 +allow virtd_t virt_lxc_var_run_t:file { relabelfrom relabelto };
 +stream_connect_pattern(virtd_t, virt_lxc_var_run_t, virt_lxc_var_run_t, virtd_lxc_t)
  
--stream_connect_pattern(virtd_t, virtd_lxc_var_run_t, virtd_lxc_var_run_t, virtd_lxc_t)
--stream_connect_pattern(virtd_t, svirt_var_run_t, svirt_var_run_t, virt_domain)
+-can_exec(virtd_t, virt_tmp_t)
 +# libvirtd is permitted to talk to virtlogd
 +stream_connect_pattern(virtd_t, virt_var_run_t, virtlogd_var_run_t, virtlogd_t)
- 
--can_exec(virtd_t, virt_tmp_t)
++allow virtd_t virtlogd_t:fifo_file rw_inherited_fifo_file_perms;
  
 -kernel_read_crypto_sysctls(virtd_t)
  kernel_read_system_state(virtd_t)
@@ -115576,12 +115595,11 @@ index f03dcf5..9bde200 100644
  ')
  
  optional_policy(`
--	iptables_domtrans(virtd_t)
 +	firewalld_dbus_chat(virtd_t)
 +')
 +
 +optional_policy(`
-+	iptables_domtrans(virtd_t)
+ 	iptables_domtrans(virtd_t)
  	iptables_initrc_domtrans(virtd_t)
 +	iptables_systemctl(virtd_t)
 +
@@ -115833,7 +115851,7 @@ index f03dcf5..9bde200 100644
 +storage_raw_read_removable_device(virt_domain)
 +
 +sysnet_read_config(virt_domain)
-+
+ 
 +term_use_all_inherited_terms(virt_domain)
 +term_getattr_pty_fs(virt_domain)
 +term_use_generic_ptys(virt_domain)
@@ -115846,7 +115864,7 @@ index f03dcf5..9bde200 100644
 +optional_policy(`
 +	alsa_read_rw_config(virt_domain)
 +')
- 
++
 +optional_policy(`
 +	nscd_dontaudit_write_sock_file(virt_domain)
 +')
@@ -116206,7 +116224,7 @@ index f03dcf5..9bde200 100644
  selinux_get_enforce_mode(virtd_lxc_t)
  selinux_get_fs_mount(virtd_lxc_t)
  selinux_validate_context(virtd_lxc_t)
-@@ -974,194 +1260,372 @@ selinux_compute_create_context(virtd_lxc_t)
+@@ -974,194 +1260,376 @@ selinux_compute_create_context(virtd_lxc_t)
  selinux_compute_relabel_context(virtd_lxc_t)
  selinux_compute_user_contexts(virtd_lxc_t)
  
@@ -116493,6 +116511,7 @@ index f03dcf5..9bde200 100644
 +	fs_manage_nfs_symlinks(svirt_sandbox_domain)
 +	fs_mount_nfs(svirt_sandbox_domain)
 +	fs_unmount_nfs(svirt_sandbox_domain)
++	fs_exec_nfs_files(svirt_sandbox_domain)
 +	kernel_rw_fs_sysctls(svirt_sandbox_domain)
 +')
 +
@@ -116501,6 +116520,7 @@ index f03dcf5..9bde200 100644
 +	fs_manage_cifs_dirs(svirt_sandbox_domain)
 +	fs_manage_cifs_named_sockets(svirt_sandbox_domain)
 +	fs_manage_cifs_symlinks(svirt_sandbox_domain)
++	fs_exec_cifs_files(svirt_sandbox_domain)
 +')
 +
 +tunable_policy(`virt_sandbox_use_fusefs',`
@@ -116509,6 +116529,7 @@ index f03dcf5..9bde200 100644
 +    fs_manage_fusefs_symlinks(svirt_sandbox_domain)
 +    fs_mount_fusefs(svirt_sandbox_domain)
 +    fs_unmount_fusefs(svirt_sandbox_domain)
++    fs_exec_fusefs(svirt_sandbox_domain)
  ')
  
  optional_policy(`
@@ -116536,6 +116557,7 @@ index f03dcf5..9bde200 100644
 +dontaudit container_t self:capability2  block_suspend ;
 +allow container_t self:process { execstack execmem };
 +manage_chr_files_pattern(container_t, container_file_t, container_file_t)
++manage_blk_files_pattern(container_t, container_file_t, container_file_t)
 +
 +tunable_policy(`virt_sandbox_use_sys_admin',`
 +	allow container_t self:capability sys_admin;
@@ -116723,7 +116745,7 @@ index f03dcf5..9bde200 100644
  allow virt_qmf_t self:tcp_socket create_stream_socket_perms;
  allow virt_qmf_t self:netlink_route_socket create_netlink_socket_perms;
  
-@@ -1174,12 +1638,12 @@ dev_read_sysfs(virt_qmf_t)
+@@ -1174,12 +1642,12 @@ dev_read_sysfs(virt_qmf_t)
  dev_read_rand(virt_qmf_t)
  dev_read_urand(virt_qmf_t)
  
@@ -116738,7 +116760,7 @@ index f03dcf5..9bde200 100644
  sysnet_read_config(virt_qmf_t)
  
  optional_policy(`
-@@ -1192,7 +1656,7 @@ optional_policy(`
+@@ -1192,7 +1660,7 @@ optional_policy(`
  
  ########################################
  #
@@ -116747,7 +116769,7 @@ index f03dcf5..9bde200 100644
  #
  
  allow virt_bridgehelper_t self:process { setcap getcap };
-@@ -1201,11 +1665,262 @@ allow virt_bridgehelper_t self:tcp_socket create_stream_socket_perms;
+@@ -1201,11 +1669,262 @@ allow virt_bridgehelper_t self:tcp_socket create_stream_socket_perms;
  allow virt_bridgehelper_t self:tun_socket create_socket_perms;
  allow virt_bridgehelper_t self:unix_dgram_socket create_socket_perms;
  
@@ -120367,7 +120389,7 @@ index dd63de0..38ce620 100644
 -	admin_pattern($1, zabbix_tmpfs_t)
  ')
 diff --git a/zabbix.te b/zabbix.te
-index 7f496c6..fccb7b1 100644
+index 7f496c6..aab4f86 100644
 --- a/zabbix.te
 +++ b/zabbix.te
 @@ -6,27 +6,32 @@ policy_module(zabbix, 1.6.0)
@@ -120545,7 +120567,7 @@ index 7f496c6..fccb7b1 100644
  ')
  
  ########################################
-@@ -132,18 +161,7 @@ optional_policy(`
+@@ -132,18 +161,9 @@ optional_policy(`
  # Agent local policy
  #
  
@@ -120556,7 +120578,8 @@ index 7f496c6..fccb7b1 100644
 -allow zabbix_agent_t self:shm create_shm_perms;
 -allow zabbix_agent_t self:tcp_socket { accept listen };
 -allow zabbix_agent_t self:unix_stream_socket create_stream_socket_perms;
--
++allow zabbix_agent_t self:process { setrlimit };
+ 
 -append_files_pattern(zabbix_agent_t, zabbix_log_t, zabbix_log_t)
 -create_files_pattern(zabbix_agent_t, zabbix_log_t, zabbix_log_t)
 -setattr_files_pattern(zabbix_agent_t, zabbix_log_t, zabbix_log_t)
@@ -120565,7 +120588,7 @@ index 7f496c6..fccb7b1 100644
  
  rw_files_pattern(zabbix_agent_t, zabbix_tmpfs_t, zabbix_tmpfs_t)
  fs_tmpfs_filetrans(zabbix_agent_t, zabbix_tmpfs_t, file)
-@@ -151,16 +169,13 @@ fs_tmpfs_filetrans(zabbix_agent_t, zabbix_tmpfs_t, file)
+@@ -151,16 +171,13 @@ fs_tmpfs_filetrans(zabbix_agent_t, zabbix_tmpfs_t, file)
  manage_files_pattern(zabbix_agent_t, zabbix_var_run_t, zabbix_var_run_t)
  files_pid_filetrans(zabbix_agent_t, zabbix_var_run_t, file)
  
@@ -120585,7 +120608,7 @@ index 7f496c6..fccb7b1 100644
  
  corenet_sendrecv_zabbix_agent_server_packets(zabbix_agent_t)
  corenet_tcp_bind_zabbix_agent_port(zabbix_agent_t)
-@@ -170,6 +185,30 @@ corenet_sendrecv_ssh_client_packets(zabbix_agent_t)
+@@ -170,6 +187,30 @@ corenet_sendrecv_ssh_client_packets(zabbix_agent_t)
  corenet_tcp_connect_ssh_port(zabbix_agent_t)
  corenet_tcp_sendrecv_ssh_port(zabbix_agent_t)
  
@@ -120616,7 +120639,7 @@ index 7f496c6..fccb7b1 100644
  corenet_sendrecv_zabbix_client_packets(zabbix_agent_t)
  corenet_tcp_connect_zabbix_port(zabbix_agent_t)
  corenet_tcp_sendrecv_zabbix_port(zabbix_agent_t)
-@@ -177,21 +216,49 @@ corenet_tcp_sendrecv_zabbix_port(zabbix_agent_t)
+@@ -177,21 +218,49 @@ corenet_tcp_sendrecv_zabbix_port(zabbix_agent_t)
  dev_getattr_all_blk_files(zabbix_agent_t)
  dev_getattr_all_chr_files(zabbix_agent_t)
  
