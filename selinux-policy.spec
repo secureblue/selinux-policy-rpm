@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 232%{?dist}
+Release: 233%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,17 @@ exit 0
 %endif
 
 %changelog
+* Sun Jan 08 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-233
+-Allow thumb domain sendto via dgram sockets. BZ(1398813)
+- Add condor_procd_t domain sys_ptrace cap_userns BZ(1411077)
+- Allow cobbler domain to create netlink_audit sockets BZ(1384600)
+- Allow networkmanager to manage networkmanager_var_lib_t lnk files BZ(1408626)
+- Add dhcpd_t domain fowner capability BZ(1409963)
+- Allow thumb to create netlink_kobject_uevent sockets. BZ(1410942)
+- Fix broken interfaces
+- Allow setfiles_t domain rw inherited kdumpctl tmp pipes BZ(1356456)
+- Allow user_t run systemctl --user BZ(1401625)
+
 * Fri Jan 06 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-232
 - Add tlp_var_lib_t label for /var/lib/tlp directory BZ(1409977)
 - Allow tlp_t domain to read proc_net_t BZ(1403487)
