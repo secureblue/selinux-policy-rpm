@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 233%{?dist}
+Release: 234%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,12 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan 17 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-234
+- After the latest changes in nfsd. We should allow nfsd_t to read raw fixed disk. For more info see: BZ(1403017)
+- Tighten security on containe types
+- Make working cracklib_password_check for MariaDB service
+- Label 20514 tcp/udp ports as syslogd_port_t Label 10514 tcp/udp portas as syslog_tls_port_t BZ(1410505)
+
 * Sun Jan 08 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-233
 -Allow thumb domain sendto via dgram sockets. BZ(1398813)
 - Add condor_procd_t domain sys_ptrace cap_userns BZ(1411077)
