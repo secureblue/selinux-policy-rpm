@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 234%{?dist}
+Release: 235%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan 17 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-235
+- Allow libvirt daemon to create /var/chace/libvirt dir.
+- Allow systemd using ProtectKernelTunables securit feature. BZ(1392161)
+- F26 Wide change: Coredumps enabled by default. Allowing inherits process limits to enable coredumps.BZ(1341829)
+
 * Tue Jan 17 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-234
 - After the latest changes in nfsd. We should allow nfsd_t to read raw fixed disk. For more info see: BZ(1403017)
 - Tighten security on containe types
