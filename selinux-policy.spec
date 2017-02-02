@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 235%{?dist}
+Release: 236%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,16 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 02 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-236
+- Allow kdumpgui domain to read nvme device
+- Add amanda_tmpfs_t label. BZ(1243752)
+- Fix typo in sssd interface file
+- Allow sssd_t domain setpgid BZ(1411437)
+- Allow ifconfig_t domain read nsfs_t
+- Allow ping_t domain to load kernel modules.
+- Allow systemd to send user information back to pid1. BZ(1412750)
+- rawhide-base: Fix wrong type/attribute flavors in require blocks
+
 * Tue Jan 17 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-235
 - Allow libvirt daemon to create /var/chace/libvirt dir.
 - Allow systemd using ProtectKernelTunables securit feature. BZ(1392161)
