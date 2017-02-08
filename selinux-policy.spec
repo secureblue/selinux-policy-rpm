@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 236%{?dist}
+Release: 237%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,20 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 08 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-237
+- Merge pull request #187 from rhatdan/container-selinux
+- Allow rhsmcertd domain signull kernel.
+- Allow container-selinux to handle all policy for container processes
+- Fix label for nagios plugins in nagios file conxtext file
+- su using libselinux and creating netlink_selinux socket is needed to allow libselinux initialization. Resolves: rhbz#1146987
+- Add SELinux support for systemd-initctl daemon
+- Add SELinux support for systemd-bootchart
+- su using libselinux and creating netlink_selinux socket is needed to allow libselinux initialization. Resolves: rhbz#1146987
+- Add module_load permission to can_load_kernmodule
+- Add module_load permission to class system
+- Add the validate_trans access vector to the security class
+- Restore connecto permssions for init_t
+
 * Thu Feb 02 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-236
 - Allow kdumpgui domain to read nvme device
 - Add amanda_tmpfs_t label. BZ(1243752)
