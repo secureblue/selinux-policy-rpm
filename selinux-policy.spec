@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 237%{?dist}
+Release: 238%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 09 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-238
+- Allow shiftfs to use xattr SELinux labels
+- Fix ssh_server_template by add sshd_t to require section.
+
 * Wed Feb 08 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-237
 - Merge pull request #187 from rhatdan/container-selinux
 - Allow rhsmcertd domain signull kernel.
