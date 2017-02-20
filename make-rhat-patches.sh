@@ -17,7 +17,7 @@ git clone git@github.com:projectatomic/container-selinux.git -q
 
 pushd selinux-policy > /dev/null
 # prepare policy patches against upstream commits matching the last upstream merge
-git rev-parse --verify origin/${FEDORA_VERSION}-base; git diff eb4512f6eb13792c76ff8d3e6f2df3a7155db577 origin/${FEDORA_VERSION}-base > policy-${FEDORA_VERSION}-base.patch
+git rev-parse --verify origin/${FEDORA_VERSION}; git diff eb4512f6eb13792c76ff8d3e6f2df3a7155db577 origin/${FEDORA_VERSION} > policy-${FEDORA_VERSION}-base.patch
 popd > /dev/null
 
 pushd selinux-policy-contrib > /dev/null
