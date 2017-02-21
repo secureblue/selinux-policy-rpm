@@ -12878,7 +12878,7 @@ index 85ca63f..1d1c99c 100644
  	admin_pattern($1, { cgconfig_etc_t cgrules_etc_t })
  	files_list_etc($1)
 diff --git a/cgroup.te b/cgroup.te
-index 80a88a2..ec869f5 100644
+index 80a88a2..71c25c3 100644
 --- a/cgroup.te
 +++ b/cgroup.te
 @@ -25,8 +25,8 @@ files_pid_file(cgred_var_run_t)
@@ -12906,7 +12906,7 @@ index 80a88a2..ec869f5 100644
  domain_setpriority_all_domains(cgclear_t)
  
  fs_manage_cgroup_dirs(cgclear_t)
-@@ -64,23 +66,25 @@ allow cgconfig_t cgconfig_etc_t:file read_file_perms;
+@@ -64,23 +66,26 @@ allow cgconfig_t cgconfig_etc_t:file read_file_perms;
  kernel_list_unlabeled(cgconfig_t)
  kernel_read_system_state(cgconfig_t)
  
@@ -12930,12 +12930,13 @@ index 80a88a2..ec869f5 100644
 -allow cgred_t self:capability { chown fsetid net_admin sys_admin sys_ptrace dac_override };
  allow cgred_t self:netlink_socket { write bind create read };
  allow cgred_t self:unix_dgram_socket { write create connect };
++allow cgred_t self:netlink_connector_socket create_socket_perms;
  
 +allow cgred_t cgconfig_etc_t:file read_file_perms;
  allow cgred_t cgrules_etc_t:file read_file_perms;
  
  allow cgred_t cgred_log_t:file { append_file_perms create_file_perms setattr_file_perms };
-@@ -99,10 +103,11 @@ domain_setpriority_all_domains(cgred_t)
+@@ -99,10 +104,11 @@ domain_setpriority_all_domains(cgred_t)
  files_getattr_all_files(cgred_t)
  files_getattr_all_sockets(cgred_t)
  files_read_all_symlinks(cgred_t)
@@ -14855,10 +14856,10 @@ index cc4e7cb..f348d27 100644
  	domain_system_change_exemption($1)
  	role_transition $2 cmirrord_initrc_exec_t system_r;
 diff --git a/cmirrord.te b/cmirrord.te
-index bbdd396..8328b95 100644
+index bbdd396..28b1761 100644
 --- a/cmirrord.te
 +++ b/cmirrord.te
-@@ -23,7 +23,7 @@ files_pid_file(cmirrord_var_run_t)
+@@ -23,13 +23,14 @@ files_pid_file(cmirrord_var_run_t)
  # Local policy
  #
  
@@ -14867,7 +14868,14 @@ index bbdd396..8328b95 100644
  dontaudit cmirrord_t self:capability sys_tty_config;
  allow cmirrord_t self:process { setfscreate signal };
  allow cmirrord_t self:fifo_file rw_fifo_file_perms;
-@@ -42,16 +42,18 @@ files_pid_filetrans(cmirrord_t, cmirrord_var_run_t, file)
+ allow cmirrord_t self:sem create_sem_perms;
+ allow cmirrord_t self:shm create_shm_perms;
+ allow cmirrord_t self:netlink_socket create_socket_perms;
++allow cmirrord_t self:netlink_connector_socket create_socket_perms;
+ allow cmirrord_t self:unix_stream_socket { accept listen };
+ 
+ manage_dirs_pattern(cmirrord_t, cmirrord_tmpfs_t, cmirrord_tmpfs_t)
+@@ -42,16 +43,18 @@ files_pid_filetrans(cmirrord_t, cmirrord_var_run_t, file)
  domain_use_interactive_fds(cmirrord_t)
  domain_obj_id_change_exemption(cmirrord_t)
  
@@ -30858,6 +30866,243 @@ index e5b15fb..220622e 100644
  	allow games_t self:process execmem;
  ')
  
+diff --git a/ganesha.fc b/ganesha.fc
+new file mode 100644
+index 0000000..c5982d5
+--- /dev/null
++++ b/ganesha.fc
+@@ -0,0 +1,11 @@
++/usr/bin/ganesha.nfsd		--	gen_context(system_u:object_r:ganesha_exec_t,s0)
++
++/usr/lib/systemd/system/nfs-ganesha-config.*		--	gen_context(system_u:object_r:ganesha_unit_file_t,s0)
++
++/usr/lib/systemd/system/nfs-ganesha-lock.*		--	gen_context(system_u:object_r:ganesha_unit_file_t,s0)
++
++/usr/lib/systemd/system/nfs-ganesha.*e		--	gen_context(system_u:object_r:ganesha_unit_file_t,s0)
++
++/var/log/ganesha.log	--	gen_context(system_u:object_r:ganesha_var_log_t,s0)
++
++/var/run/ganesha(/.*)?		gen_context(system_u:object_r:ganesha_var_run_t,s0)
+diff --git a/ganesha.if b/ganesha.if
+new file mode 100644
+index 0000000..d9ba5fa
+--- /dev/null
++++ b/ganesha.if
+@@ -0,0 +1,147 @@
++
++## <summary>policy for ganesha</summary>
++
++########################################
++## <summary>
++##	Execute ganesha_exec_t in the ganesha domain.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`ganesha_domtrans',`
++	gen_require(`
++		type ganesha_t, ganesha_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	domtrans_pattern($1, ganesha_exec_t, ganesha_t)
++')
++
++######################################
++## <summary>
++##	Execute ganesha in the caller domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`ganesha_exec',`
++	gen_require(`
++		type ganesha_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	can_exec($1, ganesha_exec_t)
++')
++########################################
++## <summary>
++##	Read ganesha PID files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`ganesha_read_pid_files',`
++	gen_require(`
++		type ganesha_var_run_t;
++	')
++
++	files_search_pids($1)
++	read_files_pattern($1, ganesha_var_run_t, ganesha_var_run_t)
++')
++
++########################################
++## <summary>
++##	Execute ganesha server in the ganesha domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed to transition.
++##	</summary>
++## </param>
++#
++interface(`ganesha_systemctl',`
++	gen_require(`
++		type ganesha_t;
++		type ganesha_unit_file_t;
++	')
++
++	systemd_exec_systemctl($1)
++        systemd_read_fifo_file_passwd_run($1)
++	allow $1 ganesha_unit_file_t:file read_file_perms;
++	allow $1 ganesha_unit_file_t:service manage_service_perms;
++
++	ps_process_pattern($1, ganesha_t)
++')
++
++
++########################################
++## <summary>
++##	Send and receive messages from
++##	ganesha over dbus.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`ganesha_dbus_chat',`
++	gen_require(`
++		type ganesha_t;
++		class dbus send_msg;
++	')
++
++	allow $1 ganesha_t:dbus send_msg;
++	allow ganesha_t $1:dbus send_msg;
++')
++
++########################################
++## <summary>
++##	All of the rules required to administrate
++##	an ganesha environment
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <param name="role">
++##	<summary>
++##	Role allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`ganesha_admin',`
++	gen_require(`
++		type ganesha_t;
++		type ganesha_var_run_t;
++	type ganesha_unit_file_t;
++	')
++
++	allow $1 ganesha_t:process { signal_perms };
++	ps_process_pattern($1, ganesha_t)
++
++    tunable_policy(`deny_ptrace',`',`
++        allow $1 ganesha_t:process ptrace;
++    ')
++
++	files_search_pids($1)
++	admin_pattern($1, ganesha_var_run_t)
++
++	ganesha_systemctl($1)
++	admin_pattern($1, ganesha_unit_file_t)
++	allow $1 ganesha_unit_file_t:service all_service_perms;
++	optional_policy(`
++		systemd_passwd_agent_exec($1)
++		systemd_read_fifo_file_passwd_run($1)
++	')
++')
+diff --git a/ganesha.te b/ganesha.te
+new file mode 100644
+index 0000000..20b9fcf
+--- /dev/null
++++ b/ganesha.te
+@@ -0,0 +1,61 @@
++policy_module(ganesha, 1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++type ganesha_t;
++type ganesha_exec_t;
++init_daemon_domain(ganesha_t, ganesha_exec_t)
++
++permissive ganesha_t;
++
++type ganesha_var_log_t;
++logging_log_file(ganesha_var_log_t)
++
++type ganesha_var_run_t;
++files_pid_file(ganesha_var_run_t)
++
++type ganesha_unit_file_t;
++systemd_unit_file(ganesha_unit_file_t)
++
++########################################
++#
++# ganesha local policy
++#
++allow ganesha_t self:process { setcap setrlimit };
++allow ganesha_t self:fifo_file rw_fifo_file_perms;
++allow ganesha_t self:unix_stream_socket create_stream_socket_perms;
++allow ganesha_t self:tcp_socket { accept listen };
++
++manage_dirs_pattern(ganesha_t, ganesha_var_run_t, ganesha_var_run_t)
++manage_files_pattern(ganesha_t, ganesha_var_run_t, ganesha_var_run_t)
++manage_lnk_files_pattern(ganesha_t, ganesha_var_run_t, ganesha_var_run_t)
++files_pid_filetrans(ganesha_t, ganesha_var_run_t, { dir file lnk_file })
++
++manage_dirs_pattern(ganesha_t, ganesha_var_log_t, ganesha_var_log_t)
++manage_files_pattern(ganesha_t, ganesha_var_log_t, ganesha_var_log_t)
++logging_log_filetrans(ganesha_t, ganesha_var_log_t, { file dir })
++
++auth_use_nsswitch(ganesha_t)
++
++corenet_tcp_bind_nfs_port(ganesha_t)
++corenet_tcp_connect_generic_port(ganesha_t)
++corenet_udp_bind_nfs_port(ganesha_t)
++corenet_udp_bind_all_rpc_ports(ganesha_t)
++corenet_tcp_bind_all_rpc_ports(ganesha_t)
++
++logging_send_syslog_msg(ganesha_t)
++
++sysnet_dns_name_resolve(ganesha_t)
++
++optional_policy(`
++	dbus_system_bus_client(ganesha_t)
++	dbus_connect_system_bus(ganesha_t)
++')
++
++optional_policy(`
++	rpc_manage_nfs_state_data_dir(ganesha_t)
++	rpcbind_stream_connect(ganesha_t)
++')
 diff --git a/gatekeeper.te b/gatekeeper.te
 index 2820368..88c98f4 100644
 --- a/gatekeeper.te
@@ -32165,10 +32410,10 @@ index 5cd0909..bd3c3d2 100644
 +corenet_tcp_connect_glance_registry_port(glance_scrubber_t)
 diff --git a/glusterd.fc b/glusterd.fc
 new file mode 100644
-index 0000000..a3633cd
+index 0000000..9806f50
 --- /dev/null
 +++ b/glusterd.fc
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,25 @@
 +/etc/rc\.d/init\.d/gluster.*	--	gen_context(system_u:object_r:glusterd_initrc_exec_t,s0)
 +
 +/etc/glusterfs(/.*)?	gen_context(system_u:object_r:glusterd_conf_t,s0)
@@ -32184,20 +32429,16 @@ index 0000000..a3633cd
 +/usr/libexec/glusterfs/peer_eventsapi.py    -- 	gen_context(system_u:object_r:glusterd_exec_t,s0)
 +/usr/libexec/glusterfs/events/glustereventsd.py   -- 	gen_context(system_u:object_r:glusterd_exec_t,s0)
 +
-+/usr/bin/ganesha.nfsd	--	gen_context(system_u:object_r:glusterd_exec_t,s0)
-+
 +/opt/glusterfs/[^/]+/sbin/glusterfsd	--	gen_context(system_u:object_r:glusterd_exec_t,s0)
 +
 +/var/lib/glusterd(/.*)?		gen_context(system_u:object_r:glusterd_var_lib_t,s0)
 +
 +/var/log/glusterfs(/.*)?	gen_context(system_u:object_r:glusterd_log_t,s0)
-+/var/log/ganesha.log	--	gen_context(system_u:object_r:glusterd_log_t,s0)
 +
 +/var/run/gluster(/.*)?	gen_context(system_u:object_r:glusterd_var_run_t,s0)
 +/var/run/glusterd(/.*)?	gen_context(system_u:object_r:glusterd_var_run_t,s0)
 +/var/run/glusterd.*	--	gen_context(system_u:object_r:glusterd_var_run_t,s0)
 +/var/run/glusterd.*	-s	gen_context(system_u:object_r:glusterd_var_run_t,s0)
-+/var/run/ganesha.*	--	gen_context(system_u:object_r:glusterd_var_run_t,s0)
 diff --git a/glusterd.if b/glusterd.if
 new file mode 100644
 index 0000000..764ae00
@@ -83507,7 +83748,7 @@ index da64218..3fb8575 100644
 +    domtrans_pattern($1, quota_nld_exec_t, quota_nld_t)
  ')
 diff --git a/quota.te b/quota.te
-index f47c8e8..d4e9042 100644
+index f47c8e8..af09c76 100644
 --- a/quota.te
 +++ b/quota.te
 @@ -5,12 +5,10 @@ policy_module(quota, 1.6.0)
@@ -83602,7 +83843,7 @@ index f47c8e8..d4e9042 100644
  ')
  
  optional_policy(`
-@@ -103,12 +102,12 @@ optional_policy(`
+@@ -103,12 +102,13 @@ optional_policy(`
  
  #######################################
  #
@@ -83613,11 +83854,12 @@ index f47c8e8..d4e9042 100644
  allow quota_nld_t self:fifo_file rw_fifo_file_perms;
  allow quota_nld_t self:netlink_socket create_socket_perms;
 -allow quota_nld_t self:unix_stream_socket { accept listen };
++allow quota_nld_t self:netlink_generic_socket create_socket_perms;
 +allow quota_nld_t self:unix_stream_socket create_stream_socket_perms;
  
  manage_files_pattern(quota_nld_t, quota_nld_var_run_t, quota_nld_var_run_t)
  files_pid_filetrans(quota_nld_t, quota_nld_var_run_t, { file })
-@@ -121,11 +120,9 @@ init_read_utmp(quota_nld_t)
+@@ -121,11 +121,9 @@ init_read_utmp(quota_nld_t)
  
  logging_send_syslog_msg(quota_nld_t)
  
@@ -91112,7 +91354,7 @@ index 0bf13c2..ed393a0 100644
  	files_list_tmp($1)
  	admin_pattern($1, gssd_tmp_t)
 diff --git a/rpc.te b/rpc.te
-index 2da9fca..a37f579 100644
+index 2da9fca..be1fab2 100644
 --- a/rpc.te
 +++ b/rpc.te
 @@ -6,22 +6,27 @@ policy_module(rpc, 1.15.1)
@@ -91316,7 +91558,7 @@ index 2da9fca..a37f579 100644
  ')
  
  ########################################
-@@ -202,41 +232,61 @@ optional_policy(`
+@@ -202,41 +232,62 @@ optional_policy(`
  #
  
  allow nfsd_t self:capability { dac_override dac_read_search sys_admin sys_resource };
@@ -91334,6 +91576,7 @@ index 2da9fca..a37f579 100644
  kernel_request_load_module(nfsd_t)
 -# kernel_mounton_proc(nfsd_t)
 +kernel_mounton_proc(nfsd_t)
++kernel_rw_rpc_sysctls_dirs(nfsd_t)
  
 -corenet_sendrecv_nfs_server_packets(nfsd_t)
 +corecmd_exec_shell(nfsd_t)
@@ -91388,7 +91631,7 @@ index 2da9fca..a37f579 100644
  	miscfiles_manage_public_files(nfsd_t)
  ')
  
-@@ -245,7 +295,6 @@ tunable_policy(`nfs_export_all_rw',`
+@@ -245,7 +296,6 @@ tunable_policy(`nfs_export_all_rw',`
  	dev_getattr_all_chr_files(nfsd_t)
  
  	fs_read_noxattr_fs_files(nfsd_t)
@@ -91396,7 +91639,7 @@ index 2da9fca..a37f579 100644
  ')
  
  tunable_policy(`nfs_export_all_ro',`
-@@ -257,12 +306,12 @@ tunable_policy(`nfs_export_all_ro',`
+@@ -257,12 +307,12 @@ tunable_policy(`nfs_export_all_ro',`
  
  	fs_read_noxattr_fs_files(nfsd_t)
  
@@ -91411,7 +91654,7 @@ index 2da9fca..a37f579 100644
  ')
  
  ########################################
-@@ -270,7 +319,7 @@ optional_policy(`
+@@ -270,7 +320,7 @@ optional_policy(`
  # GSSD local policy
  #
  
@@ -91420,7 +91663,7 @@ index 2da9fca..a37f579 100644
  allow gssd_t self:process { getsched setsched };
  allow gssd_t self:fifo_file rw_fifo_file_perms;
  
-@@ -280,6 +329,7 @@ manage_dirs_pattern(gssd_t, gssd_tmp_t, gssd_tmp_t)
+@@ -280,6 +330,7 @@ manage_dirs_pattern(gssd_t, gssd_tmp_t, gssd_tmp_t)
  manage_files_pattern(gssd_t, gssd_tmp_t, gssd_tmp_t)
  files_tmp_filetrans(gssd_t, gssd_tmp_t, { file dir })
  
@@ -91428,7 +91671,7 @@ index 2da9fca..a37f579 100644
  kernel_read_network_state(gssd_t)
  kernel_read_network_state_symlinks(gssd_t)
  kernel_request_load_module(gssd_t)
-@@ -288,25 +338,31 @@ kernel_signal(gssd_t)
+@@ -288,25 +339,31 @@ kernel_signal(gssd_t)
  
  corecmd_exec_bin(gssd_t)
  
@@ -91463,7 +91706,7 @@ index 2da9fca..a37f579 100644
  ')
  
  optional_policy(`
-@@ -314,9 +370,12 @@ optional_policy(`
+@@ -314,9 +371,12 @@ optional_policy(`
  ')
  
  optional_policy(`

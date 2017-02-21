@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 240%{?dist}
+Release: 241%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 21 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-241
+- Remove ganesha from gluster module and create own module for ganesha
+- FIx label for /usr/lib/libGLdispatch.so.0.0.0
+
 * Wed Feb 15 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-240
 - Dontaudit xdm_t wake_alarm capability2
 - Allow systemd_initctl_t to create and connect unix_dgram sockets
