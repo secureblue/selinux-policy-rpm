@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 241%{?dist}
+Release: 242%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -675,6 +675,13 @@ exit 0
 %endif
 
 %changelog
+* Mon Feb 27 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-242
+- Add radius_use_jit boolean
+- Allow nfsd_t domain to create sysctls_rpc_t files
+- add the policy required for nextcloud
+- Allow can_load_kernmodule to load kernel modules. BZ(1426741)
+- Create kernel_create_rpc_sysctls() interface
+
 * Tue Feb 21 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-241
 - Remove ganesha from gluster module and create own module for ganesha
 - FIx label for /usr/lib/libGLdispatch.so.0.0.0

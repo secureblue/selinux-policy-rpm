@@ -3504,10 +3504,10 @@ index 0000000..c679dd3
 +	spamassassin_read_pid_files(antivirus_domain)
 +')
 diff --git a/apache.fc b/apache.fc
-index 7caefc3..2029082 100644
+index 7caefc3..dac9ad5 100644
 --- a/apache.fc
 +++ b/apache.fc
-@@ -1,162 +1,215 @@
+@@ -1,162 +1,217 @@
 -HOME_DIR/((www)|(web)|(public_html))(/.+)?	gen_context(system_u:object_r:httpd_user_content_t,s0)
 -HOME_DIR/((www)|(web)|(public_html))/cgi-bin(/.+)?	gen_context(system_u:object_r:httpd_user_script_exec_t,s0)
 +HOME_DIR/((www)|(web)|(public_html))(/.+)? gen_context(system_u:object_r:httpd_user_content_t,s0)
@@ -3536,6 +3536,7 @@ index 7caefc3..2029082 100644
 +/etc/drupal.*				gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
 +/etc/glpi(/.*)?				gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
 +/etc/owncloud(/.*)?			gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
++/etc/nextcloud(/.*)?			gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
 +/etc/horde(/.*)?			gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
 +/etc/rt(/.*)?			gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
 +/etc/htdig(/.*)?			gen_context(system_u:object_r:httpd_sys_content_t,s0)
@@ -3752,6 +3753,7 @@ index 7caefc3..2029082 100644
 +/var/lib/openshift/\.httpd\.d(/.*)?         gen_context(system_u:object_r:httpd_config_t,s0)
 +/var/lib/openshift/\.log/httpd(/.*)?		  gen_context(system_u:object_r:httpd_log_t,s0)
 +/var/lib/owncloud(/.*)?			gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
++/var/lib/nextcloud(/.*)?			gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
 +/var/lib/pootle/po(/.*)? 		gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
 +/var/lib/roundcubemail(/.*)?    gen_context(system_u:object_r:httpd_var_lib_t,s0)
 +/var/lib/rt(3|4)/data/RT-Shredder(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
@@ -3863,7 +3865,7 @@ index 7caefc3..2029082 100644
 +/var/run/dirsrv/admin-serv.*	gen_context(system_u:object_r:httpd_var_run_t,s0)
 +/opt/dirsrv/var/run/dirsrv/dsgw/cookies(/.*)?       gen_context(system_u:object_r:httpd_var_run_t,s0)
 diff --git a/apache.if b/apache.if
-index f6eb485..757b864 100644
+index f6eb485..fe461a3 100644
 --- a/apache.if
 +++ b/apache.if
 @@ -1,9 +1,9 @@
@@ -5328,7 +5330,7 @@ index f6eb485..757b864 100644
  	admin_pattern($1, httpd_log_t)
  
  	admin_pattern($1, httpd_modules_t)
-@@ -1224,9 +1625,182 @@ interface(`apache_admin',`
+@@ -1224,9 +1625,183 @@ interface(`apache_admin',`
  	admin_pattern($1, httpd_var_run_t)
  	files_pid_filetrans($1, httpd_var_run_t, file)
  
@@ -5400,6 +5402,7 @@ index f6eb485..757b864 100644
 +	files_etc_filetrans($1, httpd_sys_content_t, dir, "htdig")
 +	files_etc_filetrans($1, httpd_sys_rw_content_t, dir, "horde")
 +	files_etc_filetrans($1, httpd_sys_rw_content_t, dir, "owncloud")
++	files_etc_filetrans($1, httpd_sys_rw_content_t, dir, "nextcloud")
 +	filetrans_pattern($1, httpd_sys_content_t, httpd_sys_rw_content_t, file, "settings.php")
 +	filetrans_pattern($1, httpd_sys_content_t, httpd_sys_rw_content_t, dir, "smarty")
 +	filetrans_pattern($1, httpd_sys_content_t, httpd_sys_rw_content_t, dir, "uploads")
@@ -84217,10 +84220,24 @@ index 4460582..4c66c25 100644
 +
  ')
 diff --git a/radius.te b/radius.te
-index 403a4fe..0ff0178 100644
+index 403a4fe..159f21e 100644
 --- a/radius.te
 +++ b/radius.te
-@@ -27,6 +27,9 @@ files_type(radiusd_var_lib_t)
+@@ -5,6 +5,13 @@ policy_module(radius, 1.13.0)
+ # Declarations
+ #
+ 
++## <desc>
++##      <p>
++##      Determine whether radius can use JIT compiler.
++##      </p>
++## </desc>
++gen_tunable(radius_use_jit, false)
++
+ type radiusd_t;
+ type radiusd_exec_t;
+ init_daemon_domain(radiusd_t, radiusd_exec_t)
+@@ -27,6 +34,9 @@ files_type(radiusd_var_lib_t)
  type radiusd_var_run_t;
  files_pid_file(radiusd_var_run_t)
  
@@ -84230,7 +84247,7 @@ index 403a4fe..0ff0178 100644
  ########################################
  #
  # Local policy
-@@ -49,9 +52,7 @@ manage_lnk_files_pattern(radiusd_t, radiusd_etc_rw_t, radiusd_etc_rw_t)
+@@ -49,9 +59,7 @@ manage_lnk_files_pattern(radiusd_t, radiusd_etc_rw_t, radiusd_etc_rw_t)
  filetrans_pattern(radiusd_t, radiusd_etc_t, radiusd_etc_rw_t, { dir file lnk_file })
  
  manage_dirs_pattern(radiusd_t, radiusd_log_t, radiusd_log_t)
@@ -84241,7 +84258,7 @@ index 403a4fe..0ff0178 100644
  logging_log_filetrans(radiusd_t, radiusd_log_t, { file dir })
  
  manage_files_pattern(radiusd_t, radiusd_var_lib_t, radiusd_var_lib_t)
-@@ -60,11 +61,11 @@ manage_sock_files_pattern(radiusd_t, radiusd_var_run_t, radiusd_var_run_t)
+@@ -60,11 +68,11 @@ manage_sock_files_pattern(radiusd_t, radiusd_var_run_t, radiusd_var_run_t)
  manage_dirs_pattern(radiusd_t, radiusd_var_run_t, radiusd_var_run_t)
  manage_files_pattern(radiusd_t, radiusd_var_run_t, radiusd_var_run_t)
  files_pid_filetrans(radiusd_t, radiusd_var_run_t, { file sock_file dir })
@@ -84254,7 +84271,7 @@ index 403a4fe..0ff0178 100644
  corenet_all_recvfrom_netlabel(radiusd_t)
  corenet_tcp_sendrecv_generic_if(radiusd_t)
  corenet_udp_sendrecv_generic_if(radiusd_t)
-@@ -74,12 +75,22 @@ corenet_tcp_sendrecv_all_ports(radiusd_t)
+@@ -74,12 +82,22 @@ corenet_tcp_sendrecv_all_ports(radiusd_t)
  corenet_udp_sendrecv_all_ports(radiusd_t)
  corenet_udp_bind_generic_node(radiusd_t)
  
@@ -84277,7 +84294,7 @@ index 403a4fe..0ff0178 100644
  corenet_sendrecv_snmp_client_packets(radiusd_t)
  corenet_tcp_connect_snmp_port(radiusd_t)
  
-@@ -97,7 +108,6 @@ domain_use_interactive_fds(radiusd_t)
+@@ -97,7 +115,6 @@ domain_use_interactive_fds(radiusd_t)
  fs_getattr_all_fs(radiusd_t)
  fs_search_auto_mountpoints(radiusd_t)
  
@@ -84285,7 +84302,7 @@ index 403a4fe..0ff0178 100644
  files_read_etc_runtime_files(radiusd_t)
  files_dontaudit_list_tmp(radiusd_t)
  
-@@ -109,7 +119,6 @@ libs_exec_lib_files(radiusd_t)
+@@ -109,7 +126,6 @@ libs_exec_lib_files(radiusd_t)
  
  logging_send_syslog_msg(radiusd_t)
  
@@ -84293,7 +84310,18 @@ index 403a4fe..0ff0178 100644
  miscfiles_read_generic_certs(radiusd_t)
  
  sysnet_use_ldap(radiusd_t)
-@@ -122,6 +131,11 @@ optional_policy(`
+@@ -117,11 +133,22 @@ sysnet_use_ldap(radiusd_t)
+ userdom_dontaudit_use_unpriv_user_fds(radiusd_t)
+ userdom_dontaudit_search_user_home_dirs(radiusd_t)
+ 
++tunable_policy(`radius_use_jit',`
++    allow radiusd_t self:process execmem;
++',`
++    dontaudit radiusd_t self:process execmem;
++')
++
+ optional_policy(`
+ 	cron_system_entry(radiusd_t, radiusd_exec_t)
  ')
  
  optional_policy(`
@@ -84305,7 +84333,7 @@ index 403a4fe..0ff0178 100644
  	logrotate_exec(radiusd_t)
  ')
  
-@@ -140,5 +154,10 @@ optional_policy(`
+@@ -140,5 +167,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -91354,7 +91382,7 @@ index 0bf13c2..ed393a0 100644
  	files_list_tmp($1)
  	admin_pattern($1, gssd_tmp_t)
 diff --git a/rpc.te b/rpc.te
-index 2da9fca..be1fab2 100644
+index 2da9fca..f97a61a 100644
 --- a/rpc.te
 +++ b/rpc.te
 @@ -6,22 +6,27 @@ policy_module(rpc, 1.15.1)
@@ -91558,7 +91586,7 @@ index 2da9fca..be1fab2 100644
  ')
  
  ########################################
-@@ -202,41 +232,62 @@ optional_policy(`
+@@ -202,41 +232,63 @@ optional_policy(`
  #
  
  allow nfsd_t self:capability { dac_override dac_read_search sys_admin sys_resource };
@@ -91577,6 +91605,7 @@ index 2da9fca..be1fab2 100644
 -# kernel_mounton_proc(nfsd_t)
 +kernel_mounton_proc(nfsd_t)
 +kernel_rw_rpc_sysctls_dirs(nfsd_t)
++kernel_create_rpc_sysctls(nfsd_t)
  
 -corenet_sendrecv_nfs_server_packets(nfsd_t)
 +corecmd_exec_shell(nfsd_t)
@@ -91631,7 +91660,7 @@ index 2da9fca..be1fab2 100644
  	miscfiles_manage_public_files(nfsd_t)
  ')
  
-@@ -245,7 +296,6 @@ tunable_policy(`nfs_export_all_rw',`
+@@ -245,7 +297,6 @@ tunable_policy(`nfs_export_all_rw',`
  	dev_getattr_all_chr_files(nfsd_t)
  
  	fs_read_noxattr_fs_files(nfsd_t)
@@ -91639,7 +91668,7 @@ index 2da9fca..be1fab2 100644
  ')
  
  tunable_policy(`nfs_export_all_ro',`
-@@ -257,12 +307,12 @@ tunable_policy(`nfs_export_all_ro',`
+@@ -257,12 +308,12 @@ tunable_policy(`nfs_export_all_ro',`
  
  	fs_read_noxattr_fs_files(nfsd_t)
  
@@ -91654,7 +91683,7 @@ index 2da9fca..be1fab2 100644
  ')
  
  ########################################
-@@ -270,7 +320,7 @@ optional_policy(`
+@@ -270,7 +321,7 @@ optional_policy(`
  # GSSD local policy
  #
  
@@ -91663,7 +91692,7 @@ index 2da9fca..be1fab2 100644
  allow gssd_t self:process { getsched setsched };
  allow gssd_t self:fifo_file rw_fifo_file_perms;
  
-@@ -280,6 +330,7 @@ manage_dirs_pattern(gssd_t, gssd_tmp_t, gssd_tmp_t)
+@@ -280,6 +331,7 @@ manage_dirs_pattern(gssd_t, gssd_tmp_t, gssd_tmp_t)
  manage_files_pattern(gssd_t, gssd_tmp_t, gssd_tmp_t)
  files_tmp_filetrans(gssd_t, gssd_tmp_t, { file dir })
  
@@ -91671,7 +91700,7 @@ index 2da9fca..be1fab2 100644
  kernel_read_network_state(gssd_t)
  kernel_read_network_state_symlinks(gssd_t)
  kernel_request_load_module(gssd_t)
-@@ -288,25 +339,31 @@ kernel_signal(gssd_t)
+@@ -288,25 +340,31 @@ kernel_signal(gssd_t)
  
  corecmd_exec_bin(gssd_t)
  
@@ -91706,7 +91735,7 @@ index 2da9fca..be1fab2 100644
  ')
  
  optional_policy(`
-@@ -314,9 +371,12 @@ optional_policy(`
+@@ -314,9 +372,12 @@ optional_policy(`
  ')
  
  optional_policy(`
