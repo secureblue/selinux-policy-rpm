@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 242%{?dist}
+Release: 243%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 02 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-243
+-  Allow abrt_t to send mails.
+
 * Mon Feb 27 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-242
 - Add radius_use_jit boolean
 - Allow nfsd_t domain to create sysctls_rpc_t files
