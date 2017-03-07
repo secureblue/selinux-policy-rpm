@@ -277,6 +277,15 @@ index c049e10..150f281 100644
 -system_u:system_r:svirt_t
 +system_u:system_r:svirt_t:s0
 +system_u:system_r:svirt_tcg_t:s0
+diff --git a/config/file_contexts.subs_dist b/config/file_contexts.subs_dist
+index d392dec..4565e9b 100644
+--- a/config/file_contexts.subs_dist
++++ b/config/file_contexts.subs_dist
+@@ -19,3 +19,4 @@
+ /usr/local/lib64 /usr/lib
+ /usr/local/lib /usr/lib
+ /var/run/lock /var/lock
++/sbin /usr/sbin
 diff --git a/man/man8/ftpd_selinux.8 b/man/man8/ftpd_selinux.8
 deleted file mode 100644
 index 5bebd82..0000000
@@ -6455,7 +6464,7 @@ index 3f6e168..340e49f 100644
  ')
  
 diff --git a/policy/modules/kernel/devices.fc b/policy/modules/kernel/devices.fc
-index b31c054..1ed65a0 100644
+index b31c054..3ad1127 100644
 --- a/policy/modules/kernel/devices.fc
 +++ b/policy/modules/kernel/devices.fc
 @@ -15,15 +15,18 @@
@@ -6498,7 +6507,7 @@ index b31c054..1ed65a0 100644
  /dev/mcelog		-c	gen_context(system_u:object_r:kmsg_device_t,mls_systemhigh)
 -/dev/mei		-c	gen_context(system_u:object_r:mei_device_t,s0)
 +/dev/media.*	-c	gen_context(system_u:object_r:v4l_device_t,s0)
-+/dev/mei        -c	gen_context(system_u:object_r:mei_device_t,s0)
++/dev/mei[0-9]*       -c	gen_context(system_u:object_r:mei_device_t,s0)
  /dev/mem		-c	gen_context(system_u:object_r:memory_device_t,mls_systemhigh)
 +/dev/memory_bandwidth   -c  gen_context(system_u:object_r:memory_device_t,mls_systemhigh)
  /dev/mergemem		-c	gen_context(system_u:object_r:memory_device_t,mls_systemhigh)
@@ -6573,7 +6582,12 @@ index b31c054..1ed65a0 100644
  /dev/card.*		-c	gen_context(system_u:object_r:xserver_misc_device_t,s0)
  /dev/cmx.*		-c	gen_context(system_u:object_r:smartcard_device_t,s0)
  
-@@ -172,15 +199,21 @@ ifdef(`distro_suse', `
+@@ -169,18 +196,26 @@ ifdef(`distro_suse', `
+ 
+ /dev/s(ou)?nd/.*	-c	gen_context(system_u:object_r:sound_device_t,s0)
+ 
++/dev/ss[0-9]+		-c	gen_context(system_u:object_r:gpfs_device_t,s0)
++
  /dev/touchscreen/ucb1x00 -c	gen_context(system_u:object_r:mouse_device_t,s0)
  /dev/touchscreen/mk712	-c	gen_context(system_u:object_r:mouse_device_t,s0)
  
@@ -6595,7 +6609,7 @@ index b31c054..1ed65a0 100644
  
  ifdef(`distro_debian',`
  # this is a static /dev dir "backup mount"
-@@ -198,12 +231,27 @@ ifdef(`distro_debian',`
+@@ -198,12 +233,27 @@ ifdef(`distro_debian',`
  /lib/udev/devices/null	-c	gen_context(system_u:object_r:null_device_t,s0)
  /lib/udev/devices/zero	-c	gen_context(system_u:object_r:zero_device_t,s0)
  
@@ -6626,7 +6640,7 @@ index b31c054..1ed65a0 100644
 +/usr/lib/udev/devices/null	-c	gen_context(system_u:object_r:null_device_t,s0)
 +/usr/lib/udev/devices/zero	-c	gen_context(system_u:object_r:zero_device_t,s0)
 diff --git a/policy/modules/kernel/devices.if b/policy/modules/kernel/devices.if
-index 76f285e..72f99c0 100644
+index 76f285e..47c1b4d 100644
 --- a/policy/modules/kernel/devices.if
 +++ b/policy/modules/kernel/devices.if
 @@ -143,13 +143,32 @@ interface(`dev_relabel_all_dev_nodes',`
@@ -8375,32 +8389,11 @@ index 76f285e..72f99c0 100644
  	')
  
  	getattr_chr_files_pattern($1, device_t, usb_device_t)
-@@ -4330,28 +5292,180 @@ interface(`dev_search_usbfs',`
+@@ -4351,7 +5313,159 @@ interface(`dev_list_usbfs',`
  
  ########################################
  ## <summary>
--##	Allow caller to get a list of usb hardware.
-+##	Allow caller to get a list of usb hardware.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`dev_list_usbfs',`
-+	gen_require(`
-+		type usbfs_t;
-+	')
-+
-+	read_lnk_files_pattern($1, usbfs_t, usbfs_t)
-+	getattr_files_pattern($1, usbfs_t, usbfs_t)
-+
-+	list_dirs_pattern($1, usbfs_t, usbfs_t)
-+')
-+
-+########################################
-+## <summary>
+-##	Set the attributes of usbfs filesystem.
 +##	Set the attributes of usbfs filesystem.
 +## </summary>
 +## <param name="domain">
@@ -8536,31 +8529,23 @@ index 76f285e..72f99c0 100644
 +## <summary>
 +##	Do not audit attempts to set the attributes
 +##	of video4linux device nodes.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
--##	Domain allowed access.
++## </summary>
++## <param name="domain">
++##	<summary>
 +##	Domain to not audit.
- ##	</summary>
- ## </param>
- #
--interface(`dev_list_usbfs',`
++##	</summary>
++## </param>
++#
 +interface(`dev_dontaudit_setattr_video_dev',`
- 	gen_require(`
--		type usbfs_t;
++	gen_require(`
 +		type v4l_device_t;
- 	')
- 
--	read_lnk_files_pattern($1, usbfs_t, usbfs_t)
--	getattr_files_pattern($1, usbfs_t, usbfs_t)
--
--	list_dirs_pattern($1, usbfs_t, usbfs_t)
++	')
++
 +	dontaudit $1 v4l_device_t:chr_file setattr;
- ')
- 
- ########################################
- ## <summary>
--##	Set the attributes of usbfs filesystem.
++')
++
++########################################
++## <summary>
 +##	Read the video4linux devices.
  ## </summary>
  ## <param name="domain">
@@ -8883,7 +8868,7 @@ index 76f285e..72f99c0 100644
  ##	Read and write to the zero device (/dev/zero).
  ## </summary>
  ## <param name="domain">
-@@ -4851,3 +6015,1022 @@ interface(`dev_unconfined',`
+@@ -4851,3 +6015,1042 @@ interface(`dev_unconfined',`
  
  	typeattribute $1 devices_unconfined_type;
  ')
@@ -8996,6 +8981,24 @@ index 76f285e..72f99c0 100644
 +	')
 +
 +	rw_chr_files_pattern($1, device_t, hypervkvp_device_t)
++')
++
++########################################
++## <summary>
++##	Allow read/write the hypervkvp device
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dev_read_gpfs',`
++	gen_require(`
++		type device_t, gpfs_device_t;
++	')
++
++	read_chr_files_pattern($1, device_t, gpfs_device_t)
 +')
 +
 +########################################
@@ -9137,6 +9140,7 @@ index 76f285e..72f99c0 100644
 +    type mptctl_device_t;
 +    type hypervkvp_device_t;
 +    type hypervvssd_device_t;
++    type gpfs_device_t;
 +')
 +
 +	dev_filetrans_printer_named_dev($1)
@@ -9839,6 +9843,7 @@ index 76f285e..72f99c0 100644
 +	filetrans_pattern($1, device_t, uhid_device_t, chr_file, "uhid")
 +	filetrans_pattern($1, device_t, hypervkvp_device_t, chr_file, "hv_kvp")
 +	filetrans_pattern($1, device_t, hypervvssd_device_t, chr_file, "hv_vss")
++	filetrans_pattern($1, device_t, gpfs_device_t, chr_file, "ss0")
 +	dev_filetrans_xserver_named_dev($1)
 +')
 +
@@ -9907,7 +9912,7 @@ index 76f285e..72f99c0 100644
 +	filetrans_pattern($1, device_t, xserver_misc_device_t, chr_file, "card9")
 +')
 diff --git a/policy/modules/kernel/devices.te b/policy/modules/kernel/devices.te
-index 0b1a871..29965c3 100644
+index 0b1a871..9099db5 100644
 --- a/policy/modules/kernel/devices.te
 +++ b/policy/modules/kernel/devices.te
 @@ -15,11 +15,12 @@ attribute devices_unconfined_type;
@@ -9954,7 +9959,7 @@ index 0b1a871..29965c3 100644
  type event_device_t;
  dev_node(event_device_t)
  
-@@ -88,12 +92,33 @@ type framebuf_device_t;
+@@ -88,12 +92,39 @@ type framebuf_device_t;
  dev_node(framebuf_device_t)
  
  #
@@ -9965,6 +9970,12 @@ index 0b1a871..29965c3 100644
 +
 +type hypervvssd_device_t;
 +dev_node(hypervvssd_device_t)
++
++#
++# Type for /dev/ss0
++#
++type gpfs_device_t;
++dev_node(gpfs_device_t)
 +
 +#
  # Type for /dev/ipmi/0
@@ -9988,7 +9999,7 @@ index 0b1a871..29965c3 100644
  # Type for /dev/kmsg
  #
  type kmsg_device_t;
-@@ -111,6 +136,7 @@ dev_node(ksm_device_t)
+@@ -111,6 +142,7 @@ dev_node(ksm_device_t)
  #
  type kvm_device_t;
  dev_node(kvm_device_t)
@@ -9996,7 +10007,7 @@ index 0b1a871..29965c3 100644
  
  #
  # Type for /dev/lirc
-@@ -118,6 +144,9 @@ dev_node(kvm_device_t)
+@@ -118,6 +150,9 @@ dev_node(kvm_device_t)
  type lirc_device_t;
  dev_node(lirc_device_t)
  
@@ -10006,7 +10017,7 @@ index 0b1a871..29965c3 100644
  type loop_control_device_t;
  dev_node(loop_control_device_t)
  
-@@ -150,12 +179,24 @@ type modem_device_t;
+@@ -150,12 +185,24 @@ type modem_device_t;
  dev_node(modem_device_t)
  
  #
@@ -10031,7 +10042,7 @@ index 0b1a871..29965c3 100644
  # Type for /dev/cpu/mtrr and /proc/mtrr
  #
  type mtrr_device_t;
-@@ -183,6 +224,12 @@ type nvram_device_t;
+@@ -183,6 +230,12 @@ type nvram_device_t;
  dev_node(nvram_device_t)
  
  #
@@ -10044,7 +10055,7 @@ index 0b1a871..29965c3 100644
  # Type for /dev/pmu
  #
  type power_device_t;
-@@ -227,6 +274,10 @@ files_mountpoint(sysfs_t)
+@@ -227,6 +280,10 @@ files_mountpoint(sysfs_t)
  fs_type(sysfs_t)
  genfscon sysfs / gen_context(system_u:object_r:sysfs_t,s0)
  
@@ -10055,7 +10066,7 @@ index 0b1a871..29965c3 100644
  #
  # Type for /dev/tpm
  #
-@@ -266,6 +317,15 @@ dev_node(usbmon_device_t)
+@@ -266,6 +323,15 @@ dev_node(usbmon_device_t)
  type userio_device_t;
  dev_node(userio_device_t)
  
@@ -10071,7 +10082,7 @@ index 0b1a871..29965c3 100644
  type v4l_device_t;
  dev_node(v4l_device_t)
  
-@@ -274,6 +334,7 @@ dev_node(v4l_device_t)
+@@ -274,6 +340,7 @@ dev_node(v4l_device_t)
  #
  type vhost_device_t;
  dev_node(vhost_device_t)
@@ -10079,7 +10090,7 @@ index 0b1a871..29965c3 100644
  
  # Type for vmware devices.
  type vmware_device_t;
-@@ -319,5 +380,8 @@ files_associate_tmp(device_node)
+@@ -319,5 +386,8 @@ files_associate_tmp(device_node)
  #
  
  allow devices_unconfined_type self:capability sys_rawio;
@@ -10442,10 +10453,10 @@ index 6a1e4d1..4b87be8 100644
 +	allow $1 domain:process rlimitinh;
  ')
 diff --git a/policy/modules/kernel/domain.te b/policy/modules/kernel/domain.te
-index cf04cb5..ae8a257 100644
+index cf04cb5..3c25609 100644
 --- a/policy/modules/kernel/domain.te
 +++ b/policy/modules/kernel/domain.te
-@@ -4,17 +4,41 @@ policy_module(domain, 1.11.0)
+@@ -4,17 +4,49 @@ policy_module(domain, 1.11.0)
  #
  # Declarations
  #
@@ -10482,13 +10493,21 @@ index cf04cb5..ae8a257 100644
  ## </desc>
  gen_tunable(mmap_low_allowed, false)
  
++## <desc>
++## <p>
++##	Allow all domains write to kmsg_device,
++##  while kernel is executed with systemd.log_target=kmsg parameter.
++## </p>
++## </desc>
++gen_tunable(domain_can_write_kmsg, false)
++
  # Mark process types as domains
  attribute domain;
 +attribute named_filetrans_domain;
  
  # Transitions only allowed from domains to other domains
  neverallow domain ~domain:process { transition dyntransition };
-@@ -86,23 +110,55 @@ neverallow ~{ domain unlabeled_t } *:process *;
+@@ -86,23 +118,59 @@ neverallow ~{ domain unlabeled_t } *:process *;
  allow domain self:dir list_dir_perms;
  allow domain self:lnk_file { read_lnk_file_perms lock ioctl };
  allow domain self:file rw_file_perms;
@@ -10539,13 +10558,17 @@ index cf04cb5..ae8a257 100644
 +    userdom_search_admin_dir(domain)
 +')
 +
++tunable_policy(`domain_can_write_kmsg',`
++    dev_write_kmsg(domain)
++')
++
 +tunable_policy(`domain_kernel_load_modules',`
 +	kernel_request_load_module(domain)
 +')
  
  ifdef(`hide_broken_symptoms',`
  	# This check is in the general socket
-@@ -121,8 +177,19 @@ tunable_policy(`global_ssp',`
+@@ -121,8 +189,19 @@ tunable_policy(`global_ssp',`
  ')
  
  optional_policy(`
@@ -10565,7 +10588,7 @@ index cf04cb5..ae8a257 100644
  ')
  
  optional_policy(`
-@@ -133,6 +200,9 @@ optional_policy(`
+@@ -133,6 +212,9 @@ optional_policy(`
  optional_policy(`
  	xserver_dontaudit_use_xdm_fds(domain)
  	xserver_dontaudit_rw_xdm_pipes(domain)
@@ -10575,7 +10598,7 @@ index cf04cb5..ae8a257 100644
  ')
  
  ########################################
-@@ -145,14 +215,21 @@ optional_policy(`
+@@ -145,14 +227,21 @@ optional_policy(`
  # be used on an attribute.
  
  # Use/sendto/connectto sockets created by any domain.
@@ -10598,7 +10621,7 @@ index cf04cb5..ae8a257 100644
  
  # Create/access any System V IPC objects.
  allow unconfined_domain_type domain:{ sem msgq shm } *;
-@@ -160,11 +237,386 @@ allow unconfined_domain_type domain:msg { send receive };
+@@ -160,11 +249,386 @@ allow unconfined_domain_type domain:msg { send receive };
  
  # For /proc/pid
  allow unconfined_domain_type domain:dir list_dir_perms;
@@ -10987,7 +11010,7 @@ index cf04cb5..ae8a257 100644
 +	unconfined_server_stream_connect(domain)
 +')
 diff --git a/policy/modules/kernel/files.fc b/policy/modules/kernel/files.fc
-index b876c48..03f9342 100644
+index b876c48..3690ce4 100644
 --- a/policy/modules/kernel/files.fc
 +++ b/policy/modules/kernel/files.fc
 @@ -18,6 +18,7 @@ ifdef(`distro_redhat',`
@@ -11127,7 +11150,7 @@ index b876c48..03f9342 100644
 +ifdef(`distro_redhat',`
 +/rhev			-d	gen_context(system_u:object_r:mnt_t,s0)
 +/rhev(/[^/]*)?		-d	gen_context(system_u:object_r:mnt_t,s0)
-+/rhev/[^/]*/.*			<<none>>
++/rhev/[^/]*/.*			gen_context(system_u:object_r:mnt_t,s0)
 +')
 +
  #
@@ -20548,7 +20571,7 @@ index e100d88..ff9e7ba 100644
 +')
 +
 diff --git a/policy/modules/kernel/kernel.te b/policy/modules/kernel/kernel.te
-index 8dbab4c..88c7112 100644
+index 8dbab4c..a2f0d06 100644
 --- a/policy/modules/kernel/kernel.te
 +++ b/policy/modules/kernel/kernel.te
 @@ -25,6 +25,9 @@ attribute kern_unconfined;
@@ -20611,7 +20634,15 @@ index 8dbab4c..88c7112 100644
  type proc_xen_t, proc_type;
  files_mountpoint(proc_xen_t)
  genfscon proc /xen gen_context(system_u:object_r:proc_xen_t,s0)
-@@ -133,14 +162,6 @@ genfscon proc /sys/fs gen_context(system_u:object_r:sysctl_fs_t,s0)
+@@ -118,6 +147,7 @@ genfscon proc /irq gen_context(system_u:object_r:sysctl_irq_t,s0)
+ 
+ # /proc/net/rpc directory and files
+ type sysctl_rpc_t, sysctl_type;
++fs_associate_proc(sysctl_rpc_t)
+ genfscon proc /net/rpc gen_context(system_u:object_r:sysctl_rpc_t,s0)
+ 
+ # /proc/sys/crypto directory and files
+@@ -133,14 +163,6 @@ genfscon proc /sys/fs gen_context(system_u:object_r:sysctl_fs_t,s0)
  type sysctl_kernel_t, sysctl_type;
  genfscon proc /sys/kernel gen_context(system_u:object_r:sysctl_kernel_t,s0)
  
@@ -20626,7 +20657,7 @@ index 8dbab4c..88c7112 100644
  # /proc/sys/net directory and files
  type sysctl_net_t, sysctl_type;
  genfscon proc /sys/net gen_context(system_u:object_r:sysctl_net_t,s0)
-@@ -153,6 +174,10 @@ genfscon proc /sys/net/unix gen_context(system_u:object_r:sysctl_net_unix_t,s0)
+@@ -153,6 +175,10 @@ genfscon proc /sys/net/unix gen_context(system_u:object_r:sysctl_net_unix_t,s0)
  type sysctl_vm_t, sysctl_type;
  genfscon proc /sys/vm gen_context(system_u:object_r:sysctl_vm_t,s0)
  
@@ -20637,7 +20668,7 @@ index 8dbab4c..88c7112 100644
  # /proc/sys/dev directory and files
  type sysctl_dev_t, sysctl_type;
  genfscon proc /sys/dev gen_context(system_u:object_r:sysctl_dev_t,s0)
-@@ -165,6 +190,14 @@ genfscon proc /sys/dev gen_context(system_u:object_r:sysctl_dev_t,s0)
+@@ -165,6 +191,14 @@ genfscon proc /sys/dev gen_context(system_u:object_r:sysctl_dev_t,s0)
  type unlabeled_t;
  fs_associate(unlabeled_t)
  sid unlabeled gen_context(system_u:object_r:unlabeled_t,mls_systemhigh)
@@ -20652,7 +20683,7 @@ index 8dbab4c..88c7112 100644
  
  # These initial sids are no longer used, and can be removed:
  sid any_socket		gen_context(system_u:object_r:unlabeled_t,mls_systemhigh)
-@@ -189,6 +222,7 @@ sid tcp_socket		gen_context(system_u:object_r:unlabeled_t,mls_systemhigh)
+@@ -189,6 +223,7 @@ sid tcp_socket		gen_context(system_u:object_r:unlabeled_t,mls_systemhigh)
  # kernel local policy
  #
  
@@ -20660,7 +20691,7 @@ index 8dbab4c..88c7112 100644
  allow kernel_t self:capability ~sys_module;
  allow kernel_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
  allow kernel_t self:shm create_shm_perms;
-@@ -233,7 +267,6 @@ allow unlabeled_t unlabeled_t:packet { forward_in forward_out };
+@@ -233,7 +268,6 @@ allow unlabeled_t unlabeled_t:packet { forward_in forward_out };
  corenet_in_generic_if(unlabeled_t)
  corenet_in_generic_node(unlabeled_t)
  
@@ -20668,7 +20699,7 @@ index 8dbab4c..88c7112 100644
  corenet_all_recvfrom_netlabel(kernel_t)
  # Kernel-generated traffic e.g., ICMP replies:
  corenet_raw_sendrecv_all_if(kernel_t)
-@@ -244,17 +277,21 @@ corenet_tcp_sendrecv_all_if(kernel_t)
+@@ -244,17 +278,21 @@ corenet_tcp_sendrecv_all_if(kernel_t)
  corenet_tcp_sendrecv_all_nodes(kernel_t)
  corenet_raw_send_generic_node(kernel_t)
  corenet_send_all_packets(kernel_t)
@@ -20694,7 +20725,7 @@ index 8dbab4c..88c7112 100644
  
  # Mount root file system. Used when loading a policy
  # from initrd, then mounting the root filesystem
-@@ -263,7 +300,8 @@ fs_unmount_all_fs(kernel_t)
+@@ -263,7 +301,8 @@ fs_unmount_all_fs(kernel_t)
  
  selinux_load_policy(kernel_t)
  
@@ -20704,7 +20735,7 @@ index 8dbab4c..88c7112 100644
  
  corecmd_exec_shell(kernel_t)
  corecmd_list_bin(kernel_t)
-@@ -277,13 +315,23 @@ files_list_root(kernel_t)
+@@ -277,13 +316,23 @@ files_list_root(kernel_t)
  files_list_etc(kernel_t)
  files_list_home(kernel_t)
  files_read_usr_files(kernel_t)
@@ -20728,7 +20759,7 @@ index 8dbab4c..88c7112 100644
  
  ifdef(`distro_redhat',`
  	# Bugzilla 222337
-@@ -291,11 +339,29 @@ ifdef(`distro_redhat',`
+@@ -291,11 +340,29 @@ ifdef(`distro_redhat',`
  ')
  
  optional_policy(`
@@ -20758,7 +20789,7 @@ index 8dbab4c..88c7112 100644
  ')
  
  optional_policy(`
-@@ -305,6 +371,19 @@ optional_policy(`
+@@ -305,6 +372,19 @@ optional_policy(`
  
  optional_policy(`
  	logging_send_syslog_msg(kernel_t)
@@ -20778,7 +20809,7 @@ index 8dbab4c..88c7112 100644
  ')
  
  optional_policy(`
-@@ -312,6 +391,11 @@ optional_policy(`
+@@ -312,6 +392,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -20790,7 +20821,7 @@ index 8dbab4c..88c7112 100644
  	# nfs kernel server needs kernel UDP access. It is less risky and painful
  	# to just give it everything.
  	allow kernel_t self:tcp_socket create_stream_socket_perms;
-@@ -332,9 +416,6 @@ optional_policy(`
+@@ -332,9 +417,6 @@ optional_policy(`
  
  	sysnet_read_config(kernel_t)
  
@@ -20800,7 +20831,7 @@ index 8dbab4c..88c7112 100644
  	rpc_udp_rw_nfs_sockets(kernel_t)
  
  	tunable_policy(`nfs_export_all_ro',`
-@@ -343,9 +424,7 @@ optional_policy(`
+@@ -343,9 +425,7 @@ optional_policy(`
  		fs_read_noxattr_fs_files(kernel_t)
  		fs_read_noxattr_fs_symlinks(kernel_t)
  
@@ -20811,7 +20842,7 @@ index 8dbab4c..88c7112 100644
  	')
  
  	tunable_policy(`nfs_export_all_rw',`
-@@ -354,7 +433,7 @@ optional_policy(`
+@@ -354,7 +434,7 @@ optional_policy(`
  		fs_read_noxattr_fs_files(kernel_t)
  		fs_read_noxattr_fs_symlinks(kernel_t)
  
@@ -20820,7 +20851,7 @@ index 8dbab4c..88c7112 100644
  	')
  ')
  
-@@ -364,9 +443,22 @@ optional_policy(`
+@@ -364,9 +444,22 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -20843,7 +20874,7 @@ index 8dbab4c..88c7112 100644
  ########################################
  #
  # Unlabeled process local policy
-@@ -388,6 +480,8 @@ optional_policy(`
+@@ -388,6 +481,8 @@ optional_policy(`
  if( ! secure_mode_insmod ) {
  	allow can_load_kernmodule self:capability sys_module;
  
@@ -20852,7 +20883,7 @@ index 8dbab4c..88c7112 100644
  	# load_module() calls stop_machine() which
  	# calls sched_setscheduler()
  	allow can_load_kernmodule self:capability sys_nice;
-@@ -399,14 +493,38 @@ if( ! secure_mode_insmod ) {
+@@ -399,14 +494,38 @@ if( ! secure_mode_insmod ) {
  # Rules for unconfined acccess to this module
  #
  
@@ -37508,10 +37539,10 @@ index 312cd04..102b975 100644
 +userdom_use_inherited_user_terminals(setkey_t)
 +userdom_read_user_tmp_files(setkey_t)
 diff --git a/policy/modules/system/iptables.fc b/policy/modules/system/iptables.fc
-index 73a1c4e..63c7fc0 100644
+index 73a1c4e..1ca98b8 100644
 --- a/policy/modules/system/iptables.fc
 +++ b/policy/modules/system/iptables.fc
-@@ -1,22 +1,48 @@
+@@ -1,22 +1,49 @@
  /etc/rc\.d/init\.d/ip6?tables	--	gen_context(system_u:object_r:iptables_initrc_exec_t,s0)
 -/etc/rc\.d/init\.d/ebtables	--	gen_context(system_u:object_r:iptables_initrc_exec_t,s0)
 -/etc/sysconfig/ip6?tables.*	--	gen_context(system_u:object_r:iptables_conf_t,s0)
@@ -37574,6 +37605,7 @@ index 73a1c4e..63c7fc0 100644
 +/var/lib/ebtables(/.*)?			gen_context(system_u:object_r:iptables_var_lib_t,s0)
 +
 +/var/lock/subsys/iptables      --      gen_context(system_u:object_r:iptables_lock_t,s0)
++/var/lock/subsys/ip6tables      --      gen_context(system_u:object_r:iptables_lock_t,s0)
 +
 +/var/run/xtables.*       --  gen_context(system_u:object_r:iptables_var_run_t,s0)
 diff --git a/policy/modules/system/iptables.if b/policy/modules/system/iptables.if
@@ -37854,7 +37886,7 @@ index 0000000..c814795
 +fs_manage_kdbus_dirs(systemd_logind_t)
 +fs_manage_kdbus_files(systemd_logind_t)
 diff --git a/policy/modules/system/libraries.fc b/policy/modules/system/libraries.fc
-index 73bb3c0..5d62107 100644
+index 73bb3c0..f36d28b 100644
 --- a/policy/modules/system/libraries.fc
 +++ b/policy/modules/system/libraries.fc
 @@ -1,3 +1,4 @@
@@ -38032,7 +38064,7 @@ index 73bb3c0..5d62107 100644
  
  /usr/(.*/)?intellinux/SPPlugins/ADMPlugin\.apl -- gen_context(system_u:object_r:textrel_shlib_t,s0)
  
-@@ -299,17 +315,156 @@ HOME_DIR/.mozilla/plugins/nprhapengine\.so.* --	gen_context(system_u:object_r:te
+@@ -299,17 +315,158 @@ HOME_DIR/.mozilla/plugins/nprhapengine\.so.* --	gen_context(system_u:object_r:te
  #
  /var/cache/ldconfig(/.*)?			gen_context(system_u:object_r:ldconfig_cache_t,s0)
  
@@ -38185,6 +38217,8 @@ index 73bb3c0..5d62107 100644
 +/usr/lib/vdpau/libvdpau_nvidia\.so.*  --	gen_context(system_u:object_r:textrel_shlib_t,s0)	
 +
 +/usr/lib/libGTL.*\.so.* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
++
++/usr/lib64/erlang/erts-[^/]*/bin/epmd  --  gen_context(system_u:object_r:lib_t,s0)
 +
 +/usr/lib/nsr/(.*/)?.*\.so		-- gen_context(system_u:object_r:textrel_shlib_t,s0)
 +/opt/lgtonmc/bin/.*\.so(\.[0-9])?  	--  gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -40644,10 +40678,10 @@ index 79048c4..262c9ec 100644
  	udev_read_pid_files(lvm_t)
  ')
 diff --git a/policy/modules/system/miscfiles.fc b/policy/modules/system/miscfiles.fc
-index 9fe8e01..cf3a4a6 100644
+index 9fe8e01..c62c761 100644
 --- a/policy/modules/system/miscfiles.fc
 +++ b/policy/modules/system/miscfiles.fc
-@@ -9,11 +9,15 @@ ifdef(`distro_gentoo',`
+@@ -9,11 +9,16 @@ ifdef(`distro_gentoo',`
  # /etc
  #
  /etc/avahi/etc/localtime --	gen_context(system_u:object_r:locale_t,s0)
@@ -40659,13 +40693,14 @@ index 9fe8e01..cf3a4a6 100644
 +/etc/locale.conf	--	gen_context(system_u:object_r:locale_t,s0)
  /etc/pki(/.*)?			gen_context(system_u:object_r:cert_t,s0)
  /etc/ssl(/.*)?			gen_context(system_u:object_r:cert_t,s0)
++/etc/(letsencrypt|certbot)/(live|archive)(/.*)?			gen_context(system_u:object_r:cert_t,s0)
 +/etc/ipa/nssdb(/.*)?			gen_context(system_u:object_r:cert_t,s0)
  /etc/timezone		--	gen_context(system_u:object_r:locale_t,s0)
 +/etc/vconsole.conf	--	gen_context(system_u:object_r:locale_t,s0)
  
  ifdef(`distro_redhat',`
  /etc/sysconfig/clock	--	gen_context(system_u:object_r:locale_t,s0)
-@@ -37,24 +41,20 @@ ifdef(`distro_redhat',`
+@@ -37,24 +42,20 @@ ifdef(`distro_redhat',`
  
  /usr/lib/perl5/man(/.*)?	gen_context(system_u:object_r:man_t,s0)
  
@@ -40695,7 +40730,7 @@ index 9fe8e01..cf3a4a6 100644
  
  /usr/X11R6/lib/X11/fonts(/.*)?	gen_context(system_u:object_r:fonts_t,s0)
  
-@@ -77,7 +77,7 @@ ifdef(`distro_redhat',`
+@@ -77,7 +78,7 @@ ifdef(`distro_redhat',`
  
  /var/cache/fontconfig(/.*)?	gen_context(system_u:object_r:fonts_cache_t,s0)
  /var/cache/fonts(/.*)?		gen_context(system_u:object_r:tetex_data_t,s0)
@@ -40704,7 +40739,7 @@ index 9fe8e01..cf3a4a6 100644
  
  /var/named/chroot/etc/pki(/.*)? gen_context(system_u:object_r:cert_t,s0)
  
-@@ -90,6 +90,7 @@ ifdef(`distro_debian',`
+@@ -90,6 +91,7 @@ ifdef(`distro_debian',`
  ')
  
  ifdef(`distro_redhat',`

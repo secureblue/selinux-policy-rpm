@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 243%{?dist}
+Release: 244%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Mar 07 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-244
+- Update fwupd policy
+- /usr/libexec/udisks2/udisksd should be labeled as devicekit_disk_exec_t
+- Update ganesha policy
+- Allow chronyd to read adjtime
+- Merge pull request #194 from hogarthj/certbot_policy
+- get the correct cert_t context on certbot certificates bz#1289778
+- Label /dev/ss0 as gpfs_device_t
+
 * Thu Mar 02 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-243
 -  Allow abrt_t to send mails.
 
