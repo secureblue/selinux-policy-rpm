@@ -423,7 +423,7 @@ rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
 
 mkdir -p %{buildroot}%{_mandir}
 mkdir -p %{buildroot}%{_mandir}/man8/
-tar -xf ../manpages.tar.gz -C %{buildroot}/usr/share/man/man8/
+tar -xf %{SOURCE37} -C %{buildroot}/usr/share/man/man8/
 cp -R  man/* %{buildroot}%{_mandir}
 make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name} MLS_CATS=1024 MCS_CATS=1024 install-docs
 make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name} MLS_CATS=1024 MCS_CATS=1024 install-headers
