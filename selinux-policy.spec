@@ -436,7 +436,7 @@ echo  "xdg-open file:///usr/share/doc/selinux-policy/html/index.html"> %{buildro
 chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 #/usr/bin/sepolicy manpage -a -p %{buildroot}/usr/share/man/man8/ -w -r %{buildroot}
 mkdir %{buildroot}%{_usr}/share/selinux/devel/html
-tar -xf ../manpages_html.tar.gz -C %{buildroot}/usr/share/man/man8/
+tar -xf %{SOURCE37} -C %{buildroot}/usr/share/man/man8/
 mv %{buildroot}%{_usr}/share/man/man8/*.html %{buildroot}%{_usr}/share/selinux/devel/html
 mv %{buildroot}%{_usr}/share/man/man8/style.css %{buildroot}%{_usr}/share/selinux/devel/html
 
