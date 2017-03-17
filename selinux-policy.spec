@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 244%{?dist}
+Release: 245%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,25 @@ exit 0
 %endif
 
 %changelog
+* Fri Mar 17 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-245
+- Allow vdagent domain to getattr cgroup filesystem
+- Allow abrt_dump_oops_t stream connect to sssd_t domain
+- Allow cyrus stream connect to gssproxy
+- Label /usr/libexec/cockpit-ssh as cockpit_session_exec_t and allow few rules
+- Allow colord_t to read systemd hwdb.bin file
+- Allow dirsrv_t to create /var/lock/dirsrv labeled as dirsrc_var_lock_t
+- Allow certmonger to manage /etc/krb5kdc_conf_t
+- Allow kdumpctl to getenforce
+- Allow ptp4l wake_alarm capability
+- Allow ganesha to chat with unconfined domains via dbus
+- Add nmbd_t capability2 block_suspend
+- Add domain transition from sosreport_t to iptables_t
+- Dontaudit init_t to mounton modules_object_t
+- Add interface files_dontaudit_mounton_modules_object
+- Allow xdm_t to execute files labeled as xdm_var_lib_t
+- Make mtrr_device_t mountpoint.
+- Fix path to /usr/lib64/erlang/erts-5.10.4/bin/epmd
+
 * Tue Mar 07 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-244
 - Update fwupd policy
 - /usr/libexec/udisks2/udisksd should be labeled as devicekit_disk_exec_t
