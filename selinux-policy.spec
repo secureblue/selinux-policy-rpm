@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 245%{?dist}
+Release: 246%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Mar 18 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-246
+- Label all files containing hostname substring in /etc/ created by systemd_hostnamed_t as hostname_etc_t. BZ(1433555)
+
 * Fri Mar 17 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-245
 - Allow vdagent domain to getattr cgroup filesystem
 - Allow abrt_dump_oops_t stream connect to sssd_t domain
