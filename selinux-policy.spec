@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 246%{?dist}
+Release: 247%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Mar 21 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-247
+- Make fwupd_var_lib_t type mountpoint. BZ(1429341)
+- Remove tomcat_t domain from unconfined domains
+- Create new boolean: sanlock_enable_home_dirs()
+- Allow mdadm_t domain to read/write nvme_device_t
+- Remove httpd_user_*_content_t domains from user_home_type attribute. This tighten httpd policy and acces to user data will be more strinct, and also fix mutual influente between httpd_enable_homedirs and httpd_read_user_content
+- Add interface dev_rw_nvme
+- Label all files containing hostname substring in /etc/ created by systemd_hostnamed_t as hostname_etc_t. BZ(1433555)
+
 * Sat Mar 18 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-246
 - Label all files containing hostname substring in /etc/ created by systemd_hostnamed_t as hostname_etc_t. BZ(1433555)
 
