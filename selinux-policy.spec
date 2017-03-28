@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 247%{?dist}
+Release: 248%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Mar 27 2017 Adam Williamson <awilliam@redhat.com> - 3.13.1-248
+- Put tomcat_t back in unconfined domains for now. BZ(1436434)
+
 * Tue Mar 21 2017 Lukas Vrabec  <lvrabec@redhat.com> - 3.13.1-247
 - Make fwupd_var_lib_t type mountpoint. BZ(1429341)
 - Remove tomcat_t domain from unconfined domains
