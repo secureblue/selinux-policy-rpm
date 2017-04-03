@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 248%{?dist}
+Release: 249%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,15 @@ exit 0
 %endif
 
 %changelog
+* Mon Apr 03 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-249
+- Merge pull request #4 from lslebodn/sssd_socket_activated
+- Remove /proc <<none>> from fedora policy, it's no longer necessary
+- Allow iptables get list of kernel modules
+- Allow unconfined_domain_type to enable/disable transient unit
+- Add interfaces init_enable_transient_unit() and init_disable_transient_unit
+- Revert "Allow sshd setcap capability. This is needed due to latest changes in sshd"
+- Label sysroot dir under ostree as root_t
+
 * Mon Mar 27 2017 Adam Williamson <awilliam@redhat.com> - 3.13.1-248
 - Put tomcat_t back in unconfined domains for now. BZ(1436434)
 
