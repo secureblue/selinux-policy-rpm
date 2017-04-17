@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 249%{?dist}
+Release: 250%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,35 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 18 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-250
+- Allow tlp_t domain to ioctl removable devices BZ(1436830)
+- Allow tlp_t domain domtrans into mount_t BZ(1442571)
+- Allow lircd_t to read/write to sysfs BZ(1442443)
+- Fix policy to reflect all changes in new IPA release
+- Allow virtlogd_t to creating tmp files with virt_tmp_t labels.
+- Allow sbd_t to read/write fixed disk devices
+- Add sys_ptrace capability to radiusd_t domain
+- Allow cockpit_session_t domain connects to ssh tcp ports.
+- Update tomcat policy to make working ipa install process
+- Allow pcp_pmcd_t net_admin capability. Allow pcp_pmcd_t read net sysctls Allow system_cronjob_t create /var/run/pcp with pcp_var_run_t
+- Fix all AVC denials during pkispawn of CA Resolves: rhbz#1436383
+- Update pki interfaces and tomcat module
+- Allow sendmail to search network sysctls
+- Add interface gssd_noatsecure()
+- Add interface gssproxy_noatsecure()
+- Allow chronyd_t net_admin capability to allow support HW timestamping.
+- Update tomcat policy.
+- Allow certmonger to start haproxy service
+- Fix init Module
+- Make groupadd_t domain as system bus client BZ(1416963)
+- Make useradd_t domain as system bus client BZ(1442572)
+- Allow xdm_t to gettattr /dev/loop-control device BZ(1385090)
+- Dontaudit gdm-session-worker to view key unknown. BZ(1433191)
+- Allow init noatsecure for gssd and gssproxy
+- Allow staff user to read fwupd_cache_t files
+- Remove typo bugs
+- Remove /proc <<none>> from fedora policy, it's no longer necessary
+
 * Mon Apr 03 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-249
 - Merge pull request #4 from lslebodn/sssd_socket_activated
 - Remove /proc <<none>> from fedora policy, it's no longer necessary
