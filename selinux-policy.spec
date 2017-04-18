@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 250%{?dist}
+Release: 251%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 18 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-251
+- Fix abrt module to reflect all changes in abrt release
+
 * Tue Apr 18 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-250
 - Allow tlp_t domain to ioctl removable devices BZ(1436830)
 - Allow tlp_t domain domtrans into mount_t BZ(1442571)
