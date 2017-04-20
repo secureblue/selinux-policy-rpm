@@ -202,6 +202,7 @@ rm -f %{buildroot}/%{_usr}/share/selinux/%1/*pp*  \
 /usr/bin/sha512sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policy.sha512; \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts  \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/policy.kern \
+rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %nil
 
 %define fileList() \
@@ -265,6 +266,9 @@ rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/modules/active/policy.kern \
 %{_sharedstatedir}/selinux/%1/active/seusers \
 %{_sharedstatedir}/selinux/%1/active/file_contexts \
 %{_sharedstatedir}/selinux/%1/active/policy.kern \
+%ghost %{_sharedstatedir}/selinux/%1/active/policy.linked \
+%ghost %{_sharedstatedir}/selinux/%1/active/seusers.linked \
+%ghost %{_sharedstatedir}/selinux/%1/active/users_extra.linked \
 %{_datadir}/selinux/%1 \
 #%{_libexecdir}/selinux/selinux-factory-reset \
 #%{_unitdir}/selinux-factory-reset@.service \
