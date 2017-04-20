@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 251%{?dist}
+Release: 252%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -116,10 +116,13 @@ fi;
 exit 0
 
 %preun sandbox
-semodule -n -d sandbox 2>/dev/null
-if /usr/sbin/selinuxenabled ; then
-    /usr/sbin/load_policy
-fi;exit 0
+if [ $1 -eq 0 ] ; then
+    semodule -n -d sandbox 2>/dev/null
+    if /usr/sbin/selinuxenabled ; then
+        /usr/sbin/load_policy
+    fi;
+fi;
+exit 0
 
 %package devel
 Summary: SELinux policy devel
@@ -686,6 +689,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 20 2017 Michael Scherer <misc@fedoraproject.org> - 3.13.1-252
+- fix #1380325, selinux-policy-sandbox always removing sandbox module on upgrade
+
 * Tue Apr 18 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-251
 - Fix abrt module to reflect all changes in abrt release
 
