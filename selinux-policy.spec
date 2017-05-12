@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 252%{?dist}
+Release: 253%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -689,6 +689,50 @@ exit 0
 %endif
 
 %changelog
+* Fri May 12 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-253
+- auth_use_nsswitch can call only domain not attribute
+- Dontaudit net_admin cap for winbind_t
+- Allow tlp_t domain to stream connect to system bus
+- Allow tomcat_t domain read pki_common_t files
+- Add interface pki_read_common_files()
+- Fix broken cermonger module
+- Fix broken apache module
+- Allow hypervkvp_t domain execute hostname
+- Dontaudit sssd_selinux_manager_t use of net_admin capability
+- Allow tomcat_t stream connect to pki_common_t
+- Dontaudit xguest_t's attempts to listen to its tcp_socket
+- Allow sssd_selinux_manager_t to ioctl init_t sockets
+- Improve ipa_cert_filetrans_named_content() interface to also allow caller domain manage ipa_cert_t type.
+- Allow pki_tomcat_t domain read /etc/passwd.
+- Allow tomcat_t domain read ipa_tmp_t files
+- Label new path for ipa-otpd
+- Allow radiusd_t domain stream connect to postgresql_t
+- Allow rhsmcertd_t to execute hostname_exec_t binaries.
+- Allow virtlogd to append nfs_t files when virt_use_nfs=1
+- Allow httpd_t domain read also httpd_user_content_type lnk_files.
+- Allow httpd_t domain create /etc/httpd/alias/ipaseesion.key with label ipa_cert_t
+- Dontaudit <user>_gkeyringd_t stream connect to system_dbusd_t
+- Label /var/www/html/nextcloud/data as httpd_sys_rw_content_t
+- Add interface ipa_filetrans_named_content()
+- Allow tomcat use nsswitch
+- Allow certmonger_t start/status generic services
+- Allow dirsrv read cgroup files.
+- Allow ganesha_t domain read/write infiniband devices.
+- Allow sendmail_t domain sysctl_net_t files
+- Allow targetd_t domain read network state and getattr on loop_control_device_t
+- Allow condor_schedd_t domain send mails.
+- Allow ntpd to creating sockets. BZ(1434395)
+- Alow certmonger to create own systemd unit files.
+- Add kill namespace capability to xdm_t domain
+- Revert "su using libselinux and creating netlink_selinux socket is needed to allow libselinux initialization."
+- Revert "Allow <role>_su_t to create netlink_selinux_socket"
+- Allow <role>_su_t to create netlink_selinux_socket
+- Allow unconfined_t to module_load any file
+- Allow staff to systemctl virt server when staff_use_svirt=1
+- Allow unconfined_t create /tmp/ca.p12 file with ipa_tmp_t context
+- Allow netutils setpcap capability
+- Dontaudit leaked file descriptor happening in setfiles_t domain BZ(1388124)
+
 * Thu Apr 20 2017 Michael Scherer <misc@fedoraproject.org> - 3.13.1-252
 - fix #1380325, selinux-policy-sandbox always removing sandbox module on upgrade
 
