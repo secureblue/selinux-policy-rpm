@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 253%{?dist}
+Release: 254%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -689,6 +689,21 @@ exit 0
 %endif
 
 %changelog
+* Mon May 15 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-254
+- Allow svirt_t to read raw fixed_disk_device_t to make working blockcommit
+- ejabberd small fixes
+- Update targetd policy to accommodate changes in the service
+- Allow tomcat_domain connect to    * postgresql_port_t    * amqp_port_t Allow tomcat_domain read network sysctls
+- Allow virt_domain to read raw fixed_disk_device_t to make working blockcommit
+- Allow glusterd_t domain start ganesha service
+- Made few cosmetic changes in sssd SELinux module
+- Merge pull request #11 from lslebodn/sssd_kcm
+- Update virt_rw_stream_sockets_svirt() interface to allow confined users set socket options.
+- Allow keepalived_t domain read usermodehelper_t
+- Allow radius domain stream connec to postgresql
+- Merge pull request #8 from bowlofeggs/142-rawhide
+- Add fs_manage_configfs_lnk_files() interface
+
 * Fri May 12 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-253
 - auth_use_nsswitch can call only domain not attribute
 - Dontaudit net_admin cap for winbind_t
