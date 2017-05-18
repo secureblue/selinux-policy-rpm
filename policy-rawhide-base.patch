@@ -3090,7 +3090,7 @@ index 99e3903..fa68362 100644
  ## </summary>
  ## <param name="domain">
 diff --git a/policy/modules/admin/usermanage.te b/policy/modules/admin/usermanage.te
-index 1d732f1..09a9fb3 100644
+index 1d732f1..a7fa09d 100644
 --- a/policy/modules/admin/usermanage.te
 +++ b/policy/modules/admin/usermanage.te
 @@ -26,6 +26,7 @@ type chfn_exec_t;
@@ -3385,16 +3385,18 @@ index 1d732f1..09a9fb3 100644
  userdom_use_unpriv_users_fds(sysadm_passwd_t)
  # user generally runs this from their home directory, so do not audit a search
  # on user home dir
-@@ -446,7 +492,8 @@ optional_policy(`
+@@ -446,8 +492,9 @@ optional_policy(`
  # Useradd local policy
  #
  
 -allow useradd_t self:capability { dac_override chown kill fowner fsetid setuid sys_resource };
+-dontaudit useradd_t self:capability sys_tty_config;
 +allow useradd_t self:capability { dac_override chown kill fowner fsetid setuid sys_ptrace sys_resource sys_chroot };
 +
- dontaudit useradd_t self:capability sys_tty_config;
++dontaudit useradd_t self:capability { net_admin sys_tty_config };
  allow useradd_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
  allow useradd_t self:process setfscreate;
+ allow useradd_t self:fd use;
 @@ -461,6 +508,10 @@ allow useradd_t self:unix_stream_socket create_stream_socket_perms;
  allow useradd_t self:unix_dgram_socket sendto;
  allow useradd_t self:unix_stream_socket connectto;
@@ -15497,10 +15499,35 @@ index d7c11a0..f521a50 100644
  /var/run/shm/.*			<<none>>
 -')
 diff --git a/policy/modules/kernel/filesystem.if b/policy/modules/kernel/filesystem.if
-index 8416beb..19d5bea 100644
+index 8416beb..5a4a6f0 100644
 --- a/policy/modules/kernel/filesystem.if
 +++ b/policy/modules/kernel/filesystem.if
-@@ -631,6 +631,27 @@ interface(`fs_getattr_cgroup',`
+@@ -577,6 +577,24 @@ interface(`fs_mount_cgroup', `
+ 
+ ########################################
+ ## <summary>
++##	Allow the type to associate to cgroup filesystems.
++## </summary>
++## <param name="type">
++##	<summary>
++##	The type of the object to be associated.
++##	</summary>
++## </param>
++#
++interface(`fs_associate_cgroupfs',`
++	gen_require(`
++		type cgroup_t;
++	')
++
++	allow $1 cgroup_t:filesystem associate;
++')
++
++########################################
++## <summary>
+ ##	Remount cgroup filesystems.
+ ## </summary>
+ ## <param name="domain">
+@@ -631,6 +649,27 @@ interface(`fs_getattr_cgroup',`
  
  ########################################
  ## <summary>
@@ -15528,7 +15555,7 @@ index 8416beb..19d5bea 100644
  ##	Search cgroup directories.
  ## </summary>
  ## <param name="domain">
-@@ -646,11 +667,31 @@ interface(`fs_search_cgroup_dirs',`
+@@ -646,11 +685,31 @@ interface(`fs_search_cgroup_dirs',`
  	')
  
  	search_dirs_pattern($1, cgroup_t, cgroup_t)
@@ -15560,7 +15587,7 @@ index 8416beb..19d5bea 100644
  ##	list cgroup directories.
  ## </summary>
  ## <param name="domain">
-@@ -659,15 +700,35 @@ interface(`fs_search_cgroup_dirs',`
+@@ -659,15 +718,35 @@ interface(`fs_search_cgroup_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -15597,7 +15624,7 @@ index 8416beb..19d5bea 100644
  ########################################
  ## <summary>
  ##	Delete cgroup directories.
-@@ -684,6 +745,7 @@ interface(`fs_delete_cgroup_dirs', `
+@@ -684,6 +763,7 @@ interface(`fs_delete_cgroup_dirs', `
  	')
  
  	delete_dirs_pattern($1, cgroup_t, cgroup_t)
@@ -15605,7 +15632,7 @@ index 8416beb..19d5bea 100644
  	dev_search_sysfs($1)
  ')
  
-@@ -704,6 +766,7 @@ interface(`fs_manage_cgroup_dirs',`
+@@ -704,6 +784,7 @@ interface(`fs_manage_cgroup_dirs',`
  	')
  
  	manage_dirs_pattern($1, cgroup_t, cgroup_t)
@@ -15613,7 +15640,7 @@ index 8416beb..19d5bea 100644
  	dev_search_sysfs($1)
  ')
  
-@@ -724,6 +787,8 @@ interface(`fs_read_cgroup_files',`
+@@ -724,6 +805,8 @@ interface(`fs_read_cgroup_files',`
  	')
  
  	read_files_pattern($1, cgroup_t, cgroup_t)
@@ -15622,7 +15649,7 @@ index 8416beb..19d5bea 100644
  	dev_search_sysfs($1)
  ')
  
-@@ -743,6 +808,7 @@ interface(`fs_write_cgroup_files', `
+@@ -743,6 +826,7 @@ interface(`fs_write_cgroup_files', `
  	')
  
  	write_files_pattern($1, cgroup_t, cgroup_t)
@@ -15630,7 +15657,7 @@ index 8416beb..19d5bea 100644
  	dev_search_sysfs($1)
  ')
  
-@@ -762,7 +828,9 @@ interface(`fs_rw_cgroup_files',`
+@@ -762,7 +846,9 @@ interface(`fs_rw_cgroup_files',`
  
  	')
  
@@ -15640,7 +15667,33 @@ index 8416beb..19d5bea 100644
  	dev_search_sysfs($1)
  ')
  
-@@ -803,6 +871,8 @@ interface(`fs_manage_cgroup_files',`
+@@ -788,6 +874,25 @@ interface(`fs_dontaudit_rw_cgroup_files',`
+ 
+ ########################################
+ ## <summary>
++##	Relabel cgroup files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`fs_relabel_cgroup_files',`
++	gen_require(`
++		type cgroup_t;
++
++	')
++
++	relabel_files_pattern($1, cgroup_t, cgroup_t)
++')
++
++########################################
++## <summary>
+ ##	Manage cgroup files.
+ ## </summary>
+ ## <param name="domain">
+@@ -803,6 +908,8 @@ interface(`fs_manage_cgroup_files',`
  	')
  
  	manage_files_pattern($1, cgroup_t, cgroup_t)
@@ -15649,7 +15702,7 @@ index 8416beb..19d5bea 100644
  	dev_search_sysfs($1)
  ')
  
-@@ -826,6 +896,25 @@ interface(`fs_mounton_cgroup', `
+@@ -826,6 +933,25 @@ interface(`fs_mounton_cgroup', `
  
  ########################################
  ## <summary>
@@ -15675,7 +15728,7 @@ index 8416beb..19d5bea 100644
  ##	Do not audit attempts to read
  ##	dirs on a CIFS or SMB filesystem.
  ## </summary>
-@@ -920,6 +1009,24 @@ interface(`fs_getattr_cifs',`
+@@ -920,6 +1046,24 @@ interface(`fs_getattr_cifs',`
  
  ########################################
  ## <summary>
@@ -15700,7 +15753,7 @@ index 8416beb..19d5bea 100644
  ##	Search directories on a CIFS or SMB filesystem.
  ## </summary>
  ## <param name="domain">
-@@ -1107,6 +1214,24 @@ interface(`fs_read_noxattr_fs_files',`
+@@ -1107,6 +1251,24 @@ interface(`fs_read_noxattr_fs_files',`
  
  ########################################
  ## <summary>
@@ -15725,7 +15778,7 @@ index 8416beb..19d5bea 100644
  ##	Do not audit attempts to read all
  ##	noxattrfs files.
  ## </summary>
-@@ -1245,7 +1370,7 @@ interface(`fs_append_cifs_files',`
+@@ -1245,7 +1407,7 @@ interface(`fs_append_cifs_files',`
  
  ########################################
  ## <summary>
@@ -15734,7 +15787,7 @@ index 8416beb..19d5bea 100644
  ##	on a CIFS filesystem.
  ## </summary>
  ## <param name="domain">
-@@ -1265,6 +1390,42 @@ interface(`fs_dontaudit_append_cifs_files',`
+@@ -1265,6 +1427,42 @@ interface(`fs_dontaudit_append_cifs_files',`
  
  ########################################
  ## <summary>
@@ -15777,7 +15830,7 @@ index 8416beb..19d5bea 100644
  ##	Do not audit attempts to read or
  ##	write files on a CIFS or SMB filesystem.
  ## </summary>
-@@ -1279,7 +1440,7 @@ interface(`fs_dontaudit_rw_cifs_files',`
+@@ -1279,7 +1477,7 @@ interface(`fs_dontaudit_rw_cifs_files',`
  		type cifs_t;
  	')
  
@@ -15786,7 +15839,7 @@ index 8416beb..19d5bea 100644
  ')
  
  ########################################
-@@ -1542,6 +1703,63 @@ interface(`fs_cifs_domtrans',`
+@@ -1542,6 +1740,63 @@ interface(`fs_cifs_domtrans',`
  	domain_auto_transition_pattern($1, cifs_t, $2)
  ')
  
@@ -15850,7 +15903,7 @@ index 8416beb..19d5bea 100644
  #######################################
  ## <summary>
  ##	Create, read, write, and delete dirs
-@@ -1580,6 +1798,43 @@ interface(`fs_manage_configfs_files',`
+@@ -1580,6 +1835,43 @@ interface(`fs_manage_configfs_files',`
  	manage_files_pattern($1, configfs_t, configfs_t)
  ')
  
@@ -15894,7 +15947,7 @@ index 8416beb..19d5bea 100644
  ########################################
  ## <summary>
  ##	Mount a DOS filesystem, such as
-@@ -1793,63 +2048,70 @@ interface(`fs_read_eventpollfs',`
+@@ -1793,58 +2085,257 @@ interface(`fs_read_eventpollfs',`
  	refpolicywarn(`$0($*) has been deprecated.')
  ')
  
@@ -15981,101 +16034,79 @@ index 8416beb..19d5bea 100644
  
 -	allow $1 fusefs_t:dir mounton;
 +        read_files_pattern($1, ecryptfs_t, ecryptfs_t)
- ')
- 
- ########################################
- ## <summary>
--##	Search directories
++')
++
++########################################
++## <summary>
 +##	Create, read, write, and delete files
- ##	on a FUSEFS filesystem.
- ## </summary>
- ## <param name="domain">
-@@ -1859,18 +2121,19 @@ interface(`fs_mounton_fusefs',`
- ## </param>
- ## <rolecap/>
- #
--interface(`fs_search_fusefs',`
++##	on a FUSEFS filesystem.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
 +interface(`fs_manage_ecryptfs_files',`
- 	gen_require(`
--		type fusefs_t;
++	gen_require(`
 +		type ecryptfs_t;
- 	')
- 
--	allow $1 fusefs_t:dir search_dir_perms;
++	')
++
 +	manage_files_pattern($1, ecryptfs_t, ecryptfs_t)
- ')
- 
- ########################################
- ## <summary>
--##	Do not audit attempts to list the contents
--##	of directories on a FUSEFS filesystem.
++')
++
++########################################
++## <summary>
 +##	Do not audit attempts to create,
 +##	read, write, and delete files
 +##	on a FUSEFS filesystem.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -1878,49 +2141,240 @@ interface(`fs_search_fusefs',`
- ##	</summary>
- ## </param>
- #
--interface(`fs_dontaudit_list_fusefs',`
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not audit.
++##	</summary>
++## </param>
++#
 +interface(`fs_dontaudit_manage_ecryptfs_files',`
- 	gen_require(`
--		type fusefs_t;
++	gen_require(`
 +		type ecryptfs_t;
- 	')
- 
--	dontaudit $1 fusefs_t:dir list_dir_perms;
++	')
++
 +	dontaudit $1 ecryptfs_t:file manage_file_perms;
- ')
- 
- ########################################
- ## <summary>
--##	Create, read, write, and delete directories
--##	on a FUSEFS filesystem.
++')
++
++########################################
++## <summary>
 +##	Read symbolic links on a FUSEFS filesystem.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
- ##	Domain allowed access.
- ##	</summary>
- ## </param>
--## <rolecap/>
- #
--interface(`fs_manage_fusefs_dirs',`
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
 +interface(`fs_read_ecryptfs_symlinks',`
- 	gen_require(`
--		type fusefs_t;
++	gen_require(`
 +		type ecryptfs_t;
- 	')
- 
--	allow $1 fusefs_t:dir manage_dir_perms;
++	')
++
 +	allow $1 ecryptfs_t:dir list_dir_perms;
 +	read_lnk_files_pattern($1, ecryptfs_t, ecryptfs_t)
- ')
- 
--########################################
++')
++
 +#######################################
- ## <summary>
--##	Do not audit attempts to create, read,
--##	write, and delete directories
--##	on a FUSEFS filesystem.
++## <summary>
 +##  Dontaudit append files on  ecrypt filesystem.
- ## </summary>
- ## <param name="domain">
--##	<summary>
--##	Domain to not audit.
--##	</summary>
++## </summary>
++## <param name="domain">
 +##  <summary>
 +##  Domain allowed access.
 +##  </summary>
- ## </param>
- #
--interface(`fs_dontaudit_manage_fusefs_dirs',`
++## </param>
++#
 +interface(`fs_dontaudit_append_ecryptfs_files',`
- 	gen_require(`
--		type fusefs_t;
++	gen_require(`
 +		type ecryptfs_t;
 +	')
 +	dontaudit $1 ecryptfs_t:file append;
@@ -16195,57 +16226,14 @@ index 8416beb..19d5bea 100644
 +	')
 +
 +	allow $1 fusefs_t:dir mounton;
-+')
-+
-+########################################
-+## <summary>
-+##	Search directories
-+##	on a FUSEFS filesystem.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+## <rolecap/>
-+#
-+interface(`fs_search_fusefs',`
-+	gen_require(`
-+		type fusefs_t;
-+	')
-+
-+	allow $1 fusefs_t:dir search_dir_perms;
-+')
-+
-+########################################
-+## <summary>
-+##	Do not audit attempts to list the contents
-+##	of directories on a FUSEFS filesystem.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain to not audit.
-+##	</summary>
-+## </param>
-+#
-+interface(`fs_dontaudit_list_fusefs',`
-+	gen_require(`
-+		type fusefs_t;
-+	')
-+
-+	dontaudit $1 fusefs_t:dir list_dir_perms;
-+')
-+
-+########################################
-+## <summary>
-+##	Create, read, write, and delete directories
-+##	on a FUSEFS filesystem.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
+ ')
+ 
+ ########################################
+@@ -1896,117 +2387,797 @@ interface(`fs_dontaudit_list_fusefs',`
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+-## <rolecap/>
 +## <rolecap/>
 +#
 +interface(`fs_manage_fusefs_dirs',`
@@ -16271,14 +16259,13 @@ index 8416beb..19d5bea 100644
 +interface(`fs_dontaudit_manage_fusefs_dirs',`
 +	gen_require(`
 +		type fusefs_t;
- 	')
- 
- 	dontaudit $1 fusefs_t:dir manage_dir_perms;
-@@ -1928,105 +2382,652 @@ interface(`fs_dontaudit_manage_fusefs_dirs',`
- 
- ########################################
- ## <summary>
--##	Read, a FUSEFS filesystem.
++	')
++
++	dontaudit $1 fusefs_t:dir manage_dir_perms;
++')
++
++########################################
++## <summary>
 +##	Read, a FUSEFS filesystem.
 +## </summary>
 +## <param name="domain">
@@ -16812,13 +16799,12 @@ index 8416beb..19d5bea 100644
 +## <summary>
 +##	Create an object in a hugetlbfs filesystem, with a private
 +##	type using a type transition.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
- ##	Domain allowed access.
- ##	</summary>
- ## </param>
--## <rolecap/>
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
 +## <param name="private type">
 +##	<summary>
 +##	The type of the object to be created.
@@ -16834,24 +16820,173 @@ index 8416beb..19d5bea 100644
 +##	The name of the object being created.
 +##	</summary>
 +## </param>
- #
--interface(`fs_read_fusefs_files',`
++#
 +interface(`fs_hugetlbfs_filetrans',`
++	gen_require(`
++		type hugetlbfs_t;
++	')
++
++	allow $2 hugetlbfs_t:filesystem associate;
++	filetrans_pattern($1, hugetlbfs_t, $2, $3, $4)
++')
++
++########################################
++## <summary>
++##	Mount an iso9660 filesystem, which
++##	is usually used on CDs.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`fs_mount_iso9660_fs',`
++	gen_require(`
++		type iso9660_t;
++	')
++
++	allow $1 iso9660_t:filesystem mount;
++')
++
++########################################
++## <summary>
++##	Remount an iso9660 filesystem, which
++##	is usually used on CDs.  This allows
++##	some mount options to be changed.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`fs_remount_iso9660_fs',`
++	gen_require(`
++		type iso9660_t;
++	')
++
++	allow $1 iso9660_t:filesystem remount;
++')
++
++########################################
++## <summary>
++##	Unmount an iso9660 filesystem, which
++##	is usually used on CDs.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`fs_unmount_iso9660_fs',`
++	gen_require(`
++		type iso9660_t;
++	')
++
++	allow $1 iso9660_t:filesystem unmount;
++')
++
++########################################
++## <summary>
++##	Get the attributes of an iso9660
++##	filesystem, which is usually used on CDs.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`fs_getattr_iso9660_fs',`
++	gen_require(`
++		type iso9660_t;
++	')
++
++	allow $1 iso9660_t:filesystem getattr;
++')
++
++########################################
++## <summary>
++##	Read files on an iso9660 filesystem, which
++##	is usually used on CDs.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
+ #
+-interface(`fs_manage_fusefs_dirs',`
++interface(`fs_getattr_iso9660_files',`
  	gen_require(`
 -		type fusefs_t;
-+		type hugetlbfs_t;
++		type iso9660_t;
+ 	')
+ 
+-	allow $1 fusefs_t:dir manage_dir_perms;
++	allow $1 iso9660_t:dir list_dir_perms;
++	allow $1 iso9660_t:file getattr;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Do not audit attempts to create, read,
+-##	write, and delete directories
+-##	on a FUSEFS filesystem.
++##	Read files on an iso9660 filesystem, which
++##	is usually used on CDs.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+-##	Domain to not audit.
++##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`fs_dontaudit_manage_fusefs_dirs',`
++interface(`fs_read_iso9660_files',`
+ 	gen_require(`
+-		type fusefs_t;
++		type iso9660_t;
+ 	')
+ 
+-	dontaudit $1 fusefs_t:dir manage_dir_perms;
++	allow $1 iso9660_t:dir list_dir_perms;
++	read_files_pattern($1, iso9660_t, iso9660_t)
++	read_lnk_files_pattern($1, iso9660_t, iso9660_t)
+ ')
+ 
++
+ ########################################
+ ## <summary>
+-##	Read, a FUSEFS filesystem.
++##	Mount kdbus filesystems.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+-## <rolecap/>
+ #
+-interface(`fs_read_fusefs_files',`
++interface(`fs_mount_kdbus', `
+ 	gen_require(`
+-		type fusefs_t;
++		type kdbusfs_t;
  	')
  
 -	read_files_pattern($1, fusefs_t, fusefs_t)
-+	allow $2 hugetlbfs_t:filesystem associate;
-+	filetrans_pattern($1, hugetlbfs_t, $2, $3, $4)
++	allow $1 kdbusfs_t:filesystem mount;
  ')
  
  ########################################
  ## <summary>
 -##	Execute files on a FUSEFS filesystem.
-+##	Mount an iso9660 filesystem, which
-+##	is usually used on CDs.
++##	Remount kdbus filesystems.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -16861,23 +16996,21 @@ index 8416beb..19d5bea 100644
 -## <rolecap/>
  #
 -interface(`fs_exec_fusefs_files',`
-+interface(`fs_mount_iso9660_fs',`
++interface(`fs_remount_kdbus', `
  	gen_require(`
 -		type fusefs_t;
-+		type iso9660_t;
++		type kdbusfs_t;
  	')
  
 -	exec_files_pattern($1, fusefs_t, fusefs_t)
-+	allow $1 iso9660_t:filesystem mount;
++	allow $1 kdbusfs_t:filesystem remount;
  ')
  
  ########################################
  ## <summary>
 -##	Create, read, write, and delete files
 -##	on a FUSEFS filesystem.
-+##	Remount an iso9660 filesystem, which
-+##	is usually used on CDs.  This allows
-+##	some mount options to be changed.
++##	Unmount kdbus filesystems.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -16887,14 +17020,14 @@ index 8416beb..19d5bea 100644
 -## <rolecap/>
  #
 -interface(`fs_manage_fusefs_files',`
-+interface(`fs_remount_iso9660_fs',`
++interface(`fs_unmount_kdbus', `
  	gen_require(`
 -		type fusefs_t;
-+		type iso9660_t;
++		type kdbusfs_t;
  	')
  
 -	manage_files_pattern($1, fusefs_t, fusefs_t)
-+	allow $1 iso9660_t:filesystem remount;
++	allow $1 kdbusfs_t:filesystem unmount;
  ')
  
  ########################################
@@ -16902,8 +17035,7 @@ index 8416beb..19d5bea 100644
 -##	Do not audit attempts to create,
 -##	read, write, and delete files
 -##	on a FUSEFS filesystem.
-+##	Unmount an iso9660 filesystem, which
-+##	is usually used on CDs.
++##	Get attributes of kdbus filesystems.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -16913,202 +17045,37 @@ index 8416beb..19d5bea 100644
  ## </param>
  #
 -interface(`fs_dontaudit_manage_fusefs_files',`
-+interface(`fs_unmount_iso9660_fs',`
++interface(`fs_getattr_kdbus',`
  	gen_require(`
 -		type fusefs_t;
-+		type iso9660_t;
++		type kdbusfs_t;
  	')
  
 -	dontaudit $1 fusefs_t:file manage_file_perms;
-+	allow $1 iso9660_t:filesystem unmount;
- ')
- 
- ########################################
- ## <summary>
--##	Read symbolic links on a FUSEFS filesystem.
-+##	Get the attributes of an iso9660
-+##	filesystem, which is usually used on CDs.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
- ##	Domain allowed access.
- ##	</summary>
- ## </param>
-+## <rolecap/>
- #
--interface(`fs_read_fusefs_symlinks',`
-+interface(`fs_getattr_iso9660_fs',`
- 	gen_require(`
--		type fusefs_t;
-+		type iso9660_t;
- 	')
- 
--	allow $1 fusefs_t:dir list_dir_perms;
--	read_lnk_files_pattern($1, fusefs_t, fusefs_t)
-+	allow $1 iso9660_t:filesystem getattr;
- ')
- 
- ########################################
- ## <summary>
--##	Get the attributes of an hugetlbfs
--##	filesystem.
-+##	Read files on an iso9660 filesystem, which
-+##	is usually used on CDs.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -2034,17 +3035,19 @@ interface(`fs_read_fusefs_symlinks',`
- ##	</summary>
- ## </param>
- #
--interface(`fs_getattr_hugetlbfs',`
-+interface(`fs_getattr_iso9660_files',`
- 	gen_require(`
--		type hugetlbfs_t;
-+		type iso9660_t;
- 	')
- 
--	allow $1 hugetlbfs_t:filesystem getattr;
-+	allow $1 iso9660_t:dir list_dir_perms;
-+	allow $1 iso9660_t:file getattr;
- ')
- 
- ########################################
- ## <summary>
--##	List hugetlbfs.
-+##	Read files on an iso9660 filesystem, which
-+##	is usually used on CDs.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -2052,17 +3055,20 @@ interface(`fs_getattr_hugetlbfs',`
- ##	</summary>
- ## </param>
- #
--interface(`fs_list_hugetlbfs',`
-+interface(`fs_read_iso9660_files',`
- 	gen_require(`
--		type hugetlbfs_t;
-+		type iso9660_t;
- 	')
- 
--	allow $1 hugetlbfs_t:dir list_dir_perms;
-+	allow $1 iso9660_t:dir list_dir_perms;
-+	read_files_pattern($1, iso9660_t, iso9660_t)
-+	read_lnk_files_pattern($1, iso9660_t, iso9660_t)
- ')
- 
-+
- ########################################
- ## <summary>
--##	Manage hugetlbfs dirs.
-+##	Mount kdbus filesystems.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -2070,17 +3076,17 @@ interface(`fs_list_hugetlbfs',`
- ##	</summary>
- ## </param>
- #
--interface(`fs_manage_hugetlbfs_dirs',`
-+interface(`fs_mount_kdbus', `
- 	gen_require(`
--		type hugetlbfs_t;
-+		type kdbusfs_t;
- 	')
- 
--	manage_dirs_pattern($1, hugetlbfs_t, hugetlbfs_t)
-+	allow $1 kdbusfs_t:filesystem mount;
- ')
- 
- ########################################
- ## <summary>
--##	Read and write hugetlbfs files.
-+##	Remount kdbus filesystems.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -2088,35 +3094,35 @@ interface(`fs_manage_hugetlbfs_dirs',`
- ##	</summary>
- ## </param>
- #
--interface(`fs_rw_hugetlbfs_files',`
-+interface(`fs_remount_kdbus', `
- 	gen_require(`
--		type hugetlbfs_t;
-+		type kdbusfs_t;
- 	')
- 
--	rw_files_pattern($1, hugetlbfs_t, hugetlbfs_t)
-+	allow $1 kdbusfs_t:filesystem remount;
- ')
- 
- ########################################
- ## <summary>
--##	Allow the type to associate to hugetlbfs filesystems.
-+##	Unmount kdbus filesystems.
- ## </summary>
--## <param name="type">
-+## <param name="domain">
- ##	<summary>
--##	The type of the object to be associated.
-+##	Domain allowed access.
- ##	</summary>
- ## </param>
- #
--interface(`fs_associate_hugetlbfs',`
-+interface(`fs_unmount_kdbus', `
- 	gen_require(`
--		type hugetlbfs_t;
-+		type kdbusfs_t;
- 	')
- 
--	allow $1 hugetlbfs_t:filesystem associate;
-+	allow $1 kdbusfs_t:filesystem unmount;
- ')
- 
- ########################################
- ## <summary>
--##	Search inotifyfs filesystem.
-+##	Get attributes of kdbus filesystems.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -2124,17 +3130,17 @@ interface(`fs_associate_hugetlbfs',`
- ##	</summary>
- ## </param>
- #
--interface(`fs_search_inotifyfs',`
-+interface(`fs_getattr_kdbus',`
- 	gen_require(`
--		type inotifyfs_t;
-+		type kdbusfs_t;
- 	')
- 
--	allow $1 inotifyfs_t:dir search_dir_perms;
 +	allow $1 kdbusfs_t:filesystem getattr;
  ')
  
  ########################################
  ## <summary>
--##	List inotifyfs filesystem.
+-##	Read symbolic links on a FUSEFS filesystem.
 +##	Search kdbusfs directories.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2142,71 +3148,118 @@ interface(`fs_search_inotifyfs',`
+@@ -2014,19 +3185,20 @@ interface(`fs_dontaudit_manage_fusefs_files',`
  ##	</summary>
  ## </param>
  #
--interface(`fs_list_inotifyfs',`
+-interface(`fs_read_fusefs_symlinks',`
 +interface(`fs_search_kdbus_dirs',`
  	gen_require(`
--		type inotifyfs_t;
+-		type fusefs_t;
 +		type kdbusfs_t;
 +
  	')
  
--	allow $1 inotifyfs_t:dir list_dir_perms;
+-	allow $1 fusefs_t:dir list_dir_perms;
+-	read_lnk_files_pattern($1, fusefs_t, fusefs_t)
 +	search_dirs_pattern($1, kdbusfs_t, kdbusfs_t)
 +	fs_search_tmpfs($1)
 +	dev_search_sysfs($1)
@@ -17116,49 +17083,47 @@ index 8416beb..19d5bea 100644
  
  ########################################
  ## <summary>
--##	Dontaudit List inotifyfs filesystem.
+-##	Get the attributes of an hugetlbfs
+-##	filesystem.
 +##	Relabel kdbusfs directories.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
--##	Domain to not audit.
-+##	Domain allowed access.
+@@ -2034,17 +3206,18 @@ interface(`fs_read_fusefs_symlinks',`
  ##	</summary>
  ## </param>
  #
--interface(`fs_dontaudit_list_inotifyfs',`
+-interface(`fs_getattr_hugetlbfs',`
 +interface(`fs_relabel_kdbus_dirs',`
  	gen_require(`
--		type inotifyfs_t;
-+		type cgroup_t;
+-		type hugetlbfs_t;
++		type kdbusfs_t;
 +
  	')
  
--	dontaudit $1 inotifyfs_t:dir list_dir_perms;
+-	allow $1 hugetlbfs_t:filesystem getattr;
 +	relabel_dirs_pattern($1, kdbusfs_t, kdbusfs_t)
  ')
  
  ########################################
  ## <summary>
--##	Create an object in a hugetlbfs filesystem, with a private
--##	type using a type transition.
+-##	List hugetlbfs.
 +##	List kdbusfs directories.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
- ##	Domain allowed access.
+@@ -2052,17 +3225,38 @@ interface(`fs_getattr_hugetlbfs',`
  ##	</summary>
  ## </param>
--## <param name="private type">
--##	<summary>
--##	The type of the object to be created.
--##	</summary>
-+#
+ #
+-interface(`fs_list_hugetlbfs',`
 +interface(`fs_list_kdbus_dirs',`
-+	gen_require(`
+ 	gen_require(`
+-		type hugetlbfs_t;
 +		type kdbusfs_t;
-+	')
-+
+ 	')
+ 
+-	allow $1 hugetlbfs_t:dir list_dir_perms;
 +	list_dirs_pattern($1, kdbusfs_t, kdbusfs_t)
 +	fs_search_tmpfs($1)
 +	dev_search_sysfs($1)
@@ -17172,8 +17137,7 @@ index 8416beb..19d5bea 100644
 +##  <summary>
 +##	Domain to not audit.
 +##  </summary>
- ## </param>
--## <param name="object">
++## </param>
 +#
 +interface(`fs_dontaudit_search_kdbus_dirs', `
 +    gen_require(`
@@ -17182,50 +17146,51 @@ index 8416beb..19d5bea 100644
 +
 +	dontaudit $1 kdbusfs_t:dir search_dir_perms;
 +	dev_dontaudit_search_sysfs($1)
-+')
-+
-+########################################
-+## <summary>
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Manage hugetlbfs dirs.
 +##	Delete kdbusfs directories.
-+## </summary>
-+## <param name="domain">
+ ## </summary>
+ ## <param name="domain">
  ##	<summary>
--##	The object class of the object being created.
-+##	Domain allowed access.
- ##	</summary>
- ## </param>
--## <param name="name" optional="true">
-+#
-+interface(`fs_delete_kdbus_dirs', `
-+	gen_require(`
-+		type kdbusfs_t;
-+	')
-+
-+	delete_dirs_pattern($1, kdbusfs_t, kdbusfs_t)
-+	fs_search_tmpfs($1)
-+	dev_search_sysfs($1)
-+')
-+
-+########################################
-+## <summary>
-+##	Manage kdbusfs directories.
-+## </summary>
-+## <param name="domain">
- ##	<summary>
--##	The name of the object being created.
-+##	Domain allowed access.
+@@ -2070,17 +3264,19 @@ interface(`fs_list_hugetlbfs',`
  ##	</summary>
  ## </param>
  #
--interface(`fs_hugetlbfs_filetrans',`
+-interface(`fs_manage_hugetlbfs_dirs',`
++interface(`fs_delete_kdbus_dirs', `
+ 	gen_require(`
+-		type hugetlbfs_t;
++		type kdbusfs_t;
+ 	')
+ 
+-	manage_dirs_pattern($1, hugetlbfs_t, hugetlbfs_t)
++	delete_dirs_pattern($1, kdbusfs_t, kdbusfs_t)
++	fs_search_tmpfs($1)
++	dev_search_sysfs($1)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Read and write hugetlbfs files.
++##	Manage kdbusfs directories.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -2088,35 +3284,41 @@ interface(`fs_manage_hugetlbfs_dirs',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`fs_rw_hugetlbfs_files',`
 +interface(`fs_manage_kdbus_dirs',`
  	gen_require(`
 -		type hugetlbfs_t;
 -	')
 +		type kdbusfs_t;
  
--	allow $2 hugetlbfs_t:filesystem associate;
--	filetrans_pattern($1, hugetlbfs_t, $2, $3, $4)
+-	rw_files_pattern($1, hugetlbfs_t, hugetlbfs_t)
 +	')
 +	manage_dirs_pattern($1, kdbusfs_t, kdbusfs_t)
 +	fs_search_tmpfs($1)
@@ -17234,25 +17199,26 @@ index 8416beb..19d5bea 100644
  
  ########################################
  ## <summary>
--##	Mount an iso9660 filesystem, which
--##	is usually used on CDs.
+-##	Allow the type to associate to hugetlbfs filesystems.
 +##	Read kdbusfs files.
  ## </summary>
- ## <param name="domain">
+-## <param name="type">
++## <param name="domain">
  ##	<summary>
-@@ -2214,19 +3267,21 @@ interface(`fs_hugetlbfs_filetrans',`
+-##	The type of the object to be associated.
++##	Domain allowed access.
  ##	</summary>
  ## </param>
  #
--interface(`fs_mount_iso9660_fs',`
+-interface(`fs_associate_hugetlbfs',`
 +interface(`fs_read_kdbus_files',`
  	gen_require(`
--		type iso9660_t;
-+		type cgroup_t;
+-		type hugetlbfs_t;
++		type kdbusfs_t;
 +
  	')
  
--	allow $1 iso9660_t:filesystem mount;
+-	allow $1 hugetlbfs_t:filesystem associate;
 +	read_files_pattern($1, kdbusfs_t, kdbusfs_t)
 +	read_lnk_files_pattern($1, kdbusfs_t, kdbusfs_t)
 +	fs_search_tmpfs($1)
@@ -17261,25 +17227,23 @@ index 8416beb..19d5bea 100644
  
  ########################################
  ## <summary>
--##	Remount an iso9660 filesystem, which
--##	is usually used on CDs.  This allows
--##	some mount options to be changed.
+-##	Search inotifyfs filesystem.
 +##	Write kdbusfs files.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2234,18 +3289,19 @@ interface(`fs_mount_iso9660_fs',`
+@@ -2124,17 +3326,19 @@ interface(`fs_associate_hugetlbfs',`
  ##	</summary>
  ## </param>
  #
--interface(`fs_remount_iso9660_fs',`
+-interface(`fs_search_inotifyfs',`
 +interface(`fs_write_kdbus_files', `
  	gen_require(`
--		type iso9660_t;
+-		type inotifyfs_t;
 +		type kdbusfs_t;
  	')
  
--	allow $1 iso9660_t:filesystem remount;
+-	allow $1 inotifyfs_t:dir search_dir_perms;
 +	write_files_pattern($1, kdbusfs_t, kdbusfs_t)
 +	fs_search_tmpfs($1)
 +	dev_search_sysfs($1)
@@ -17287,25 +17251,24 @@ index 8416beb..19d5bea 100644
  
  ########################################
  ## <summary>
--##	Unmount an iso9660 filesystem, which
--##	is usually used on CDs.
+-##	List inotifyfs filesystem.
 +##	Read and write kdbusfs files.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2253,38 +3309,41 @@ interface(`fs_remount_iso9660_fs',`
+@@ -2142,17 +3346,23 @@ interface(`fs_search_inotifyfs',`
  ##	</summary>
  ## </param>
  #
--interface(`fs_unmount_iso9660_fs',`
+-interface(`fs_list_inotifyfs',`
 +interface(`fs_rw_kdbus_files',`
  	gen_require(`
--		type iso9660_t;
+-		type inotifyfs_t;
 +		type kdbusfs_t;
 +
  	')
  
--	allow $1 iso9660_t:filesystem unmount;
+-	allow $1 inotifyfs_t:dir list_dir_perms;
 +	read_lnk_files_pattern($1, kdbusfs_t, kdbusfs_t)
 +	rw_files_pattern($1, kdbusfs_t, kdbusfs_t)
 +	fs_search_tmpfs($1)
@@ -17314,53 +17277,65 @@ index 8416beb..19d5bea 100644
  
  ########################################
  ## <summary>
--##	Get the attributes of an iso9660
--##	filesystem, which is usually used on CDs.
+-##	Dontaudit List inotifyfs filesystem.
 +##	Do not audit attempts to open,
 +##	get attributes, read and write
 +##	cgroup files.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
--##	Domain allowed access.
-+##	Domain to not audit.
+@@ -2160,53 +3370,39 @@ interface(`fs_list_inotifyfs',`
  ##	</summary>
  ## </param>
--## <rolecap/>
  #
--interface(`fs_getattr_iso9660_fs',`
+-interface(`fs_dontaudit_list_inotifyfs',`
 +interface(`fs_dontaudit_rw_kdbus_files',`
  	gen_require(`
--		type iso9660_t;
+-		type inotifyfs_t;
 +		type kdbusfs_t;
  	')
  
--	allow $1 iso9660_t:filesystem getattr;
+-	dontaudit $1 inotifyfs_t:dir list_dir_perms;
 +	dontaudit $1 kdbusfs_t:file rw_file_perms;
  ')
  
  ########################################
  ## <summary>
--##	Read files on an iso9660 filesystem, which
--##	is usually used on CDs.
+-##	Create an object in a hugetlbfs filesystem, with a private
+-##	type using a type transition.
 +##	Manage kdbusfs files.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2292,19 +3351,21 @@ interface(`fs_getattr_iso9660_fs',`
+ ##	Domain allowed access.
  ##	</summary>
  ## </param>
+-## <param name="private type">
+-##	<summary>
+-##	The type of the object to be created.
+-##	</summary>
+-## </param>
+-## <param name="object">
+-##	<summary>
+-##	The object class of the object being created.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
  #
--interface(`fs_getattr_iso9660_files',`
+-interface(`fs_hugetlbfs_filetrans',`
 +interface(`fs_manage_kdbus_files',`
  	gen_require(`
--		type iso9660_t;
+-		type hugetlbfs_t;
 +		type kdbusfs_t;
 +
  	')
  
--	allow $1 iso9660_t:dir list_dir_perms;
--	allow $1 iso9660_t:file getattr;
+-	allow $2 hugetlbfs_t:filesystem associate;
+-	filetrans_pattern($1, hugetlbfs_t, $2, $3, $4)
 +	manage_files_pattern($1, kdbusfs_t, kdbusfs_t)
 +	manage_lnk_files_pattern($1, kdbusfs_t, kdbusfs_t)
 +	fs_search_tmpfs($1)
@@ -17369,172 +17344,480 @@ index 8416beb..19d5bea 100644
  
  ########################################
  ## <summary>
--##	Read files on an iso9660 filesystem, which
+-##	Mount an iso9660 filesystem, which
 -##	is usually used on CDs.
 +##	Mount on kdbusfs directories.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2312,16 +3373,15 @@ interface(`fs_getattr_iso9660_files',`
+@@ -2214,19 +3410,18 @@ interface(`fs_hugetlbfs_filetrans',`
  ##	</summary>
  ## </param>
  #
--interface(`fs_read_iso9660_files',`
+-interface(`fs_mount_iso9660_fs',`
 +interface(`fs_mounton_kdbus', `
  	gen_require(`
 -		type iso9660_t;
 +		type kdbusfs_t;
  	')
  
--	allow $1 iso9660_t:dir list_dir_perms;
--	read_files_pattern($1, iso9660_t, iso9660_t)
--	read_lnk_files_pattern($1, iso9660_t, iso9660_t)
+-	allow $1 iso9660_t:filesystem mount;
 +	allow $1 kdbusfs_t:dir mounton;
  ')
  
 +
  ########################################
  ## <summary>
- ##	Mount a NFS filesystem.
-@@ -2398,6 +3458,24 @@ interface(`fs_getattr_nfs',`
- 
- ########################################
- ## <summary>
-+##	Set the attributes of nfs directories.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`fs_setattr_nfs_dirs',`
-+	gen_require(`
-+		type nfs_t;
-+	')
-+
-+	allow $1 nfs_t:dir setattr;
-+')
-+
-+########################################
-+## <summary>
- ##	Search directories on a NFS filesystem.
+-##	Remount an iso9660 filesystem, which
+-##	is usually used on CDs.  This allows
+-##	some mount options to be changed.
++##	Mount a NFS filesystem.
  ## </summary>
  ## <param name="domain">
-@@ -2485,6 +3563,7 @@ interface(`fs_read_nfs_files',`
- 		type nfs_t;
+ ##	<summary>
+@@ -2234,18 +3429,18 @@ interface(`fs_mount_iso9660_fs',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`fs_remount_iso9660_fs',`
++interface(`fs_mount_nfs',`
+ 	gen_require(`
+-		type iso9660_t;
++		type nfs_t;
  	')
  
-+	fs_search_auto_mountpoints($1)
- 	allow $1 nfs_t:dir list_dir_perms;
- 	read_files_pattern($1, nfs_t, nfs_t)
+-	allow $1 iso9660_t:filesystem remount;
++	allow $1 nfs_t:filesystem mount;
  ')
-@@ -2523,6 +3602,7 @@ interface(`fs_write_nfs_files',`
- 		type nfs_t;
- 	')
- 
-+	fs_search_auto_mountpoints($1)
- 	allow $1 nfs_t:dir list_dir_perms;
- 	write_files_pattern($1, nfs_t, nfs_t)
- ')
-@@ -2549,6 +3629,44 @@ interface(`fs_exec_nfs_files',`
  
  ########################################
  ## <summary>
+-##	Unmount an iso9660 filesystem, which
+-##	is usually used on CDs.
++##	Remount a NFS filesystem.  This allows
++##	some mount options to be changed.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -2253,58 +3448,54 @@ interface(`fs_remount_iso9660_fs',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`fs_unmount_iso9660_fs',`
++interface(`fs_remount_nfs',`
+ 	gen_require(`
+-		type iso9660_t;
++		type nfs_t;
+ 	')
+ 
+-	allow $1 iso9660_t:filesystem unmount;
++	allow $1 nfs_t:filesystem remount;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Get the attributes of an iso9660
+-##	filesystem, which is usually used on CDs.
++##	Unmount a NFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+-## <rolecap/>
+ #
+-interface(`fs_getattr_iso9660_fs',`
++interface(`fs_unmount_nfs',`
+ 	gen_require(`
+-		type iso9660_t;
++		type nfs_t;
+ 	')
+ 
+-	allow $1 iso9660_t:filesystem getattr;
++	allow $1 nfs_t:filesystem unmount;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Read files on an iso9660 filesystem, which
+-##	is usually used on CDs.
++##	Get the attributes of a NFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
++## <rolecap/>
+ #
+-interface(`fs_getattr_iso9660_files',`
++interface(`fs_getattr_nfs',`
+ 	gen_require(`
+-		type iso9660_t;
++		type nfs_t;
+ 	')
+ 
+-	allow $1 iso9660_t:dir list_dir_perms;
+-	allow $1 iso9660_t:file getattr;
++	allow $1 nfs_t:filesystem getattr;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Read files on an iso9660 filesystem, which
+-##	is usually used on CDs.
++##	Set the attributes of nfs directories.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -2312,19 +3503,17 @@ interface(`fs_getattr_iso9660_files',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`fs_read_iso9660_files',`
++interface(`fs_setattr_nfs_dirs',`
+ 	gen_require(`
+-		type iso9660_t;
++		type nfs_t;
+ 	')
+ 
+-	allow $1 iso9660_t:dir list_dir_perms;
+-	read_files_pattern($1, iso9660_t, iso9660_t)
+-	read_lnk_files_pattern($1, iso9660_t, iso9660_t)
++	allow $1 nfs_t:dir setattr;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Mount a NFS filesystem.
++##	Search directories on a NFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -2332,18 +3521,17 @@ interface(`fs_read_iso9660_files',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`fs_mount_nfs',`
++interface(`fs_search_nfs',`
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	allow $1 nfs_t:filesystem mount;
++	allow $1 nfs_t:dir search_dir_perms;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Remount a NFS filesystem.  This allows
+-##	some mount options to be changed.
++##	List NFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -2351,240 +3539,243 @@ interface(`fs_mount_nfs',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`fs_remount_nfs',`
++interface(`fs_list_nfs',`
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	allow $1 nfs_t:filesystem remount;
++	allow $1 nfs_t:dir list_dir_perms;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Unmount a NFS filesystem.
++##	Do not audit attempts to list the contents
++##	of directories on a NFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+-##	Domain allowed access.
++##	Domain to not audit.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`fs_unmount_nfs',`
++interface(`fs_dontaudit_list_nfs',`
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	allow $1 nfs_t:filesystem unmount;
++	dontaudit $1 nfs_t:dir list_dir_perms;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Get the attributes of a NFS filesystem.
++##	Mounton a NFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+-## <rolecap/>
+ #
+-interface(`fs_getattr_nfs',`
++interface(`fs_mounton_nfs',`
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	allow $1 nfs_t:filesystem getattr;
++	allow $1 nfs_t:dir mounton;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Search directories on a NFS filesystem.
++##	Read files on a NFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
++## <rolecap/>
+ #
+-interface(`fs_search_nfs',`
++interface(`fs_read_nfs_files',`
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	allow $1 nfs_t:dir search_dir_perms;
++	fs_search_auto_mountpoints($1)
++	allow $1 nfs_t:dir list_dir_perms;
++	read_files_pattern($1, nfs_t, nfs_t)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	List NFS filesystem.
++##	Do not audit attempts to read
++##	files on a NFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+-##	Domain allowed access.
++##	Domain to not audit.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`fs_list_nfs',`
++interface(`fs_dontaudit_read_nfs_files',`
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	allow $1 nfs_t:dir list_dir_perms;
++	dontaudit $1 nfs_t:file read_file_perms;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Do not audit attempts to list the contents
+-##	of directories on a NFS filesystem.
++##	Read files on a NFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+-##	Domain to not audit.
++##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`fs_dontaudit_list_nfs',`
++interface(`fs_write_nfs_files',`
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	dontaudit $1 nfs_t:dir list_dir_perms;
++	fs_search_auto_mountpoints($1)
++	allow $1 nfs_t:dir list_dir_perms;
++	write_files_pattern($1, nfs_t, nfs_t)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Mounton a NFS filesystem.
++##	Execute files on a NFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
++## <rolecap/>
+ #
+-interface(`fs_mounton_nfs',`
++interface(`fs_exec_nfs_files',`
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	allow $1 nfs_t:dir mounton;
++	allow $1 nfs_t:dir list_dir_perms;
++	exec_files_pattern($1, nfs_t, nfs_t)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Read files on a NFS filesystem.
 +##	Make general progams in nfs an entrypoint for
 +##	the specified domain.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+-##	Domain allowed access.
 +##	The domain for which nfs_t is an entrypoint.
-+##	</summary>
-+## </param>
-+#
+ ##	</summary>
+ ## </param>
+-## <rolecap/>
+ #
+-interface(`fs_read_nfs_files',`
 +interface(`fs_nfs_entry_type',`
-+	gen_require(`
-+		type nfs_t;
-+	')
-+
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	allow $1 nfs_t:dir list_dir_perms;
+-	read_files_pattern($1, nfs_t, nfs_t)
 +	domain_entry_file($1, nfs_t)
-+')
-+
-+########################################
-+## <summary>
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Do not audit attempts to read
+-##	files on a NFS filesystem.
 +##	Make general progams in NFS an entrypoint for
 +##	the specified domain.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	The domain for which nfs_t is an entrypoint.
-+##	</summary>
-+## </param>
-+#
-+interface(`fs_nfs_entrypoint',`
-+	gen_require(`
-+		type nfs_t;
-+	')
-+
-+    allow $1 nfs_t:file entrypoint;
-+')
-+
-+########################################
-+## <summary>
- ##	Append files
- ##	on a NFS filesystem.
  ## </summary>
-@@ -2569,7 +3687,7 @@ interface(`fs_append_nfs_files',`
+ ## <param name="domain">
+ ##	<summary>
+-##	Domain to not audit.
++##	The domain for which nfs_t is an entrypoint.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`fs_dontaudit_read_nfs_files',`
++interface(`fs_nfs_entrypoint',`
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	dontaudit $1 nfs_t:file read_file_perms;
++    allow $1 nfs_t:file entrypoint;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Read files on a NFS filesystem.
++##	Append files
++##	on a NFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
++## <rolecap/>
+ #
+-interface(`fs_write_nfs_files',`
++interface(`fs_append_nfs_files',`
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	allow $1 nfs_t:dir list_dir_perms;
+-	write_files_pattern($1, nfs_t, nfs_t)
++	append_files_pattern($1, nfs_t, nfs_t)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Execute files on a NFS filesystem.
++##	Do not audit attempts to append files
++##	on a NFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+-##	Domain allowed access.
++##	Domain to not audit.
+ ##	</summary>
+ ## </param>
+ ## <rolecap/>
+ #
+-interface(`fs_exec_nfs_files',`
++interface(`fs_dontaudit_append_nfs_files',`
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	allow $1 nfs_t:dir list_dir_perms;
+-	exec_files_pattern($1, nfs_t, nfs_t)
++	dontaudit $1 nfs_t:file append_file_perms;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Append files
+-##	on a NFS filesystem.
++##	Read inherited files on a NFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+-## <rolecap/>
+ #
+-interface(`fs_append_nfs_files',`
++interface(`fs_read_inherited_nfs_files',`
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	append_files_pattern($1, nfs_t, nfs_t)
++	allow $1 nfs_t:file read_inherited_file_perms;
+ ')
  
  ########################################
  ## <summary>
 -##	dontaudit Append files
-+##	Do not audit attempts to append files
- ##	on a NFS filesystem.
+-##	on a NFS filesystem.
++##	Read/write inherited files on a NFS filesystem.
  ## </summary>
  ## <param name="domain">
-@@ -2589,6 +3707,42 @@ interface(`fs_dontaudit_append_nfs_files',`
+ ##	<summary>
+-##	Domain to not audit.
++##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+-## <rolecap/>
+ #
+-interface(`fs_dontaudit_append_nfs_files',`
++interface(`fs_rw_inherited_nfs_files',`
+ 	gen_require(`
+ 		type nfs_t;
+ 	')
+ 
+-	dontaudit $1 nfs_t:file append_file_perms;
++	allow $1 nfs_t:file rw_inherited_file_perms;
+ ')
  
  ########################################
- ## <summary>
-+##	Read inherited files on a NFS filesystem.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`fs_read_inherited_nfs_files',`
-+	gen_require(`
-+		type nfs_t;
-+	')
-+
-+	allow $1 nfs_t:file read_inherited_file_perms;
-+')
-+
-+########################################
-+## <summary>
-+##	Read/write inherited files on a NFS filesystem.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`fs_rw_inherited_nfs_files',`
-+	gen_require(`
-+		type nfs_t;
-+	')
-+
-+	allow $1 nfs_t:file rw_inherited_file_perms;
-+')
-+
-+########################################
-+## <summary>
- ##	Do not audit attempts to read or
- ##	write files on a NFS filesystem.
- ## </summary>
-@@ -2603,7 +3757,7 @@ interface(`fs_dontaudit_rw_nfs_files',`
+@@ -2603,7 +3794,7 @@ interface(`fs_dontaudit_rw_nfs_files',`
  		type nfs_t;
  	')
  
@@ -17543,7 +17826,7 @@ index 8416beb..19d5bea 100644
  ')
  
  ########################################
-@@ -2627,7 +3781,7 @@ interface(`fs_read_nfs_symlinks',`
+@@ -2627,7 +3818,7 @@ interface(`fs_read_nfs_symlinks',`
  
  ########################################
  ## <summary>
@@ -17552,7 +17835,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2719,6 +3873,65 @@ interface(`fs_search_rpc',`
+@@ -2719,6 +3910,65 @@ interface(`fs_search_rpc',`
  
  ########################################
  ## <summary>
@@ -17618,7 +17901,7 @@ index 8416beb..19d5bea 100644
  ##	Search removable storage directories.
  ## </summary>
  ## <param name="domain">
-@@ -2741,7 +3954,7 @@ interface(`fs_search_removable',`
+@@ -2741,7 +3991,7 @@ interface(`fs_search_removable',`
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -17627,7 +17910,7 @@ index 8416beb..19d5bea 100644
  ##	</summary>
  ## </param>
  #
-@@ -2777,7 +3990,7 @@ interface(`fs_read_removable_files',`
+@@ -2777,7 +4027,7 @@ interface(`fs_read_removable_files',`
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -17636,7 +17919,7 @@ index 8416beb..19d5bea 100644
  ##	</summary>
  ## </param>
  #
-@@ -2970,6 +4183,7 @@ interface(`fs_manage_nfs_dirs',`
+@@ -2970,6 +4220,7 @@ interface(`fs_manage_nfs_dirs',`
  		type nfs_t;
  	')
  
@@ -17644,7 +17927,7 @@ index 8416beb..19d5bea 100644
  	allow $1 nfs_t:dir manage_dir_perms;
  ')
  
-@@ -3010,6 +4224,7 @@ interface(`fs_manage_nfs_files',`
+@@ -3010,6 +4261,7 @@ interface(`fs_manage_nfs_files',`
  		type nfs_t;
  	')
  
@@ -17652,7 +17935,7 @@ index 8416beb..19d5bea 100644
  	manage_files_pattern($1, nfs_t, nfs_t)
  ')
  
-@@ -3050,6 +4265,7 @@ interface(`fs_manage_nfs_symlinks',`
+@@ -3050,6 +4302,7 @@ interface(`fs_manage_nfs_symlinks',`
  		type nfs_t;
  	')
  
@@ -17660,7 +17943,7 @@ index 8416beb..19d5bea 100644
  	manage_lnk_files_pattern($1, nfs_t, nfs_t)
  ')
  
-@@ -3137,6 +4353,24 @@ interface(`fs_nfs_domtrans',`
+@@ -3137,6 +4390,24 @@ interface(`fs_nfs_domtrans',`
  
  ########################################
  ## <summary>
@@ -17685,11 +17968,27 @@ index 8416beb..19d5bea 100644
  ##	Mount a NFS server pseudo filesystem.
  ## </summary>
  ## <param name="domain">
-@@ -3255,17 +4489,182 @@ interface(`fs_list_nfsd_fs',`
- ##	</summary>
- ## </param>
+@@ -3239,15 +4510,198 @@ interface(`fs_search_nfsd_fs',`
  #
--interface(`fs_getattr_nfsd_files',`
+ interface(`fs_list_nfsd_fs',`
+ 	gen_require(`
+-		type nfsd_fs_t;
++		type nfsd_fs_t;
++	')
++
++	allow $1 nfsd_fs_t:dir list_dir_perms;
++')
++
++########################################
++## <summary>
++##	Getattr files on an nfsd filesystem
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
 +interface(`fs_getattr_nfsd_files',`
 +	gen_require(`
 +		type nfsd_fs_t;
@@ -17856,63 +18155,83 @@ index 8416beb..19d5bea 100644
 +## </param>
 +#
 +interface(`fs_unmount_nsfs',`
- 	gen_require(`
--		type nfsd_fs_t;
++	gen_require(`
 +		type nsfs_t;
  	')
  
--	getattr_files_pattern($1, nfsd_fs_t, nfsd_fs_t)
+-	allow $1 nfsd_fs_t:dir list_dir_perms;
 +	allow $1 nsfs_t:filesystem unmount;
  ')
  
  ########################################
  ## <summary>
--##	Read and write NFS server files.
+-##	Getattr files on an nfsd filesystem
 +##	Manage NFS server files.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3273,12 +4672,12 @@ interface(`fs_getattr_nfsd_files',`
+@@ -3255,35 +4709,35 @@ interface(`fs_list_nfsd_fs',`
  ##	</summary>
  ## </param>
  #
--interface(`fs_rw_nfsd_fs',`
+-interface(`fs_getattr_nfsd_files',`
 +interface(`fs_manage_nfsd_fs',`
  	gen_require(`
  		type nfsd_fs_t;
  	')
  
--	rw_files_pattern($1, nfsd_fs_t, nfsd_fs_t)
+-	getattr_files_pattern($1, nfsd_fs_t, nfsd_fs_t)
 +	manage_files_pattern($1, nfsd_fs_t, nfsd_fs_t)
  ')
  
  ########################################
-@@ -3301,6 +4700,24 @@ interface(`fs_associate_ramfs',`
+ ## <summary>
+-##	Read and write NFS server files.
++##	Allow the type to associate to ramfs filesystems.
+ ## </summary>
+-## <param name="domain">
++## <param name="type">
+ ##	<summary>
+-##	Domain allowed access.
++##	The type of the object to be associated.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`fs_rw_nfsd_fs',`
++interface(`fs_associate_ramfs',`
+ 	gen_require(`
+-		type nfsd_fs_t;
++		type ramfs_t;
+ 	')
+ 
+-	rw_files_pattern($1, nfsd_fs_t, nfsd_fs_t)
++	allow $1 ramfs_t:filesystem associate;
+ ')
  
  ########################################
  ## <summary>
+-##	Allow the type to associate to ramfs filesystems.
 +##	Allow the type to associate to proc filesystems.
-+## </summary>
-+## <param name="type">
-+##	<summary>
-+##	The type of the object to be associated.
-+##	</summary>
-+## </param>
-+#
-+interface(`fs_associate_proc',`
-+	gen_require(`
-+		type proc_t;
-+	')
-+
-+	allow $1 proc_t:filesystem associate;
-+')
-+
-+########################################
-+## <summary>
- ##	Mount a RAM filesystem.
  ## </summary>
- ## <param name="domain">
-@@ -3392,7 +4809,7 @@ interface(`fs_search_ramfs',`
+ ## <param name="type">
+ ##	<summary>
+@@ -3291,12 +4745,12 @@ interface(`fs_rw_nfsd_fs',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`fs_associate_ramfs',`
++interface(`fs_associate_proc',`
+ 	gen_require(`
+-		type ramfs_t;
++		type proc_t;
+ 	')
+ 
+-	allow $1 ramfs_t:filesystem associate;
++	allow $1 proc_t:filesystem associate;
+ ')
+ 
+ ########################################
+@@ -3392,7 +4846,7 @@ interface(`fs_search_ramfs',`
  
  ########################################
  ## <summary>
@@ -17921,7 +18240,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3429,7 +4846,7 @@ interface(`fs_manage_ramfs_dirs',`
+@@ -3429,7 +4883,7 @@ interface(`fs_manage_ramfs_dirs',`
  
  ########################################
  ## <summary>
@@ -17930,7 +18249,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3447,7 +4864,7 @@ interface(`fs_dontaudit_read_ramfs_files',`
+@@ -3447,7 +4901,7 @@ interface(`fs_dontaudit_read_ramfs_files',`
  
  ########################################
  ## <summary>
@@ -17939,7 +18258,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3779,6 +5196,24 @@ interface(`fs_mount_tmpfs',`
+@@ -3779,6 +5233,24 @@ interface(`fs_mount_tmpfs',`
  
  ########################################
  ## <summary>
@@ -17964,7 +18283,7 @@ index 8416beb..19d5bea 100644
  ##	Remount a tmpfs filesystem.
  ## </summary>
  ## <param name="domain">
-@@ -3815,6 +5250,24 @@ interface(`fs_unmount_tmpfs',`
+@@ -3815,6 +5287,24 @@ interface(`fs_unmount_tmpfs',`
  
  ########################################
  ## <summary>
@@ -17989,7 +18308,7 @@ index 8416beb..19d5bea 100644
  ##	Get the attributes of a tmpfs
  ##	filesystem.
  ## </summary>
-@@ -3908,7 +5361,7 @@ interface(`fs_dontaudit_getattr_tmpfs_dirs',`
+@@ -3908,7 +5398,7 @@ interface(`fs_dontaudit_getattr_tmpfs_dirs',`
  
  ########################################
  ## <summary>
@@ -17998,7 +18317,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3916,17 +5369,17 @@ interface(`fs_dontaudit_getattr_tmpfs_dirs',`
+@@ -3916,17 +5406,17 @@ interface(`fs_dontaudit_getattr_tmpfs_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -18019,7 +18338,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3934,17 +5387,17 @@ interface(`fs_mounton_tmpfs',`
+@@ -3934,17 +5424,17 @@ interface(`fs_mounton_tmpfs',`
  ##	</summary>
  ## </param>
  #
@@ -18040,7 +18359,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3952,17 +5405,36 @@ interface(`fs_setattr_tmpfs_dirs',`
+@@ -3952,17 +5442,36 @@ interface(`fs_setattr_tmpfs_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -18080,7 +18399,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3970,31 +5442,48 @@ interface(`fs_search_tmpfs',`
+@@ -3970,31 +5479,48 @@ interface(`fs_search_tmpfs',`
  ##	</summary>
  ## </param>
  #
@@ -18136,7 +18455,7 @@ index 8416beb..19d5bea 100644
  ')
  
  ########################################
-@@ -4057,23 +5546,170 @@ interface(`fs_dontaudit_write_tmpfs_dirs',`
+@@ -4057,23 +5583,170 @@ interface(`fs_dontaudit_write_tmpfs_dirs',`
  ## </param>
  ## <param name="name" optional="true">
  ##	<summary>
@@ -18313,7 +18632,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -4081,18 +5717,18 @@ interface(`fs_tmpfs_filetrans',`
+@@ -4081,18 +5754,18 @@ interface(`fs_tmpfs_filetrans',`
  ##	</summary>
  ## </param>
  #
@@ -18336,7 +18655,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -4100,54 +5736,53 @@ interface(`fs_dontaudit_getattr_tmpfs_files',`
+@@ -4100,54 +5773,53 @@ interface(`fs_dontaudit_getattr_tmpfs_files',`
  ##	</summary>
  ## </param>
  #
@@ -18403,7 +18722,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -4155,17 +5790,18 @@ interface(`fs_read_tmpfs_files',`
+@@ -4155,17 +5827,18 @@ interface(`fs_read_tmpfs_files',`
  ##	</summary>
  ## </param>
  #
@@ -18425,7 +18744,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -4173,17 +5809,18 @@ interface(`fs_rw_tmpfs_files',`
+@@ -4173,17 +5846,18 @@ interface(`fs_rw_tmpfs_files',`
  ##	</summary>
  ## </param>
  #
@@ -18447,7 +18766,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -4191,37 +5828,36 @@ interface(`fs_read_tmpfs_symlinks',`
+@@ -4191,37 +5865,36 @@ interface(`fs_read_tmpfs_symlinks',`
  ##	</summary>
  ## </param>
  #
@@ -18493,7 +18812,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -4229,18 +5865,18 @@ interface(`fs_dontaudit_use_tmpfs_chr_dev',`
+@@ -4229,18 +5902,18 @@ interface(`fs_dontaudit_use_tmpfs_chr_dev',`
  ##	</summary>
  ## </param>
  #
@@ -18515,7 +18834,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -4248,18 +5884,19 @@ interface(`fs_relabel_tmpfs_chr_file',`
+@@ -4248,18 +5921,19 @@ interface(`fs_relabel_tmpfs_chr_file',`
  ##	</summary>
  ## </param>
  #
@@ -18539,7 +18858,7 @@ index 8416beb..19d5bea 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -4267,32 +5904,31 @@ interface(`fs_rw_tmpfs_blk_files',`
+@@ -4267,32 +5941,31 @@ interface(`fs_rw_tmpfs_blk_files',`
  ##	</summary>
  ## </param>
  #
@@ -18578,7 +18897,7 @@ index 8416beb..19d5bea 100644
  ')
  
  ########################################
-@@ -4407,6 +6043,25 @@ interface(`fs_search_xenfs',`
+@@ -4407,6 +6080,25 @@ interface(`fs_search_xenfs',`
  	allow $1 xenfs_t:dir search_dir_perms;
  ')
  
@@ -18604,7 +18923,7 @@ index 8416beb..19d5bea 100644
  ########################################
  ## <summary>
  ##	Create, read, write, and delete directories
-@@ -4503,6 +6158,8 @@ interface(`fs_mount_all_fs',`
+@@ -4503,6 +6195,8 @@ interface(`fs_mount_all_fs',`
  	')
  
  	allow $1 filesystem_type:filesystem mount;
@@ -18613,7 +18932,7 @@ index 8416beb..19d5bea 100644
  ')
  
  ########################################
-@@ -4549,7 +6206,7 @@ interface(`fs_unmount_all_fs',`
+@@ -4549,7 +6243,7 @@ interface(`fs_unmount_all_fs',`
  ## <desc>
  ##	<p>
  ##	Allow the specified domain to
@@ -18622,7 +18941,7 @@ index 8416beb..19d5bea 100644
  ##	Example attributes:
  ##	</p>
  ##	<ul>
-@@ -4596,6 +6253,26 @@ interface(`fs_dontaudit_getattr_all_fs',`
+@@ -4596,6 +6290,26 @@ interface(`fs_dontaudit_getattr_all_fs',`
  
  ########################################
  ## <summary>
@@ -18649,7 +18968,7 @@ index 8416beb..19d5bea 100644
  ##	Get the quotas of all filesystems.
  ## </summary>
  ## <param name="domain">
-@@ -4671,6 +6348,25 @@ interface(`fs_getattr_all_dirs',`
+@@ -4671,6 +6385,25 @@ interface(`fs_getattr_all_dirs',`
  
  ########################################
  ## <summary>
@@ -18675,7 +18994,7 @@ index 8416beb..19d5bea 100644
  ##	Search all directories with a filesystem type.
  ## </summary>
  ## <param name="domain">
-@@ -4912,3 +6608,176 @@ interface(`fs_unconfined',`
+@@ -4912,3 +6645,176 @@ interface(`fs_unconfined',`
  
  	typeattribute $1 filesystem_unconfined_type;
  ')
@@ -18714,7 +19033,7 @@ index 8416beb..19d5bea 100644
 +interface(`fs_tmpfs_filetrans_named_content',`
 +	gen_require(`
 +		type cgroup_t;
-+        type devlog_t;
++		type devlog_t;
 +	')
 +
 +	fs_tmpfs_filetrans($1, cgroup_t, lnk_file, "cpu")
@@ -18847,13 +19166,13 @@ index 8416beb..19d5bea 100644
 +#
 +interface(`fs_unmount_tracefs', `
 +	gen_require(`
-+		type cgroup_t;
++		type tracefs_t;
 +	')
 +
 +	allow $1 tracefs_t:filesystem unmount;
 +')
 diff --git a/policy/modules/kernel/filesystem.te b/policy/modules/kernel/filesystem.te
-index e7d1738..b3e6523 100644
+index e7d1738..b10afaf 100644
 --- a/policy/modules/kernel/filesystem.te
 +++ b/policy/modules/kernel/filesystem.te
 @@ -26,14 +26,20 @@ fs_use_xattr ext2 gen_context(system_u:object_r:fs_t,s0);
@@ -18877,7 +19196,15 @@ index e7d1738..b3e6523 100644
  
  # Use the allocating task SID to label inodes in the following filesystem
  # types, and label the filesystem itself with the specified context.
-@@ -53,6 +59,7 @@ type anon_inodefs_t;
+@@ -43,6 +49,7 @@ fs_use_xattr zfs gen_context(system_u:object_r:fs_t,s0);
+ fs_use_task eventpollfs gen_context(system_u:object_r:fs_t,s0);
+ fs_use_task pipefs gen_context(system_u:object_r:fs_t,s0);
+ fs_use_task sockfs gen_context(system_u:object_r:fs_t,s0);
++fs_use_task nsfs gen_context(system_u:object_r:fs_t,s0);
+ 
+ ##############################
+ #
+@@ -53,6 +60,7 @@ type anon_inodefs_t;
  fs_type(anon_inodefs_t)
  files_mountpoint(anon_inodefs_t)
  genfscon anon_inodefs / gen_context(system_u:object_r:anon_inodefs_t,s0)
@@ -18885,7 +19212,7 @@ index e7d1738..b3e6523 100644
  
  type bdev_t;
  fs_type(bdev_t)
-@@ -63,16 +70,28 @@ fs_type(binfmt_misc_fs_t)
+@@ -63,16 +71,28 @@ fs_type(binfmt_misc_fs_t)
  files_mountpoint(binfmt_misc_fs_t)
  genfscon binfmt_misc / gen_context(system_u:object_r:binfmt_misc_fs_t,s0)
  
@@ -18915,7 +19242,7 @@ index e7d1738..b3e6523 100644
  
  type configfs_t;
  fs_type(configfs_t)
-@@ -88,6 +107,11 @@ fs_noxattr_type(ecryptfs_t)
+@@ -88,6 +108,11 @@ fs_noxattr_type(ecryptfs_t)
  files_mountpoint(ecryptfs_t)
  genfscon ecryptfs / gen_context(system_u:object_r:ecryptfs_t,s0)
  
@@ -18927,7 +19254,7 @@ index e7d1738..b3e6523 100644
  type futexfs_t;
  fs_type(futexfs_t)
  genfscon futexfs / gen_context(system_u:object_r:futexfs_t,s0)
-@@ -96,6 +120,7 @@ type hugetlbfs_t;
+@@ -96,6 +121,7 @@ type hugetlbfs_t;
  fs_type(hugetlbfs_t)
  files_mountpoint(hugetlbfs_t)
  fs_use_trans hugetlbfs gen_context(system_u:object_r:hugetlbfs_t,s0);
@@ -18935,7 +19262,7 @@ index e7d1738..b3e6523 100644
  
  type ibmasmfs_t;
  fs_type(ibmasmfs_t)
-@@ -111,6 +136,12 @@ type inotifyfs_t;
+@@ -111,6 +137,12 @@ type inotifyfs_t;
  fs_type(inotifyfs_t)
  genfscon inotifyfs / gen_context(system_u:object_r:inotifyfs_t,s0)
  
@@ -18948,7 +19275,7 @@ index e7d1738..b3e6523 100644
  type mvfs_t;
  fs_noxattr_type(mvfs_t)
  allow mvfs_t self:filesystem associate;
-@@ -118,13 +149,23 @@ genfscon mvfs / gen_context(system_u:object_r:mvfs_t,s0)
+@@ -118,13 +150,23 @@ genfscon mvfs / gen_context(system_u:object_r:mvfs_t,s0)
  
  type nfsd_fs_t;
  fs_type(nfsd_fs_t)
@@ -18973,7 +19300,7 @@ index e7d1738..b3e6523 100644
  fs_type(pstore_t)
  files_mountpoint(pstore_t)
  dev_associate_sysfs(pstore_t)
-@@ -150,17 +191,16 @@ fs_type(spufs_t)
+@@ -150,17 +192,16 @@ fs_type(spufs_t)
  genfscon spufs / gen_context(system_u:object_r:spufs_t,s0)
  files_mountpoint(spufs_t)
  
@@ -18995,7 +19322,7 @@ index e7d1738..b3e6523 100644
  type vmblock_t;
  fs_noxattr_type(vmblock_t)
  files_mountpoint(vmblock_t)
-@@ -172,6 +212,8 @@ type vxfs_t;
+@@ -172,6 +213,8 @@ type vxfs_t;
  fs_noxattr_type(vxfs_t)
  files_mountpoint(vxfs_t)
  genfscon vxfs / gen_context(system_u:object_r:vxfs_t,s0)
@@ -19004,7 +19331,7 @@ index e7d1738..b3e6523 100644
  
  #
  # tmpfs_t is the type for tmpfs filesystems
-@@ -182,6 +224,8 @@ fs_type(tmpfs_t)
+@@ -182,6 +225,8 @@ fs_type(tmpfs_t)
  files_type(tmpfs_t)
  files_mountpoint(tmpfs_t)
  files_poly_parent(tmpfs_t)
@@ -19013,7 +19340,7 @@ index e7d1738..b3e6523 100644
  
  # Use a transition SID based on the allocating task SID and the
  # filesystem SID to label inodes in the following filesystem types,
-@@ -261,6 +305,8 @@ genfscon udf / gen_context(system_u:object_r:iso9660_t,s0)
+@@ -261,6 +306,8 @@ genfscon udf / gen_context(system_u:object_r:iso9660_t,s0)
  type removable_t;
  allow removable_t noxattrfs:filesystem associate;
  fs_noxattr_type(removable_t)
@@ -19022,7 +19349,7 @@ index e7d1738..b3e6523 100644
  files_mountpoint(removable_t)
  
  #
-@@ -280,6 +326,7 @@ genfscon ncpfs / gen_context(system_u:object_r:nfs_t,s0)
+@@ -280,6 +327,7 @@ genfscon ncpfs / gen_context(system_u:object_r:nfs_t,s0)
  genfscon reiserfs / gen_context(system_u:object_r:nfs_t,s0)
  genfscon panfs / gen_context(system_u:object_r:nfs_t,s0)
  genfscon gadgetfs / gen_context(system_u:object_r:nfs_t,s0)
@@ -19030,7 +19357,7 @@ index e7d1738..b3e6523 100644
  
  ########################################
  #
-@@ -301,9 +348,10 @@ fs_associate_noxattr(noxattrfs)
+@@ -301,9 +349,10 @@ fs_associate_noxattr(noxattrfs)
  # Unconfined access to this module
  #
  
@@ -40804,7 +41131,7 @@ index 9fe8e01..c62c761 100644
  /var/spool/postfix/etc/localtime -- gen_context(system_u:object_r:locale_t,s0)
  ')
 diff --git a/policy/modules/system/miscfiles.if b/policy/modules/system/miscfiles.if
-index fc28bc3..8828b8a 100644
+index fc28bc3..3be6892 100644
 --- a/policy/modules/system/miscfiles.if
 +++ b/policy/modules/system/miscfiles.if
 @@ -67,6 +67,27 @@ interface(`miscfiles_read_all_certs',`
@@ -40998,7 +41325,7 @@ index fc28bc3..8828b8a 100644
  
 -	files_etc_filetrans($1, locale_t, file)
 -
-+	files_etc_filetrans($1, locale_t, lnk_file)
++	files_etc_filetrans($1, locale_t, { file lnk_file })
 +	files_etc_filetrans($1, locale_t, {lnk_file file}, "localtime" )
 +	files_etc_filetrans($1, locale_t, file, "locale.conf" )
 +	files_etc_filetrans($1, locale_t, file, "timezone" )

@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 254%{?dist}
+Release: 255%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -689,6 +689,28 @@ exit 0
 %endif
 
 %changelog
+* Thu May 18 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-255
+- Dontaudit net_admin capability for domains postfix_master_t and postfix_qmgr_t
+- Add interface pki_manage_common_files()
+- Allow rngd domain read sysfs_t
+- Allow tomcat_t domain to manage pki_common_t files and dirs
+- Merge pull request #3 from rhatdan/devicekit
+- Merge pull request #12 from lslebodn/sssd_sockets_fc
+- Allow certmonger reads httpd_config_t files
+- Allow keepalived_t domain creating netlink_netfilter_socket.
+- Use stricter fc rules for sssd sockets in /var/run
+- Allow tomcat domain read rpm_var_lib_t files Allow tomcat domain exec rpm_exec_t files Allow tomcat domain name connect on oracle_port_t Allow tomcat domain read cobbler_var_lib_t files.
+- Allow sssd_t domain creating sock files labeled as sssd_var_run_t in /var/run/
+- Allow svirt_t to read raw fixed_disk_device_t to make working blockcommit
+- ejabberd small fixes
+- Update targetd policy to accommodate changes in the service
+- Allow tomcat_domain connect to    * postgresql_port_t    * amqp_port_t Allow tomcat_domain read network sysctls
+- Allow virt_domain to read raw fixed_disk_device_t to make working blockcommit
+- Dontaudit net_admin capability for useradd_t domain
+- Allow systemd_localed_t and systemd_timedated_t create files in /etc with label locate_t BZ(1443723)
+- Make able deply overcloud via neutron_t to label nsfs as fs_t
+- Add fs_manage_configfs_lnk_files() interface
+
 * Mon May 15 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-254
 - Allow svirt_t to read raw fixed_disk_device_t to make working blockcommit
 - ejabberd small fixes
