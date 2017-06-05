@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 255%{?dist}
+Release: 256%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -689,6 +689,47 @@ exit 0
 %endif
 
 %changelog
+* Mon Jun 05 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-256
+- Allow keepalived domain connect to squid tcp port
+- Allow krb5kdc_t domain read realmd lib files.
+- Allow tomcat to connect on all unreserved ports
+- Allow keepalived domain connect to squid tcp port
+- Allow krb5kdc_t domain read realmd lib files.
+- Allow tomcat to connect on all unreserved ports
+- Allow ganesha to connect to all rpc ports
+- Update ganesha with few allow rules
+- Update rpc_read_nfs_state_data() interface to allow read also lnk_files.
+- virt_use_glusterd boolean should be in optional block
+- Add new boolean virt_use_glusterd
+- Add capability sys_boot for sbd_t domain Allow sbd_t domain to create rpc sysctls.
+- Allow ganesha_t domain to manage glusterd_var_run_t pid files.
+- Create new interface: glusterd_read_lib_files() Allow ganesha read glusterd lib files. Allow ganesha read network sysctls
+- Add few allow rules to ganesha module
+- Allow condor_master_t to read sysctls.
+- Add dac_override cap to ctdbd_t domain
+- Add ganesha_use_fusefs boolean.
+- Allow httpd_t reading kerberos kdc config files
+- Allow tomcat_t domain connect to ibm_dt_2 tcp port.
+- Allow stream connect to initrc_t domains
+- Add pki_exec_common_files() interface
+- Allow  dnsmasq_t domain to read systemd-resolved pid files.
+- Allow tomcat domain name_bind on tcp bctp_port_t
+- Allow smbd_t domain generate debugging files under /var/run/gluster. These files are created through the libgfapi.so library that provides integration of a GlusterFS client in the Samba (vfs_glusterfs) process.
+- Allow condor_master_t write to sysctl_net_t
+- Allow nagios check disk plugin read /sys/kernel/config/
+- Allow pcp_pmie_t domain execute systemctl binary
+- Allow nagios to connect to stream sockets. Allow nagios start httpd via systemctl
+- xdm_t should view kernel keys
+- Hide broken symptoms when machine is configured with network bounding.
+- Label 8750 tcp/udp port as dey_keyneg_port_t
+- Label tcp/udp port 1792 as ibm_dt_2_port_t
+- Add interface fs_read_configfs_dirs()
+- Add interface fs_read_configfs_files()
+- Fix systemd_resolved_read_pid interface
+- Add interface systemd_resolved_read_pid()
+- Allow sshd_net_t domain read/write into crypto devices
+- Label 8999 tcp/udp as bctp_port_t
+
 * Thu May 18 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-255
 - Dontaudit net_admin capability for domains postfix_master_t and postfix_qmgr_t
 - Add interface pki_manage_common_files()
