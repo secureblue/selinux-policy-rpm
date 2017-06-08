@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 256%{?dist}
+Release: 258%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -689,6 +689,25 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 08 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-257
+- Merge pull request #10 from mscherer/fix_tor_dac
+- Merge pull request #9 from rhatdan/rawhide
+- Merge pull request #13 from vinzent/allow_zabbix_t_to_kill_zabbix_script_t
+- Allow kdumpgui to read removable disk device
+- Allow systemd_dbusd_t domain read/write to nvme devices
+- Allow udisks2 domain to read removable devices BZ(1443981)
+- Allow virtlogd_t to execute itself
+- Allow keepalived to read/write usermodehelper state
+- Allow named_t to bind on udp 4321 port
+- Fix interface tlp_manage_pid_files()
+- Allow collectd domain read lvm config files. BZ(1459097)
+- Merge branch 'rawhide' of github.com:wrabcak/selinux-policy-contrib into rawhide
+- Allow samba_manage_home_dirs boolean to manage user content
+- Merge pull request #14 from lemenkov/rabbitmq_systemd_notify
+- Allow pki_tomcat_t execute ldconfig.
+- Merge pull request #191 from rhatdan/udev
+- Allow systemd_modules_load_t to load modules
+
 * Mon Jun 05 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-256
 - Allow keepalived domain connect to squid tcp port
 - Allow krb5kdc_t domain read realmd lib files.
