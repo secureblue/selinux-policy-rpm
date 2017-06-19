@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 259%{?dist}
+Release: 260%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -689,6 +689,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Jun 19 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-260
+- Allow sssd_t to read realmd lib files.
+- Fix init interface file. init_var_run_t is type not attribute
+
 * Mon Jun 19 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-258
 - Allow rpcbind_t to execute systemd_tmpfiles_exec_t binary files.
 - Merge branch 'rawhide' of github.com:wrabcak/selinux-policy-contrib into rawhide
