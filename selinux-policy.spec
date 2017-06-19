@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 258%{?dist}
+Release: 259%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -689,6 +689,18 @@ exit 0
 %endif
 
 %changelog
+* Mon Jun 19 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-258
+- Allow rpcbind_t to execute systemd_tmpfiles_exec_t binary files.
+- Merge branch 'rawhide' of github.com:wrabcak/selinux-policy-contrib into rawhide
+- Allow qemu to authenticate SPICE connections with SASL GSSAPI when SSSD is in use
+- Fix dbus_dontaudit_stream_connect_system_dbusd() interface to require TYPE rather than ATTRIBUTE for systemd_dbusd_t.
+- Allow httpd_t to read realmd_var_lib_t files
+- Allow unconfined_t user all user namespace capabilties.
+- Add interface systemd_tmpfiles_exec()
+- Add interface libs_dontaudit_setattr_lib_files()
+- Dontaudit xdm_t domain to setattr on lib_t dirs
+- Allow sysadm_r role to jump into dirsrv_t
+
 * Thu Jun 08 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-257
 - Merge pull request #10 from mscherer/fix_tor_dac
 - Merge pull request #9 from rhatdan/rawhide
