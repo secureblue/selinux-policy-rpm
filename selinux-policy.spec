@@ -23,9 +23,10 @@ Release: 260%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
-# Use the following commands to create patches from https://github.com/fedora-selinux/selinux-policy
-# git diff eb4512f6eb13792c76ff8d3e6f2df3a7155db577 rawhide-base > policy-rawhide-base.patch
-# git diff 64302b790bf2b39d93610e1452c8361d56966ae0 rawhide-contrib > policy-rawhide-contrib.patch
+# Use the following command to create patch from https://github.com/fedora-selinux/selinux-policy
+# git diff eb4512f6eb13792c76ff8d3e6f2df3a7155db577 rawhide > policy-rawhide-base.patch
+# Use the following command to create patch from https://github.com/fedora-selinux/selinux-policy-contrib
+# git diff 64302b790bf2b39d93610e1452c8361d56966ae0 rawhide > policy-rawhide-contrib.patch
 patch: policy-rawhide-base.patch
 patch1: policy-rawhide-contrib.patch
 patch2: policy-rawhide-base-cockpit.patch
