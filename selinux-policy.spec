@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 260%{?dist}
+Release: 261%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -690,6 +690,18 @@ exit 0
 %endif
 
 %changelog
+* Fri Jun 23 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-261
+- Allow boinc_t nsswitch
+- Dontaudit firewalld to write to lib_t dirs
+- Allow modemmanager_t domain to write to raw_ip file labeled as sysfs_t
+- Allow thumb_t domain to allow create dgram sockets
+- Disable mysqld_safe_t secure mode environment cleansing
+- Allow couple rules needed to start targetd daemon with SELinux in enforcing mode
+- Allow dirsrv domain setrlimit
+- Dontaudit staff_t user read admin_home_t files.
+- Add interface lvm_manage_metadata
+- Add permission open to files_read_inherited_tmp_files() interface
+
 * Mon Jun 19 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-260
 - Allow sssd_t to read realmd lib files.
 - Fix init interface file. init_var_run_t is type not attribute
