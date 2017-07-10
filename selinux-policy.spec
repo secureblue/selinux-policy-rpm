@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 261%{?dist}
+Release: 262%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -690,6 +690,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 10 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-262
+- Allow cluster_t and glusterd_t domains to dbus chat with ganesha service
+- Allow iptables to read container runtime files
+
 * Fri Jun 23 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-261
 - Allow boinc_t nsswitch
 - Dontaudit firewalld to write to lib_t dirs
