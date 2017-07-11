@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 262%{?dist}
+Release: 263%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -690,6 +690,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jul 11 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-263
+- Add new boolean gluster_use_execmem
+
 * Mon Jul 10 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-262
 - Allow cluster_t and glusterd_t domains to dbus chat with ganesha service
 - Allow iptables to read container runtime files
