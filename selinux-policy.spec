@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 264%{?dist}
+Release: 265%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -690,6 +690,13 @@ exit 0
 %endif
 
 %changelog
+* Fri Jul 21 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-265
+- Allow llpdad send dgram to libvirt
+- Allow abrt_t domain dac_read_search capability
+- Allow init_t domain mounton dirs labeled as init_var_lib_t BZ(1471476)
+- Allow xdm_t domain read unique machine-id generated during system installation. BZ(1467036)
+- Dontaudit xdm_t to setattr lib_t dirs. BZ(#1458518)
+
 * Mon Jul 17 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-264
 - Dontaudit xdm_t to setattr lib_t dirs. BZ(#1458518)
 

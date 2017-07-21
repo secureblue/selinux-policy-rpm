@@ -589,7 +589,7 @@ index 058d908..ee0c559 100644
 +')
 +
 diff --git a/abrt.te b/abrt.te
-index eb50f07..ca625e9 100644
+index eb50f07..f893465 100644
 --- a/abrt.te
 +++ b/abrt.te
 @@ -6,11 +6,10 @@ policy_module(abrt, 1.4.1)
@@ -718,7 +718,7 @@ index eb50f07..ca625e9 100644
  
 -allow abrt_t self:capability { chown dac_override fowner fsetid kill setgid setuid sys_nice };
 -dontaudit abrt_t self:capability sys_rawio;
-+allow abrt_t self:capability { chown dac_override fowner fsetid ipc_lock kill setgid setuid sys_nice sys_ptrace };
++allow abrt_t self:capability { chown dac_read_search  dac_override fowner fsetid ipc_lock kill setgid setuid sys_nice sys_ptrace };
 +dontaudit abrt_t self:capability { net_admin sys_rawio sys_ptrace };
  allow abrt_t self:process { setpgid sigkill signal signull setsched getsched };
 +
@@ -46962,7 +46962,7 @@ index d18c960..b7bd752 100644
 +	allow $1 lldpad_tmpfs_t:file relabelto;
 +')
 diff --git a/lldpad.te b/lldpad.te
-index 2a491d9..42e5578 100644
+index 2a491d9..3399d59 100644
 --- a/lldpad.te
 +++ b/lldpad.te
 @@ -26,7 +26,7 @@ files_pid_file(lldpad_var_run_t)
@@ -46974,7 +46974,7 @@ index 2a491d9..42e5578 100644
  allow lldpad_t self:shm create_shm_perms;
  allow lldpad_t self:fifo_file rw_fifo_file_perms;
  allow lldpad_t self:unix_stream_socket { accept listen };
-@@ -51,12 +51,16 @@ kernel_request_load_module(lldpad_t)
+@@ -51,12 +51,20 @@ kernel_request_load_module(lldpad_t)
  
  dev_read_sysfs(lldpad_t)
  
@@ -46992,6 +46992,10 @@ index 2a491d9..42e5578 100644
 +
 +optional_policy(`
 +    networkmanager_dgram_send(lldpad_t)
++')
++
++optional_policy(`
++    virt_dgram_send(lldpad_t)
 +')
 diff --git a/loadkeys.te b/loadkeys.te
 index d2f4643..c8e6b37 100644
@@ -113788,7 +113792,7 @@ index a4f20bc..9777de2 100644
 +/var/log/qemu-ga\.log.*           --      gen_context(system_u:object_r:virt_qemu_ga_log_t,s0)
 +/var/log/qemu-ga(/.*)?		gen_context(system_u:object_r:virt_qemu_ga_log_t,s0)
 diff --git a/virt.if b/virt.if
-index facdee8..b5a815a 100644
+index facdee8..2a619ba 100644
 --- a/virt.if
 +++ b/virt.if
 @@ -1,120 +1,111 @@
@@ -114641,7 +114645,7 @@ index facdee8..b5a815a 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -673,54 +565,571 @@ interface(`virt_home_filetrans',`
+@@ -673,54 +565,607 @@ interface(`virt_home_filetrans',`
  ##	</summary>
  ## </param>
  #
@@ -115219,6 +115223,43 @@ index facdee8..b5a815a 100644
 +interface(`virt_dontaudit_write_pipes',`
 +	gen_require(`
 +		type virtd_t;
++	')
++
++	dontaudit $1 virtd_t:fd use;
++	dontaudit $1 virtd_t:fifo_file write_fifo_file_perms;
++')
++
++########################################
++## <summary>
++##	Send a sigkill to virtual machines
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`virt_kill_svirt',`
++	gen_require(`
++		attribute virt_domain;
++	')
++
++	allow $1 virt_domain:process sigkill;
++')
++
++########################################
++## <summary>
++##	Send a sigkill to virtd daemon.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`virt_kill',`
++	gen_require(`
++		type virtd_t;
  	')
  
 -	tunable_policy(`virt_use_samba',`
@@ -115226,26 +115267,25 @@ index facdee8..b5a815a 100644
 -		fs_manage_cifs_files($1)
 -		fs_manage_cifs_symlinks($1)
 -	')
-+	dontaudit $1 virtd_t:fd use;
-+	dontaudit $1 virtd_t:fifo_file write_fifo_file_perms;
++	allow $1 virtd_t:process sigkill;
  ')
  
  ########################################
  ## <summary>
 -##	Relabel virt home content.
-+##	Send a sigkill to virtual machines
++##	Send a signal to virtd daemon.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -728,52 +1137,53 @@ interface(`virt_manage_generic_virt_home_content',`
+@@ -728,52 +1173,35 @@ interface(`virt_manage_generic_virt_home_content',`
  ##	</summary>
  ## </param>
  #
 -interface(`virt_relabel_generic_virt_home_content',`
-+interface(`virt_kill_svirt',`
++interface(`virt_signal',`
  	gen_require(`
 -		type virt_home_t;
-+		attribute virt_domain;
++		type virtd_t;
  	')
  
 -	userdom_search_user_home_dirs($1)
@@ -115254,7 +115294,7 @@ index facdee8..b5a815a 100644
 -	allow $1 virt_home_t:fifo_file relabel_fifo_file_perms;
 -	allow $1 virt_home_t:lnk_file relabel_lnk_file_perms;
 -	allow $1 virt_home_t:sock_file relabel_sock_file_perms;
-+	allow $1 virt_domain:process sigkill;
++	allow $1 virtd_t:process signal;
  ')
  
  ########################################
@@ -115262,7 +115302,7 @@ index facdee8..b5a815a 100644
 -##	Create specified objects in user home
 -##	directories with the generic virt
 -##	home type.
-+##	Send a sigkill to virtd daemon.
++##	Send null signal to virtd daemon.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -115275,73 +115315,34 @@ index facdee8..b5a815a 100644
 -##	</summary>
 -## </param>
 -## <param name="name" optional="true">
-+#
-+interface(`virt_kill',`
-+	gen_require(`
-+		type virtd_t;
-+	')
-+
-+	allow $1 virtd_t:process sigkill;
-+')
-+
-+########################################
-+## <summary>
-+##	Send a signal to virtd daemon.
-+## </summary>
-+## <param name="domain">
- ##	<summary>
+-##	<summary>
 -##	The name of the object being created.
-+##	Domain allowed access.
- ##	</summary>
- ## </param>
+-##	</summary>
+-## </param>
  #
 -interface(`virt_home_filetrans_virt_home',`
-+interface(`virt_signal',`
++interface(`virt_signull',`
  	gen_require(`
 -		type virt_home_t;
 +		type virtd_t;
  	')
  
 -	userdom_user_home_dir_filetrans($1, virt_home_t, $2, $3)
-+	allow $1 virtd_t:process signal;
- ')
- 
- ########################################
- ## <summary>
--##	Read virt pid files.
-+##	Send null signal to virtd daemon.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -781,19 +1191,17 @@ interface(`virt_home_filetrans_virt_home',`
- ##	</summary>
- ## </param>
- #
--interface(`virt_read_pid_files',`
-+interface(`virt_signull',`
- 	gen_require(`
--		type virt_var_run_t;
-+		type virtd_t;
- 	')
- 
--	files_search_pids($1)
--	read_files_pattern($1, virt_var_run_t, virt_var_run_t)
 +	allow $1 virtd_t:process signull;
  ')
  
  ########################################
  ## <summary>
--##	Create, read, write, and delete
--##	virt pid files.
+-##	Read virt pid files.
 +##	Send a signal to virtual machines
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -801,18 +1209,17 @@ interface(`virt_read_pid_files',`
+@@ -781,19 +1209,17 @@ interface(`virt_home_filetrans_virt_home',`
  ##	</summary>
  ## </param>
  #
--interface(`virt_manage_pid_files',`
+-interface(`virt_read_pid_files',`
 +interface(`virt_signal_svirt',`
  	gen_require(`
 -		type virt_var_run_t;
@@ -115349,45 +115350,46 @@ index facdee8..b5a815a 100644
  	')
  
 -	files_search_pids($1)
--	manage_files_pattern($1, virt_var_run_t, virt_var_run_t)
+-	read_files_pattern($1, virt_var_run_t, virt_var_run_t)
 +	allow $1 virt_domain:process signal;
  ')
  
  ########################################
  ## <summary>
--##	Search virt lib directories.
+-##	Create, read, write, and delete
+-##	virt pid files.
 +##	Send a signal to sandbox domains
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -820,18 +1227,17 @@ interface(`virt_manage_pid_files',`
+@@ -801,18 +1227,17 @@ interface(`virt_read_pid_files',`
  ##	</summary>
  ## </param>
  #
--interface(`virt_search_lib',`
+-interface(`virt_manage_pid_files',`
 +interface(`virt_signal_sandbox',`
  	gen_require(`
--		type virt_var_lib_t;
+-		type virt_var_run_t;
 +		attribute svirt_sandbox_domain;
  	')
  
--	files_search_var_lib($1)
--	allow $1 virt_var_lib_t:dir search_dir_perms;
+-	files_search_pids($1)
+-	manage_files_pattern($1, virt_var_run_t, virt_var_run_t)
 +	allow $1 svirt_sandbox_domain:process signal;
  ')
  
  ########################################
  ## <summary>
--##	Read virt lib files.
+-##	Search virt lib directories.
 +##	Manage virt home files.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -839,192 +1245,247 @@ interface(`virt_search_lib',`
+@@ -820,211 +1245,247 @@ interface(`virt_manage_pid_files',`
  ##	</summary>
  ## </param>
  #
--interface(`virt_read_lib_files',`
+-interface(`virt_search_lib',`
 +interface(`virt_manage_home_files',`
  	gen_require(`
 -		type virt_var_lib_t;
@@ -115395,16 +115397,14 @@ index facdee8..b5a815a 100644
  	')
  
 -	files_search_var_lib($1)
--	read_files_pattern($1, virt_var_lib_t, virt_var_lib_t)
--	read_lnk_files_pattern($1, virt_var_lib_t, virt_var_lib_t)
+-	allow $1 virt_var_lib_t:dir search_dir_perms;
 +	userdom_search_user_home_dirs($1)
 +	manage_files_pattern($1, virt_home_t, virt_home_t)
  ')
  
  ########################################
  ## <summary>
--##	Create, read, write, and delete
--##	virt lib files.
+-##	Read virt lib files.
 +##	allow domain to read
 +##	virt tmpfs files
  ## </summary>
@@ -115415,7 +115415,7 @@ index facdee8..b5a815a 100644
  ##	</summary>
  ## </param>
  #
--interface(`virt_manage_lib_files',`
+-interface(`virt_read_lib_files',`
 +interface(`virt_read_tmpfs_files',`
  	gen_require(`
 -		type virt_var_lib_t;
@@ -115423,14 +115423,15 @@ index facdee8..b5a815a 100644
  	')
  
 -	files_search_var_lib($1)
--	manage_files_pattern($1, virt_var_lib_t, virt_var_lib_t)
+-	read_files_pattern($1, virt_var_lib_t, virt_var_lib_t)
+-	read_lnk_files_pattern($1, virt_var_lib_t, virt_var_lib_t)
 +	allow $1 virt_tmpfs_type:file read_file_perms;
  ')
  
  ########################################
  ## <summary>
--##	Create objects in virt pid
--##	directories with a private type.
+-##	Create, read, write, and delete
+-##	virt lib files.
 +##	allow domain to manage
 +##	virt tmpfs files
  ## </summary>
@@ -115440,27 +115441,36 @@ index facdee8..b5a815a 100644
 +##	Domain allowed access
  ##	</summary>
  ## </param>
--## <param name="private type">
-+#
+ #
+-interface(`virt_manage_lib_files',`
 +interface(`virt_manage_tmpfs_files',`
-+	gen_require(`
+ 	gen_require(`
+-		type virt_var_lib_t;
 +		attribute virt_tmpfs_type;
-+	')
-+
+ 	')
+ 
+-	files_search_var_lib($1)
+-	manage_files_pattern($1, virt_var_lib_t, virt_var_lib_t)
 +	allow $1 virt_tmpfs_type:file manage_file_perms;
-+')
-+
-+########################################
-+## <summary>
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Create objects in virt pid
+-##	directories with a private type.
 +##	Create .virt directory in the user home directory
 +##	with an correct label.
-+## </summary>
-+## <param name="domain">
+ ## </summary>
+ ## <param name="domain">
  ##	<summary>
--##	The type of the object to be created.
-+##	Domain allowed access.
+ ##	Domain allowed access.
  ##	</summary>
  ## </param>
+-## <param name="private type">
+-##	<summary>
+-##	The type of the object to be created.
+-##	</summary>
+-## </param>
 -## <param name="object">
 +#
 +interface(`virt_filetrans_home_content',`
@@ -115827,7 +115837,7 @@ index facdee8..b5a815a 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1136,50 +1574,129 @@ interface(`virt_manage_images',`
+@@ -1136,50 +1574,148 @@ interface(`virt_manage_images',`
  #
  interface(`virt_admin',`
  	gen_require(`
@@ -115963,9 +115973,7 @@ index facdee8..b5a815a 100644
 +
 +	domtrans_pattern($1,container_file_t, $2)
 +')
- 
--	files_search_locks($1)
--	admin_pattern($1, virt_lock_t)
++
 +########################################
 +## <summary>
 +##	Dontaudit read the process state (/proc/pid) of libvirt
@@ -115980,12 +115988,33 @@ index facdee8..b5a815a 100644
 +	gen_require(`
 +		type virtd_t;
 +	')
- 
--	dev_list_all_dev_nodes($1)
--	allow $1 virt_ptynode:chr_file rw_term_perms;
++
 +	dontaudit $1 virtd_t:dir search_dir_perms;
 +	dontaudit $1 virtd_t:file read_file_perms;
 +	dontaudit $1 virtd_t:lnk_file read_lnk_file_perms;
++')
+ 
+-	files_search_locks($1)
+-	admin_pattern($1, virt_lock_t)
++#######################################
++## <summary>
++##	Send to libvirt with a unix dgram socket.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`virt_dgram_send',`
++	gen_require(`
++		type virtd_t, virt_var_run_t;
++	')
+ 
+-	dev_list_all_dev_nodes($1)
+-	allow $1 virt_ptynode:chr_file rw_term_perms;
++	files_search_pids($1)
++	dgram_send_pattern($1, virt_var_run_t, virt_var_run_t, virtd_t)
  ')
 diff --git a/virt.te b/virt.te
 index f03dcf5..49d4083 100644
