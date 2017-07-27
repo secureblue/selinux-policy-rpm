@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 265%{?dist}
+Release: 266%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -690,6 +690,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jul 27 2017 Fedora Release Engineering <releng@fedoraproject.org> - 3.13.1-266
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
+
 * Fri Jul 21 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-265
 - Allow llpdad send dgram to libvirt
 - Allow abrt_t domain dac_read_search capability
