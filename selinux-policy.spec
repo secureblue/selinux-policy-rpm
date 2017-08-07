@@ -13,13 +13,13 @@
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
-%define POLICYVER 30
-%define POLICYCOREUTILSVER 2.5
-%define CHECKPOLICYVER 2.5
+%define POLICYVER 31
+%define POLICYCOREUTILSVER 2.7-1
+%define CHECKPOLICYVER 2.7-1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 267%{?dist}
+Release: 268%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -196,7 +196,7 @@ install -m0644 selinux_config/customizable_types %{buildroot}%{_sysconfdir}/seli
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local.bin \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/file_contexts.homedirs.bin \
-sefcontext_compile -o %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.bin %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
+sefcontext_compile -r -o %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.bin %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 cp %{SOURCE30} %{buildroot}%{_sysconfdir}/selinux/%1 \
 rm -f %{buildroot}/%{_usr}/share/selinux/%1/*pp*  \
 /usr/bin/sha512sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policy.sha512; \
@@ -683,6 +683,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 07 2017 Petr Lautrbach <plautrba@redhat.com> - 3.13.1-268
+- Update for SELinux userspace release 20170804 / 2.7
+- Omit precompiled regular expressions from file_contexts.bin files
+
 * Fri Aug 07 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-267
 - After fix in kernel where LSM hooks for dac_override and dac_search_read capability was swaped we need to fix it also in policy
 
