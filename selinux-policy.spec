@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 266%{?dist}
+Release: 267%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -683,6 +683,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 07 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-267
+- After fix in kernel where LSM hooks for dac_override and dac_search_read capability was swaped we need to fix it also in policy
+
 * Thu Jul 27 2017 Fedora Release Engineering <releng@fedoraproject.org> - 3.13.1-266
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
 
