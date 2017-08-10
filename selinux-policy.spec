@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 268%{?dist}
+Release: 269%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -683,6 +683,13 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 10 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-269
+- Allow osad make executable an anonymous mapping or private file mapping that is writable BZ(1425524)
+- After fix in kernel where LSM hooks for dac_override and dac_search_read capability was swaped we need to fix it also in policy
+- refpolicy: Define and allow map permission
+- init: Add NoNewPerms support for systemd.
+- Add nnp_nosuid_transition policycap and related class/perm definitions.
+
 * Mon Aug 07 2017 Petr Lautrbach <plautrba@redhat.com> - 3.13.1-268
 - Update for SELinux userspace release 20170804 / 2.7
 - Omit precompiled regular expressions from file_contexts.bin files

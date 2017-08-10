@@ -896,10 +896,26 @@ index 3a45f23..ee7d7b3 100644
  constrain socket_class_set { create relabelto relabelfrom } 
  (
 diff --git a/policy/flask/access_vectors b/policy/flask/access_vectors
-index a94b169..7c61322 100644
+index a94b169..536babe 100644
 --- a/policy/flask/access_vectors
 +++ b/policy/flask/access_vectors
-@@ -121,6 +121,60 @@ common x_device
+@@ -20,6 +20,7 @@ common file
+ 	relabelfrom
+ 	relabelto
+ 	append
++	map
+ 	unlink
+ 	link
+ 	rename
+@@ -47,6 +48,7 @@ common socket
+ 	relabelfrom
+ 	relabelto
+ 	append
++	map
+ # socket-specific
+ 	bind
+ 	connect
+@@ -121,6 +123,60 @@ common x_device
  }
  
  #
@@ -960,7 +976,19 @@ index a94b169..7c61322 100644
  # Define the access vectors.
  #
  # class class_name [ inherits common_name ] { permission_name ... }
-@@ -379,6 +433,7 @@ class security
+@@ -331,6 +387,11 @@ class process
+ 	setsockcreate
+ }
+ 
++class process2
++{
++	nnp_transition
++	nosuid_transition
++}
+ 
+ #
+ # Define the access vector interpretation for ipc-related objects
+@@ -379,6 +440,7 @@ class security
  	setsecparam
  	setcheckreqprot
  	read_policy
@@ -968,7 +996,7 @@ index a94b169..7c61322 100644
  }
  
  
-@@ -393,62 +448,32 @@ class system
+@@ -393,62 +455,32 @@ class system
  	syslog_mod
  	syslog_console
  	module_request
@@ -1048,7 +1076,7 @@ index a94b169..7c61322 100644
  #
  # Define the access vector interpretation for controlling
  # changes to passwd information.
-@@ -690,6 +715,8 @@ class nscd
+@@ -690,6 +722,8 @@ class nscd
  	shmemhost
  	getserv
  	shmemserv
@@ -1057,7 +1085,7 @@ index a94b169..7c61322 100644
  }
  
  # Define the access vector interpretation for controlling
-@@ -831,6 +858,38 @@ inherits socket
+@@ -831,6 +865,38 @@ inherits socket
  	attach_queue
  }
  
@@ -1096,7 +1124,7 @@ index a94b169..7c61322 100644
  class x_pointer
  inherits x_device
  
-@@ -865,3 +924,28 @@ inherits database
+@@ -865,3 +931,28 @@ inherits database
  	implement
  	execute
  }
@@ -1126,7 +1154,7 @@ index a94b169..7c61322 100644
 +class cap2_userns
 +inherits cap2
 diff --git a/policy/flask/security_classes b/policy/flask/security_classes
-index 14a4799..6e16f5e 100644
+index 14a4799..3bd5d69 100644
 --- a/policy/flask/security_classes
 +++ b/policy/flask/security_classes
 @@ -121,6 +121,18 @@ class kernel_service
@@ -1148,7 +1176,7 @@ index 14a4799..6e16f5e 100644
  # Still More SE-X Windows stuff
  class x_pointer			# userspace
  class x_keyboard		# userspace
-@@ -131,4 +143,15 @@ class db_view			# userspace
+@@ -131,4 +143,17 @@ class db_view			# userspace
  class db_sequence		# userspace
  class db_language		# userspace
  
@@ -1162,6 +1190,8 @@ index 14a4799..6e16f5e 100644
 +# Capability checks when on a non-init user namespace
 +class cap_userns
 +class cap2_userns
++
++class process2
 +
  # FLASK
 diff --git a/policy/global_booleans b/policy/global_booleans
@@ -6700,7 +6730,7 @@ index b31c054..3ad1127 100644
 +/usr/lib/udev/devices/null	-c	gen_context(system_u:object_r:null_device_t,s0)
 +/usr/lib/udev/devices/zero	-c	gen_context(system_u:object_r:zero_device_t,s0)
 diff --git a/policy/modules/kernel/devices.if b/policy/modules/kernel/devices.if
-index 76f285e..519431d 100644
+index 76f285e..732931f 100644
 --- a/policy/modules/kernel/devices.if
 +++ b/policy/modules/kernel/devices.if
 @@ -143,13 +143,32 @@ interface(`dev_relabel_all_dev_nodes',`
@@ -7143,10 +7173,15 @@ index 76f285e..519431d 100644
  #######################################
  ## <summary>
  ##	Set the attributes of the dlm control devices.
-@@ -1883,6 +2105,25 @@ interface(`dev_rw_dri',`
+@@ -1879,6 +2101,26 @@ interface(`dev_rw_dri',`
+ 	')
  
- ########################################
- ## <summary>
+ 	rw_chr_files_pattern($1, device_t, dri_device_t)
++	allow $1 dri_device_t:chr_file map;
++')
++
++########################################
++## <summary>
 +##	Read and write the dri devices.
 +## </summary>
 +## <param name="domain">
@@ -7162,14 +7197,10 @@ index 76f285e..519431d 100644
 +
 +    allow $1 device_t:dir search_dir_perms;
 +    allow $1 dri_device_t:chr_file rw_inherited_chr_file_perms;
-+')
-+
-+########################################
-+## <summary>
- ##	Dontaudit read and write on the dri devices.
- ## </summary>
- ## <param name="domain">
-@@ -2017,7 +2258,7 @@ interface(`dev_rw_input_dev',`
+ ')
+ 
+ ########################################
+@@ -2017,7 +2259,7 @@ interface(`dev_rw_input_dev',`
  
  ########################################
  ## <summary>
@@ -7178,7 +7209,7 @@ index 76f285e..519431d 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2025,17 +2266,18 @@ interface(`dev_rw_input_dev',`
+@@ -2025,17 +2267,18 @@ interface(`dev_rw_input_dev',`
  ##	</summary>
  ## </param>
  #
@@ -7201,7 +7232,7 @@ index 76f285e..519431d 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2043,7 +2285,180 @@ interface(`dev_getattr_framebuffer_dev',`
+@@ -2043,7 +2286,180 @@ interface(`dev_getattr_framebuffer_dev',`
  ##	</summary>
  ## </param>
  #
@@ -7383,7 +7414,7 @@ index 76f285e..519431d 100644
  	gen_require(`
  		type device_t, framebuf_device_t;
  	')
-@@ -2402,7 +2817,97 @@ interface(`dev_filetrans_lirc',`
+@@ -2402,7 +2818,97 @@ interface(`dev_filetrans_lirc',`
  
  ########################################
  ## <summary>
@@ -7482,7 +7513,7 @@ index 76f285e..519431d 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2532,6 +3037,24 @@ interface(`dev_read_raw_memory',`
+@@ -2532,6 +3038,24 @@ interface(`dev_read_raw_memory',`
  
  ########################################
  ## <summary>
@@ -7507,7 +7538,7 @@ index 76f285e..519431d 100644
  ##	Do not audit attempts to read raw memory devices
  ##	(e.g. /dev/mem).
  ## </summary>
-@@ -2573,6 +3096,24 @@ interface(`dev_write_raw_memory',`
+@@ -2573,6 +3097,24 @@ interface(`dev_write_raw_memory',`
  
  ########################################
  ## <summary>
@@ -7532,7 +7563,25 @@ index 76f285e..519431d 100644
  ##	Read and execute raw memory devices (e.g. /dev/mem).
  ## </summary>
  ## <param name="domain">
-@@ -2725,7 +3266,7 @@ interface(`dev_write_misc',`
+@@ -2587,7 +3129,7 @@ interface(`dev_rx_raw_memory',`
+ 	')
+ 
+ 	dev_read_raw_memory($1)
+-	allow $1 memory_device_t:chr_file execute;
++	allow $1 memory_device_t:chr_file { map execute };
+ ')
+ 
+ ########################################
+@@ -2606,7 +3148,7 @@ interface(`dev_wx_raw_memory',`
+ 	')
+ 
+ 	dev_write_raw_memory($1)
+-	allow $1 memory_device_t:chr_file execute;
++	allow $1 memory_device_t:chr_file { map execute };
+ ')
+ 
+ ########################################
+@@ -2725,7 +3267,7 @@ interface(`dev_write_misc',`
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -7541,7 +7590,7 @@ index 76f285e..519431d 100644
  ##	</summary>
  ## </param>
  #
-@@ -2811,7 +3352,7 @@ interface(`dev_rw_modem',`
+@@ -2811,7 +3353,7 @@ interface(`dev_rw_modem',`
  
  ########################################
  ## <summary>
@@ -7550,7 +7599,7 @@ index 76f285e..519431d 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2819,17 +3360,17 @@ interface(`dev_rw_modem',`
+@@ -2819,17 +3361,17 @@ interface(`dev_rw_modem',`
  ##	</summary>
  ## </param>
  #
@@ -7572,7 +7621,7 @@ index 76f285e..519431d 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2837,17 +3378,17 @@ interface(`dev_getattr_mouse_dev',`
+@@ -2837,17 +3379,17 @@ interface(`dev_getattr_mouse_dev',`
  ##	</summary>
  ## </param>
  #
@@ -7594,7 +7643,7 @@ index 76f285e..519431d 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -2855,12 +3396,84 @@ interface(`dev_setattr_mouse_dev',`
+@@ -2855,12 +3397,84 @@ interface(`dev_setattr_mouse_dev',`
  ##	</summary>
  ## </param>
  #
@@ -7682,7 +7731,7 @@ index 76f285e..519431d 100644
  ')
  
  ########################################
-@@ -2903,20 +3516,20 @@ interface(`dev_getattr_mtrr_dev',`
+@@ -2903,20 +3517,20 @@ interface(`dev_getattr_mtrr_dev',`
  
  ########################################
  ## <summary>
@@ -7707,7 +7756,7 @@ index 76f285e..519431d 100644
  ##	</p>
  ## </desc>
  ## <param name="domain">
-@@ -2925,43 +3538,34 @@ interface(`dev_getattr_mtrr_dev',`
+@@ -2925,43 +3539,34 @@ interface(`dev_getattr_mtrr_dev',`
  ##	</summary>
  ## </param>
  #
@@ -7763,7 +7812,7 @@ index 76f285e..519431d 100644
  ##	range registers (MTRR).
  ## </summary>
  ## <param name="domain">
-@@ -2970,13 +3574,32 @@ interface(`dev_write_mtrr',`
+@@ -2970,13 +3575,32 @@ interface(`dev_write_mtrr',`
  ##	</summary>
  ## </param>
  #
@@ -7799,7 +7848,7 @@ index 76f285e..519431d 100644
  ')
  
  ########################################
-@@ -3144,6 +3767,80 @@ interface(`dev_create_null_dev',`
+@@ -3144,6 +3768,80 @@ interface(`dev_create_null_dev',`
  
  ########################################
  ## <summary>
@@ -7880,7 +7929,7 @@ index 76f285e..519431d 100644
  ##	Do not audit attempts to get the attributes
  ##	of the BIOS non-volatile RAM device.
  ## </summary>
-@@ -3163,6 +3860,24 @@ interface(`dev_dontaudit_getattr_nvram_dev',`
+@@ -3163,6 +3861,24 @@ interface(`dev_dontaudit_getattr_nvram_dev',`
  
  ########################################
  ## <summary>
@@ -7905,7 +7954,7 @@ index 76f285e..519431d 100644
  ##	Read and write BIOS non-volatile RAM.
  ## </summary>
  ## <param name="domain">
-@@ -3254,7 +3969,25 @@ interface(`dev_rw_printer',`
+@@ -3254,7 +3970,25 @@ interface(`dev_rw_printer',`
  
  ########################################
  ## <summary>
@@ -7932,7 +7981,7 @@ index 76f285e..519431d 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3262,12 +3995,13 @@ interface(`dev_rw_printer',`
+@@ -3262,12 +3996,13 @@ interface(`dev_rw_printer',`
  ##	</summary>
  ## </param>
  #
@@ -7949,7 +7998,7 @@ index 76f285e..519431d 100644
  ')
  
  ########################################
-@@ -3399,7 +4133,7 @@ interface(`dev_dontaudit_read_rand',`
+@@ -3399,7 +4134,7 @@ interface(`dev_dontaudit_read_rand',`
  
  ########################################
  ## <summary>
@@ -7958,7 +8007,7 @@ index 76f285e..519431d 100644
  ##	number generator devices (e.g., /dev/random)
  ## </summary>
  ## <param name="domain">
-@@ -3413,7 +4147,7 @@ interface(`dev_dontaudit_append_rand',`
+@@ -3413,7 +4148,7 @@ interface(`dev_dontaudit_append_rand',`
  		type random_device_t;
  	')
  
@@ -7967,7 +8016,15 @@ index 76f285e..519431d 100644
  ')
  
  ########################################
-@@ -3855,7 +4589,7 @@ interface(`dev_getattr_sysfs_dirs',`
+@@ -3669,6 +4404,7 @@ interface(`dev_read_sound_mixer',`
+ 	')
+ 
+ 	read_chr_files_pattern($1, device_t, sound_device_t)
++	allow $1 sound_device_t:chr_file map;
+ ')
+ 
+ ########################################
+@@ -3855,7 +4591,7 @@ interface(`dev_getattr_sysfs_dirs',`
  
  ########################################
  ## <summary>
@@ -7976,7 +8033,7 @@ index 76f285e..519431d 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3863,91 +4597,89 @@ interface(`dev_getattr_sysfs_dirs',`
+@@ -3863,91 +4599,89 @@ interface(`dev_getattr_sysfs_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -8087,7 +8144,7 @@ index 76f285e..519431d 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -3955,60 +4687,215 @@ interface(`dev_dontaudit_write_sysfs_dirs',`
+@@ -3955,60 +4689,215 @@ interface(`dev_dontaudit_write_sysfs_dirs',`
  ##	</summary>
  ## </param>
  #
@@ -8324,7 +8381,7 @@ index 76f285e..519431d 100644
  	read_lnk_files_pattern($1, sysfs_t, sysfs_t)
  
  	list_dirs_pattern($1, sysfs_t, sysfs_t)
-@@ -4016,6 +4903,81 @@ interface(`dev_rw_sysfs',`
+@@ -4016,6 +4905,81 @@ interface(`dev_rw_sysfs',`
  
  ########################################
  ## <summary>
@@ -8406,7 +8463,7 @@ index 76f285e..519431d 100644
  ##	Read and write the TPM device.
  ## </summary>
  ## <param name="domain">
-@@ -4113,6 +5075,25 @@ interface(`dev_write_urand',`
+@@ -4113,6 +5077,25 @@ interface(`dev_write_urand',`
  
  ########################################
  ## <summary>
@@ -8432,7 +8489,7 @@ index 76f285e..519431d 100644
  ##	Getattr generic the USB devices.
  ## </summary>
  ## <param name="domain">
-@@ -4123,7 +5104,7 @@ interface(`dev_write_urand',`
+@@ -4123,7 +5106,7 @@ interface(`dev_write_urand',`
  #
  interface(`dev_getattr_generic_usb_dev',`
  	gen_require(`
@@ -8441,7 +8498,7 @@ index 76f285e..519431d 100644
  	')
  
  	getattr_chr_files_pattern($1, device_t, usb_device_t)
-@@ -4409,9 +5390,9 @@ interface(`dev_rw_usbfs',`
+@@ -4409,9 +5392,9 @@ interface(`dev_rw_usbfs',`
  	read_lnk_files_pattern($1, usbfs_t, usbfs_t)
  ')
  
@@ -8453,7 +8510,7 @@ index 76f285e..519431d 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -4419,17 +5400,17 @@ interface(`dev_rw_usbfs',`
+@@ -4419,17 +5402,17 @@ interface(`dev_rw_usbfs',`
  ##	</summary>
  ## </param>
  #
@@ -8476,7 +8533,7 @@ index 76f285e..519431d 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -4437,12 +5418,12 @@ interface(`dev_getattr_video_dev',`
+@@ -4437,12 +5420,12 @@ interface(`dev_getattr_video_dev',`
  ##	</summary>
  ## </param>
  #
@@ -8492,7 +8549,7 @@ index 76f285e..519431d 100644
  ')
  
  ########################################
-@@ -4539,6 +5520,134 @@ interface(`dev_write_video_dev',`
+@@ -4539,6 +5522,134 @@ interface(`dev_write_video_dev',`
  
  ########################################
  ## <summary>
@@ -8627,7 +8684,7 @@ index 76f285e..519431d 100644
  ##	Allow read/write the vhost net device
  ## </summary>
  ## <param name="domain">
-@@ -4557,6 +5666,24 @@ interface(`dev_rw_vhost',`
+@@ -4557,6 +5668,24 @@ interface(`dev_rw_vhost',`
  
  ########################################
  ## <summary>
@@ -8652,7 +8709,16 @@ index 76f285e..519431d 100644
  ##	Read and write VMWare devices.
  ## </summary>
  ## <param name="domain">
-@@ -4630,6 +5757,24 @@ interface(`dev_write_watchdog',`
+@@ -4589,7 +5718,7 @@ interface(`dev_rwx_vmware',`
+ 	')
+ 
+ 	dev_rw_vmware($1)
+-	allow $1 vmware_device_t:chr_file execute;
++	allow $1 vmware_device_t:chr_file { map execute };
+ ')
+ 
+ ########################################
+@@ -4630,6 +5759,24 @@ interface(`dev_write_watchdog',`
  
  ########################################
  ## <summary>
@@ -8677,7 +8743,7 @@ index 76f285e..519431d 100644
  ##	Read and write the the wireless device.
  ## </summary>
  ## <param name="domain">
-@@ -4762,6 +5907,44 @@ interface(`dev_rw_xserver_misc',`
+@@ -4762,6 +5909,44 @@ interface(`dev_rw_xserver_misc',`
  
  ########################################
  ## <summary>
@@ -8722,7 +8788,16 @@ index 76f285e..519431d 100644
  ##	Read and write to the zero device (/dev/zero).
  ## </summary>
  ## <param name="domain">
-@@ -4851,3 +6034,1042 @@ interface(`dev_unconfined',`
+@@ -4794,7 +5979,7 @@ interface(`dev_rwx_zero',`
+ 	')
+ 
+ 	dev_rw_zero($1)
+-	allow $1 zero_device_t:chr_file execute;
++	allow $1 zero_device_t:chr_file { map execute };
+ ')
+ 
+ ########################################
+@@ -4851,3 +6036,1042 @@ interface(`dev_unconfined',`
  
  	typeattribute $1 devices_unconfined_type;
  ')
@@ -34399,7 +34474,7 @@ index bc0ffc8..37b8ea5 100644
  ')
 +/var/run/systemd(/.*)?		gen_context(system_u:object_r:init_var_run_t,s0)
 diff --git a/policy/modules/system/init.if b/policy/modules/system/init.if
-index 79a45f6..054b9f7 100644
+index 79a45f6..6ed0c39 100644
 --- a/policy/modules/system/init.if
 +++ b/policy/modules/system/init.if
 @@ -1,5 +1,21 @@
@@ -34424,16 +34499,19 @@ index 79a45f6..054b9f7 100644
  ########################################
  ## <summary>
  ##	Create a file type used for init scripts.
-@@ -106,6 +122,8 @@ interface(`init_domain',`
+@@ -106,7 +122,11 @@ interface(`init_domain',`
  	role system_r types $1;
  
  	domtrans_pattern(init_t, $2, $1)
 +	allow init_t $1:unix_stream_socket create_stream_socket_perms;
 +	allow $1 init_t:unix_dgram_socket sendto;
  
++	allow init_t $1:process2 { nnp_transition nosuid_transition };
++	
  	ifdef(`hide_broken_symptoms',`
  		# RHEL4 systems seem to have a stray
-@@ -192,50 +210,43 @@ interface(`init_ranged_domain',`
+ 		# fds open from the initrd
+@@ -192,50 +212,43 @@ interface(`init_ranged_domain',`
  interface(`init_daemon_domain',`
  	gen_require(`
  		attribute direct_run_init, direct_init, direct_init_entry;
@@ -34506,7 +34584,7 @@ index 79a45f6..054b9f7 100644
  ')
  
  ########################################
-@@ -283,17 +294,20 @@ interface(`init_daemon_domain',`
+@@ -283,17 +296,20 @@ interface(`init_daemon_domain',`
  interface(`init_ranged_daemon_domain',`
  	gen_require(`
  		type initrc_t;
@@ -34528,7 +34606,7 @@ index 79a45f6..054b9f7 100644
  	')
  ')
  
-@@ -336,23 +350,19 @@ interface(`init_ranged_daemon_domain',`
+@@ -336,23 +352,19 @@ interface(`init_ranged_daemon_domain',`
  #
  interface(`init_system_domain',`
  	gen_require(`
@@ -34559,7 +34637,7 @@ index 79a45f6..054b9f7 100644
  ')
  
  ########################################
-@@ -401,20 +411,41 @@ interface(`init_system_domain',`
+@@ -401,20 +413,41 @@ interface(`init_system_domain',`
  interface(`init_ranged_system_domain',`
  	gen_require(`
  		type initrc_t;
@@ -34601,7 +34679,7 @@ index 79a45f6..054b9f7 100644
  ########################################
  ## <summary>
  ##	Mark the file type as a daemon run dir, allowing initrc_t
-@@ -460,6 +491,25 @@ interface(`init_domtrans',`
+@@ -460,6 +493,25 @@ interface(`init_domtrans',`
  	domtrans_pattern($1, init_exec_t, init_t)
  ')
  
@@ -34627,7 +34705,7 @@ index 79a45f6..054b9f7 100644
  ########################################
  ## <summary>
  ##	Execute the init program in the caller domain.
-@@ -469,7 +519,6 @@ interface(`init_domtrans',`
+@@ -469,7 +521,6 @@ interface(`init_domtrans',`
  ##	Domain allowed access.
  ##	</summary>
  ## </param>
@@ -34635,7 +34713,7 @@ index 79a45f6..054b9f7 100644
  #
  interface(`init_exec',`
  	gen_require(`
-@@ -478,6 +527,48 @@ interface(`init_exec',`
+@@ -478,6 +529,48 @@ interface(`init_exec',`
  
  	corecmd_search_bin($1)
  	can_exec($1, init_exec_t)
@@ -34684,7 +34762,7 @@ index 79a45f6..054b9f7 100644
  ')
  
  ########################################
-@@ -566,6 +657,58 @@ interface(`init_sigchld',`
+@@ -566,6 +659,58 @@ interface(`init_sigchld',`
  
  ########################################
  ## <summary>
@@ -34743,7 +34821,7 @@ index 79a45f6..054b9f7 100644
  ##	Connect to init with a unix socket.
  ## </summary>
  ## <param name="domain">
-@@ -576,12 +719,87 @@ interface(`init_sigchld',`
+@@ -576,12 +721,87 @@ interface(`init_sigchld',`
  #
  interface(`init_stream_connect',`
  	gen_require(`
@@ -34831,7 +34909,7 @@ index 79a45f6..054b9f7 100644
  ########################################
  ## <summary>
  ##	Inherit and use file descriptors from init.
-@@ -743,22 +961,24 @@ interface(`init_write_initctl',`
+@@ -743,22 +963,24 @@ interface(`init_write_initctl',`
  interface(`init_telinit',`
  	gen_require(`
  		type initctl_t;
@@ -34865,7 +34943,7 @@ index 79a45f6..054b9f7 100644
  ')
  
  ########################################
-@@ -787,7 +1007,7 @@ interface(`init_rw_initctl',`
+@@ -787,7 +1009,7 @@ interface(`init_rw_initctl',`
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -34874,7 +34952,7 @@ index 79a45f6..054b9f7 100644
  ##	</summary>
  ## </param>
  #
-@@ -830,11 +1050,12 @@ interface(`init_script_file_entry_type',`
+@@ -830,11 +1052,12 @@ interface(`init_script_file_entry_type',`
  #
  interface(`init_spec_domtrans_script',`
  	gen_require(`
@@ -34889,7 +34967,7 @@ index 79a45f6..054b9f7 100644
  
  	ifdef(`distro_gentoo',`
  		gen_require(`
-@@ -845,11 +1066,11 @@ interface(`init_spec_domtrans_script',`
+@@ -845,11 +1068,11 @@ interface(`init_spec_domtrans_script',`
  	')
  
  	ifdef(`enable_mcs',`
@@ -34903,7 +34981,7 @@ index 79a45f6..054b9f7 100644
  	')
  ')
  
-@@ -865,19 +1086,41 @@ interface(`init_spec_domtrans_script',`
+@@ -865,19 +1088,41 @@ interface(`init_spec_domtrans_script',`
  #
  interface(`init_domtrans_script',`
  	gen_require(`
@@ -34949,7 +35027,7 @@ index 79a45f6..054b9f7 100644
  ')
  
  ########################################
-@@ -933,9 +1176,14 @@ interface(`init_script_file_domtrans',`
+@@ -933,9 +1178,14 @@ interface(`init_script_file_domtrans',`
  interface(`init_labeled_script_domtrans',`
  	gen_require(`
  		type initrc_t;
@@ -34964,7 +35042,7 @@ index 79a45f6..054b9f7 100644
  	files_search_etc($1)
  ')
  
-@@ -992,7 +1240,7 @@ interface(`init_run_daemon',`
+@@ -992,7 +1242,7 @@ interface(`init_run_daemon',`
  
  ########################################
  ## <summary>
@@ -34973,7 +35051,7 @@ index 79a45f6..054b9f7 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1000,38 +1248,37 @@ interface(`init_run_daemon',`
+@@ -1000,38 +1250,37 @@ interface(`init_run_daemon',`
  ##	</summary>
  ## </param>
  #
@@ -35021,7 +35099,7 @@ index 79a45f6..054b9f7 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1039,17 +1286,19 @@ interface(`init_ptrace',`
+@@ -1039,17 +1288,19 @@ interface(`init_ptrace',`
  ##	</summary>
  ## </param>
  #
@@ -35045,7 +35123,7 @@ index 79a45f6..054b9f7 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1057,18 +1306,17 @@ interface(`init_write_script_pipes',`
+@@ -1057,18 +1308,17 @@ interface(`init_write_script_pipes',`
  ##	</summary>
  ## </param>
  #
@@ -35068,7 +35146,7 @@ index 79a45f6..054b9f7 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1076,37 +1324,38 @@ interface(`init_getattr_script_files',`
+@@ -1076,37 +1326,38 @@ interface(`init_getattr_script_files',`
  ##	</summary>
  ## </param>
  #
@@ -35117,7 +35195,7 @@ index 79a45f6..054b9f7 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1114,7 +1363,82 @@ interface(`init_exec_script_files',`
+@@ -1114,7 +1365,82 @@ interface(`init_exec_script_files',`
  ##	</summary>
  ## </param>
  #
@@ -35201,7 +35279,7 @@ index 79a45f6..054b9f7 100644
  	gen_require(`
  		attribute init_script_file_type;
  	')
-@@ -1125,6 +1449,63 @@ interface(`init_getattr_all_script_files',`
+@@ -1125,6 +1451,63 @@ interface(`init_getattr_all_script_files',`
  
  ########################################
  ## <summary>
@@ -35265,7 +35343,7 @@ index 79a45f6..054b9f7 100644
  ##	Read all init script files.
  ## </summary>
  ## <param name="domain">
-@@ -1144,6 +1525,24 @@ interface(`init_read_all_script_files',`
+@@ -1144,6 +1527,24 @@ interface(`init_read_all_script_files',`
  
  #######################################
  ## <summary>
@@ -35290,7 +35368,7 @@ index 79a45f6..054b9f7 100644
  ##	Dontaudit read all init script files.
  ## </summary>
  ## <param name="domain">
-@@ -1195,12 +1594,7 @@ interface(`init_read_script_state',`
+@@ -1195,12 +1596,7 @@ interface(`init_read_script_state',`
  	')
  
  	kernel_search_proc($1)
@@ -35304,7 +35382,7 @@ index 79a45f6..054b9f7 100644
  ')
  
  ########################################
-@@ -1314,6 +1708,24 @@ interface(`init_signal_script',`
+@@ -1314,6 +1710,24 @@ interface(`init_signal_script',`
  
  ########################################
  ## <summary>
@@ -35329,7 +35407,7 @@ index 79a45f6..054b9f7 100644
  ##	Send null signals to init scripts.
  ## </summary>
  ## <param name="domain">
-@@ -1440,6 +1852,27 @@ interface(`init_dbus_send_script',`
+@@ -1440,6 +1854,27 @@ interface(`init_dbus_send_script',`
  ########################################
  ## <summary>
  ##	Send and receive messages from
@@ -35357,7 +35435,7 @@ index 79a45f6..054b9f7 100644
  ##	init scripts over dbus.
  ## </summary>
  ## <param name="domain">
-@@ -1547,6 +1980,25 @@ interface(`init_getattr_script_status_files',`
+@@ -1547,6 +1982,25 @@ interface(`init_getattr_script_status_files',`
  
  ########################################
  ## <summary>
@@ -35383,7 +35461,7 @@ index 79a45f6..054b9f7 100644
  ##	Do not audit attempts to read init script
  ##	status files.
  ## </summary>
-@@ -1605,6 +2057,42 @@ interface(`init_rw_script_tmp_files',`
+@@ -1605,6 +2059,42 @@ interface(`init_rw_script_tmp_files',`
  
  ########################################
  ## <summary>
@@ -35426,7 +35504,7 @@ index 79a45f6..054b9f7 100644
  ##	Create files in a init script
  ##	temporary data directory.
  ## </summary>
-@@ -1677,6 +2165,43 @@ interface(`init_read_utmp',`
+@@ -1677,6 +2167,43 @@ interface(`init_read_utmp',`
  
  ########################################
  ## <summary>
@@ -35470,7 +35548,7 @@ index 79a45f6..054b9f7 100644
  ##	Do not audit attempts to write utmp.
  ## </summary>
  ## <param name="domain">
-@@ -1765,7 +2290,7 @@ interface(`init_dontaudit_rw_utmp',`
+@@ -1765,7 +2292,7 @@ interface(`init_dontaudit_rw_utmp',`
  		type initrc_var_run_t;
  	')
  
@@ -35479,7 +35557,7 @@ index 79a45f6..054b9f7 100644
  ')
  
  ########################################
-@@ -1806,27 +2331,154 @@ interface(`init_pid_filetrans_utmp',`
+@@ -1806,27 +2333,154 @@ interface(`init_pid_filetrans_utmp',`
  	files_pid_filetrans($1, initrc_var_run_t, file, "utmp")
  ')
  
@@ -35646,7 +35724,7 @@ index 79a45f6..054b9f7 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1840,3 +2492,583 @@ interface(`init_udp_recvfrom_all_daemons',`
+@@ -1840,3 +2494,583 @@ interface(`init_udp_recvfrom_all_daemons',`
  	')
  	corenet_udp_recvfrom_labeled($1, daemon)
  ')
@@ -39065,7 +39143,7 @@ index 73bb3c0..a70bee5 100644
 +
 +/usr/sbin/ldconfig		--	gen_context(system_u:object_r:ldconfig_exec_t,s0)
 diff --git a/policy/modules/system/libraries.if b/policy/modules/system/libraries.if
-index 808ba93..baca326 100644
+index 808ba93..b717d97 100644
 --- a/policy/modules/system/libraries.if
 +++ b/policy/modules/system/libraries.if
 @@ -66,6 +66,25 @@ interface(`libs_exec_ldconfig',`
@@ -39094,6 +39172,15 @@ index 808ba93..baca326 100644
  ##	Use the dynamic link/loader for automatic loading
  ##	of shared libraries.
  ## </summary>
+@@ -86,7 +105,7 @@ interface(`libs_use_ld_so',`
+ 	read_lnk_files_pattern($1, lib_t, { lib_t ld_so_t })
+ 	mmap_files_pattern($1, lib_t, ld_so_t)
+ 
+-	allow $1 ld_so_cache_t:file read_file_perms;
++	allow $1 ld_so_cache_t:file { map read_file_perms };
+ ')
+ 
+ ########################################
 @@ -147,6 +166,7 @@ interface(`libs_manage_ld_so',`
  		type lib_t, ld_so_t;
  	')
@@ -39787,7 +39874,7 @@ index b50c5fe..9eacd9b 100644
 +/var/webmin(/.*)?		gen_context(system_u:object_r:var_log_t,s0)
 +
 diff --git a/policy/modules/system/logging.if b/policy/modules/system/logging.if
-index 4e94884..0690edf 100644
+index 4e94884..e82be7a 100644
 --- a/policy/modules/system/logging.if
 +++ b/policy/modules/system/logging.if
 @@ -233,7 +233,7 @@ interface(`logging_run_auditd',`
@@ -39883,11 +39970,18 @@ index 4e94884..0690edf 100644
  	gen_require(`
 -		type syslogd_t, devlog_t;
 +		attribute syslog_client_type;
-+	')
-+
+ 	')
+ 
+-	allow $1 devlog_t:lnk_file read_lnk_file_perms;
+-	allow $1 devlog_t:sock_file write_sock_file_perms;
 +	typeattribute $1 syslog_client_type;
 +')
-+
+ 
+-	# the type of socket depends on the syslog daemon
+-	allow $1 syslogd_t:unix_dgram_socket sendto;
+-	allow $1 syslogd_t:unix_stream_socket connectto;
+-	allow $1 self:unix_dgram_socket create_socket_perms;
+-	allow $1 self:unix_stream_socket create_socket_perms;
 +########################################
 +## <summary>
 +##	Connect to the syslog control unix stream socket.
@@ -39902,7 +39996,11 @@ index 4e94884..0690edf 100644
 +	gen_require(`
 +		type devlog_t;
 +	')
-+
+ 
+-	# If syslog is down, the glibc syslog() function
+-	# will write to the console.
+-	term_write_console($1)
+-	term_dontaudit_read_console($1)
 +	allow $1 devlog_t:lnk_file manage_lnk_file_perms;
 +    allow $1 devlog_t:sock_file manage_sock_file_perms;
 +	dev_filetrans($1, devlog_t, lnk_file, "log")
@@ -39923,19 +40021,12 @@ index 4e94884..0690edf 100644
 +interface(`logging_relabel_devlog_dev',`
 +	gen_require(`
 +		type devlog_t;
- 	')
- 
--	allow $1 devlog_t:lnk_file read_lnk_file_perms;
--	allow $1 devlog_t:sock_file write_sock_file_perms;
++	')
++
 +	allow $1 devlog_t:sock_file relabel_sock_file_perms;
 +	allow $1 devlog_t:lnk_file relabelto_lnk_file_perms;
 +')
- 
--	# the type of socket depends on the syslog daemon
--	allow $1 syslogd_t:unix_dgram_socket sendto;
--	allow $1 syslogd_t:unix_stream_socket connectto;
--	allow $1 self:unix_dgram_socket create_socket_perms;
--	allow $1 self:unix_stream_socket create_socket_perms;
++
 +########################################
 +## <summary>
 +##	Allow domain to read the syslog pid files.
@@ -39950,11 +40041,7 @@ index 4e94884..0690edf 100644
 +	gen_require(`
 +		type syslogd_var_run_t;
 +	')
- 
--	# If syslog is down, the glibc syslog() function
--	# will write to the console.
--	term_write_console($1)
--	term_dontaudit_read_console($1)
++
 +    read_files_pattern($1, syslogd_var_run_t, syslogd_var_run_t)
 +    list_dirs_pattern($1, syslogd_var_run_t, syslogd_var_run_t)
 +')
@@ -40111,7 +40198,7 @@ index 4e94884..0690edf 100644
  ')
  
  ########################################
-@@ -885,6 +1107,44 @@ interface(`logging_read_generic_logs',`
+@@ -885,6 +1107,63 @@ interface(`logging_read_generic_logs',`
  
  ########################################
  ## <summary>
@@ -40153,10 +40240,29 @@ index 4e94884..0690edf 100644
 +
 +########################################
 +## <summary>
++##	Map generic log files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`logging_mmap_generic_logs',`
++	gen_require(`
++		type var_log_t;
++	')
++
++	allow $1 var_log_t:file map;
++')
++
++########################################
++## <summary>
  ##	Write generic log files.
  ## </summary>
  ## <param name="domain">
-@@ -905,6 +1165,24 @@ interface(`logging_write_generic_logs',`
+@@ -905,6 +1184,24 @@ interface(`logging_write_generic_logs',`
  
  ########################################
  ## <summary>
@@ -40181,7 +40287,7 @@ index 4e94884..0690edf 100644
  ##	Dontaudit Write generic log files.
  ## </summary>
  ## <param name="domain">
-@@ -984,11 +1262,16 @@ interface(`logging_admin_audit',`
+@@ -984,11 +1281,16 @@ interface(`logging_admin_audit',`
  		type auditd_t, auditd_etc_t, auditd_log_t;
  		type auditd_var_run_t;
  		type auditd_initrc_exec_t;
@@ -40199,7 +40305,7 @@ index 4e94884..0690edf 100644
  	manage_dirs_pattern($1, auditd_etc_t, auditd_etc_t)
  	manage_files_pattern($1, auditd_etc_t, auditd_etc_t)
  
-@@ -1004,6 +1287,55 @@ interface(`logging_admin_audit',`
+@@ -1004,6 +1306,55 @@ interface(`logging_admin_audit',`
  	domain_system_change_exemption($1)
  	role_transition $2 auditd_initrc_exec_t system_r;
  	allow $2 system_r;
@@ -40255,7 +40361,7 @@ index 4e94884..0690edf 100644
  ')
  
  ########################################
-@@ -1032,10 +1364,15 @@ interface(`logging_admin_syslog',`
+@@ -1032,10 +1383,15 @@ interface(`logging_admin_syslog',`
  		type syslogd_initrc_exec_t;
  	')
  
@@ -40273,7 +40379,7 @@ index 4e94884..0690edf 100644
  
  	manage_dirs_pattern($1, klogd_var_run_t, klogd_var_run_t)
  	manage_files_pattern($1, klogd_var_run_t, klogd_var_run_t)
-@@ -1057,6 +1394,8 @@ interface(`logging_admin_syslog',`
+@@ -1057,6 +1413,8 @@ interface(`logging_admin_syslog',`
  	manage_files_pattern($1, syslogd_var_run_t, syslogd_var_run_t)
  
  	logging_manage_all_logs($1)
@@ -40282,7 +40388,7 @@ index 4e94884..0690edf 100644
  
  	init_labeled_script_domtrans($1, syslogd_initrc_exec_t)
  	domain_system_change_exemption($1)
-@@ -1085,3 +1424,90 @@ interface(`logging_admin',`
+@@ -1085,3 +1443,107 @@ interface(`logging_admin',`
  	logging_admin_audit($1, $2)
  	logging_admin_syslog($1, $2)
  ')
@@ -40373,8 +40479,26 @@ index 4e94884..0690edf 100644
 +	files_search_pids($1)
 +	filetrans_pattern($1, syslogd_var_run_t, $2, $3, $4)
 +')
++
++#######################################
++## <summary>
++##	Map files in /run/log/journal/ directory.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`logging_mmap_journal',`
++	gen_require(`
++		type syslogd_var_run_t;
++	')
++
++	allow $1 syslogd_var_run_t:file map;
+\ No newline at end of file
 diff --git a/policy/modules/system/logging.te b/policy/modules/system/logging.te
-index 59b04c1..0114ad2 100644
+index 59b04c1..2ad89c5 100644
 --- a/policy/modules/system/logging.te
 +++ b/policy/modules/system/logging.te
 @@ -4,6 +4,29 @@ policy_module(logging, 1.20.1)
@@ -40636,7 +40760,7 @@ index 59b04c1..0114ad2 100644
  # receive messages to be logged
  allow syslogd_t self:unix_dgram_socket create_socket_perms;
  allow syslogd_t self:unix_stream_socket create_stream_socket_perms;
-@@ -369,11 +431,15 @@ allow syslogd_t self:unix_dgram_socket sendto;
+@@ -369,15 +431,20 @@ allow syslogd_t self:unix_dgram_socket sendto;
  allow syslogd_t self:fifo_file rw_fifo_file_perms;
  allow syslogd_t self:udp_socket create_socket_perms;
  allow syslogd_t self:tcp_socket create_stream_socket_perms;
@@ -40653,7 +40777,12 @@ index 59b04c1..0114ad2 100644
  files_pid_filetrans(syslogd_t, devlog_t, sock_file)
  
  # create/append log files.
-@@ -389,30 +455,47 @@ manage_dirs_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
+ manage_files_pattern(syslogd_t, var_log_t, var_log_t)
++allow syslogd_t var_log_t:file map;
+ rw_fifo_files_pattern(syslogd_t, var_log_t, var_log_t)
+ files_search_spool(syslogd_t)
+ 
+@@ -389,30 +456,47 @@ manage_dirs_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
  manage_files_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
  files_tmp_filetrans(syslogd_t, syslogd_tmp_t, { dir file })
  
@@ -40704,7 +40833,7 @@ index 59b04c1..0114ad2 100644
  # syslog-ng can listen and connect on tcp port 514 (rsh)
  corenet_tcp_sendrecv_generic_if(syslogd_t)
  corenet_tcp_sendrecv_generic_node(syslogd_t)
-@@ -422,6 +505,8 @@ corenet_tcp_bind_rsh_port(syslogd_t)
+@@ -422,6 +506,8 @@ corenet_tcp_bind_rsh_port(syslogd_t)
  corenet_tcp_connect_rsh_port(syslogd_t)
  # Allow users to define additional syslog ports to connect to
  corenet_tcp_bind_syslogd_port(syslogd_t)
@@ -40713,7 +40842,7 @@ index 59b04c1..0114ad2 100644
  corenet_tcp_connect_syslogd_port(syslogd_t)
  corenet_tcp_connect_postgresql_port(syslogd_t)
  corenet_tcp_connect_mysqld_port(syslogd_t)
-@@ -432,9 +517,32 @@ corenet_sendrecv_syslogd_server_packets(syslogd_t)
+@@ -432,9 +518,32 @@ corenet_sendrecv_syslogd_server_packets(syslogd_t)
  corenet_sendrecv_postgresql_client_packets(syslogd_t)
  corenet_sendrecv_mysqld_client_packets(syslogd_t)
  
@@ -40747,7 +40876,7 @@ index 59b04c1..0114ad2 100644
  domain_use_interactive_fds(syslogd_t)
  
  files_read_etc_files(syslogd_t)
-@@ -448,13 +556,17 @@ files_var_lib_filetrans(syslogd_t, syslogd_var_lib_t, { file dir })
+@@ -448,13 +557,17 @@ files_var_lib_filetrans(syslogd_t, syslogd_var_lib_t, { file dir })
  
  fs_getattr_all_fs(syslogd_t)
  fs_search_auto_mountpoints(syslogd_t)
@@ -40765,7 +40894,7 @@ index 59b04c1..0114ad2 100644
  # for sending messages to logged in users
  init_read_utmp(syslogd_t)
  init_dontaudit_write_utmp(syslogd_t)
-@@ -466,11 +578,12 @@ init_use_fds(syslogd_t)
+@@ -466,11 +579,12 @@ init_use_fds(syslogd_t)
  
  # cjp: this doesnt make sense
  logging_send_syslog_msg(syslogd_t)
@@ -40781,7 +40910,7 @@ index 59b04c1..0114ad2 100644
  
  ifdef(`distro_gentoo',`
  	# default gentoo syslog-ng config appends kernel
-@@ -497,6 +610,7 @@ optional_policy(`
+@@ -497,6 +611,7 @@ optional_policy(`
  optional_policy(`
  	cron_manage_log_files(syslogd_t)
  	cron_generic_log_filetrans_log(syslogd_t, file, "cron.log")
@@ -40789,7 +40918,7 @@ index 59b04c1..0114ad2 100644
  ')
  
  optional_policy(`
-@@ -507,15 +621,44 @@ optional_policy(`
+@@ -507,15 +622,44 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -40834,7 +40963,7 @@ index 59b04c1..0114ad2 100644
  ')
  
  optional_policy(`
-@@ -526,3 +669,29 @@ optional_policy(`
+@@ -526,3 +670,29 @@ optional_policy(`
  	# log to the xconsole
  	xserver_rw_console(syslogd_t)
  ')
@@ -41670,7 +41799,7 @@ index 9fe8e01..c62c761 100644
  /var/spool/postfix/etc/localtime -- gen_context(system_u:object_r:locale_t,s0)
  ')
 diff --git a/policy/modules/system/miscfiles.if b/policy/modules/system/miscfiles.if
-index fc28bc3..3be6892 100644
+index fc28bc3..e4b9a3b 100644
 --- a/policy/modules/system/miscfiles.if
 +++ b/policy/modules/system/miscfiles.if
 @@ -67,6 +67,27 @@ interface(`miscfiles_read_all_certs',`
@@ -41762,7 +41891,23 @@ index fc28bc3..3be6892 100644
  ##	Manage SSL certificates.
  ## </summary>
  ## <param name="domain">
-@@ -434,6 +493,7 @@ interface(`miscfiles_rw_localization',`
+@@ -191,6 +250,7 @@ interface(`miscfiles_read_fonts',`
+ 
+ 	allow $1 fonts_t:dir list_dir_perms;
+ 	read_files_pattern($1, fonts_t, fonts_t)
++	allow $1 fonts_t:file map;
+ 	read_lnk_files_pattern($1, fonts_t, fonts_t)
+ 
+ 	allow $1 fonts_cache_t:dir list_dir_perms;
+@@ -414,6 +474,7 @@ interface(`miscfiles_read_localization',`
+ 	allow $1 locale_t:dir list_dir_perms;
+ 	read_files_pattern($1, locale_t, locale_t)
+ 	read_lnk_files_pattern($1, locale_t, locale_t)
++	allow $1 locale_t:file map;
+ ')
+ 
+ ########################################
+@@ -434,6 +495,7 @@ interface(`miscfiles_rw_localization',`
  	files_search_usr($1)
  	allow $1 locale_t:dir list_dir_perms;
  	rw_files_pattern($1, locale_t, locale_t)
@@ -41770,7 +41915,7 @@ index fc28bc3..3be6892 100644
  ')
  
  ########################################
-@@ -453,6 +513,7 @@ interface(`miscfiles_relabel_localization',`
+@@ -453,6 +515,7 @@ interface(`miscfiles_relabel_localization',`
  
  	files_search_usr($1)
  	relabel_files_pattern($1, locale_t, locale_t)
@@ -41778,7 +41923,7 @@ index fc28bc3..3be6892 100644
  ')
  
  ########################################
-@@ -470,7 +531,6 @@ interface(`miscfiles_legacy_read_localization',`
+@@ -470,7 +533,6 @@ interface(`miscfiles_legacy_read_localization',`
  		type locale_t;
  	')
  
@@ -41786,7 +41931,7 @@ index fc28bc3..3be6892 100644
  	allow $1 locale_t:file execute;
  ')
  
-@@ -531,6 +591,10 @@ interface(`miscfiles_read_man_pages',`
+@@ -531,6 +593,10 @@ interface(`miscfiles_read_man_pages',`
  	allow $1 { man_cache_t man_t }:dir list_dir_perms;
  	read_files_pattern($1, { man_cache_t man_t }, { man_cache_t man_t })
  	read_lnk_files_pattern($1, { man_cache_t man_t }, { man_cache_t man_t })
@@ -41797,7 +41942,7 @@ index fc28bc3..3be6892 100644
  ')
  
  ########################################
-@@ -554,6 +618,29 @@ interface(`miscfiles_delete_man_pages',`
+@@ -554,6 +620,29 @@ interface(`miscfiles_delete_man_pages',`
  	delete_dirs_pattern($1, { man_cache_t man_t }, { man_cache_t man_t })
  	delete_files_pattern($1, { man_cache_t man_t }, { man_cache_t man_t })
  	delete_lnk_files_pattern($1, { man_cache_t man_t }, { man_cache_t man_t })
@@ -41827,7 +41972,7 @@ index fc28bc3..3be6892 100644
  ')
  
  ########################################
-@@ -622,6 +709,30 @@ interface(`miscfiles_manage_man_cache',`
+@@ -622,6 +711,30 @@ interface(`miscfiles_manage_man_cache',`
  
  ########################################
  ## <summary>
@@ -41858,7 +42003,7 @@ index fc28bc3..3be6892 100644
  ##	Read public files used for file
  ##	transfer services.
  ## </summary>
-@@ -784,8 +895,11 @@ interface(`miscfiles_etc_filetrans_localization',`
+@@ -784,8 +897,11 @@ interface(`miscfiles_etc_filetrans_localization',`
  		type locale_t;
  	')
  
@@ -41872,7 +42017,7 @@ index fc28bc3..3be6892 100644
  ')
  
  ########################################
-@@ -809,3 +923,61 @@ interface(`miscfiles_manage_localization',`
+@@ -809,3 +925,61 @@ interface(`miscfiles_manage_localization',`
  	manage_lnk_files_pattern($1, locale_t, locale_t)
  ')
  
@@ -43422,7 +43567,7 @@ index d43f3b1..c5053db 100644
 +/etc/share/selinux/targeted(/.*)?	gen_context(system_u:object_r:semanage_store_t,s0)
 +/etc/share/selinux/mls(/.*)?		gen_context(system_u:object_r:semanage_store_t,s0)
 diff --git a/policy/modules/system/selinuxutil.if b/policy/modules/system/selinuxutil.if
-index 3822072..d358162 100644
+index 3822072..0395f48 100644
 --- a/policy/modules/system/selinuxutil.if
 +++ b/policy/modules/system/selinuxutil.if
 @@ -135,6 +135,42 @@ interface(`seutil_exec_loadpolicy',`
@@ -43903,25 +44048,51 @@ index 3822072..d358162 100644
  ########################################
  ## <summary>
  ##	Create, read, write, and delete the default_contexts files.
-@@ -784,7 +1146,9 @@ interface(`seutil_read_file_contexts',`
+@@ -784,7 +1146,10 @@ interface(`seutil_read_file_contexts',`
  
  	files_search_etc($1)
  	allow $1 { selinux_config_t default_context_t }:dir search_dir_perms;
 +	list_dirs_pattern($1, file_context_t, file_context_t)
  	read_files_pattern($1, file_context_t, file_context_t)
 +	read_lnk_files_pattern($1, file_context_t, file_context_t)
++	allow $1 file_context_t:file map;
  ')
  
  ########################################
-@@ -846,6 +1210,7 @@ interface(`seutil_manage_file_contexts',`
+@@ -805,6 +1170,7 @@ interface(`seutil_dontaudit_read_file_contexts',`
+ 
+ 	dontaudit $1 { selinux_config_t default_context_t file_context_t }:dir search_dir_perms;
+ 	dontaudit $1 file_context_t:file read_file_perms;
++	dontaudit $1 file_context_t:file map;
+ ')
+ 
+ ########################################
+@@ -825,6 +1191,7 @@ interface(`seutil_rw_file_contexts',`
+ 	files_search_etc($1)
+ 	allow $1 { selinux_config_t default_context_t }:dir search_dir_perms;
+ 	rw_files_pattern($1, file_context_t, file_context_t)
++	allow $1 file_context_t:file map;
+ ')
+ 
+ ########################################
+@@ -846,6 +1213,8 @@ interface(`seutil_manage_file_contexts',`
  	files_search_etc($1)
  	allow $1 { selinux_config_t default_context_t }:dir search_dir_perms;
  	manage_files_pattern($1, file_context_t, file_context_t)
 +	manage_dirs_pattern($1, file_context_t, file_context_t)
++	allow $1 file_context_t:file map;
  ')
  
  ########################################
-@@ -999,6 +1364,26 @@ interface(`seutil_domtrans_semanage',`
+@@ -866,6 +1235,7 @@ interface(`seutil_read_bin_policy',`
+ 	files_search_etc($1)
+ 	allow $1 selinux_config_t:dir search_dir_perms;
+ 	read_files_pattern($1, policy_config_t, policy_config_t)
++	allow $1 policy_config_t:file map;
+ ')
+ 
+ ########################################
+@@ -999,6 +1369,26 @@ interface(`seutil_domtrans_semanage',`
  
  ########################################
  ## <summary>
@@ -43948,7 +44119,7 @@ index 3822072..d358162 100644
  ##	Execute semanage in the semanage domain, and
  ##	allow the specified role the semanage domain,
  ##	and use the caller's terminal.
-@@ -1017,11 +1402,105 @@ interface(`seutil_domtrans_semanage',`
+@@ -1017,11 +1407,105 @@ interface(`seutil_domtrans_semanage',`
  #
  interface(`seutil_run_semanage',`
  	gen_require(`
@@ -44056,7 +44227,7 @@ index 3822072..d358162 100644
  ')
  
  ########################################
-@@ -1041,9 +1520,15 @@ interface(`seutil_manage_module_store',`
+@@ -1041,9 +1525,15 @@ interface(`seutil_manage_module_store',`
  	')
  
  	files_search_etc($1)
@@ -44072,7 +44243,7 @@ index 3822072..d358162 100644
  ')
  
  #######################################
-@@ -1067,6 +1552,24 @@ interface(`seutil_get_semanage_read_lock',`
+@@ -1067,6 +1557,24 @@ interface(`seutil_get_semanage_read_lock',`
  
  #######################################
  ## <summary>
@@ -44097,7 +44268,7 @@ index 3822072..d358162 100644
  ##	Get trans lock on module store
  ## </summary>
  ## <param name="domain">
-@@ -1137,3 +1640,121 @@ interface(`seutil_dontaudit_libselinux_linked',`
+@@ -1137,3 +1645,121 @@ interface(`seutil_dontaudit_libselinux_linked',`
  	selinux_dontaudit_get_fs_mount($1)
  	seutil_dontaudit_read_config($1)
  ')
@@ -44220,7 +44391,7 @@ index 3822072..d358162 100644
 +	allow semanage_t $1:dbus send_msg;
 +')
 diff --git a/policy/modules/system/selinuxutil.te b/policy/modules/system/selinuxutil.te
-index dc46420..1a0d4fb 100644
+index dc46420..27d8d49 100644
 --- a/policy/modules/system/selinuxutil.te
 +++ b/policy/modules/system/selinuxutil.te
 @@ -11,14 +11,16 @@ gen_require(`
@@ -44386,7 +44557,7 @@ index dc46420..1a0d4fb 100644
  userdom_use_all_users_fds(checkpolicy_t)
  
  ifdef(`distro_ubuntu',`
-@@ -165,7 +188,7 @@ ifdef(`distro_ubuntu',`
+@@ -165,10 +188,11 @@ ifdef(`distro_ubuntu',`
  # Load_policy local policy
  #
  
@@ -44395,7 +44566,11 @@ index dc46420..1a0d4fb 100644
  
  # only allow read of policy config files
  read_files_pattern(load_policy_t, { policy_src_t policy_config_t }, policy_config_t)
-@@ -188,13 +211,13 @@ term_list_ptys(load_policy_t)
++allow load_policy_t policy_config_t:file map;
+ 
+ domain_use_interactive_fds(load_policy_t)
+ 
+@@ -188,13 +212,13 @@ term_list_ptys(load_policy_t)
  
  init_use_script_fds(load_policy_t)
  init_use_script_ptys(load_policy_t)
@@ -44412,7 +44587,7 @@ index dc46420..1a0d4fb 100644
  
  ifdef(`distro_ubuntu',`
  	optional_policy(`
-@@ -205,6 +228,7 @@ ifdef(`distro_ubuntu',`
+@@ -205,6 +229,7 @@ ifdef(`distro_ubuntu',`
  ifdef(`hide_broken_symptoms',`
  	# cjp: cover up stray file descriptors.
  	dontaudit load_policy_t selinux_config_t:file write;
@@ -44420,7 +44595,7 @@ index dc46420..1a0d4fb 100644
  
  	optional_policy(`
  		unconfined_dontaudit_read_pipes(load_policy_t)
-@@ -215,12 +239,21 @@ optional_policy(`
+@@ -215,12 +240,21 @@ optional_policy(`
  	portage_dontaudit_use_fds(load_policy_t)
  ')
  
@@ -44443,7 +44618,7 @@ index dc46420..1a0d4fb 100644
  allow newrole_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execheap execstack };
  allow newrole_t self:process setexec;
  allow newrole_t self:fd use;
-@@ -232,7 +265,7 @@ allow newrole_t self:msgq create_msgq_perms;
+@@ -232,7 +266,7 @@ allow newrole_t self:msgq create_msgq_perms;
  allow newrole_t self:msg { send receive };
  allow newrole_t self:unix_dgram_socket sendto;
  allow newrole_t self:unix_stream_socket { create_stream_socket_perms connectto };
@@ -44452,7 +44627,7 @@ index dc46420..1a0d4fb 100644
  
  read_files_pattern(newrole_t, default_context_t, default_context_t)
  read_lnk_files_pattern(newrole_t, default_context_t, default_context_t)
-@@ -249,6 +282,7 @@ domain_use_interactive_fds(newrole_t)
+@@ -249,6 +283,7 @@ domain_use_interactive_fds(newrole_t)
  # for when the user types "exec newrole" at the command line:
  domain_sigchld_interactive_fds(newrole_t)
  
@@ -44460,7 +44635,7 @@ index dc46420..1a0d4fb 100644
  files_read_etc_files(newrole_t)
  files_read_var_files(newrole_t)
  files_read_var_symlinks(newrole_t)
-@@ -276,25 +310,34 @@ term_relabel_all_ptys(newrole_t)
+@@ -276,25 +311,34 @@ term_relabel_all_ptys(newrole_t)
  term_getattr_unallocated_ttys(newrole_t)
  term_dontaudit_use_unallocated_ttys(newrole_t)
  
@@ -44502,7 +44677,7 @@ index dc46420..1a0d4fb 100644
  ifdef(`distro_ubuntu',`
  	optional_policy(`
  		unconfined_domain(newrole_t)
-@@ -309,7 +352,7 @@ if(secure_mode) {
+@@ -309,7 +353,7 @@ if(secure_mode) {
  	userdom_spec_domtrans_all_users(newrole_t)
  }
  
@@ -44511,7 +44686,7 @@ index dc46420..1a0d4fb 100644
  	files_polyinstantiate_all(newrole_t)
  ')
  
-@@ -328,9 +371,13 @@ kernel_use_fds(restorecond_t)
+@@ -328,9 +372,13 @@ kernel_use_fds(restorecond_t)
  kernel_rw_pipes(restorecond_t)
  kernel_read_system_state(restorecond_t)
  
@@ -44526,7 +44701,7 @@ index dc46420..1a0d4fb 100644
  fs_list_inotifyfs(restorecond_t)
  
  selinux_validate_context(restorecond_t)
-@@ -341,16 +388,17 @@ selinux_compute_user_contexts(restorecond_t)
+@@ -341,16 +389,17 @@ selinux_compute_user_contexts(restorecond_t)
  
  files_relabel_non_auth_files(restorecond_t )
  files_read_non_auth_files(restorecond_t)
@@ -44546,7 +44721,7 @@ index dc46420..1a0d4fb 100644
  ifdef(`distro_ubuntu',`
  	optional_policy(`
  		unconfined_domain(restorecond_t)
-@@ -366,21 +414,24 @@ optional_policy(`
+@@ -366,21 +415,24 @@ optional_policy(`
  # Run_init local policy
  #
  
@@ -44573,7 +44748,7 @@ index dc46420..1a0d4fb 100644
  dev_dontaudit_list_all_dev_nodes(run_init_t)
  
  domain_use_interactive_fds(run_init_t)
-@@ -398,23 +449,30 @@ selinux_compute_create_context(run_init_t)
+@@ -398,23 +450,30 @@ selinux_compute_create_context(run_init_t)
  selinux_compute_relabel_context(run_init_t)
  selinux_compute_user_contexts(run_init_t)
  
@@ -44609,7 +44784,7 @@ index dc46420..1a0d4fb 100644
  
  ifndef(`direct_sysadm_daemon',`
  	ifdef(`distro_gentoo',`
-@@ -425,6 +483,19 @@ ifndef(`direct_sysadm_daemon',`
+@@ -425,6 +484,19 @@ ifndef(`direct_sysadm_daemon',`
  	')
  ')
  
@@ -44629,7 +44804,7 @@ index dc46420..1a0d4fb 100644
  ifdef(`distro_ubuntu',`
  	optional_policy(`
  		unconfined_domain(run_init_t)
-@@ -440,81 +511,85 @@ optional_policy(`
+@@ -440,81 +512,85 @@ optional_policy(`
  # semodule local policy
  #
  
@@ -44771,7 +44946,7 @@ index dc46420..1a0d4fb 100644
  ')
  
  ########################################
-@@ -522,111 +597,203 @@ ifdef(`distro_ubuntu',`
+@@ -522,111 +598,204 @@ ifdef(`distro_ubuntu',`
  # Setfiles local policy
  #
  
@@ -44842,6 +45017,7 @@ index dc46420..1a0d4fb 100644
 +
 +# needs to be able to read symlinks to make restorecon on symlink working
 +files_read_all_symlinks(setfiles_t)
++allow setfiles_t file_context_t:file map;
  
  logging_send_audit_msgs(setfiles_t)
  logging_send_syslog_msg(setfiles_t)
@@ -56191,6 +56367,24 @@ index f4ac38d..1589d60 100644
 +	ssh_delete_tmp(confined_admindomain)
 +	ssh_signal(confined_admindomain)
 +')
+diff --git a/policy/policy_capabilities b/policy/policy_capabilities
+index db3cbca..e677b81 100644
+--- a/policy/policy_capabilities
++++ b/policy/policy_capabilities
+@@ -31,3 +31,12 @@ policycap network_peer_controls;
+ # blk_file: open
+ #
+ policycap open_perms;
++
++
++# Enable NoNewPrivileges support.  Requires libsepol 2.7+
++# and kernel 4.14 (estimated).
++#
++# Checks enabled;
++# process2: nnp_transition, nosuid_transition
++#
++#policycap nnp_nosuid_transition;
+\ No newline at end of file
 diff --git a/policy/support/misc_patterns.spt b/policy/support/misc_patterns.spt
 index e79d545..101086d 100644
 --- a/policy/support/misc_patterns.spt
@@ -56223,7 +56417,7 @@ index e79d545..101086d 100644
  ')
  
 diff --git a/policy/support/obj_perm_sets.spt b/policy/support/obj_perm_sets.spt
-index 6e91317..b80ffcb 100644
+index 6e91317..dc1c884 100644
 --- a/policy/support/obj_perm_sets.spt
 +++ b/policy/support/obj_perm_sets.spt
 @@ -28,8 +28,7 @@ define(`devfile_class_set', `{ chr_file blk_file }')
@@ -56250,13 +56444,15 @@ index 6e91317..b80ffcb 100644
  define(`getattr_file_perms',`{ getattr }')
  define(`setattr_file_perms',`{ setattr }')
 -define(`read_file_perms',`{ getattr open read lock ioctl }')
-+define(`read_inherited_file_perms',`{ getattr read ioctl lock }')
-+define(`read_file_perms',`{ open read_inherited_file_perms }')
- define(`mmap_file_perms',`{ getattr open read execute ioctl }')
- define(`exec_file_perms',`{ getattr open read execute ioctl execute_no_trans }')
+-define(`mmap_file_perms',`{ getattr open read execute ioctl }')
+-define(`exec_file_perms',`{ getattr open read execute ioctl execute_no_trans }')
 -define(`append_file_perms',`{ getattr open append lock ioctl }')
 -define(`write_file_perms',`{ getattr open write append lock ioctl }')
 -define(`rw_file_perms',`{ getattr open read write append ioctl lock }')
++define(`read_inherited_file_perms',`{ getattr read ioctl lock }')
++define(`read_file_perms',`{ open read_inherited_file_perms }')
++define(`mmap_file_perms',`{ getattr open map read execute ioctl }')
++define(`exec_file_perms',`{ getattr open map read execute ioctl execute_no_trans }')
 +define(`append_inherited_file_perms',`{ getattr append }')
 +define(`append_file_perms',`{ open lock ioctl append_inherited_file_perms }')
 +define(`write_inherited_file_perms',`{ getattr write append lock ioctl }')
