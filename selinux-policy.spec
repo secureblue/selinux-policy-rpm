@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 269%{?dist}
+Release: 270%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -683,6 +683,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 10 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-270
+- refpolicy: Infiniband pkeys and endport
+
 * Thu Aug 10 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-269
 - Allow osad make executable an anonymous mapping or private file mapping that is writable BZ(1425524)
 - After fix in kernel where LSM hooks for dac_override and dac_search_read capability was swaped we need to fix it also in policy
