@@ -687,7 +687,7 @@ exit 0
 - Update for SELinux userspace release 20170804 / 2.7
 - Omit precompiled regular expressions from file_contexts.bin files
 
-* Fri Aug 07 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-267
+* Mon Aug 07 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-267
 - After fix in kernel where LSM hooks for dac_override and dac_search_read capability was swaped we need to fix it also in policy
 
 * Thu Jul 27 2017 Fedora Release Engineering <releng@fedoraproject.org> - 3.13.1-266
