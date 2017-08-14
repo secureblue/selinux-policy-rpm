@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 270%{?dist}
+Release: 271%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -683,6 +683,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 14 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-271
+- Allow tomcat_t domain couple capabilities to make working tomcat-jsvc
+- Label /usr/libexec/sudo/sesh as shell_exec_t
+
 * Thu Aug 10 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-270
 - refpolicy: Infiniband pkeys and endport
 
