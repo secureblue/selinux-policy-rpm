@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 271%{?dist}
+Release: 272%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -681,6 +681,13 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 15 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-272
+- Allow sssd_t domain to map sssd_var_lib_t files
+- allow map permission where needed
+- contrib: allow map permission where needed
+- Allow syslogd_t to map syslogd_var_run_t files
+- allow map permission where needed
+
 * Mon Aug 14 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-271
 - Allow tomcat_t domain couple capabilities to make working tomcat-jsvc
 - Label /usr/libexec/sudo/sesh as shell_exec_t
