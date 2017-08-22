@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 272%{?dist}
+Release: 273%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -681,6 +681,13 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 22 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-273
+- Allow dirsrv_t domain use mmap on files labeled as dirsrv_var_run_t BZ(1483170)
+- Allow just map permission insead of using mmap_file_pattern because mmap_files_pattern allows also executing objects.
+- Label /var/run/agetty.reload as getty_var_run_t
+- Add missing filecontext for sln binary
+- Allow systemd to read/write to event_device_t BZ(1471401)
+
 * Tue Aug 15 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-272
 - Allow sssd_t domain to map sssd_var_lib_t files
 - allow map permission where needed
