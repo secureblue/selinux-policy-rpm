@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 273%{?dist}
+Release: 274%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -681,6 +681,17 @@ exit 0
 %endif
 
 %changelog
+* Wed Aug 23 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-274
+- Allow postgrey to execute bin_t files and add postgrey into nsswitch_domain
+- Allow nscd_t domain to search network sysctls
+- Allow iscsid_t domain to read mount pid files
+- Allow ksmtuned_t domain manage sysfs_t files/dirs
+- Allow keepalived_t domain domtrans into iptables_t
+- Allow rshd_t domain reads net sysctls
+- Allow systemd to create syslog netlink audit socket
+- Allow ifconfig_t domain unmount fs_t
+- Label /dev/gpiochip* devices as gpio_device_t
+
 * Tue Aug 22 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-273
 - Allow dirsrv_t domain use mmap on files labeled as dirsrv_var_run_t BZ(1483170)
 - Allow just map permission insead of using mmap_file_pattern because mmap_files_pattern allows also executing objects.
