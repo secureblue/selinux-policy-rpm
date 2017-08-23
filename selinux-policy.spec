@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 274%{?dist}
+Release: 275%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -681,6 +681,11 @@ exit 0
 %endif
 
 %changelog
+* Wed Aug 23 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-275
+- Make confined users working
+- Allow ipmievd_t domain to load kernel modules
+- Allow logrotate to reload transient systemd unit
+
 * Wed Aug 23 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-274
 - Allow postgrey to execute bin_t files and add postgrey into nsswitch_domain
 - Allow nscd_t domain to search network sysctls

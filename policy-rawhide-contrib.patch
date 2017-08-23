@@ -12687,12 +12687,15 @@ index 550b287ce..80de6d3b7 100644
 +	')
 +')
 diff --git a/certwatch.te b/certwatch.te
-index 171fafb99..e88a0268a 100644
+index 171fafb99..e3986fd2e 100644
 --- a/certwatch.te
 +++ b/certwatch.te
-@@ -20,33 +20,45 @@ role certwatch_roles types certwatch_t;
+@@ -18,35 +18,47 @@ role certwatch_roles types certwatch_t;
+ # Local policy
+ #
  
- allow certwatch_t self:capability sys_nice;
+-allow certwatch_t self:capability sys_nice;
++allow certwatch_t self:capability { dac_read_search dac_override sys_nice };
  allow certwatch_t self:process { setsched getsched };
 +allow certwatch_t self:tcp_socket create_stream_socket_perms;
  
@@ -22518,7 +22521,7 @@ index dda905b9c..558729530 100644
  /var/named/chroot/var/run/dbus(/.*)?	gen_context(system_u:object_r:system_dbusd_var_run_t,s0)
 +')
 diff --git a/dbus.if b/dbus.if
-index 62d22cb46..01f6380e6 100644
+index 62d22cb46..77afd180d 100644
 --- a/dbus.if
 +++ b/dbus.if
 @@ -1,4 +1,4 @@
@@ -22597,7 +22600,7 @@ index 62d22cb46..01f6380e6 100644
 -	allow $3 system_dbusd_t:dbus { send_msg acquire_svc };
 +	# For connecting to the bus
 +	allow $3 $1_dbusd_t:unix_stream_socket { connectto rw_socket_perms };
-+	allow $1_dbusd_t $3:unix_stream_socket { accept getattr getopt };
++	allow $1_dbusd_t $3:unix_stream_socket { accept getattr getopt  read write };
  
 -	allow $3 { session_dbusd_home_t session_dbusd_tmp_t }:dir { manage_dir_perms relabel_dir_perms };
 -	allow $3 { session_dbusd_home_t session_dbusd_tmp_t }:file { manage_file_perms relabel_file_perms };
@@ -23439,7 +23442,7 @@ index 62d22cb46..01f6380e6 100644
 +
  ')
 diff --git a/dbus.te b/dbus.te
-index c9998c80d..cdf3b2dc7 100644
+index c9998c80d..d8ef03416 100644
 --- a/dbus.te
 +++ b/dbus.te
 @@ -4,17 +4,15 @@ gen_require(`
@@ -23566,7 +23569,7 @@ index c9998c80d..cdf3b2dc7 100644
  mls_fd_use_all_levels(system_dbusd_t)
  mls_rangetrans_target(system_dbusd_t)
  mls_file_read_all_levels(system_dbusd_t)
-@@ -123,66 +124,175 @@ term_dontaudit_use_console(system_dbusd_t)
+@@ -123,66 +124,176 @@ term_dontaudit_use_console(system_dbusd_t)
  auth_use_nsswitch(system_dbusd_t)
  auth_read_pam_console_data(system_dbusd_t)
  
@@ -23749,14 +23752,15 @@ index c9998c80d..cdf3b2dc7 100644
  manage_dirs_pattern(session_bus_type, session_dbusd_tmp_t, session_dbusd_tmp_t)
  manage_files_pattern(session_bus_type, session_dbusd_tmp_t, session_dbusd_tmp_t)
 -files_tmp_filetrans(session_bus_type, session_dbusd_tmp_t, { dir file })
-+files_tmp_filetrans(session_bus_type, session_dbusd_tmp_t, { file dir })
-+userdom_user_tmp_filetrans(session_bus_type, session_dbusd_tmp_t, { file dir })
++manage_sock_files_pattern(session_bus_type, session_dbusd_tmp_t, session_dbusd_tmp_t)
++files_tmp_filetrans(session_bus_type, session_dbusd_tmp_t, { file dir sock_file })
++userdom_user_tmp_filetrans(session_bus_type, session_dbusd_tmp_t, { file dir sock_file })
  
 -kernel_read_system_state(session_bus_type)
  kernel_read_kernel_sysctls(session_bus_type)
  
  corecmd_list_bin(session_bus_type)
-@@ -191,23 +301,18 @@ corecmd_read_bin_files(session_bus_type)
+@@ -191,23 +302,18 @@ corecmd_read_bin_files(session_bus_type)
  corecmd_read_bin_pipes(session_bus_type)
  corecmd_read_bin_sockets(session_bus_type)
  
@@ -23781,7 +23785,7 @@ index c9998c80d..cdf3b2dc7 100644
  files_dontaudit_search_var(session_bus_type)
  
  fs_getattr_romfs(session_bus_type)
-@@ -215,7 +320,6 @@ fs_getattr_xattr_fs(session_bus_type)
+@@ -215,7 +321,6 @@ fs_getattr_xattr_fs(session_bus_type)
  fs_list_inotifyfs(session_bus_type)
  fs_dontaudit_list_nfs(session_bus_type)
  
@@ -23789,7 +23793,7 @@ index c9998c80d..cdf3b2dc7 100644
  selinux_validate_context(session_bus_type)
  selinux_compute_access_vector(session_bus_type)
  selinux_compute_create_context(session_bus_type)
-@@ -225,18 +329,36 @@ selinux_compute_user_contexts(session_bus_type)
+@@ -225,18 +330,36 @@ selinux_compute_user_contexts(session_bus_type)
  auth_read_pam_console_data(session_bus_type)
  
  logging_send_audit_msgs(session_bus_type)
@@ -23831,7 +23835,7 @@ index c9998c80d..cdf3b2dc7 100644
  ')
  
  ########################################
-@@ -244,5 +366,9 @@ optional_policy(`
+@@ -244,5 +367,9 @@ optional_policy(`
  # Unconfined access to this module
  #
  
@@ -40345,10 +40349,10 @@ index 000000000..e86db5418
 +')
 diff --git a/ipmievd.te b/ipmievd.te
 new file mode 100644
-index 000000000..a2c964844
+index 000000000..06b8358b4
 --- /dev/null
 +++ b/ipmievd.te
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,52 @@
 +policy_module(ipmievd, 1.0.0)
 +
 +########################################
@@ -40384,6 +40388,7 @@ index 000000000..a2c964844
 +files_lock_filetrans(ipmievd_t, ipmievd_lock_t, file)
 +
 +kernel_read_system_state(ipmievd_t)
++kernel_load_module(ipmievd_t)
 +
 +auth_read_passwd(ipmievd_t)
 +
@@ -47463,7 +47468,7 @@ index dd8e01af3..9cd6b0b8e 100644
  ## <param name="domain">
  ##	<summary>
 diff --git a/logrotate.te b/logrotate.te
-index be0ab84b3..6180bdbdc 100644
+index be0ab84b3..0129ddb61 100644
 --- a/logrotate.te
 +++ b/logrotate.te
 @@ -5,16 +5,29 @@ policy_module(logrotate, 1.15.0)
@@ -47597,7 +47602,7 @@ index be0ab84b3..6180bdbdc 100644
  files_manage_generic_spool(logrotate_t)
  files_manage_generic_spool_dirs(logrotate_t)
  files_getattr_generic_locks(logrotate_t)
-@@ -95,32 +135,56 @@ mls_process_write_to_clearance(logrotate_t)
+@@ -95,32 +135,57 @@ mls_process_write_to_clearance(logrotate_t)
  selinux_get_fs_mount(logrotate_t)
  selinux_get_enforce_mode(logrotate_t)
  
@@ -47624,6 +47629,7 @@ index be0ab84b3..6180bdbdc 100644
 +systemd_status_all_unit_files(logrotate_t)
 +systemd_dbus_chat_logind(logrotate_t)
 +init_stream_connect(logrotate_t)
++init_reload_transient_unit(logrotate_t)
  
 -miscfiles_read_localization(logrotate_t)
 +miscfiles_read_hwdata(logrotate_t)
@@ -47660,7 +47666,7 @@ index be0ab84b3..6180bdbdc 100644
  ')
  
  optional_policy(`
-@@ -135,16 +199,17 @@ optional_policy(`
+@@ -135,16 +200,17 @@ optional_policy(`
  
  optional_policy(`
  	apache_read_config(logrotate_t)
@@ -47680,7 +47686,7 @@ index be0ab84b3..6180bdbdc 100644
  ')
  
  optional_policy(`
-@@ -170,6 +235,11 @@ optional_policy(`
+@@ -170,6 +236,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -47692,7 +47698,7 @@ index be0ab84b3..6180bdbdc 100644
  	fail2ban_stream_connect(logrotate_t)
  ')
  
-@@ -178,7 +248,8 @@ optional_policy(`
+@@ -178,7 +249,8 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -47702,7 +47708,7 @@ index be0ab84b3..6180bdbdc 100644
  ')
  
  optional_policy(`
-@@ -198,17 +269,18 @@ optional_policy(`
+@@ -198,17 +270,18 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -47724,7 +47730,7 @@ index be0ab84b3..6180bdbdc 100644
  ')
  
  optional_policy(`
-@@ -216,6 +288,14 @@ optional_policy(`
+@@ -216,6 +289,14 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -47739,7 +47745,7 @@ index be0ab84b3..6180bdbdc 100644
  	samba_exec_log(logrotate_t)
  ')
  
-@@ -228,26 +308,50 @@ optional_policy(`
+@@ -228,26 +309,50 @@ optional_policy(`
  ')
  
  optional_policy(`
