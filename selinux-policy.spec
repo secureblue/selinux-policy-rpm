@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 275%{?dist}
+Release: 276%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -681,6 +681,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Aug 26 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-276
+- Allow couple map rules
+
 * Wed Aug 23 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-275
 - Make confined users working
 - Allow ipmievd_t domain to load kernel modules
