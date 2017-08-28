@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 276%{?dist}
+Release: 277%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -681,6 +681,13 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 28 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-277
+- Allow cupsd_t to execute ld_so_cache
+- Add cgroup_seclabel policycap.
+- Allow xdm_t to read systemd hwdb
+- Add new interface systemd_hwdb_mmap_config()
+- Allow auditd_t domain to mmap conf files labeled as auditd_etc_t BZ(1485050)
+
 * Sat Aug 26 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-276
 - Allow couple map rules
 
