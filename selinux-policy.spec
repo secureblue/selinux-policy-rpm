@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 277%{?dist}
+Release: 278%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -681,6 +681,15 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 31 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-278
+- Add couple rules related to map permissions
+- Allow ddclient use nsswitch BZ(1456241)
+- Allow thumb_t domain getattr fixed_disk device. BZ(1379137)
+- Add interface dbus_manage_session_tmp_dirs()
+- Dontaudit useradd_t sys_ptrace BZ(1480121)
+- Allow ipsec_t can exec ipsec_exec_t
+- Allow systemd_logind_t to mamange session_dbusd_tmp_t dirs
+
 * Mon Aug 28 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-277
 - Allow cupsd_t to execute ld_so_cache
 - Add cgroup_seclabel policycap.
