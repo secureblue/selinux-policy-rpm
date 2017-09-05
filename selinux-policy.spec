@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 278%{?dist}
+Release: 279%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -681,6 +681,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 05 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-279
+- Allow abrt_dump_oops_t to read sssd_public_t files
+- Allow cockpit_ws_t to mmap usr_t files
+- Allow systemd to read/write dri devices.
+
 * Thu Aug 31 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-278
 - Add couple rules related to map permissions
 - Allow ddclient use nsswitch BZ(1456241)
