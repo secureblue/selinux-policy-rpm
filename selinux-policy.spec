@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 279%{?dist}
+Release: 280%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -681,6 +681,18 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 07 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-280
+- Add rules fixing installing ipa-server-install with SELinux in Enforcing. BZ(1488404)
+- Fix denials during ipa-server-install process on F27+
+- Allow httpd_t to mmap cert_t
+- Add few rules to make tlp_t domain working in enforcing mode
+- Allow cloud_init_t to dbus chat with systemd_timedated_t
+- Allow logrotate_t to write to kmsg
+- Add capability kill to rhsmcertd_t
+- Allow winbind to manage smbd_tmp_t files
+- Allow groupadd_t domain to dbus chat with systemd.BZ(1488404)
+- Add interface miscfiles_map_generic_certs()
+
 * Tue Sep 05 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-279
 - Allow abrt_dump_oops_t to read sssd_public_t files
 - Allow cockpit_ws_t to mmap usr_t files
