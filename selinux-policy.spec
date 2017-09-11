@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 281%{?dist}
+Release: 282%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -681,6 +681,20 @@ exit 0
 %endif
 
 %changelog
+* Mon Sep 11 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-282
+- Add new bunch of map rules
+- Merge pull request #25 from NetworkManager/nm-ovs
+- Make working webadm_t userdomain
+- Allow redis domain to execute shell scripts.
+- Allow system_cronjob_t to create redhat-access-insights.log with var_log_t
+- Add couple capabilities to keepalived domain and allow get attributes of all domains
+- Allow dmidecode read rhsmcertd lock files
+- Add new interface rhsmcertd_rw_lock_files()
+- Add new bunch of map rules
+- Merge pull request #199 from mscherer/add_conntrackd
+- Add support labeling for vmci and vsock device
+- Add userdom_dontaudit_manage_admin_files() interface
+
 * Mon Sep 11 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-281
 - Allow domains reading raw memory also use mmap.
 

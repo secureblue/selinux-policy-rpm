@@ -18519,7 +18519,7 @@ index ad0bae948..615a947aa 100644
 +/var/spool/cron/tabs		-d	gen_context(system_u:object_r:cron_spool_t,s0)
  ')
 diff --git a/cron.if b/cron.if
-index 1303b3036..f13c53200 100644
+index 1303b3036..f5bd4aee8 100644
 --- a/cron.if
 +++ b/cron.if
 @@ -2,11 +2,12 @@
@@ -18705,6 +18705,15 @@ index 1303b3036..f13c53200 100644
 -	#
 -	# Declarations
 -	#
+-
+-	role $1 types { unconfined_cronjob_t crontab_t };
+-
+-	##############################
+-	#
+-	# Local policy
+-	#
+-
+-	domtrans_pattern($2, crontab_exec_t, crontab_t)
 +    ##############################
 +    #
 +    # Declarations
@@ -18712,41 +18721,32 @@ index 1303b3036..f13c53200 100644
 +    
 +    role $1 types unconfined_cronjob_t;
  
--	role $1 types { unconfined_cronjob_t crontab_t };
+-	dontaudit crond_t $2:process { noatsecure siginh rlimitinh };
+-	allow $2 crond_t:process sigchld;
 +    ##############################
 +    #
 +    # Local policy
 +    #
  
--	##############################
--	#
--	# Local policy
--	#
-+    dontaudit crond_t $2:process { noatsecure siginh rlimitinh };
- 
--	domtrans_pattern($2, crontab_exec_t, crontab_t)
-+    allow $2 crond_t:process sigchld;
- 
--	dontaudit crond_t $2:process { noatsecure siginh rlimitinh };
--	allow $2 crond_t:process sigchld;
-+    allow $2 user_cron_spool_t:file { getattr read write ioctl };
- 
 -	allow $2 user_cron_spool_t:file { getattr read write ioctl };
-+	# cronjob shows up in user ps
-+	ps_process_pattern($2, unconfined_cronjob_t)
-+	allow $2 unconfined_cronjob_t:process signal_perms;
++    dontaudit crond_t $2:process { noatsecure siginh rlimitinh };
  
 -	allow $2 crontab_t:process { ptrace signal_perms };
 -	ps_process_pattern($2, crontab_t)
--
++    allow $2 crond_t:process sigchld;
+ 
 -	corecmd_exec_bin(crontab_t)
 -	corecmd_exec_shell(crontab_t)
--
++    allow $2 user_cron_spool_t:file { getattr read write ioctl };
+ 
 -	tunable_policy(`cron_userdomain_transition',`
 -		allow crond_t $2:process transition;
 -		allow crond_t $2:fd use;
 -		allow crond_t $2:key manage_key_perms;
--
++	# cronjob shows up in user ps
++	ps_process_pattern($2, unconfined_cronjob_t)
++	allow $2 unconfined_cronjob_t:process signal_perms;
+ 
 -		allow $2 user_cron_spool_t:file entrypoint;
 +	tunable_policy(`deny_ptrace',`',`
 +		allow $2 unconfined_cronjob_t:process ptrace;
@@ -18871,15 +18871,16 @@ index 1303b3036..f13c53200 100644
 -		allow crond_t $2:process transition;
 -		allow crond_t $2:fd use;
 -		allow crond_t $2:key manage_key_perms;
--
--		allow $2 user_cron_spool_t:file entrypoint;
 +    tunable_policy(`cron_userdomain_transition',`
 +        allow crond_t $2:process transition;
 +        allow crond_t $2:fd use;
 +        allow crond_t $2:key manage_key_perms;
  
--		allow $2 crond_t:fifo_file rw_fifo_file_perms;
+-		allow $2 user_cron_spool_t:file entrypoint;
 +        allow $2 user_cron_spool_t:file entrypoint;
+ 
+-		allow $2 crond_t:fifo_file rw_fifo_file_perms;
++        allow $2 crond_t:fifo_file rw_fifo_file_perms;
  
 -		allow $2 cronjob_t:process { ptrace signal_perms };
 -		ps_process_pattern($2, cronjob_t)
@@ -18887,9 +18888,6 @@ index 1303b3036..f13c53200 100644
 -		dontaudit crond_t $2:process transition;
 -		dontaudit crond_t $2:fd use;
 -		dontaudit crond_t $2:key manage_key_perms;
-+        allow $2 crond_t:fifo_file rw_fifo_file_perms;
- 
--		dontaudit $2 user_cron_spool_t:file entrypoint;
 +        allow $2 cronjob_t:process { signal_perms };
 +        ps_process_pattern($2, cronjob_t)
 +    ',`
@@ -18897,6 +18895,8 @@ index 1303b3036..f13c53200 100644
 +        dontaudit crond_t $2:fd use;
 +        dontaudit crond_t $2:key manage_key_perms;
  
+-		dontaudit $2 user_cron_spool_t:file entrypoint;
+-
 -		dontaudit $2 crond_t:fifo_file rw_fifo_file_perms;
 -
 -		dontaudit $2 cronjob_t:process { ptrace signal_perms };
@@ -19205,10 +19205,11 @@ index 1303b3036..f13c53200 100644
  
 -	allow $1 crond_t:fifo_file rw_fifo_file_perms;
 +	allow $1 user_cron_spool_t:file rw_inherited_file_perms;
-+')
-+
-+########################################
-+## <summary>
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Read and write crond TCP sockets.
 +##	Read and write inherited spool files.
 +## </summary>
 +## <param name="domain">
@@ -19223,11 +19224,10 @@ index 1303b3036..f13c53200 100644
 +	')
 +
 +	allow $1 cron_spool_t:file rw_inherited_file_perms;
- ')
- 
- ########################################
- ## <summary>
--##	Read and write crond TCP sockets.
++')
++
++########################################
++## <summary>
 +##	Read, and write cron daemon TCP sockets.
  ## </summary>
  ## <param name="domain">
@@ -19455,7 +19455,7 @@ index 1303b3036..f13c53200 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -829,7 +876,97 @@ interface(`cron_dontaudit_append_system_job_tmp_files',`
+@@ -829,7 +876,126 @@ interface(`cron_dontaudit_append_system_job_tmp_files',`
  interface(`cron_dontaudit_write_system_job_tmp_files',`
  	gen_require(`
  		type system_cronjob_tmp_t;
@@ -19552,9 +19552,38 @@ index 1303b3036..f13c53200 100644
 +    ')
 +
 +    logging_log_filetrans($1, cron_log_t, $2, $3)
++')
++
++#######################################
++## <summary>
++##  Create specified objects in generic
++##  log directories with the cron log file type.
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++## <param name="object_class">
++##  <summary>
++##  Class of the object being created.
++##  </summary>
++## </param>
++## <param name="name" optional="true">
++##  <summary>
++##  The name of the object being created.
++##  </summary>
++## </param>
++#
++interface(`cron_generic_log_filetrans_log_insights',`
++    gen_require(`
++        type var_log_t;
++    ')
++
++    logging_log_filetrans($1, var_log_t, file, "redhat-access-insights.log")
  ')
 diff --git a/cron.te b/cron.te
-index 7de385956..61dcff6a5 100644
+index 7de385956..e4c99bdd4 100644
 --- a/cron.te
 +++ b/cron.te
 @@ -11,46 +11,54 @@ gen_require(`
@@ -20221,7 +20250,7 @@ index 7de385956..61dcff6a5 100644
  	selinux_validate_context(system_cronjob_t)
  	selinux_compute_access_vector(system_cronjob_t)
  	selinux_compute_create_context(system_cronjob_t)
-@@ -539,10 +549,18 @@ tunable_policy(`cron_can_relabel',`
+@@ -539,10 +549,22 @@ tunable_policy(`cron_can_relabel',`
  ')
  
  optional_policy(`
@@ -20237,10 +20266,14 @@ index 7de385956..61dcff6a5 100644
 +
 +optional_policy(`
 +	bind_read_config(system_cronjob_t)
++')
++
++optional_policy(`
++    cron_generic_log_filetrans_log_insights(system_cronjob_t)
  ')
  
  optional_policy(`
-@@ -551,10 +569,6 @@ optional_policy(`
+@@ -551,10 +573,6 @@ optional_policy(`
  
  optional_policy(`
  	dbus_system_bus_client(system_cronjob_t)
@@ -20251,7 +20284,7 @@ index 7de385956..61dcff6a5 100644
  ')
  
  optional_policy(`
-@@ -567,6 +581,10 @@ optional_policy(`
+@@ -567,6 +585,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -20262,7 +20295,7 @@ index 7de385956..61dcff6a5 100644
  	ftp_read_log(system_cronjob_t)
  ')
  
-@@ -591,6 +609,8 @@ optional_policy(`
+@@ -591,6 +613,8 @@ optional_policy(`
  optional_policy(`
  	mta_read_config(system_cronjob_t)
  	mta_send_mail(system_cronjob_t)
@@ -20271,7 +20304,7 @@ index 7de385956..61dcff6a5 100644
  ')
  
  optional_policy(`
-@@ -598,7 +618,31 @@ optional_policy(`
+@@ -598,7 +622,31 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -20303,7 +20336,7 @@ index 7de385956..61dcff6a5 100644
  ')
  
  optional_policy(`
-@@ -607,7 +651,12 @@ optional_policy(`
+@@ -607,7 +655,12 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -20316,7 +20349,7 @@ index 7de385956..61dcff6a5 100644
  ')
  
  optional_policy(`
-@@ -615,12 +664,27 @@ optional_policy(`
+@@ -615,12 +668,27 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -20346,7 +20379,7 @@ index 7de385956..61dcff6a5 100644
  #
  
  allow cronjob_t self:process { signal_perms setsched };
-@@ -628,12 +692,32 @@ allow cronjob_t self:fifo_file rw_fifo_file_perms;
+@@ -628,12 +696,32 @@ allow cronjob_t self:fifo_file rw_fifo_file_perms;
  allow cronjob_t self:unix_stream_socket create_stream_socket_perms;
  allow cronjob_t self:unix_dgram_socket create_socket_perms;
  
@@ -20380,7 +20413,7 @@ index 7de385956..61dcff6a5 100644
  corenet_all_recvfrom_netlabel(cronjob_t)
  corenet_tcp_sendrecv_generic_if(cronjob_t)
  corenet_udp_sendrecv_generic_if(cronjob_t)
-@@ -641,66 +725,141 @@ corenet_tcp_sendrecv_generic_node(cronjob_t)
+@@ -641,66 +729,141 @@ corenet_tcp_sendrecv_generic_node(cronjob_t)
  corenet_udp_sendrecv_generic_node(cronjob_t)
  corenet_tcp_sendrecv_all_ports(cronjob_t)
  corenet_udp_sendrecv_all_ports(cronjob_t)
@@ -26116,7 +26149,7 @@ index 41c3f6770..653a1ecbb 100644
  ## <summary>
  ##	Execute dmidecode in the dmidecode
 diff --git a/dmidecode.te b/dmidecode.te
-index aa0ef6e94..02bdb681d 100644
+index aa0ef6e94..3c52d892c 100644
 --- a/dmidecode.te
 +++ b/dmidecode.te
 @@ -31,4 +31,8 @@ mls_file_read_all_levels(dmidecode_t)
@@ -26127,7 +26160,7 @@ index aa0ef6e94..02bdb681d 100644
 +userdom_use_inherited_user_terminals(dmidecode_t)
 +
 +optional_policy(`
-+    rhsmcertd_rw_inherited_lock_files(dmidecode_t)
++    rhsmcertd_rw_lock_files(dmidecode_t)
 +')
 diff --git a/dnsmasq.fc b/dnsmasq.fc
 index 23ab808d8..84735a8cb 100644
@@ -36837,7 +36870,7 @@ index 180f1b7cc..3c8757e47 100644
 +	userdom_user_home_dir_filetrans($1, gpg_secret_t, dir, ".gnupg")
 +')
 diff --git a/gpg.te b/gpg.te
-index 0e97e82f1..2569781e9 100644
+index 0e97e82f1..4bcee621d 100644
 --- a/gpg.te
 +++ b/gpg.te
 @@ -4,15 +4,7 @@ policy_module(gpg, 2.8.0)
@@ -37194,7 +37227,7 @@ index 0e97e82f1..2569781e9 100644
  
  manage_sock_files_pattern(gpg_pinentry_t, gpg_pinentry_tmp_t, gpg_pinentry_tmp_t)
  userdom_user_tmp_filetrans(gpg_pinentry_t, gpg_pinentry_tmp_t, sock_file)
-@@ -287,53 +322,87 @@ manage_dirs_pattern(gpg_pinentry_t, gpg_pinentry_tmpfs_t, gpg_pinentry_tmpfs_t)
+@@ -287,53 +322,88 @@ manage_dirs_pattern(gpg_pinentry_t, gpg_pinentry_tmpfs_t, gpg_pinentry_tmpfs_t)
  manage_files_pattern(gpg_pinentry_t, gpg_pinentry_tmpfs_t, gpg_pinentry_tmpfs_t)
  fs_tmpfs_filetrans(gpg_pinentry_t, gpg_pinentry_tmpfs_t, { file dir })
  
@@ -37246,6 +37279,7 @@ index 0e97e82f1..2569781e9 100644
 -')
 +userdom_home_reader(gpg_pinentry_t)
 +userdom_stream_connect(gpg_pinentry_t)
++userdom_map_tmp_files(gpg_pinentry_t)
  
 -tunable_policy(`use_samba_home_dirs',`
 -	fs_read_cifs_files(gpg_pinentry_t)
@@ -43283,10 +43317,10 @@ index 000000000..bd7e7fa17
 +')
 diff --git a/keepalived.te b/keepalived.te
 new file mode 100644
-index 000000000..202ac2b59
+index 000000000..923edd01e
 --- /dev/null
 +++ b/keepalived.te
-@@ -0,0 +1,99 @@
+@@ -0,0 +1,100 @@
 +policy_module(keepalived, 1.0.0)
 +
 +########################################
@@ -43312,7 +43346,7 @@ index 000000000..202ac2b59
 +# keepalived local policy
 +#
 +
-+allow keepalived_t self:capability { net_admin net_raw kill };
++allow keepalived_t self:capability { net_admin net_raw kill dac_read_search sys_ptrace };
 +allow keepalived_t self:process { signal_perms };
 +allow keepalived_t self:netlink_socket create_socket_perms;
 +allow keepalived_t self:netlink_generic_socket create_socket_perms;
@@ -43343,6 +43377,7 @@ index 000000000..202ac2b59
 +corenet_tcp_connect_squid_port(keepalived_t)
 +
 +domain_read_all_domains_state(keepalived_t)
++domain_getattr_all_domains(keepalived_t)
 +
 +dev_read_urand(keepalived_t)
 +
@@ -49535,7 +49570,7 @@ index 8ae78b5bf..b365cddec 100644
 +
 +/root/.manpath  --  gen_context(system_u:object_r:mandb_home_t,s0)
 diff --git a/mandb.if b/mandb.if
-index 327f3f726..4f6156138 100644
+index 327f3f726..36d4af101 100644
 --- a/mandb.if
 +++ b/mandb.if
 @@ -1,14 +1,14 @@
@@ -49611,15 +49646,36 @@ index 327f3f726..4f6156138 100644
  ########################################
  ## <summary>
 -##	Search mandb cache directories.
-+##	Relabel mandb cache files/directories
++##	Mmap mandb cache files.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -56,13 +68,18 @@ interface(`mandb_run',`
+@@ -56,13 +68,17 @@ interface(`mandb_run',`
  ##	</summary>
  ## </param>
  #
 -interface(`mandb_search_cache',`
+-	refpolicywarn(`$0($*) has been deprecated')
++interface(`mandb_map_cache_files',`
++	gen_require(`
++		type mandb_cache_t;
++	')
++
++	allow $1, mandb_cache_t:file map;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Delete mandb cache content.
++##	Relabel mandb cache files/directories
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -70,13 +86,18 @@ interface(`mandb_search_cache',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`mandb_delete_cache_content',`
 -	refpolicywarn(`$0($*) has been deprecated')
 +interface(`mandb_relabel_cache',`
 +	gen_require(`
@@ -49632,16 +49688,16 @@ index 327f3f726..4f6156138 100644
  
  ########################################
  ## <summary>
--##	Delete mandb cache content.
+-##	Read mandb cache content.
 +##	Set attributes on mandb cache files.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -70,13 +87,18 @@ interface(`mandb_search_cache',`
+@@ -84,8 +105,35 @@ interface(`mandb_delete_cache_content',`
  ##	</summary>
  ## </param>
  #
--interface(`mandb_delete_cache_content',`
+-interface(`mandb_read_cache_content',`
 -	refpolicywarn(`$0($*) has been deprecated')
 +interface(`mandb_setattr_cache_dirs',`
 +	gen_require(`
@@ -49650,21 +49706,18 @@ index 327f3f726..4f6156138 100644
 +
 +	files_search_var($1)
 +	allow $1 mandb_cache_t:dir setattr;
- ')
- 
- ########################################
- ## <summary>
--##	Read mandb cache content.
++')
++
++########################################
++## <summary>
 +##	Delete mandb cache files.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -84,8 +106,16 @@ interface(`mandb_delete_cache_content',`
- ##	</summary>
- ## </param>
- #
--interface(`mandb_read_cache_content',`
--	refpolicywarn(`$0($*) has been deprecated')
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
 +interface(`mandb_delete_cache',`
 +	gen_require(`
 +		type mandb_cache_t;
@@ -49678,7 +49731,7 @@ index 327f3f726..4f6156138 100644
  ')
  
  ########################################
-@@ -99,37 +129,82 @@ interface(`mandb_read_cache_content',`
+@@ -99,37 +147,82 @@ interface(`mandb_read_cache_content',`
  ##	</summary>
  ## </param>
  #
@@ -49691,17 +49744,20 @@ index 327f3f726..4f6156138 100644
 +
 +	files_search_var($1)
 +	manage_files_pattern($1, mandb_cache_t, mandb_cache_t)
-+')
-+
-+########################################
-+## <summary>
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	All of the rules required to
+-##	administrate an mandb environment.
 +##	Manage mandb cache dirs.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+-## <param name="role">
 +#
 +interface(`mandb_manage_cache_dirs',`
 +	gen_require(`
@@ -49710,22 +49766,19 @@ index 327f3f726..4f6156138 100644
 +
 +	files_search_var($1)
 +	manage_dirs_pattern($1, mandb_cache_t, mandb_cache_t)
- ')
- 
- ########################################
- ## <summary>
--##	All of the rules required to
--##	administrate an mandb environment.
++')
++
++########################################
++## <summary>
 +##	Create configuration files in user
 +##	home directories with a named file
 +##	type transition.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
- ##	Domain allowed access.
- ##	</summary>
- ## </param>
--## <param name="role">
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
 +#
 +interface(`mandb_filetrans_named_home_content',`
 +	gen_require(`
@@ -49761,12 +49814,12 @@ index 327f3f726..4f6156138 100644
 -	mandb_run($1, $2)
 +	files_search_var($1)
 +	admin_pattern($1, mandb_cache_t)
-+
-+	files_search_locks($1)
-+	admin_pattern($1, mandb_lock_t)
  
 -	# pending
 -	# miscfiles_manage_man_cache_content(mandb_t)
++	files_search_locks($1)
++	admin_pattern($1, mandb_lock_t)
++
 +	optional_policy(`
 +		systemd_passwd_agent_exec($1)
 +		systemd_read_fifo_file_passwd_run($1)
@@ -60730,9 +60783,15 @@ index 86dc29dfa..cb39739a5 100644
 +	logging_log_filetrans($1, NetworkManager_var_lib_t, file, "wpa_supplicant.log")
  ')
 diff --git a/networkmanager.te b/networkmanager.te
-index 55f20095e..4419e3531 100644
+index 55f20095e..3ed3ed0b3 100644
 --- a/networkmanager.te
 +++ b/networkmanager.te
+@@ -1,4 +1,4 @@
+-policy_module(networkmanager, 1.15.2)
++policy_module(networkmanager, 1.15.3)
+ 
+ ########################################
+ #
 @@ -9,15 +9,18 @@ type NetworkManager_t;
  type NetworkManager_exec_t;
  init_daemon_domain(NetworkManager_t, NetworkManager_exec_t)
@@ -60950,10 +61009,10 @@ index 55f20095e..4419e3531 100644
 -# certificates in user home directories (cert_home_t in ~/\.pki)
 -userdom_read_user_home_content_files(NetworkManager_t)
 +systemd_machined_read_pid_files(NetworkManager_t)
-+
-+term_use_unallocated_ttys(NetworkManager_t)
  
 -userdom_write_user_tmp_sockets(NetworkManager_t)
++term_use_unallocated_ttys(NetworkManager_t)
++
 +userdom_stream_connect(NetworkManager_t)
  userdom_dontaudit_use_unpriv_user_fds(NetworkManager_t)
  userdom_dontaudit_use_user_ttys(NetworkManager_t)
@@ -61019,16 +61078,16 @@ index 55f20095e..4419e3531 100644
  	dnsmasq_signal(NetworkManager_t)
  	dnsmasq_signull(NetworkManager_t)
 +	dnsmasq_systemctl(NetworkManager_t)
++')
++
++optional_policy(`
++    dnssec_trigger_domtrans(NetworkManager_t)
++    dnssec_trigger_signull(NetworkManager_t)
++    dnssec_trigger_sigkill(NetworkManager_t)
  ')
  
  optional_policy(`
 -	gnome_stream_connect_all_gkeyringd(NetworkManager_t)
-+    dnssec_trigger_domtrans(NetworkManager_t)
-+    dnssec_trigger_signull(NetworkManager_t)
-+    dnssec_trigger_sigkill(NetworkManager_t)
-+')
-+
-+optional_policy(`
 +    fcoe_dgram_send_fcoemon(NetworkManager_t)
  ')
  
@@ -61157,7 +61216,7 @@ index 55f20095e..4419e3531 100644
  ')
  
  optional_policy(`
-@@ -338,12 +431,19 @@ optional_policy(`
+@@ -338,12 +431,23 @@ optional_policy(`
  	vpn_relabelfrom_tun_socket(NetworkManager_t)
  ')
  
@@ -61166,6 +61225,10 @@ index 55f20095e..4419e3531 100644
 +	openfortivpn_sigkill(NetworkManager_t)
 +	openfortivpn_signal(NetworkManager_t)
 +	openfortivpn_signull(NetworkManager_t)
++')
++
++optional_policy(`
++	openvswitch_stream_connect(NetworkManager_t)
 +')
 +
  ########################################
@@ -61178,7 +61241,7 @@ index 55f20095e..4419e3531 100644
  allow wpa_cli_t self:unix_dgram_socket create_socket_perms;
  
  allow wpa_cli_t NetworkManager_t:unix_dgram_socket sendto;
-@@ -357,6 +457,4 @@ rw_sock_files_pattern(wpa_cli_t, NetworkManager_var_run_t, NetworkManager_var_ru
+@@ -357,6 +461,4 @@ rw_sock_files_pattern(wpa_cli_t, NetworkManager_var_run_t, NetworkManager_var_ru
  init_dontaudit_use_fds(wpa_cli_t)
  init_use_script_ptys(wpa_cli_t)
  
@@ -87845,7 +87908,7 @@ index 16c8ecbe3..4e021eca7 100644
 +	')
  ')
 diff --git a/redis.te b/redis.te
-index 25cd4175f..61de8277a 100644
+index 25cd4175f..84c02e325 100644
 --- a/redis.te
 +++ b/redis.te
 @@ -12,6 +12,9 @@ init_daemon_domain(redis_t, redis_exec_t)
@@ -87877,7 +87940,7 @@ index 25cd4175f..61de8277a 100644
  manage_dirs_pattern(redis_t, redis_log_t, redis_log_t)
  manage_files_pattern(redis_t, redis_log_t, redis_log_t)
  manage_lnk_files_pattern(redis_t, redis_log_t, redis_log_t)
-@@ -42,14 +50,17 @@ manage_lnk_files_pattern(redis_t, redis_var_lib_t, redis_var_lib_t)
+@@ -42,24 +50,27 @@ manage_lnk_files_pattern(redis_t, redis_var_lib_t, redis_var_lib_t)
  manage_dirs_pattern(redis_t, redis_var_run_t, redis_var_run_t)
  manage_files_pattern(redis_t, redis_var_run_t, redis_var_run_t)
  manage_lnk_files_pattern(redis_t, redis_var_run_t, redis_var_run_t)
@@ -87895,7 +87958,12 @@ index 25cd4175f..61de8277a 100644
  
  corenet_sendrecv_redis_server_packets(redis_t)
  corenet_tcp_bind_redis_port(redis_t)
-@@ -60,6 +71,4 @@ dev_read_urand(redis_t)
+ corenet_tcp_sendrecv_redis_port(redis_t)
+ 
++corecmd_exec_shell(redis_t)
++
+ dev_read_sysfs(redis_t)
+ dev_read_urand(redis_t)
  
  logging_send_syslog_msg(redis_t)
  
@@ -90773,7 +90841,7 @@ index 8c0280418..896c8c67f 100644
  
  /var/lock/subsys/rhsmcertd	--	gen_context(system_u:object_r:rhsmcertd_lock_t,s0)
 diff --git a/rhsmcertd.if b/rhsmcertd.if
-index 6dbc905b3..4b17c933e 100644
+index 6dbc905b3..42e4306c8 100644
 --- a/rhsmcertd.if
 +++ b/rhsmcertd.if
 @@ -1,8 +1,8 @@
@@ -90869,23 +90937,21 @@ index 6dbc905b3..4b17c933e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -196,10 +192,9 @@ interface(`rhsmcertd_read_pid_files',`
+@@ -196,10 +192,47 @@ interface(`rhsmcertd_read_pid_files',`
  	allow $1 rhsmcertd_var_run_t:file read_file_perms;
  ')
  
 -####################################
 +########################################
- ## <summary>
--##	Connect to rhsmcertd with a
--##	unix domain stream socket.
++## <summary>
 +##	Read rhsmcertd PID files.
- ## </summary>
- ## <param name="domain">
- ##	<summary>
-@@ -207,6 +202,45 @@ interface(`rhsmcertd_read_pid_files',`
- ##	</summary>
- ## </param>
- #
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
 +interface(`rhsmcertd_manage_pid_files',`
 +	gen_require(`
 +		type rhsmcertd_var_run_t;
@@ -90914,6 +90980,27 @@ index 6dbc905b3..4b17c933e 100644
 +	allow $1 rhsmcertd_lock_t:file rw_inherited_file_perms;
 +')
 +
++########################################
+ ## <summary>
+-##	Connect to rhsmcertd with a
+-##	unix domain stream socket.
++##	Read/wirte lock files.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -207,6 +240,26 @@ interface(`rhsmcertd_read_pid_files',`
+ ##	</summary>
+ ## </param>
+ #
++interface(`rhsmcertd_rw_lock_files',`
++	gen_require(`
++		type rhsmcertd_lock_t;
++	')
++
++	files_search_locks($1)
++	allow $1 rhsmcertd_lock_t:file rw_file_perms;
++')
++
 +####################################
 +## <summary>
 +##  Connect to rhsmcertd over a unix domain
@@ -90928,7 +91015,7 @@ index 6dbc905b3..4b17c933e 100644
  interface(`rhsmcertd_stream_connect',`
  	gen_require(`
  		type rhsmcertd_t, rhsmcertd_var_run_t;
-@@ -239,30 +273,29 @@ interface(`rhsmcertd_dbus_chat',`
+@@ -239,30 +292,29 @@ interface(`rhsmcertd_dbus_chat',`
  
  ######################################
  ## <summary>
@@ -90972,7 +91059,7 @@ index 6dbc905b3..4b17c933e 100644
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -270,35 +303,41 @@ interface(`rhsmcertd_dontaudit_dbus_chat',`
+@@ -270,35 +322,41 @@ interface(`rhsmcertd_dontaudit_dbus_chat',`
  ##	</summary>
  ## </param>
  ## <param name="role">
@@ -91004,24 +91091,24 @@ index 6dbc905b3..4b17c933e 100644
 +	tunable_policy(`deny_ptrace',`',`
 +		allow $1 rhsmcertd_t:process ptrace;
 +	')
-+
+ 
+-	logging_search_logs($1)
+-	admin_pattern($1, rhsmcertd_log_t)
 +    rhsmcertd_initrc_domtrans($1)
 +    domain_system_change_exemption($1)
 +    role_transition $2 rhsmcertd_initrc_exec_t system_r;
 +    allow $2 system_r;
  
--	logging_search_logs($1)
--	admin_pattern($1, rhsmcertd_log_t)
+-	files_search_var_lib($1)
+-	admin_pattern($1, rhsmcertd_var_lib_t)
 +    logging_search_logs($1)
 +    admin_pattern($1, rhsmcertd_log_t)
  
--	files_search_var_lib($1)
--	admin_pattern($1, rhsmcertd_var_lib_t)
-+    files_search_var_lib($1)
-+    admin_pattern($1, rhsmcertd_var_lib_t)
- 
 -	files_search_pids($1)
 -	admin_pattern($1, rhsmcertd_var_run_t)
++    files_search_var_lib($1)
++    admin_pattern($1, rhsmcertd_var_lib_t)
++
 +    files_search_pids($1)
 +    admin_pattern($1, rhsmcertd_var_run_t)
 +
@@ -120344,10 +120431,10 @@ index 4815a93f4..24dcf5174 100644
 +	rhcs_rw_cluster_tmpfs(wdmd_t)
  ')
 diff --git a/webadm.te b/webadm.te
-index 2a6cae773..6d0a2a1c5 100644
+index 2a6cae773..d2752d9bb 100644
 --- a/webadm.te
 +++ b/webadm.te
-@@ -25,6 +25,9 @@ role webadm_r;
+@@ -25,12 +25,21 @@ role webadm_r;
  
  userdom_base_user_template(webadm)
  
@@ -120357,26 +120444,43 @@ index 2a6cae773..6d0a2a1c5 100644
  ########################################
  #
  # Local policy
-@@ -32,6 +35,12 @@ userdom_base_user_template(webadm)
+ #
  
- allow webadm_t self:capability { dac_override dac_read_search kill sys_nice };
- 
+-allow webadm_t self:capability { dac_override dac_read_search kill sys_nice };
++allow webadm_t self:capability { dac_override dac_read_search kill sys_nice sys_resource };
++
 +manage_dirs_pattern(webadm_t, webadm_tmp_t, webadm_tmp_t)
 +manage_files_pattern(webadm_t, webadm_tmp_t, webadm_tmp_t)
 +manage_lnk_files_pattern(webadm_t, webadm_tmp_t, webadm_tmp_t)
 +files_tmp_filetrans(webadm_t, webadm_tmp_t, { file dir })
 +can_exec(webadm_t, webadm_tmp_t)
-+
+ 
  files_dontaudit_search_all_dirs(webadm_t)
  files_list_var(webadm_t)
+@@ -38,12 +47,26 @@ files_list_var(webadm_t)
+ selinux_get_enforce_mode(webadm_t)
+ seutil_domtrans_setfiles(webadm_t)
  
-@@ -43,7 +52,9 @@ logging_send_syslog_msg(webadm_t)
++init_rw_pipes(webadm_t)
++init_status(webadm_t)
++
+ logging_send_audit_msgs(webadm_t)
+ logging_send_syslog_msg(webadm_t)
  
  userdom_dontaudit_search_user_home_dirs(webadm_t)
++userdom_dontaudit_manage_admin_files(webadm_t)
++
++optional_policy(`
++	apache_admin(webadm_t, webadm_r)
++')
++
++optional_policy(`
++    dbus_system_bus_client(webadm_t)
++')
  
 -apache_admin(webadm_t, webadm_r)
 +optional_policy(`
-+	apache_admin(webadm_t, webadm_r)
++    policykit_dbus_chat(webadm_t)
 +')
  
  tunable_policy(`webadm_manage_user_files',`
