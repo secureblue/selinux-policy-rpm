@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 280%{?dist}
+Release: 281%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -681,6 +681,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Sep 11 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-281
+- Allow domains reading raw memory also use mmap.
+
 * Thu Sep 07 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-280
 - Add rules fixing installing ipa-server-install with SELinux in Enforcing. BZ(1488404)
 - Fix denials during ipa-server-install process on F27+
