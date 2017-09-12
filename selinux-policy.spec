@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 282%{?dist}
+Release: 283%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -681,6 +681,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 12 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-283
+- Allow passwd_t domain mmap /etc/shadow and /etc/passwd
+- Allow pulseaudio_t domain to map user tmp files
+- Allow mozilla plugin to mmap mozilla tmpfs files
+
 * Mon Sep 11 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-282
 - Add new bunch of map rules
 - Merge pull request #25 from NetworkManager/nm-ovs
