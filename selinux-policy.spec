@@ -143,6 +143,7 @@ SELinux policy development and man page package
 %{_usr}/share/selinux/devel/Makefile
 %{_usr}/share/selinux/devel/example.*
 %{_usr}/share/selinux/devel/policy.*
+%ghost %{_sharedstatedir}/sepolgen/interface_info
 
 %post devel
 selinuxenabled && /usr/bin/sepolgen-ifgen 2>/dev/null 
