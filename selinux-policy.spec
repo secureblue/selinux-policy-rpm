@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 284%{?dist}
+Release: 285%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 14 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-285
+- Allow svirt_t read userdomain state
+
 * Thu Sep 14 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-284
 - Allow mozilla_plugins_t domain mmap mozilla_plugin_tmpfs_t files
 - Allow automount domain to manage mount pid files
