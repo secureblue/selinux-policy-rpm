@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 283%{?dist}
+Release: 284%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,17 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 14 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-284
+- Allow mozilla_plugins_t domain mmap mozilla_plugin_tmpfs_t files
+- Allow automount domain to manage mount pid files
+- Allow stunnel_t domain setsched
+- Add keepalived domain setpgid capability
+- Merge pull request #24 from teg/rawhide
+- Merge pull request #28 from lslebodn/revert_1e8403055
+- Allow sysctl_irq_t assciate with proc_t
+- Enable cgourp sec labeling
+- Allow sshd_t domain to send signull to xdm_t processes
+
 * Tue Sep 12 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-283
 - Allow passwd_t domain mmap /etc/shadow and /etc/passwd
 - Allow pulseaudio_t domain to map user tmp files
