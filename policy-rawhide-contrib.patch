@@ -3925,7 +3925,7 @@ index 7caefc353..966c2f3e6 100644
 +/var/run/dirsrv/admin-serv.*	gen_context(system_u:object_r:httpd_var_run_t,s0)
 +/opt/dirsrv/var/run/dirsrv/dsgw/cookies(/.*)?       gen_context(system_u:object_r:httpd_var_run_t,s0)
 diff --git a/apache.if b/apache.if
-index f6eb4851f..fe461a3fc 100644
+index f6eb4851f..422f408d4 100644
 --- a/apache.if
 +++ b/apache.if
 @@ -1,9 +1,9 @@
@@ -4218,11 +4218,11 @@ index f6eb4851f..fe461a3fc 100644
 -	')
 +		# privileged users run the script:
 +		domtrans_pattern(httpd_exec_scripts, $1_script_exec_t, $1_script_t)
-+
-+		allow httpd_exec_scripts $1_script_exec_t:file read_file_perms;
  
 -	tunable_policy(`httpd_enable_cgi && httpd_unified && httpd_builtin_scripting',`
 -		filetrans_pattern(httpd_t, httpd_$1_content_t, httpd_$1_rw_content_t, { file dir fifo_file lnk_file sock_file })
++		allow httpd_exec_scripts $1_script_exec_t:file read_file_perms;
++
 +		# apache runs the script:
 +		domtrans_pattern(httpd_t, $1_script_exec_t, $1_script_t)
 +		allow httpd_t $1_script_t:unix_dgram_socket sendto;
@@ -4499,10 +4499,12 @@ index f6eb4851f..fe461a3fc 100644
  
 -	dontaudit $1 httpd_t:fifo_file rw_fifo_file_perms;
 +	dontaudit $1 httpd_t:fifo_file rw_inherited_fifo_file_perms;
-+')
-+
-+########################################
-+## <summary>
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Do not audit attempts to read and
+-##	write httpd unix domain stream sockets.
 +##	Allow attempts to read and write Apache
 +##	unix domain stream sockets.
 +## </summary>
@@ -4518,12 +4520,10 @@ index f6eb4851f..fe461a3fc 100644
 +	')
 +
 +	allow $1 httpd_t:unix_stream_socket { getattr read write };
- ')
- 
- ########################################
- ## <summary>
--##	Do not audit attempts to read and
--##	write httpd unix domain stream sockets.
++')
++
++########################################
++## <summary>
 +##	Do not audit attempts to read and write Apache
 +##	unix domain stream sockets.
  ## </summary>
@@ -5017,31 +5017,11 @@ index f6eb4851f..fe461a3fc 100644
 +')
 +
 +######################################
-+## <summary>
-+##	Allow the specified domain to read
-+##	apache system content rw dirs.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+## <rolecap/>
-+#
-+interface(`apache_read_sys_content_rw_dirs',`
-+	gen_require(`
-+		type httpd_sys_rw_content_t;
-+	')
-+
-+	list_dirs_pattern($1, httpd_sys_rw_content_t, httpd_sys_rw_content_t)
-+')
-+
-+######################################
  ## <summary>
 -##	Create, read, write, and delete
 -##	httpd system rw content.
-+##	Allow the specified domain to manage
-+##	apache system content rw files.
++##	Allow the specified domain to read
++##	apache system content rw dirs.
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -5051,12 +5031,32 @@ index f6eb4851f..fe461a3fc 100644
 +## <rolecap/>
  #
 -interface(`apache_manage_sys_rw_content',`
-+interface(`apache_manage_sys_content_rw',`
++interface(`apache_read_sys_content_rw_dirs',`
  	gen_require(`
  		type httpd_sys_rw_content_t;
  	')
  
 -	apache_search_sys_content($1)
++	list_dirs_pattern($1, httpd_sys_rw_content_t, httpd_sys_rw_content_t)
++')
++
++######################################
++## <summary>
++##	Allow the specified domain to manage
++##	apache system content rw files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`apache_manage_sys_content_rw',`
++	gen_require(`
++		type httpd_sys_rw_content_t;
++	')
++
 +	files_search_var($1)
  	manage_dirs_pattern($1, httpd_sys_rw_content_t, httpd_sys_rw_content_t)
 -	manage_files_pattern($1,httpd_sys_rw_content_t, httpd_sys_rw_content_t)
@@ -5390,7 +5390,7 @@ index f6eb4851f..fe461a3fc 100644
  	admin_pattern($1, httpd_log_t)
  
  	admin_pattern($1, httpd_modules_t)
-@@ -1224,9 +1625,183 @@ interface(`apache_admin',`
+@@ -1224,9 +1625,201 @@ interface(`apache_admin',`
  	admin_pattern($1, httpd_var_run_t)
  	files_pid_filetrans($1, httpd_var_run_t, file)
  
@@ -5554,9 +5554,7 @@ index f6eb4851f..fe461a3fc 100644
 +	files_search_pids($1)
 +	read_files_pattern($1, httpd_var_run_t, httpd_var_run_t)
 +')
- 
--	apache_run_all_scripts($1, $2)
--	apache_run_helper($1, $2)
++
 +########################################
 +## <summary>
 +##      Send and receive messages from
@@ -5577,6 +5575,26 @@ index f6eb4851f..fe461a3fc 100644
 +        allow $1 httpd_t:dbus send_msg;
 +        allow httpd_t $1:dbus send_msg;
 +		ps_process_pattern(httpd_t, $1)
++')
++
++########################################
++## <summary>
++##	Delete the httpd tmp.
++## </summary>
++## <param name="file_type">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`apache_delete_tmp',`
++	gen_require(`
++		type httpd_tmp_t;
++	')
+ 
+-	apache_run_all_scripts($1, $2)
+-	apache_run_helper($1, $2)
++	allow $1 httpd_tmp_t:file unlink;
  ')
 diff --git a/apache.te b/apache.te
 index 6649962b6..1a0189a44 100644
@@ -20908,7 +20926,7 @@ index b25b01d12..06895f39a 100644
  ')
 +
 diff --git a/ctdb.te b/ctdb.te
-index 001b502e6..73da04ae1 100644
+index 001b502e6..b264e198a 100644
 --- a/ctdb.te
 +++ b/ctdb.te
 @@ -24,6 +24,9 @@ files_tmp_file(ctdbd_tmp_t)
@@ -20926,9 +20944,10 @@ index 001b502e6..73da04ae1 100644
  #
  
 -allow ctdbd_t self:capability { chown ipc_lock net_admin net_raw sys_nice };
-+allow ctdbd_t self:capability { chown dac_override dac_read_search ipc_lock net_admin net_raw sys_nice };
+-allow ctdbd_t self:process { setpgid signal_perms setsched };
++allow ctdbd_t self:capability { chown dac_override dac_read_search ipc_lock net_admin net_raw sys_nice sys_resource };
 +allow ctdbd_t self:capability2 block_suspend;
- allow ctdbd_t self:process { setpgid signal_perms setsched };
++allow ctdbd_t self:process { setpgid setrlimit signal_perms setsched };
  allow ctdbd_t self:fifo_file rw_fifo_file_perms;
  allow ctdbd_t self:unix_stream_socket { accept connectto listen };
  allow ctdbd_t self:netlink_route_socket r_netlink_socket_perms;
@@ -30088,6 +30107,59 @@ index 5010f04e1..0341ae121 100644
  ')
  
  optional_policy(`
+diff --git a/fprintd.if b/fprintd.if
+index 8081132cd..4fb5a13bc 100644
+--- a/fprintd.if
++++ b/fprintd.if
+@@ -19,6 +19,25 @@ interface(`fprintd_domtrans',`
+ 	domtrans_pattern($1, fprintd_exec_t, fprintd_t)
+ ')
+ 
++######################################
++## <summary>
++##	Execute fprintd in the caller domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`fprintd_exec',`
++	gen_require(`
++		type fprintd_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	can_exec($1, fprintd_exec_t)
++')
++
+ ########################################
+ ## <summary>
+ ##	Send and receive messages from
+@@ -39,3 +58,22 @@ interface(`fprintd_dbus_chat',`
+ 	allow $1 fprintd_t:dbus send_msg;
+ 	allow fprintd_t $1:dbus send_msg;
+ ')
++
++########################################
++
++## <summary>
++##	Mounton fprintd lib  directory.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`fprintd_mounton_var_lib',`
++	gen_require(`
++		type fprintd_var_lib_t;
++	')
++
++	allow $1 fprintd_var_lib_t:dir mounton;
++')
 diff --git a/fprintd.te b/fprintd.te
 index 92a6479a2..f064c940d 100644
 --- a/fprintd.te
@@ -53630,7 +53702,7 @@ index 6194b806b..e27c53d6e 100644
  ')
 +
 diff --git a/mozilla.te b/mozilla.te
-index 11ac8e4fc..94822ad40 100644
+index 11ac8e4fc..7cba596af 100644
 --- a/mozilla.te
 +++ b/mozilla.te
 @@ -6,17 +6,56 @@ policy_module(mozilla, 2.8.0)
@@ -54084,7 +54156,7 @@ index 11ac8e4fc..94822ad40 100644
  ')
  
  optional_policy(`
-@@ -300,259 +340,260 @@ optional_policy(`
+@@ -300,259 +340,261 @@ optional_policy(`
  
  ########################################
  #
@@ -54299,6 +54371,7 @@ index 11ac8e4fc..94822ad40 100644
  dev_rw_xserver_misc(mozilla_plugin_t)
 +dev_rwx_zero(mozilla_plugin_t)
 +dev_dontaudit_read_mtrr(mozilla_plugin_t)
++dev_map_video_dev(mozilla_plugin_t)
 +xserver_dri_domain(mozilla_plugin_t)
  
 -dev_dontaudit_getattr_generic_files(mozilla_plugin_t)
@@ -54491,7 +54564,7 @@ index 11ac8e4fc..94822ad40 100644
  ')
  
  optional_policy(`
-@@ -560,7 +601,11 @@ optional_policy(`
+@@ -560,7 +602,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -54504,7 +54577,7 @@ index 11ac8e4fc..94822ad40 100644
  ')
  
  optional_policy(`
-@@ -568,108 +613,144 @@ optional_policy(`
+@@ -568,108 +614,144 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -112156,16 +112229,23 @@ index 000000000..e5cec8fda
 +')
 diff --git a/tomcat.te b/tomcat.te
 new file mode 100644
-index 000000000..7726f7594
+index 000000000..9c3b00220
 --- /dev/null
 +++ b/tomcat.te
-@@ -0,0 +1,109 @@
+@@ -0,0 +1,117 @@
 +policy_module(tomcat, 1.0.0)
 +
 +########################################
 +#
 +# Declarations
 +#
++
++## <desc>
++## <p>
++## Allow tomcat to read rpm database.
++## </p>
++## </desc>
++gen_tunable(tomcat_read_rpm_db, false)
 +
 +attribute tomcat_domain;
 +
@@ -112245,6 +112325,7 @@ index 000000000..7726f7594
 +corenet_tcp_connect_ibm_dt_2_port(tomcat_domain)
 +corenet_tcp_connect_unreserved_ports(tomcat_domain)
 +corenet_tcp_connect_mssql_port(tomcat_domain)
++corenet_tcp_connect_mysqld_port(tomcat_domain)
 +
 +dev_read_rand(tomcat_domain)
 +dev_read_urand(tomcat_domain)
@@ -112265,7 +112346,7 @@ index 000000000..7726f7594
 +	tomcat_search_lib(tomcat_domain)
 +')
 +
-+optional_policy(`
++tunable_policy(`tomcat_read_rpm_db',`
 +    rpm_exec(tomcat_domain)
 +    rpm_read_db(tomcat_domain)
 +')

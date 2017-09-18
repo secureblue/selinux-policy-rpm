@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 285%{?dist}
+Release: 286%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,20 @@ exit 0
 %endif
 
 %changelog
+* Mon Sep 18 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-286
+- Add new boolean tomcat_read_rpm_db()
+- Allow tomcat to connect on mysqld tcp ports
+- Add new interface apache_delete_tmp()
+- Add interface fprintd_exec()
+- Add interface fprintd_mounton_var_lib()
+- Allow mozilla plugin to mmap video devices BZ(1492580)
+- Add ctdbd_t domain sys_source capability and allow setrlimit
+- Allow systemd-logind to use ypbind
+- Allow systemd to remove apache tmp files
+- Allow ldconfig domain to mmap ldconfig cache files
+- Allow systemd to exec fprintd BZ(1491808)
+- Allow systemd to mounton fprintd lib dir
+
 * Thu Sep 14 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-285
 - Allow svirt_t read userdomain state
 
