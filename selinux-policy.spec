@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 287%{?dist}
+Release: 288%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 22 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-288
+- Remove all unnecessary dac_override capability in SELinux modules
+
 * Fri Sep 22 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-287
 - Allow init noatsecure httpd_t
 - Allow mysqld_t domain to mmap mysqld db files. BZ(1483331)
