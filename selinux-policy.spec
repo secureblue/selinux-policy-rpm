@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 288%{?dist}
+Release: 289%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,11 @@ exit 0
 %endif
 
 %changelog
+* Wed Sep 27 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-289
+- Allow tlp_t domain stream connect to sssd_t domain
+- Add missing dac_override capability
+- Add systemd_tmpfiles_t dac_override capability
+
 * Fri Sep 22 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-288
 - Remove all unnecessary dac_override capability in SELinux modules
 
