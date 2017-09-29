@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 289%{?dist}
+Release: 290%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,13 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 29 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-290
+- Allow virtlogd_t domain to write inhibit systemd pipes.
+- Add dac_override capability to openvpn_t domain
+- Add dac_override capability to xdm_t domain
+- Allow dac_override to groupadd_t domain BZ(1497081)
+- Allow cloud-init to create /var/run/cloud-init dir with net_conf_t SELinux label.BZ(1489166)
+
 * Wed Sep 27 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-289
 - Allow tlp_t domain stream connect to sssd_t domain
 - Add missing dac_override capability
