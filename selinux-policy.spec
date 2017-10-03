@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 291%{?dist}
+Release: 292%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,14 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 03 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-292
+- Allow cupsd_t to execute ld_so_cache_t BZ(1478602)
+- Allow firewalld_t domain to change object identity because of relabeling after using firewall-cmd BZ(1469806)
+- Allow postfix_cleanup_t domain to stream connect to all milter sockets BZ(1436026)
+- Allow nsswitch_domain to read virt_var_lib_t files, because of libvirt NSS plugin. BZ(1487531)
+- Add unix_stream_socket recvfrom perm for init_t domain BZ(1496318)
+- Allow systemd to maange sysfs BZ(1471361)
+
 * Tue Oct 03 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-291
 - Switch default value of SELinux boolean httpd_graceful_shutdown to off.
 
