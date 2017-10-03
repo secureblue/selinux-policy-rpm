@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 290%{?dist}
+Release: 291%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -682,6 +682,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 03 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-291
+- Switch default value of SELinux boolean httpd_graceful_shutdown to off.
+
 * Fri Sep 29 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-290
 - Allow virtlogd_t domain to write inhibit systemd pipes.
 - Add dac_override capability to openvpn_t domain
