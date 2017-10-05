@@ -154,7 +154,6 @@ Summary: SELinux policy documentation
 Group: System Environment/Base
 Requires(pre): selinux-policy = %{version}-%{release}
 Requires: selinux-policy = %{version}-%{release}
-Requires: /usr/bin/xdg-open
 
 %description doc
 SELinux policy documentation package
@@ -164,7 +163,6 @@ SELinux policy documentation package
 %{_mandir}/man*/*
 %{_mandir}/ru/*/*
 %doc %{_usr}/share/doc/%{name}
-%attr(755,root,root) %{_usr}/share/selinux/devel/policyhelp
 
 %define makeCmds() \
 make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024 bare \
@@ -433,8 +431,6 @@ mv %{buildroot}%{_usr}/share/selinux/targeted/include %{buildroot}%{_usr}/share/
 install -m 644 selinux_config/Makefile.devel %{buildroot}%{_usr}/share/selinux/devel/Makefile
 install -m 644 doc/example.* %{buildroot}%{_usr}/share/selinux/devel/
 install -m 644 doc/policy.* %{buildroot}%{_usr}/share/selinux/devel/
-echo  "xdg-open file:///usr/share/doc/selinux-policy/html/index.html"> %{buildroot}%{_usr}/share/selinux/devel/policyhelp
-chmod +x %{buildroot}%{_usr}/share/selinux/devel/policyhelp
 /usr/bin/sepolicy manpage -a -p %{buildroot}/usr/share/man/man8/ -w -r %{buildroot}
 mkdir %{buildroot}%{_usr}/share/selinux/devel/html
 mv %{buildroot}%{_usr}/share/man/man8/*.html %{buildroot}%{_usr}/share/selinux/devel/html
