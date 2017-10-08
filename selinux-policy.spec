@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 292%{?dist}
+Release: 293%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -678,6 +678,9 @@ exit 0
 %endif
 
 %changelog
+* Sun Oct 08 2017 Petr Lautrbach <plautrba@redhat.com> - 3.13.1-293
+- Drop policyhelp utility BZ(1498429)
+
 * Tue Oct 03 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-292
 - Allow cupsd_t to execute ld_so_cache_t BZ(1478602)
 - Allow firewalld_t domain to change object identity because of relabeling after using firewall-cmd BZ(1469806)
