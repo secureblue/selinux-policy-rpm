@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 293%{?dist}
+Release: 294%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -678,6 +678,15 @@ exit 0
 %endif
 
 %changelog
+* Mon Oct 09 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-294
+- Allow cloud-init to create content in /var/run/cloud-init
+- Dontaudit VM to read gnome-boxes process data BZ(1415975)
+- Allow winbind_t domain mmap samba_var_t files
+- Allow cupsd_t to execute ld_so_cache_t BZ(1478602)
+- Update dev_rw_xserver_misc() interface to allo source domains to mmap xserver devices BZ(1334035)
+- Add dac_override capability to groupadd_t domain BZ(1497091)
+- Allow unconfined_service_t to start containers
+
 * Sun Oct 08 2017 Petr Lautrbach <plautrba@redhat.com> - 3.13.1-293
 - Drop policyhelp utility BZ(1498429)
 
