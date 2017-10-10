@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 294%{?dist}
+Release: 295%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -678,6 +678,19 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 10 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-295
+- Allow boinc_t to mmap files with label boinc_project_var_lib_t BZ(1500088)
+- Allow fail2ban_t domain to mmap journals. BZ(1500089)
+- Add dac_override to abrt_t domain BZ(1499860)
+- Allow pppd domain to mmap own pid files BZ(1498587)
+- Allow webserver services to mmap files with label httpd_sys_content_t BZ(1498451)
+- Allow tlp domain to read sssd public files Allow tlp domain to mmap kernel modules
+- Allow systemd to read sysfs sym links. BZ(1499327)
+- Allow systemd to mmap systemd_networkd_exec_t files BZ(1499863)
+- Make systemd_networkd_var_run as mountpoint BZ(1499862)
+- Allow noatsecure for java-based unconfined services. BZ(1358476)
+- Allow systemd_modules_load_t domain to mmap kernel modules. BZ(1490015)
+
 * Mon Oct 09 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-294
 - Allow cloud-init to create content in /var/run/cloud-init
 - Dontaudit VM to read gnome-boxes process data BZ(1415975)
