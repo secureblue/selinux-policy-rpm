@@ -510,6 +510,21 @@ SELinux Reference policy targeted base module.
 %postInstall $1 targeted
 exit 0
 
+%postun targeted
+if [ $1 = 0 ]; then
+    source /etc/selinux/config
+    if [ "$SELINUXTYPE" = "targeted" ]; then
+        setenforce 0 2> /dev/null
+        if [ ! -s /etc/selinux/config ]; then
+            echo "SELINUX=disabled" > /etc/selinux/config
+        else
+            sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+        fi
+    fi
+fi
+exit 0
+
+
 %triggerin -- pcre
 selinuxenabled && semodule -nB
 exit 0
@@ -600,6 +615,20 @@ done
 fi
 exit 0
 
+%postun minimum
+if [ $1 = 0 ]; then
+    source /etc/selinux/config
+    if [ "$SELINUXTYPE" = "minimum" ]; then
+        setenforce 0 2> /dev/null
+        if [ ! -s /etc/selinux/config ]; then
+            echo "SELINUX=disabled" > /etc/selinux/config
+        else
+            sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+        fi
+    fi
+fi
+exit 0
+
 %triggerpostun minimum -- selinux-policy-minimum < 3.13.1-138
 if [ `ls -A /var/lib/selinux/minimum/active/modules/disabled/` ]; then
     rm -f /var/lib/selinux/minimum/active/modules/disabled/*
@@ -650,6 +679,20 @@ SELinux Reference policy mls base module.
 
 %post mls 
 %postInstall $1 mls
+exit 0
+
+%postun mls
+if [ $1 = 0 ]; then
+    source /etc/selinux/config
+    if [ "$SELINUXTYPE" = "mls" ]; then
+        setenforce 0 2> /dev/null
+        if [ ! -s /etc/selinux/config ]; then
+            echo "SELINUX=disabled" > /etc/selinux/config
+        else
+            sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+        fi
+    fi
+fi
 exit 0
 
 %triggerpostun mls -- selinux-policy-mls < 3.13.1-138
