@@ -94,6 +94,7 @@ Based off of reference policy: Checked out revision  2.20091117
 Summary: SELinux policy sandbox
 Group: System Environment/Base
 Requires(pre): selinux-policy-base = %{version}-%{release}
+Requires(pre): selinux-policy-targeted = %{version}-%{release}
 
 %description sandbox
 SELinux sandbox policy used for the policycoreutils-sandbox package
