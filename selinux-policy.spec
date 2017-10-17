@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 295%{?dist}
+Release: 296%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -722,6 +722,16 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 17 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-296
+- Merge pull request #19 from RodrigoQuesadaDev/snapper-fix-1
+- Allow httpd_t domain to mmap httpd_user_content_t files. BZ(1494852)
+- Add nnp transition rule for services using NoNewPrivileges systemd feature
+- Add map permission into dev_rw_infiniband_dev() interface to allow caller domain mmap infiniband chr device BZ(1500923)
+- Add init_nnp_daemon_domain interface
+- Allow nnp transition capability
+- Merge pull request #204 from konradwilk/rhbz1484908
+- Label postgresql-check-db-dir as postgresql_exec_t
+
 * Tue Oct 10 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-295
 - Allow boinc_t to mmap files with label boinc_project_var_lib_t BZ(1500088)
 - Allow fail2ban_t domain to mmap journals. BZ(1500089)
