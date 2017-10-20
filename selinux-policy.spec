@@ -206,7 +206,7 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 
 %define fileList() \
 %defattr(-,root,root) \
-%dir %{_usr}/share/selinux/%1 \
+%{_datadir}/selinux/%1 \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/seusers \
@@ -255,10 +255,6 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/xguest_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/user_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u \
-%{_usr}/share/selinux/%1/base.lst \
-%{_usr}/share/selinux/%1/modules-base.lst \
-%{_usr}/share/selinux/%1/modules-contrib.lst \
-%{_usr}/share/selinux/%1/nonbasemodules.lst \
 %{_sharedstatedir}/selinux/%1/active/commit_num \
 %{_sharedstatedir}/selinux/%1/active/users_extra \
 %{_sharedstatedir}/selinux/%1/active/homedir_template \
@@ -268,7 +264,6 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %ghost %{_sharedstatedir}/selinux/%1/active/policy.linked \
 %ghost %{_sharedstatedir}/selinux/%1/active/seusers.linked \
 %ghost %{_sharedstatedir}/selinux/%1/active/users_extra.linked \
-%{_datadir}/selinux/%1 \
 %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/file_contexts.homedirs \
 #%{_libexecdir}/selinux/selinux-factory-reset \
 #%{_unitdir}/selinux-factory-reset@.service \
