@@ -5615,7 +5615,7 @@ index f6eb4851f..3628a384f 100644
 +    allow $1 httpd_t:process { noatsecure };
  ')
 diff --git a/apache.te b/apache.te
-index 6649962b6..1362c1bc9 100644
+index 6649962b6..f6ac61e03 100644
 --- a/apache.te
 +++ b/apache.te
 @@ -5,280 +5,346 @@ policy_module(apache, 2.7.2)
@@ -7836,7 +7836,7 @@ index 6649962b6..1362c1bc9 100644
 -	fs_exec_nfs_files(httpd_user_script_t)
 +	read_files_pattern(httpd_t, httpd_user_content_type, httpd_user_content_type)
 +	read_lnk_files_pattern(httpd_t, httpd_user_content_type, httpd_user_content_type)
-+    allow httpd_t httpd_sys_content_type:file map;
++    allow httpd_t httpd_user_content_type:file map;
  ')
  
  tunable_policy(`httpd_read_user_content',`
@@ -9212,7 +9212,7 @@ index 9078c3d85..2f6b2503e 100644
 +	allow $1 avahi_unit_file_t:service all_service_perms;
  ')
 diff --git a/avahi.te b/avahi.te
-index b8355b32f..7137937b9 100644
+index b8355b32f..51ce1b60f 100644
 --- a/avahi.te
 +++ b/avahi.te
 @@ -13,17 +13,21 @@ type avahi_initrc_exec_t;
@@ -9235,7 +9235,7 @@ index b8355b32f..7137937b9 100644
  #
  
 -allow avahi_t self:capability { dac_override setgid chown fowner kill net_admin net_raw setuid sys_chroot };
-+allow avahi_t self:capability { dac_read_search  setgid chown fowner kill net_admin net_raw setuid sys_chroot };
++allow avahi_t self:capability { dac_read_search dac_override setgid chown fowner kill net_admin net_raw setuid sys_chroot };
  dontaudit avahi_t self:capability sys_tty_config;
  allow avahi_t self:process { setrlimit signal_perms getcap setcap };
  allow avahi_t self:fifo_file rw_fifo_file_perms;
@@ -40061,10 +40061,10 @@ index 000000000..74206edcb
 +
 diff --git a/ipa.if b/ipa.if
 new file mode 100644
-index 000000000..d611c53d4
+index 000000000..72a6b78ba
 --- /dev/null
 +++ b/ipa.if
-@@ -0,0 +1,309 @@
+@@ -0,0 +1,310 @@
 +## <summary>Policy for IPA services.</summary>
 +
 +########################################
@@ -40351,6 +40351,7 @@ index 000000000..d611c53d4
 +interface(`ipa_cert_filetrans_named_content',`
 +	gen_require(`
 +		type ipa_cert_t;
++        type cert_t;
 +	')
 +
 +	filetrans_pattern($1, cert_t, ipa_cert_t, file ,"ipasession.key")
@@ -40376,10 +40377,10 @@ index 000000000..d611c53d4
 +')
 diff --git a/ipa.te b/ipa.te
 new file mode 100644
-index 000000000..49295fe45
+index 000000000..653c11fb3
 --- /dev/null
 +++ b/ipa.te
-@@ -0,0 +1,275 @@
+@@ -0,0 +1,276 @@
 +policy_module(ipa, 1.0.0)
 +
 +########################################
@@ -40564,6 +40565,7 @@ index 000000000..49295fe45
 +
 +kernel_dgram_send(ipa_dnskey_t)
 +kernel_read_system_state(ipa_dnskey_t)
++kernel_read_network_state(ipa_dnskey_t)
 +
 +auth_use_nsswitch(ipa_dnskey_t)
 +
@@ -69403,7 +69405,7 @@ index 9b157305b..cb00f200a 100644
 +	')
  ')
 diff --git a/openvswitch.te b/openvswitch.te
-index 44dbc99ab..d11c99a93 100644
+index 44dbc99ab..7bcb16c59 100644
 --- a/openvswitch.te
 +++ b/openvswitch.te
 @@ -9,11 +9,8 @@ type openvswitch_t;
@@ -69469,7 +69471,7 @@ index 44dbc99ab..d11c99a93 100644
  manage_lnk_files_pattern(openvswitch_t, openvswitch_log_t, openvswitch_log_t)
  logging_log_filetrans(openvswitch_t, openvswitch_log_t, { dir file lnk_file })
  
-@@ -63,35 +67,63 @@ manage_dirs_pattern(openvswitch_t, openvswitch_var_run_t, openvswitch_var_run_t)
+@@ -63,35 +67,71 @@ manage_dirs_pattern(openvswitch_t, openvswitch_var_run_t, openvswitch_var_run_t)
  manage_files_pattern(openvswitch_t, openvswitch_var_run_t, openvswitch_var_run_t)
  manage_sock_files_pattern(openvswitch_t, openvswitch_var_run_t, openvswitch_var_run_t)
  manage_lnk_files_pattern(openvswitch_t, openvswitch_var_run_t, openvswitch_var_run_t)
@@ -69541,6 +69543,14 @@ index 44dbc99ab..d11c99a93 100644
 +
 +optional_policy(`
 +    plymouthd_exec_plymouth(openvswitch_t)
++')
++
++optional_policy(`
++    networkmanager_read_state(openvswitch_t)
++')
++
++optional_policy(`
++    seutil_domtrans_setfiles(openvswitch_t)
 +')
 diff --git a/openwsman.fc b/openwsman.fc
 new file mode 100644
@@ -84816,10 +84826,10 @@ index 70ab68b02..b985b6570 100644
 +/var/run/neutron(/.*)?	gen_context(system_u:object_r:neutron_var_run_t,s0)
 +/var/run/quantum(/.*)?	gen_context(system_u:object_r:neutron_var_run_t,s0)
 diff --git a/quantum.if b/quantum.if
-index afc00688d..589a7fdde 100644
+index afc00688d..e974fad4b 100644
 --- a/quantum.if
 +++ b/quantum.if
-@@ -2,41 +2,295 @@
+@@ -2,41 +2,314 @@
  
  ########################################
  ## <summary>
@@ -84845,13 +84855,12 @@ index afc00688d..589a7fdde 100644
 +########################################
 +## <summary>
 +##	Allow read/write neutron pipes
- ## </summary>
- ## <param name="domain">
- ##	<summary>
- ##	Domain allowed access.
- ##	</summary>
- ## </param>
--## <param name="role">
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
 +#
 +interface(`neutron_rw_inherited_pipes',`
 +	gen_require(`
@@ -84864,13 +84873,13 @@ index afc00688d..589a7fdde 100644
 +########################################
 +## <summary>
 +##	Send sigchld to neutron.
-+## </summary>
-+## <param name="domain">
+ ## </summary>
+ ## <param name="domain">
  ##	<summary>
--##	Role allowed access.
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
+ ##	Domain allowed access.
+ ##	</summary>
+ ## </param>
+-## <param name="role">
 +#
 +#
 +interface(`neutron_sigchld',`
@@ -84886,7 +84895,8 @@ index afc00688d..589a7fdde 100644
 +##	Read neutron's log files.
 +## </summary>
 +## <param name="domain">
-+##	<summary>
+ ##	<summary>
+-##	Role allowed access.
 +##	Domain allowed access.
  ##	</summary>
  ## </param>
@@ -84998,11 +85008,7 @@ index afc00688d..589a7fdde 100644
 +	gen_require(`
 +		type neutron_var_lib_t;
 +	')
- 
--	init_labeled_script_domtrans($1, quantum_initrc_exec_t)
--	domain_system_change_exemption($1)
--	role_transition $2 quantum_initrc_exec_t system_r;
--	allow $2 system_r;
++
 +	files_search_var_lib($1)
 +	manage_files_pattern($1, neutron_var_lib_t, neutron_var_lib_t)
 +    manage_sock_files_pattern($1, neutron_var_lib_t, neutron_var_lib_t)
@@ -85022,7 +85028,11 @@ index afc00688d..589a7fdde 100644
 +	gen_require(`
 +		type neutron_var_lib_t;
 +	')
-+
+ 
+-	init_labeled_script_domtrans($1, quantum_initrc_exec_t)
+-	domain_system_change_exemption($1)
+-	role_transition $2 quantum_initrc_exec_t system_r;
+-	allow $2 system_r;
 +	files_search_var_lib($1)
 +	manage_dirs_pattern($1, neutron_var_lib_t, neutron_var_lib_t)
 +')
@@ -85091,6 +85101,25 @@ index afc00688d..589a7fdde 100644
 +	ps_process_pattern($1, neutron_t)
 +')
 +
++#######################################
++## <summary>
++##	Read neutron process state files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`neutron_read_state',`
++	gen_require(`
++		type neutron_t;
++	')
++
++	allow $1 neutron_t:dir search_dir_perms;
++	allow $1 neutron_t:file read_file_perms;
++	allow $1 neutron_t:lnk_file read_lnk_file_perms;
++')
 +
 +########################################
 +## <summary>
@@ -115158,10 +115187,10 @@ index 3d11c6a3d..3590f3ef9 100644
  
  optional_policy(`
 diff --git a/virt.fc b/virt.fc
-index a4f20bcfc..58d0a33f2 100644
+index a4f20bcfc..95abdb144 100644
 --- a/virt.fc
 +++ b/virt.fc
-@@ -1,51 +1,111 @@
+@@ -1,51 +1,113 @@
 -HOME_DIR/\.libvirt(/.*)?	gen_context(system_u:object_r:virt_home_t,s0)
 -HOME_DIR/\.libvirt/qemu(/.*)?	gen_context(system_u:object_r:svirt_home_t,s0)
 -HOME_DIR/\.virtinst(/.*)?	gen_context(system_u:object_r:virt_home_t,s0)
@@ -115218,6 +115247,7 @@ index a4f20bcfc..58d0a33f2 100644
 +/usr/sbin/virtlockd --  gen_context(system_u:object_r:virtd_exec_t,s0)
 +/usr/sbin/virtlogd --  gen_context(system_u:object_r:virtlogd_exec_t,s0)
 +/usr/bin/virt-who   --  gen_context(system_u:object_r:virtd_exec_t,s0)
++/usr/bin/qemu-pr-helper   --  gen_context(system_u:object_r:virtd_exec_t,s0)
 +/usr/bin/virsh		--	gen_context(system_u:object_r:virsh_exec_t,s0)
 +/usr/sbin/condor_vm-gahp	--	gen_context(system_u:object_r:virtd_exec_t,s0)
 +/usr/sbin/xl		--	gen_context(system_u:object_r:virsh_exec_t,s0)
@@ -115251,6 +115281,7 @@ index a4f20bcfc..58d0a33f2 100644
 +/var/run/libvirt/virtlogd-sock	-s 		gen_context(system_u:object_r:virtlogd_var_run_t,s0)
 +/var/run/libvirt-sandbox(/.*)?	gen_context(system_u:object_r:virt_lxc_var_run_t,s0)
 +/var/run/vdsm(/.*)?		gen_context(system_u:object_r:virt_var_run_t,s0)
++/var/run/qemu-pr-helper\.sock	-s 		gen_context(system_u:object_r:virt_var_run_t,s0)
  
 -/var/vdsm(/.*)?		gen_context(system_u:object_r:virt_var_run_t,s0)
 +/var/vdsm(/.*)?			gen_context(system_u:object_r:virt_var_run_t,s0)
@@ -117537,7 +117568,7 @@ index facdee8b3..2a619ba9e 100644
 +	dgram_send_pattern($1, virt_var_run_t, virt_var_run_t, virtd_t)
  ')
 diff --git a/virt.te b/virt.te
-index f03dcf567..c7a95a908 100644
+index f03dcf567..3fde9b1cd 100644
 --- a/virt.te
 +++ b/virt.te
 @@ -1,451 +1,424 @@
@@ -118150,10 +118181,10 @@ index f03dcf567..c7a95a908 100644
 -manage_dirs_pattern(svirt_t, svirt_home_t, svirt_home_t)
 -manage_files_pattern(svirt_t, svirt_home_t, svirt_home_t)
 -manage_sock_files_pattern(svirt_t, svirt_home_t, svirt_home_t)
+-
+-filetrans_pattern(svirt_t, virt_home_t, svirt_home_t, dir, "qemu")
 +allow svirt_t self:process ptrace;
  
--filetrans_pattern(svirt_t, virt_home_t, svirt_home_t, dir, "qemu")
--
 -stream_connect_pattern(svirt_t, svirt_home_t, svirt_home_t, virtd_t)
 +# it was a part of auth_use_nsswitch
 +allow svirt_t self:netlink_route_socket r_netlink_socket_perms;
@@ -118337,12 +118368,12 @@ index f03dcf567..c7a95a908 100644
  
 -stream_connect_pattern(virtd_t, virtd_lxc_var_run_t, virtd_lxc_var_run_t, virtd_lxc_t)
 -stream_connect_pattern(virtd_t, svirt_var_run_t, svirt_var_run_t, virt_domain)
+-
+-can_exec(virtd_t, virt_tmp_t)
 +# libvirtd is permitted to talk to virtlogd
 +stream_connect_pattern(virtd_t, virt_var_run_t, virtlogd_var_run_t, virtlogd_t)
 +allow virtd_t virtlogd_t:fifo_file rw_inherited_fifo_file_perms;
  
--can_exec(virtd_t, virt_tmp_t)
--
 -kernel_read_crypto_sysctls(virtd_t)
  kernel_read_system_state(virtd_t)
  kernel_read_network_state(virtd_t)
@@ -118442,13 +118473,13 @@ index f03dcf567..c7a95a908 100644
 +sysnet_read_config(virtd_t)
  
 -userdom_read_all_users_state(virtd_t)
--
--ifdef(`hide_broken_symptoms',`
--	dontaudit virtd_t self:capability { sys_module sys_ptrace };
--')
 +systemd_dbus_chat_logind(virtd_t)
 +systemd_write_inhibit_pipes(virtd_t)
  
+-ifdef(`hide_broken_symptoms',`
+-	dontaudit virtd_t self:capability { sys_module sys_ptrace };
+-')
+-
 -tunable_policy(`virt_use_fusefs',`
 -	fs_manage_fusefs_dirs(virtd_t)
 -	fs_manage_fusefs_files(virtd_t)
@@ -118502,7 +118533,7 @@ index f03dcf567..c7a95a908 100644
  ')
  
  optional_policy(`
-@@ -691,99 +653,445 @@ optional_policy(`
+@@ -691,99 +653,449 @@ optional_policy(`
  	dnsmasq_kill(virtd_t)
  	dnsmasq_signull(virtd_t)
  	dnsmasq_create_pid_dirs(virtd_t)
@@ -118802,6 +118833,10 @@ index f03dcf567..c7a95a908 100644
 +')
 +
 +optional_policy(`
++    openvswitch_stream_connect(svirt_t)
++')
++
++optional_policy(`
 +	ptchown_domtrans(virt_domain)
 +')
 +
@@ -118999,7 +119034,7 @@ index f03dcf567..c7a95a908 100644
  kernel_read_system_state(virsh_t)
  kernel_read_network_state(virsh_t)
  kernel_read_kernel_sysctls(virsh_t)
-@@ -794,25 +1102,18 @@ kernel_write_xen_state(virsh_t)
+@@ -794,25 +1106,18 @@ kernel_write_xen_state(virsh_t)
  corecmd_exec_bin(virsh_t)
  corecmd_exec_shell(virsh_t)
  
@@ -119026,7 +119061,7 @@ index f03dcf567..c7a95a908 100644
  
  fs_getattr_all_fs(virsh_t)
  fs_manage_xenfs_dirs(virsh_t)
-@@ -821,23 +1122,25 @@ fs_search_auto_mountpoints(virsh_t)
+@@ -821,23 +1126,25 @@ fs_search_auto_mountpoints(virsh_t)
  
  storage_raw_read_fixed_disk(virsh_t)
  
@@ -119060,7 +119095,7 @@ index f03dcf567..c7a95a908 100644
  
  tunable_policy(`virt_use_nfs',`
  	fs_manage_nfs_dirs(virsh_t)
-@@ -856,14 +1159,20 @@ optional_policy(`
+@@ -856,14 +1163,20 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -119082,7 +119117,7 @@ index f03dcf567..c7a95a908 100644
  	xen_stream_connect(virsh_t)
  	xen_stream_connect_xenstore(virsh_t)
  ')
-@@ -888,49 +1197,66 @@ optional_policy(`
+@@ -888,49 +1201,66 @@ optional_policy(`
  	kernel_read_xen_state(virsh_ssh_t)
  	kernel_write_xen_state(virsh_ssh_t)
  
@@ -119167,7 +119202,7 @@ index f03dcf567..c7a95a908 100644
  
  corecmd_exec_bin(virtd_lxc_t)
  corecmd_exec_shell(virtd_lxc_t)
-@@ -942,17 +1268,16 @@ dev_read_urand(virtd_lxc_t)
+@@ -942,17 +1272,16 @@ dev_read_urand(virtd_lxc_t)
  
  domain_use_interactive_fds(virtd_lxc_t)
  
@@ -119187,7 +119222,7 @@ index f03dcf567..c7a95a908 100644
  fs_getattr_all_fs(virtd_lxc_t)
  fs_manage_tmpfs_dirs(virtd_lxc_t)
  fs_manage_tmpfs_chr_files(virtd_lxc_t)
-@@ -964,15 +1289,11 @@ fs_rw_cgroup_files(virtd_lxc_t)
+@@ -964,15 +1293,11 @@ fs_rw_cgroup_files(virtd_lxc_t)
  fs_unmount_all_fs(virtd_lxc_t)
  fs_relabelfrom_tmpfs(virtd_lxc_t)
  
@@ -119206,7 +119241,7 @@ index f03dcf567..c7a95a908 100644
  
  term_use_generic_ptys(virtd_lxc_t)
  term_use_ptmx(virtd_lxc_t)
-@@ -982,186 +1303,307 @@ auth_use_nsswitch(virtd_lxc_t)
+@@ -982,186 +1307,307 @@ auth_use_nsswitch(virtd_lxc_t)
  
  logging_send_syslog_msg(virtd_lxc_t)
  
@@ -119643,7 +119678,7 @@ index f03dcf567..c7a95a908 100644
  allow virt_qmf_t self:tcp_socket create_stream_socket_perms;
  allow virt_qmf_t self:netlink_route_socket create_netlink_socket_perms;
  
-@@ -1174,12 +1616,12 @@ dev_read_sysfs(virt_qmf_t)
+@@ -1174,12 +1620,12 @@ dev_read_sysfs(virt_qmf_t)
  dev_read_rand(virt_qmf_t)
  dev_read_urand(virt_qmf_t)
  
@@ -119658,7 +119693,7 @@ index f03dcf567..c7a95a908 100644
  sysnet_read_config(virt_qmf_t)
  
  optional_policy(`
-@@ -1192,7 +1634,7 @@ optional_policy(`
+@@ -1192,7 +1638,7 @@ optional_policy(`
  
  ########################################
  #
@@ -119667,7 +119702,7 @@ index f03dcf567..c7a95a908 100644
  #
  
  allow virt_bridgehelper_t self:process { setcap getcap };
-@@ -1201,11 +1643,264 @@ allow virt_bridgehelper_t self:tcp_socket create_stream_socket_perms;
+@@ -1201,11 +1647,264 @@ allow virt_bridgehelper_t self:tcp_socket create_stream_socket_perms;
  allow virt_bridgehelper_t self:tun_socket create_socket_perms;
  allow virt_bridgehelper_t self:unix_dgram_socket create_socket_perms;
  
@@ -122822,6 +122857,16 @@ index 0928c5d6a..99a430031 100644
  miscfiles_read_fonts(xfs_t)
  
  userdom_dontaudit_use_unpriv_user_fds(xfs_t)
+diff --git a/xguest.if b/xguest.if
+index 4f1d07d71..5c819abe8 100644
+--- a/xguest.if
++++ b/xguest.if
+@@ -1,4 +1,4 @@
+-## <summary>Least privledge xwindows user role.</summary>
++## <summary>Least privileged xwindows user role.</summary>
+ 
+ ########################################
+ ## <summary>
 diff --git a/xguest.te b/xguest.te
 index a64aad347..12dc86b2f 100644
 --- a/xguest.te

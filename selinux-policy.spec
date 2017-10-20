@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 296%{?dist}
+Release: 297%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -722,6 +722,16 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 20 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-297
+- Fix typo in virt file contexts file
+- allow ipa_dnskey_t to read /proc/net/unix file
+- Allow openvswitch to run setfiles in setfiles_t domain.
+- Allow openvswitch_t domain to read process data of neutron_t domains
+- Fix typo in ipa_cert_filetrans_named_content() interface
+- Fix typo bug in summary of xguest SELinux module
+- Allow virtual machine with svirt_t label to stream connect to openvswitch.
+- Label qemu-pr-helper script as virt_exec_t so this script won't run as unconfined_service_t
+
 * Tue Oct 17 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-296
 - Merge pull request #19 from RodrigoQuesadaDev/snapper-fix-1
 - Allow httpd_t domain to mmap httpd_user_content_t files. BZ(1494852)
