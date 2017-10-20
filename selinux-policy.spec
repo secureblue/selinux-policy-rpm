@@ -269,6 +269,7 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %ghost %{_sharedstatedir}/selinux/%1/active/seusers.linked \
 %ghost %{_sharedstatedir}/selinux/%1/active/users_extra.linked \
 %{_datadir}/selinux/%1 \
+%verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/file_contexts.homedirs \
 #%{_libexecdir}/selinux/selinux-factory-reset \
 #%{_unitdir}/selinux-factory-reset@.service \
 #%{_unitdir}/basic.target.wants/selinux-factory-reset@%1.service \
