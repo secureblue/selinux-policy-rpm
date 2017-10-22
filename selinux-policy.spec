@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 297%{?dist}
+Release: 298%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -718,6 +718,15 @@ exit 0
 %endif
 
 %changelog
+* Sun Oct 22 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-298
+- Drop *.lst files from file list
+- Ship file_contexts.homedirs in store
+- Allow proper transition when systems starting pdns to pdns_t domain. BZ(1305522)
+- Allow haproxy daemon to reexec itself. BZ(1447800)
+- Allow conmand to use usb ttys.
+- Allow systemd_machined to read mock lib files. BZ(1504493)
+- Allow systemd_resolved_t to dbusd chat with NetworkManager_t BZ(1505081)
+
 * Fri Oct 20 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-297
 - Fix typo in virt file contexts file
 - allow ipa_dnskey_t to read /proc/net/unix file
