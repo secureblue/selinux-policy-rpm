@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 298%{?dist}
+Release: 299%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -719,6 +719,32 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 24 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-299
+- Label /usr/libexec/bluetooth/obexd as bluetoothd_exec_t to run process as bluetooth_t
+- Allow chronyd_t do request kernel module and block_suspend capability
+- Allow system_cronjob_t to create /var/lib/letsencrypt dir with right label
+- Allow slapd_t domain to mmap files labeled as slpad_db_t BZ(1505414)
+- Allow dnssec_trigger_t domain to execute binaries with dnssec_trigeer_exec_t BZ(1487912)
+- Allow l2tpd_t domain to send SIGKILL to ipsec_mgmt_t domains BZ(1505220)
+- Allow thumb_t creating thumb_home_t files in user_home_dir_t direcotry BZ(1474110)
+- Allow httpd_t also read httpd_user_content_type dirs when httpd_enable_homedirs is enables
+- Allow svnserve to use kerberos
+- Allow conman to use ptmx. Add conman_use_nfs boolean
+- Allow nnp transition for amavis and tmpreaper SELinux domains
+- Allow chronyd_t to mmap chronyc_exec_t binary files
+- Add dac_read_search capability to openvswitch_t domain
+- Allow svnserve to manage own svnserve_log_t files/dirs
+- Allow keepalived_t to search network sysctls
+- Allow puppetagent_t domain dbus chat with rhsmcertd_t domain
+- Add kill capability to openvswitch_t domain
+- Label also compressed logs in /var/log for different services
+- Allow inetd_child_t and system_cronjob_t to run chronyc.
+- Allow chrony to create netlink route sockets
+- Add SELinux support for chronyc
+- Add support for running certbot(letsencrypt) in crontab
+- Allow nnp trasintion for unconfined_service_t
+- Allow unpriv user domains and unconfined_service_t to use chronyc
+
 * Sun Oct 22 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-298
 - Drop *.lst files from file list
 - Ship file_contexts.homedirs in store
