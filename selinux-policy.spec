@@ -70,6 +70,7 @@ BuildArch: noarch
 BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2 
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(post): /bin/awk /usr/bin/sha512sum
+Requires: rpm-plugin-selinux
 
 %description 
 SELinux Base package for SELinux Reference Policy - modular.
