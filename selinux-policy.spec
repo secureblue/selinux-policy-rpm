@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 299%{?dist}
+Release: 300%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -719,6 +719,21 @@ exit 0
 %endif
 
 %changelog
+* Thu Oct 26 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-300
+- Allow zabbix_t domain to change its resource limits
+- Add new boolean nagios_use_nfs
+- Allow system_mail_t to search network sysctls
+- Hide all allow rules with ptrace inside deny_ptrace boolean
+- Allow nagios_script_t to read nagios_spool_t files
+- Allow sbd_t to create own sbd_tmpfs_t dirs/files
+- Allow firewalld and networkmanager to chat with hypervkvp via dbus
+- Allow dmidecode to read rhsmcert_log_t files
+- Allow mail system to connect mariadb sockets.
+- Allow nmbd_t domain to mmap files labeled as samba_var_t. BZ(1505877)
+- Make user account setup in gnome-initial-setup working in Workstation Live system. BZ(1499170)
+- Allow iptables_t to run setfiles to restore context on system
+- Updatre unconfined_dontaudit_read_state() interface to dontaudit also acess to files. BZ(1503466)
+
 * Tue Oct 24 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-299
 - Label /usr/libexec/bluetooth/obexd as bluetoothd_exec_t to run process as bluetooth_t
 - Allow chronyd_t do request kernel module and block_suspend capability
