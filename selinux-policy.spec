@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 300%{?dist}
+Release: 301%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -717,6 +717,22 @@ exit 0
 %endif
 
 %changelog
+* Fri Nov 03 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-301
+- Merge pull request #37 from milosmalik/rawhide
+- Allow mozilla_plugin_t domain to dbus chat with devicekit
+- Dontaudit leaked logwatch pipes
+- Label /usr/bin/VGAuthService as vmtools_exec_t to confine this daemon.
+- Allow httpd_t domain to execute hugetlbfs_t files BZ(1444546)
+- Allow chronyd daemon to execute chronyc. BZ(1507478)
+- Allow pdns to read network system state BZ(1507244)
+- Allow gssproxy to read network system state Resolves: rhbz#1507191
+- Allow nfsd_t domain to read configfs_t files/dirs
+- Allow tgtd_t domain to read generic certs
+- Allow ptp4l to send msgs via dgram socket to unprivileged user domains
+- Allow dirsrv_snmp_t to use inherited user ptys and read system state
+- Allow glusterd_t domain to create own tmpfs dirs/files
+- Allow keepalived stream connect to snmp
+
 * Thu Oct 26 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-300
 - Allow zabbix_t domain to change its resource limits
 - Add new boolean nagios_use_nfs
