@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 301%{?dist}
+Release: 302%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -717,6 +717,17 @@ exit 0
 %endif
 
 %changelog
+* Mon Nov 06 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-302
+- Allow jabber domains to connect to postgresql ports
+- Dontaudit slapd_t to block suspend system
+- Allow spamc_t to stream connect to cyrys.
+- Allow passenger to connect to mysqld_port_t
+- Allow ipmievd to use nsswitch
+- Allow chronyc_t domain to use user_ptys
+- Label all files /var/log/opensm.* as opensm_log_t because opensm creating new log files with name opensm-subnet.lst
+- Fix typo bug in tlp module
+- Allow userdomain gkeyringd domain to create stream socket with userdomain
+
 * Fri Nov 03 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-301
 - Merge pull request #37 from milosmalik/rawhide
 - Allow mozilla_plugin_t domain to dbus chat with devicekit
