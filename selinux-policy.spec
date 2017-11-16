@@ -241,9 +241,9 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts \
 %ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.bin \
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs \
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs.bin \
+%ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.homedirs.bin \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local \
-%verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local.bin \
+%ghost %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local.bin \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
 %{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs_dist \
 %{_sysconfdir}/selinux/%1/booleans.subs_dist \
