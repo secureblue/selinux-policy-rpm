@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 302%{?dist}
+Release: 303%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -717,6 +717,43 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 16 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-303
+- Allow pcp_pmlogger to send logs to journal BZ(1512367)
+- Merge pull request #40 from lslebodn/kcm_kerberos
+- Allow services to use kerberos KCM BZ(1512128)
+- Allow system_mail_t domain to be system_dbus_client BZ(1512476)
+- Allow aide domain to stream connect to sssd_t BZ(1512500)
+- Allow squid_t domain to mmap files with label squid_tmpfs_t BZ(1498809)
+- Allow nsd_t domain to mmap files with labels nsd_tmp_t and nsd_zone_t BZ(1511269)
+- Include cupsd_config_t domain into cups_execmem boolean. BZ(1417584)
+- Allow samba_net_t domain to mmap samba_var_t files BZ(1512227)
+- Allow lircd_t domain to execute shell BZ(1512787)
+- Allow thumb_t domain to setattr on cache_home_t dirs BZ(1487814)
+- Allow redis to creating tmp files with own label BZ(1513518)
+- Create new interface thumb_nnp_domtrans allowing domaintransition with NoNewPrivs. This interface added to thumb_run() BZ(1509502)
+- Allow httpd_t to mmap httpd_tmp_t files BZ(1502303)
+- Add map permission to samba_rw_var_files interface. BZ(1513908)
+- Allow cluster_t domain creating bundles directory with label var_log_t instead of cluster_var_log_t
+- Add dac_read_search and dac_override capabilities to ganesha
+- Allow ldap_t domain to manage also slapd_tmp_t lnk files
+- Allow snapperd_t domain to relabeling from snapperd_data_t BZ(1510584)
+- Add dac_override capability to dhcpd_t doamin BZ(1510030)
+- Allow snapperd_t to remove old snaps BZ(1510862)
+- Allow chkpwd_t domain to mmap system_db_t files and be dbus system client BZ(1513704)
+- Allow xdm_t send signull to all xserver unconfined types BZ(1499390)
+- Allow fs associate for sysctl_vm_t BZ(1447301)
+- Label /etc/init.d/vboxdrv as bin_t to run virtualbox as unconfined_service_t BZ(1451479)
+- Allow xdm_t domain to read usermodehelper_t state BZ(1412609)
+- Allow dhcpc_t domain to stream connect to userdomain domains BZ(1511948)
+- Allow systemd to mmap kernel modules BZ(1513399)
+- Allow userdomains to mmap fifo_files BZ(1512242)
+- Merge pull request #205 from rhatdan/labels
+- Add map permission to init_domtrans() interface BZ(1513832)
+- Allow xdm_t domain to mmap and execute files in xdm_var_run_t BZ(1513883)
+- Unconfined domains, need to create content with the correct labels
+- Container runtimes are running iptables within a different user namespace
+- Add interface files_rmdir_all_dirs()
+
 * Mon Nov 06 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-302
 - Allow jabber domains to connect to postgresql ports
 - Dontaudit slapd_t to block suspend system
