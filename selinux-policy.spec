@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 303%{?dist}
+Release: 304%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -717,6 +717,35 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 21 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-304
+- Add interface raid_relabel_mdadm_var_run_content()
+- Fix iscsi SELinux module
+- Allow spamc_t domain to read home mail content BZ(1414366)
+- Allow sendmail_t to list postfix config dirs BZ(1514868)
+- Allow dovecot_t domain to mmap mail content in homedirs BZ(1513153)
+- Allow iscsid_t domain to requesting loading kernel modules BZ(1448877)
+- Allow svirt_t domain to mmap svirt_tmpfs_t files BZ(1515304)
+- Allow cupsd_t domain to localization BZ(1514350)
+- Allow antivirus_t nnp domain transition because of systemd security features. BZ(1514451)
+- Allow tlp_t domain transition to systemd_rfkill_t domain BZ(1416301)
+- Allow abrt_t domain to mmap fusefs_t files BZ(1515169)
+- Allow memcached_t domain nnp_transition becuase of systemd security features BZ(1514867)
+- Allow httpd_t domain to mmap all httpd content type BZ(1514866)
+- Allow mandb_t to read /etc/passwd BZ(1514903)
+- Allow mandb_t domain to mmap files with label mandb_cache_t BZ(1514093)
+- Allow abrt_t domain to mmap files with label syslogd_var_run_t BZ(1514975)
+- Allow nnp transition for systemd-networkd daemon to run in proper SELinux domain BZ(1507263)
+- Allow systemd to read/write to mount_var_run_t files BZ(1515373)
+- Allow systemd to relabel mdadm_var_run_t sock files BZ(1515373)
+- Allow home managers to mmap nfs_t files BZ(1514372)
+- Add interface fs_mmap_nfs_files()
+- Allow systemd-mount to create new directory for mountpoint BZ(1514880)
+- Allow getty to use usbttys
+- Add interface systemd_rfkill_domtrans()
+- Allow syslogd_t to mmap files with label syslogd_var_lib_t BZ(1513403)
+- Add interface fs_mmap_fusefs_files()
+- Allow ipsec_t domain to mmap files with label ipsec_key_file_t BZ(1514251)
+
 * Thu Nov 16 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-303
 - Allow pcp_pmlogger to send logs to journal BZ(1512367)
 - Merge pull request #40 from lslebodn/kcm_kerberos
