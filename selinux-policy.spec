@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 304%{?dist}
+Release: 305%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -717,6 +717,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Nov 24 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-305
+- Make ganesha nfs server
+
 * Tue Nov 21 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-304
 - Add interface raid_relabel_mdadm_var_run_content()
 - Fix iscsi SELinux module
