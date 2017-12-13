@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 305%{?dist}
+Release: 306%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -717,6 +717,47 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec 13 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-306
+- Allow thumb_t domain to dosfs_t BZ(1517720)
+- Allow gssd_t to read realmd_var_lib_t files BZ(1521125)
+- Allow domain transition from logrotate_t to chronyc_t BZ(1436013)
+- Allow git_script_t to mmap git_sys_content_t BZ(1517541)
+- Label /usr/bin/mysqld_safe_helper as mysqld_exec_t instead of bin_t BZ(1464803)
+- Label /run/openvpn-server/ as openvpn_var_run_t BZ(1478642)
+- Allow colord_t to mmap xdm pid files BZ(1518382)
+- Allow arpwatch to mmap usbmon device BZ(152456)
+- Allow mandb_t to read public sssd files BZ(1514093)
+- Allow ypbind_t stream connect to rpcbind_t domain BZ(1508659)
+- Allow qpid to map files.
+- Allow plymouthd_t to mmap firamebuf device BZ(1517405)
+- Dontaudit pcp_pmlogger_t to sys_ptrace capability BZ(1416611)
+- Update mta_manage_spool() interface to allow caller domain also mmap mta_spool_t files BZ(1517449)
+- Allow antivirus_t domain to mmap antivirus_db_t files BZ(1516816)
+- Allow cups_pdf_t domain to read cupd_etc_t dirs BZ(1516282)
+- Allow openvpn_t domain to relabel networkmanager tun device BZ(1436048)
+- Allow mysqld_t to mmap mysqld_tmp_t files BZ(1516899)
+- Update samba_manage_var_files() interface by adding map permission. BZ(1517125)
+- Allow pcp_pmlogger_t domain to execute itself. BZ(1517395)
+- Dontaudit sys_ptrace capability for mdadm_t BZ(1515849)
+- Allow pulseaudio_t domain to mmap pulseaudio_home_t files BZ(1515956)
+- Allow bugzilla_script_t domain to create netlink route sockets and udp sockets BZ(1427019)
+- Add interface fs_map_dos_files()
+- Update interface userdom_manage_user_home_content_files() to allow caller domain to mmap user_home_t files. BZ(1519729)
+- Add interface xserver_map_xdm_pid() BZ(1518382)
+- Add new interface dev_map_usbmon_dev() BZ(1524256)
+- Update miscfiles_read_fonts() interface to allow also mmap fonts_cache_t for caller domains BZ(1521137)
+- Allow ipsec_t to mmap cert_t and home_cert_t files BZ(1519810)
+- Fix typo in filesystem.if
+- Add interface dev_map_framebuffer()
+- Allow chkpwd command to mmap /etc/shadow BZ(1513704)
+- Fix systemd-resolved to run properly with SELinux in enforcing state BZ(1517529)
+- Allow thumb_t domain to mmap fusefs_t files BZ(1517517)
+- Allow userdom_home_reader_type attribute to mmap cifs_t files BZ(1517125)
+- Add interface fs_map_cifs_files()
+- Merge pull request #207 from rhatdan/labels
+- Merge pull request #208 from rhatdan/logdir
+- Allow domains that manage logfiles to man logdirs
+
 * Fri Nov 24 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-305
 - Make ganesha nfs server
 
