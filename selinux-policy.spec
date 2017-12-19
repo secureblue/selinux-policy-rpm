@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 306%{?dist}
+Release: 307%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -717,6 +717,16 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 19 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-307
+- Allow crond_t to read pcp lib files BZ(1525420)
+- Allow mozilla plugin domain to mmap user_home_t files BZ(1452783)
+- Allow certwatch_t to mmap generic certs. BZ(1527173)
+- Allow dspam_t to manage dspam_rw_conent_t objects. BZ(1290876)
+- Add interface userdom_map_user_home_files()
+- Sytemd introduced new feature when journald(syslogd_t) is trying to read symlinks to unit files in /run/systemd/units. This commit label /run/systemd/units/* as systemd_unit_file_t and allow syslogd_t to read this content. BZ(1527202)
+- Allow xdm_t dbus chat with modemmanager_t BZ(1526722)
+- All domains accessing home_cert_t objects should also mmap it. BZ(1519810)
+
 * Wed Dec 13 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-306
 - Allow thumb_t domain to dosfs_t BZ(1517720)
 - Allow gssd_t to read realmd_var_lib_t files BZ(1521125)
