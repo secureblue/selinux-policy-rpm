@@ -1,3 +1,13 @@
+# github repo with selinux-policy base sources
+%global git0 https://github.com/fedora-selinux/selinux-policy
+%global commit0 9ae373e703d5137d061c103292950b7ccbb2bb81
+%global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
+
+# github repo with selinux-policy contrib sources
+%global git1 https://github.com/fedora-selinux/selinux-policy-contrib
+%global commit1 e269450a92136e7c47b6b21800908c183ca5accf
+%global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
+
 %define distro redhat
 %define polyinstatiate n
 %define monolithic n
@@ -18,18 +28,13 @@
 %define CHECKPOLICYVER 2.7-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.13.1
-Release: 310%{?dist}
+Version: 3.14.1
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
-Source: serefpolicy-%{version}.tgz
-# Use the following command to create patch from https://github.com/fedora-selinux/selinux-policy
-# git diff eb4512f6eb13792c76ff8d3e6f2df3a7155db577 rawhide > policy-rawhide-base.patch
-# Use the following command to create patch from https://github.com/fedora-selinux/selinux-policy-contrib
-# git diff 64302b790bf2b39d93610e1452c8361d56966ae0 rawhide > policy-rawhide-contrib.patch
-patch: policy-rawhide-base.patch
-patch1: policy-rawhide-contrib.patch
-Source1: modules-targeted-base.conf 
+Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
+Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
+Source1: modules-targeted-base.conf
 Source31: modules-targeted-contrib.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
@@ -52,7 +57,6 @@ Source25: users-minimum
 Source26: file_contexts.subs_dist
 Source27: selinux-policy.conf
 Source28: permissivedomains.cil
-Source29: serefpolicy-contrib-%{version}.tgz
 Source30: booleans.subs_dist
 
 Source35: container-selinux.tgz
@@ -64,7 +68,7 @@ Source35: container-selinux.tgz
 # Provide rpm macros for packages installing SELinux modules
 Source102: rpm.macros
 
-Url: http://github.com/TresysTechnology/refpolicy/wiki
+Url: %{git0-base}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python3 gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2 
@@ -342,12 +346,10 @@ mkdir -p %{buildroot}/%{_libexecdir}/selinux/ \
 %build
 
 %prep 
-%setup -n serefpolicy-contrib-%{version} -q -b 29
-%patch1 -p1
+%setup -n %{name}-contrib-%{commit1} -q -b 29
 tar -xf %{SOURCE35}
 contrib_path=`pwd`
-%setup -n serefpolicy-%{version} -q
-%patch -p1
+%setup -n %{name}-%{commit0} -q
 refpolicy_path=`pwd`
 cp $contrib_path/* $refpolicy_path/policy/modules/contrib
 
@@ -717,6 +719,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 08 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-1
+- Removed big SELinux policy patches against tresys refpolicy and use tarballs from fedora-selinux github organisation
+
 * Mon Jan 08 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-310
 - Use python3 package in BuildRequires to ensure python version 3 will be used for compiling SELinux policy
 

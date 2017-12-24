@@ -17,12 +17,16 @@ git clone git@github.com:projectatomic/container-selinux.git -q
 
 pushd selinux-policy > /dev/null
 # prepare policy patches against upstream commits matching the last upstream merge
-git rev-parse --verify origin/${FEDORA_VERSION}; git diff --ignore-submodules eb4512f6eb13792c76ff8d3e6f2df3a7155db577 origin/${FEDORA_VERSION} > policy-${FEDORA_VERSION}-base.patch
+git checkout $FEDORA_VERSION
+BASE_HEAD_ID=$(git rev-parse HEAD)
+BASE_SHORT_HEAD_ID=$(c=${BASE_HEAD_ID}; echo ${c:0:7})
 popd > /dev/null
 
 pushd selinux-policy-contrib > /dev/null
 # prepare policy patches against upstream commits matching the last upstream merge
-git rev-parse --verify origin/${FEDORA_VERSION}; git diff 64302b790bf2b39d93610e1452c8361d56966ae0 origin/${FEDORA_VERSION} > policy-${FEDORA_VERSION}-contrib.patch
+git checkout $FEDORA_VERSION
+CONTRIB_HEAD_ID=$(git rev-parse HEAD)
+CONTRIB_SHORT_HEAD_ID=$(c=${CONTRIB_HEAD_ID}; echo ${c:0:7})
 popd > /dev/null
 
 pushd container-selinux > /dev/null
@@ -32,12 +36,15 @@ tar -czf container-selinux.tgz container.if container.te container.fc
 popd > /dev/null
 
 pushd $DISTGIT_PATH > /dev/null
-cp $POLICYSOURCES/selinux-policy/policy-${FEDORA_VERSION}-base.patch .
-cp $POLICYSOURCES/selinux-policy-contrib/policy-${FEDORA_VERSION}-contrib.patch .
+wget -nc https://github.com/fedora-selinux/selinux-policy/archive/${BASE_HEAD_ID}/selinux-policy-${BASE_SHORT_HEAD_ID}.tar.gz &> /dev/null
+wget -nc https://github.com/fedora-selinux/selinux-policy-contrib/archive/${CONTRIB_HEAD_ID}/selinux-policy-contrib-${CONTRIB_SHORT_HEAD_ID}.tar.gz &> /dev/null
 cp $POLICYSOURCES/container-selinux/container-selinux.tgz .
 popd > /dev/null
 
 popd > /dev/null
 rm -rf $POLICYSOURCES
 
-echo "policy-rawhide-{contrib,base}.patches and container.tgz with container policy files have been created."
+echo -e "\nSELinux policy tarballs  and container.tgz with container policy files have been created."
+echo "Replace commit ids of selinux-policy and selinux-policy-contrib in spec file to:"
+echo "commit0 " ${BASE_HEAD_ID}
+echo "commit1 " ${CONTRIB_HEAD_ID}
