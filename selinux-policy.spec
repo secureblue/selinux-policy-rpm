@@ -107,7 +107,7 @@ SELinux sandbox policy used for the policycoreutils-sandbox package
 %post sandbox
 rm -f /etc/selinux/*/modules/active/modules/sandbox.pp.disabled 2>/dev/null
 rm -f %{_sharedstatedir}/selinux/*/active/modules/disabled/sandbox 2>/dev/null
-semodule -n -i /usr/share/selinux/packages/sandbox.pp
+semodule -n -X 100 -i /usr/share/selinux/packages/sandbox.pp
 if /usr/sbin/selinuxenabled ; then
     /usr/sbin/load_policy
 fi;
