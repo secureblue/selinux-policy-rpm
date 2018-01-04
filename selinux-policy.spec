@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 307%{?dist}
+Release: 308%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -717,6 +717,16 @@ exit 0
 %endif
 
 %changelog
+* Thu Jan 04 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-308
+- Make working SELinux sandbox with Wayland. BZ(1474082)
+- Allow postgrey_t domain to mmap postgrey_spool_t files BZ(1529169)
+- Allow dspam_t to mmap dspam_rw_content_t files BZ(1528723)
+- Allow collectd to connect to lmtp_port_t BZ(1304029)
+- Allow httpd_t to mmap httpd_squirrelmail_t files BZ(1528776)
+- Allow thumb_t to mmap removable_t files. BZ(1522724)
+- Allow sssd_t and login_pgm attribute to mmap auth_cache_t files BZ(1530118)
+- Add interface fs_mmap_removable_files()
+
 * Tue Dec 19 2017 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-307
 - Allow crond_t to read pcp lib files BZ(1525420)
 - Allow mozilla plugin domain to mmap user_home_t files BZ(1452783)
