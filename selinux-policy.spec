@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 308%{?dist}
+Release: 309%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -717,6 +717,27 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 05 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-309
+- auth_use_nsswitch() interface cannot be used for attributes fixing munin policy
+- Allow git_script_t to mmap git_user_content_t files BZ(1530937)
+- Allow certmonger domain to create temp files BZ(1530795)
+- Improve interface mock_read_lib_files() to include also symlinks. BZ(1530563)
+- Allow fsdaemon_t to read nvme devices BZ(1530018)
+- Dontaudit fsdaemon_t to write to admin homedir. BZ(153030)
+- Update munin plugin policy BZ(1528471)
+- Allow sendmail_t domain to be system dbusd client BZ(1478735)
+- Allow amanda_t domain to getattr on tmpfs filesystem BZ(1527645)
+- Allow named file transition to create rpmrebuilddb dir with proper SELinux context BZ(1461313)
+- Dontaudit httpd_passwd_t domain to read state of systemd BZ(1522672)
+- Allow thumb_t to mmap non security files BZ(1517393)
+- Allow smbd_t to mmap files with label samba_share_t BZ(1530453)
+- Fix broken sysnet_filetrans_named_content() interface
+- Allow init_t to create tcp sockets for unconfined services BZ(1366968)
+- Allow xdm_t to getattr on xserver_t process files BZ(1506116)
+- Allow domains which can create resolv.conf file also create it in systemd_resolved_var_run_t dir BZ(1530297)
+- Allow X userdomains to send dgram msgs to xserver_t BZ(1515967)
+- Add interface files_map_non_security_files()
+
 * Thu Jan 04 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-308
 - Make working SELinux sandbox with Wayland. BZ(1474082)
 - Allow postgrey_t domain to mmap postgrey_spool_t files BZ(1529169)
