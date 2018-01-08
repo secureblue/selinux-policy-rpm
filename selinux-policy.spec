@@ -19,7 +19,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.13.1
-Release: 309%{?dist}
+Release: 310%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: serefpolicy-%{version}.tgz
@@ -67,7 +67,7 @@ Source102: rpm.macros
 Url: http://github.com/TresysTechnology/refpolicy/wiki
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
-BuildRequires: python gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2 
+BuildRequires: python3 gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2 
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(post): /bin/awk /usr/bin/sha512sum
 Requires: rpm-plugin-selinux
@@ -717,6 +717,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 08 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-310
+- Use python3 package in BuildRequires to ensure python version 3 will be used for compiling SELinux policy
+
 * Fri Jan 05 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.13.1-309
 - auth_use_nsswitch() interface cannot be used for attributes fixing munin policy
 - Allow git_script_t to mmap git_user_content_t files BZ(1530937)
