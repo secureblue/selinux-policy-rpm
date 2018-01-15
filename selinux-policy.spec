@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 f6aa4d68bc434c2f616e8f6f5f98a8eb3647ba8b
+%global commit0 cc4a89232bf2da1ca582fcd25003b83274f691d9
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 a749579c81a5a96ce238ad7f6b29a32e4d325e93
+%global commit1 68a780b819ad5aa501d9f9a5e043c92628839a06
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -719,6 +719,21 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 15 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-2
+- Allow aide to mmap usr_t files BZ(1534182)
+- Allow ypserv_t domain to connect to tcp ports BZ(1534245)
+- Allow vmtools_t domain creating vmware_log_t files
+- Allow openvswitch_t domain to acces infiniband devices
+- Allow dirsrv_t domain to create tmp link files
+- Allow pcp_pmie_t domain to exec itself. BZ(153326)
+- Update openvswitch SELinux module
+- Allow virtd_t to create also sock_files with label virt_var_run_t
+- Allow chronyc_t domain to manage chronyd_keys_t files.
+- Allow logwatch to exec journal binaries BZ(1403463)
+- Allow sysadm_t and staff_t roles to manage user systemd services BZ(1531864)
+- Update logging_read_all_logs to allow mmap all logfiles BZ(1403463)
+- Add Label systemd_unit_file_t for /var/run/systemd/units/
+
 * Mon Jan 08 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-1
 - Removed big SELinux policy patches against tresys refpolicy and use tarballs from fedora-selinux github organisation
 
