@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 cc4a89232bf2da1ca582fcd25003b83274f691d9
+%global commit0 0087f3e102d17ccd709e91873493ad4367a4604e
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 68a780b819ad5aa501d9f9a5e043c92628839a06
+%global commit1 93c9a53f55dfee388e5b7e945fc19b4283fe9b3a
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.1
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -719,6 +719,13 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 19 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-3
+- Merge pull request #45 from jlebon/pr/rot-sd-dbus-rawhide
+- Allow virt_domains to acces infiniband pkeys.
+- Allow systemd to relabelfrom tmpfs_t link files in /var/run/systemd/units/ BZ(1535180)
+- Label /usr/libexec/ipsec/addconn as ipsec_exec_t to run this script as ipsec_t instead of init_t
+- Allow audisp_remote_t domain write to files on all levels
+
 * Mon Jan 15 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-2
 - Allow aide to mmap usr_t files BZ(1534182)
 - Allow ypserv_t domain to connect to tcp ports BZ(1534245)
