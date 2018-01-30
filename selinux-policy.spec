@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 0087f3e102d17ccd709e91873493ad4367a4604e
+%global commit0 747f4e6775d773ab74efae5aa37f3e5e7f0d4aca
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 93c9a53f55dfee388e5b7e945fc19b4283fe9b3a
+%global commit1 4fe994375eb873a2fb7a1205180df832d1f32079
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -719,6 +719,22 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan 30 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-4
+- rpm: Label /usr/share/rpm usr_t (ostree/Atomic systems)
+- Update dbus_role_template() BZ(1536218)
+- Allow lldpad_t domain to mmap own tmpfs files BZ(1534119)
+- Allow blueman_t dbus chat with policykit_t BZ(1470501)
+- Expand virt_read_lib_files() interface to allow list dirs with label virt_var_lib_t BZ(1507110)
+- Allow postfix_master_t and postfix_local_t to connect to system dbus. BZ(1530275)
+- Allow system_munin_plugin_t domain to read sssd public files and allow stream connect to ssd daemon BZ(1528471)
+- Allow rkt_t domain to bind on rkt_port_t tcp BZ(1534636)
+- Allow jetty_t domain to mmap own temp files BZ(1534628)
+- Allow sslh_t domain to read sssd public files and stream connect to sssd. BZ(1534624)
+- Consistently label usr_t for kernel/initrd in /usr
+- kernel/files.fc: Label /usr/lib/sysimage as usr_t
+- Allow iptables sysctl load list support with SELinux enforced
+- Label HOME_DIR/.config/systemd/user/* user unit files as systemd_unit_file_t BZ(1531864)
+
 * Fri Jan 19 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-3
 - Merge pull request #45 from jlebon/pr/rot-sd-dbus-rawhide
 - Allow virt_domains to acces infiniband pkeys.
