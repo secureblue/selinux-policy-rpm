@@ -5,7 +5,7 @@
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 4fe994375eb873a2fb7a1205180df832d1f32079
+%global commit1 a1cd00ec16a1bc2e02bcaffba7141c1bdf21ee07
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.1
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -719,6 +719,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan 30 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-5
+- Allow opendnssec daemon to execute ods-signer BZ(1537971)
+
 * Tue Jan 30 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-4
 - rpm: Label /usr/share/rpm usr_t (ostree/Atomic systems)
 - Update dbus_role_template() BZ(1536218)
