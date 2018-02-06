@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 747f4e6775d773ab74efae5aa37f3e5e7f0d4aca
+%global commit0 642cc914194fdf225bab87ad62a2af18aa10d7ac
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 a1cd00ec16a1bc2e02bcaffba7141c1bdf21ee07
+%global commit1 b657ba01c0bcce6fa62a1d5319cc2e105b5bc6d7
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.1
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -719,6 +719,19 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-6
+- Allow openvswitch_t domain to read cpuid, write to sysfs files and creating openvswitch_tmp_t sockets
+- Add new interface ppp_filetrans_named_content()
+- Allow keepalived_t read sysctl_net_t files
+- Allow puppetmaster_t domtran to puppetagent_t
+- Allow kdump_t domain to read kernel ring buffer
+- Allow boinc_t to mmap boinc tmpfs files BZ(1540816)
+- Merge pull request #47 from masatake/keepalived-signal
+- Allow keepalived_t create and write a file under /tmp
+- Allow ipsec_t domain to exec ifconfig_exec_t binaries.
+- Allow unconfined_domain_typ to create pppd_lock_t directory in /var/lock
+- Allow updpwd_t domain to create files in /etc with shadow_t label
+
 * Tue Jan 30 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-5
 - Allow opendnssec daemon to execute ods-signer BZ(1537971)
 
