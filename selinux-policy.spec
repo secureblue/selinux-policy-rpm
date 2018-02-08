@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 642cc914194fdf225bab87ad62a2af18aa10d7ac
+%global commit0 ef9ecd7412c0ce6cf3e1ade2295a562d1ca1efc2
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 b657ba01c0bcce6fa62a1d5319cc2e105b5bc6d7
+%global commit1 0311bf8534a6dc4f797d28b48f76a0023c17919f
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.1
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -719,6 +719,14 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 08 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-7
+- Label /usr/sbin/ldap-agent as dirsrv_snmp_exec_t
+- Allow certmonger_t domain to access /etc/pki/pki-tomcat BZ(1542600)
+- Allow keepalived_t domain getattr proc filesystem
+- Allow init_t to create UNIX sockets for unconfined services (BZ1543049)
+- Allow ipsec_mgmt_t execute ifconfig_exec_t binaries Allow ipsec_mgmt_t nnp domain transition to ifconfig_t
+- Allow ipsec_t nnp transistions to domains ipsec_mgmt_t and ifconfig_t
+
 * Tue Feb 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-6
 - Allow openvswitch_t domain to read cpuid, write to sysfs files and creating openvswitch_tmp_t sockets
 - Add new interface ppp_filetrans_named_content()
