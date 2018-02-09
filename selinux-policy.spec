@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.1
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -719,6 +719,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 09 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 3.14.1-8
+- Escape macros in %%changelog
+
 * Thu Feb 08 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-7
 - Label /usr/sbin/ldap-agent as dirsrv_snmp_exec_t
 - Allow certmonger_t domain to access /etc/pki/pki-tomcat BZ(1542600)
@@ -8332,7 +8335,7 @@ dontaudit domain domain:process { noatsecure siginh rlimitinh } ;
 
 * Mon Oct 10 2011 Miroslav Grepl <mgrepl@redhat.com> 3.10.0-39
 - Fixes for bootloader policy
-- $1_gkeyringd_t needs to read $HOME/%USER/.local/share/keystore
+- $1_gkeyringd_t needs to read $HOME/%%USER/.local/share/keystore
 - Allow nsplugin to read /usr/share/config
 - Allow sa-update to update rules
 - Add use_fusefs_home_dirs for chroot ssh option
