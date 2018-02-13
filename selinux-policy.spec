@@ -69,7 +69,6 @@ Source35: container-selinux.tgz
 Source102: rpm.macros
 
 Url: %{git0-base}
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: python3 gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2 
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
