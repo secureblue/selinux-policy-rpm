@@ -439,9 +439,6 @@ sed -i 's/SELINUXPOLICYVERSION/%{version}-%{release}/' %{buildroot}%{_rpmconfigd
 
 
 rm -rf selinux_config
-%clean
-%{__rm} -fR %{buildroot}
-
 %post
 if [ ! -s /etc/selinux/config ]; then
 #
