@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 ef9ecd7412c0ce6cf3e1ade2295a562d1ca1efc2
+%global commit0 8a10ba88e0c590ec04ac91a7325326ddde306c4c
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 0311bf8534a6dc4f797d28b48f76a0023c17919f
+%global commit1 6777a17b5bb606e7fa9e7fd182959c1dd052881e
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.1
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -714,6 +714,37 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 20 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-9
+- Fix broken cups Security Module
+- Allow dnsmasq_t domain dbus chat with unconfined users. BZ(1532079)
+- Allow geoclue to connect to tcp nmea port BZ(1362118)
+- Allow pcp_pmcd_t to read mock lib files BZ(1536152)
+- Allow abrt_t domain to mmap passwd file BZ(1540666)
+- Allow gpsd_t domain to get session id of another process BZ(1540584)
+- Allow httpd_t domain to mmap httpd_tmpfs_t files BZ(1540405)
+- Allow cluster_t dbus chat with systemd BZ(1540163)
+- Add interface raid_stream_connect()
+- Allow nscd_t to mmap nscd_var_run_t files BZ(1536689)
+- Allow dovecot_delivery_t to mmap mail_home_rw_t files BZ(1531911)
+- Make cups_pdf_t domain system dbusd client BZ(1532043)
+- Allow logrotate to read auditd_log_t files BZ(1525017)
+- Improve snapperd SELinux policy BZ(1514272)
+- Allow virt_domain to read virt_image_t files BZ(1312572)
+- Allow openvswitch_t stream connect svirt_t
+- Update dbus_dontaudit_stream_connect_system_dbusd() interface
+- Allow openvswitch domain to manage svirt_tmp_t sock files
+- Allow named_filetrans_domain domains to create .heim_org.h5l.kcm-socket sock_file with label sssd_var_run_t BZ(1538210)
+- Merge pull request #50 from dodys/pkcs
+- Label tcp and udp ports 10110 as nmea_port_t BZ(1362118)
+- Allow systemd to access rfkill lib dirs BZ(1539733)
+- Allow systemd to mamange raid var_run_t sockfiles and files BZ(1379044)
+- Allow vxfs filesystem to use SELinux labels
+- Allow systemd to setattr on systemd_rfkill_var_lib_t dirs BZ(1512231)
+- Allow few services to dbus chat with snapperd BZ(1514272)
+- Allow systemd to relabel system unit symlink to systemd_unit_file_t. BZ(1535180)
+- Fix logging as staff_u into Fedora 27
+- Fix broken systemd_tmpfiles_run() interface
+
 * Fri Feb 09 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 3.14.1-8
 - Escape macros in %%changelog
 
