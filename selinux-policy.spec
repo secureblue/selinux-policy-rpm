@@ -28,8 +28,8 @@
 %define CHECKPOLICYVER 2.7-1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.14.1
-Release: 9%{?dist}
+Version: 3.14.2
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -714,6 +714,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 21 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-1
+- Rebuild for current rawhide (fc29)
+
 * Tue Feb 20 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.1-9
 - Fix broken cups Security Module
 - Allow dnsmasq_t domain dbus chat with unconfined users. BZ(1532079)
