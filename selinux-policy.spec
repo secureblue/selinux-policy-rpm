@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 8a10ba88e0c590ec04ac91a7325326ddde306c4c
+%global commit0 2c13be1fb543c51935785e7a43b798a9f35f5aa0
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 6777a17b5bb606e7fa9e7fd182959c1dd052881e
+%global commit1 27f5e51152311f5d4b3a0783bf187539874cb180
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -714,6 +714,14 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 22 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-2
+- refpolicy: Define extended_socket_class policy capability and socket classes
+- Make bluetooth_var_lib_t as mountpoint BZ(1547416)
+- Allow systemd to request load kernel module BZ(1547227)
+- Allow ipsec_t domain to read l2tpd pid files
+- Allow sysadm to read/write trace filesystem BZ(1547875)
+- Allow syslogd_t to mmap systemd coredump tmpfs files BZ(1547761)
+
 * Wed Feb 21 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-1
 - Rebuild for current rawhide (fc29)
 
