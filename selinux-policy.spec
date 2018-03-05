@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 2c13be1fb543c51935785e7a43b798a9f35f5aa0
+%global commit0 e16d205404edadd93214b9622c8c795ea53abe77
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 27f5e51152311f5d4b3a0783bf187539874cb180
+%global commit1 9facb1c4761877d6461472a98b8a0bc29229c83e
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -714,6 +714,32 @@ exit 0
 %endif
 
 %changelog
+* Mon Mar 05 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-3
+- Allow vdagent_t domain search cgroup dirs BZ(1541564)
+- Allow bluetooth_t domain listen on bluetooth sockets BZ(1549247)
+- Allow bluetooth domain creating bluetooth sockets BZ(1551577)
+- pki_log_t should be log_file
+- Allow gpgdomain to unix_stream socket connectto
+- Make working gpg agent in gpg_agent_t domain
+- Dontaudit thumb_t to rw lvm pipes BZ(154997)
+- Allow start cups_lpd via systemd socket activation BZ(1532015)
+- Improve screen_role_template Resolves: rhbz#1534111
+- Dontaudit modemmanager to setpgid. BZ(1520482)
+- Dontaudit kernel bug when systemd requesting load kernel module BZ(1547227)
+- Allow systemd-networkd to create netlink generic sockets BZ(1551578)
+- refpolicy: Define getrlimit permission for class process
+- refpolicy: Define smc_socket security class
+- Allow transition from sysadm role into mdadm_t domain.
+- ssh_t trying to communicate with gpg agent not sshd_t
+- Allow sshd_t communicate with gpg_agent_t
+- Allow initrc domains to mmap binaries with direct_init_entry attribute BZ(1545643)
+- Revert "Allow systemd_rfkill_t domain to reguest kernel load module BZ(1543650)"
+- Revert "Allow systemd to request load kernel module BZ(1547227)"
+- Allow systemd to write to all pidfile socketes because of SocketActivation unit option ListenStream= BZ(1543576)
+- Add interface lvm_dontaudit_rw_pipes() BZ(154997)
+- Add interfaces for systemd socket activation
+- Allow systemd-resolved to create stub-resolv.conf with right label net_conf_t BZ(1547098)
+
 * Thu Feb 22 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-2
 - refpolicy: Define extended_socket_class policy capability and socket classes
 - Make bluetooth_var_lib_t as mountpoint BZ(1547416)
