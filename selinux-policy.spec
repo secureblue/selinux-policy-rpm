@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 e16d205404edadd93214b9622c8c795ea53abe77
+%global commit0 bd7ad92fc722388928f9441892a078018914cb7b
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 9facb1c4761877d6461472a98b8a0bc29229c83e
+%global commit1 f5640723a5d5982bde2a85b6003c12d2fbf976b6
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -714,6 +714,20 @@ exit 0
 %endif
 
 %changelog
+* Tue Mar 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-4
+- Allow l2tpd_t domain to create pppox sockets
+- Update dbus_system_bus_client() so calling domain could read also system_dbusd_var_lib_t link files BZ(1544251)
+- Add interface abrt_map_cache()
+- Update gnome_manage_home_config() to allow also map permission BZ(1544270)
+- Allow oddjob_mkhomedir_t domain to be dbus system client BZ(1551770)
+- Dontaudit kernel bug when several services requesting load kernel module
+- Allow traceroute and unconfined domains creating sctp sockets
+- Add interface corenet_sctp_bind_generic_node()
+- Allow ping_t domain to create icmp sockets
+- Allow staff_t to mmap abrt_var_cache_t BZ(1544273)
+- Fix typo bug in dev_map_framebuffer() interface BZ(1551842)
+- Dontaudit kernel bug when several services requesting load kernel module
+
 * Mon Mar 05 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-3
 - Allow vdagent_t domain search cgroup dirs BZ(1541564)
 - Allow bluetooth_t domain listen on bluetooth sockets BZ(1549247)
