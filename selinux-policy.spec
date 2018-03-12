@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 bd7ad92fc722388928f9441892a078018914cb7b
+%global commit0 9bd65d321e20805535392f3ea1bad8ac093bf7b5
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 f5640723a5d5982bde2a85b6003c12d2fbf976b6
+%global commit1 fbc029066ded32b6ddafb04023743ec25ebc6197
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -714,6 +714,38 @@ exit 0
 %endif
 
 %changelog
+* Mon Mar 12 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-5
+- Allow bluetooth_t domain to create alg_socket BZ(1554410)
+- Allow tor_t domain to execute bin_t files BZ(1496274)
+- Allow iscsid_t domain to mmap kernel modules BZ(1553759)
+- Update minidlna SELinux policy BZ(1554087)
+- Allow motion_t domain to read sysfs_t files BZ(1554142)
+- Allow snapperd_t domain to getattr on all files,dirs,sockets,pipes BZ(1551738)
+- Allow l2tp_t domain to read ipsec config files BZ(1545348)
+- Allow colord_t to mmap home user files BZ(1551033)
+- Dontaudit httpd_t creating kobject uevent sockets BZ(1552536)
+- Allow ipmievd_t to mmap kernel modules BZ(1552535)
+- Allow boinc_t domain to read cgroup files BZ(1468381)
+- Backport allow rules from refpolicy upstream repo
+- Allow gpg_t domain to bind on all unereserved udp ports
+- Allow systemd to create systemd_rfkill_var_lib_t dirs BZ(1502164)
+- Allow netlabel_mgmt_t domain to read sssd public files, stream connect to sssd_t BZ(1483655)
+- Allow xdm_t domain to sys_ptrace BZ(1554150)
+- Allow application_domain_type also mmap inherited user temp files BZ(1552765)
+- Update ipsec_read_config() interface
+- Fix broken sysadm SELinux module
+- Allow ipsec_t to search for bind cache BZ(1542746)
+- Allow staff_t to send sigkill to mount_t domain BZ(1544272)
+- Label /run/systemd/resolve/stub-resolv.conf as net_conf_t BZ(1471545)
+- Label ip6tables.init as iptables_exec_t BZ(1551463)
+- Allow hostname_t to use usb ttys BZ(1542903)
+- Add fsetid capability to updpwd_t domain BZ(1543375)
+- Allow systemd machined send signal to all domains BZ(1372644)
+- Dontaudit create netlink selinux sockets for unpriv SELinux users BZ(1547876)
+- Allow sysadm_t to create netlink generic sockets BZ(1547874)
+- Allow passwd_t domain chroot
+- Dontaudit confined unpriviliged users setuid capability
+
 * Tue Mar 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-4
 - Allow l2tpd_t domain to create pppox sockets
 - Update dbus_system_bus_client() so calling domain could read also system_dbusd_var_lib_t link files BZ(1544251)
