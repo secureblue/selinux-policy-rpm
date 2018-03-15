@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 9bd65d321e20805535392f3ea1bad8ac093bf7b5
+%global commit0 370bcfb1069571c033bcc061b95a626724fb4110
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 fbc029066ded32b6ddafb04023743ec25ebc6197
+%global commit1 ce817e6dd5c114871380864383bd98a1bea6ff31
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -714,6 +714,16 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 15 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-6
+- Allow rpcd_t domain dac override
+- Allow rpm domain to mmap rpm_var_lib_t files
+- Allow arpwatch domain to create bluetooth sockets
+- Allow secadm_t domain to mmap audit config and log files
+- Update init_abstract_socket_activation() to allow also creating tcp sockets
+- getty_t should be ranged in MLS. Then also local_login_t runs as ranged domain.
+- Add SELinux support for systemd-importd
+- Create new type bpf_t and label /sys/fs/bpf with this type
+
 * Mon Mar 12 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-5
 - Allow bluetooth_t domain to create alg_socket BZ(1554410)
 - Allow tor_t domain to execute bin_t files BZ(1496274)
