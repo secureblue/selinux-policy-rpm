@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 370bcfb1069571c033bcc061b95a626724fb4110
+%global commit0 4b1f9bdcc030b57ec7e714768450d3c5feadf276
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 ce817e6dd5c114871380864383bd98a1bea6ff31
+%global commit1 d2dd0adcc8bc01f7cd1c6b31f2159bdf40912def
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -714,6 +714,16 @@ exit 0
 %endif
 
 %changelog
+* Tue Mar 20 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-7
+- Update screen_role_template() to allow also creating sockets in HOMEDIR/screen/
+- Allow newrole_t dacoverride capability
+- Allow traceroute_t domain to mmap packet sockets
+- Allow netutils_t domain to mmap usmmon device
+- Allow netutils_t domain to use mmap on packet_sockets
+- Allow traceroute to create icmp packets
+- Allos sysadm_t domain to create tipc sockets
+- Allow confined users to use new socket classes for bluetooth, alg and tcpdiag sockets
+
 * Thu Mar 15 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-6
 - Allow rpcd_t domain dac override
 - Allow rpm domain to mmap rpm_var_lib_t files
