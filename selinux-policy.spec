@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 4b1f9bdcc030b57ec7e714768450d3c5feadf276
+%global commit0 116b85e97e58ba673c77b67766fe8807a0100a0e
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 d2dd0adcc8bc01f7cd1c6b31f2159bdf40912def
+%global commit1 7ecfe283d8c85cf9c6da289b9b511ab95b1d3c36
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -714,6 +714,12 @@ exit 0
 %endif
 
 %changelog
+* Wed Mar 21 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-8
+- Improve bluetooth_stream_socket interface to allow caller domain also send bluetooth sockets
+- Allow tcpd_t bind on sshd_port_t if ssh_use_tcpd() is enabled
+- Allow semanage_t domain mmap usr_t files
+- Add new boolean: ssh_use_tcpd()
+
 * Tue Mar 20 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-7
 - Update screen_role_template() to allow also creating sockets in HOMEDIR/screen/
 - Allow newrole_t dacoverride capability
