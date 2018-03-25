@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 116b85e97e58ba673c77b67766fe8807a0100a0e
+%global commit0 154a8cf70407f08901f55f333e42e3b0342c9d08
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 7ecfe283d8c85cf9c6da289b9b511ab95b1d3c36
+%global commit1 504d76b257ff5bd6e89ef782eccf1ea376da0ecc
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -717,6 +717,40 @@ exit 0
 %endif
 
 %changelog
+* Sun Mar 25 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-9
+- Allow smbcontrol_t to mmap samba_var_t files and allow winbind create sockets BZ(1559795)
+- Allow nagios to exec itself and mmap nagios spool files BZ(1559683)
+- Allow nagios to mmap nagios config files BZ(1559683)
+- Fixing Ganesha module
+- Fix typo in NetworkManager module
+- Fix bug in gssproxy SELinux module
+- Allow abrt_t domain to mmap container_file_t files BZ(1525573)
+- Allow networkmanager to be run ssh client BZ(1558441)
+- Allow pcp domains to do dc override BZ(1557913)
+- Dontaudit pcp_pmie_t to reaquest lost kernel module
+- Allow pcp_pmcd_t to manage unpriv userdomains semaphores BZ(1554955)
+- Allow httpd_t to read httpd_log_t dirs BZ(1554912)
+- Allow fail2ban_t to read system network state BZ(1557752)
+- Allow dac override capability to mandb_t domain BZ(1529399)
+- Allow collectd_t domain to mmap collectd_var_lib_t files BZ(1556681)
+- Dontaudit bug in kernel 4.16 when domains requesting loading kernel modules BZ(1555369)
+- Add Domain transition from gssproxy_t to httpd_t domains BZ(1548439)
+- Allow httpd_t to mmap user_home_type files if boolean httpd_read_user_content is enabled BZ(1555359)
+- Allow snapperd to relabel snapperd_data_t
+- Improve bluetooth_stream_socket interface to allow caller domain also send bluetooth sockets
+- Allow tcpd_t bind on sshd_port_t if ssh_use_tcpd() is enabled
+- Allow insmod_t to load modules BZ(1544189)
+- Allow systemd_rfkill_t domain sys_admin capability BZ(1557595)
+- Allow systemd_networkd_t to read/write tun tap devices
+- Add shell_exec_t file as domain entry for init_t
+- Label also /run/systemd/resolved/ as systemd_resolved_var_run_t BZ(1556862)
+- Dontaudit kernel 4.16 bug when lot of domains requesting load kernel module BZ(1557347)
+- Improve userdom_mmap_user_home_content_files
+- Allow systemd_logind_t domain to setattributes on fixed disk devices BZ(1555414)
+- Dontaudit kernel 4.16 bug when lot of domains requesting load kernel module
+- Allow semanage_t domain mmap usr_t files
+- Add new boolean: ssh_use_tcpd()
+
 * Wed Mar 21 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-8
 - Improve bluetooth_stream_socket interface to allow caller domain also send bluetooth sockets
 - Allow tcpd_t bind on sshd_port_t if ssh_use_tcpd() is enabled
