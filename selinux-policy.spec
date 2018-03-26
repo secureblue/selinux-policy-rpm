@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -717,6 +717,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Mar 26 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-10
+- Fedora Atomic host using for temp files /sysroot/tmp patch, we should label same as /tmp adding file context equivalence BZ(1559531)
+
 * Sun Mar 25 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-9
 - Allow smbcontrol_t to mmap samba_var_t files and allow winbind create sockets BZ(1559795)
 - Allow nagios to exec itself and mmap nagios spool files BZ(1559683)
