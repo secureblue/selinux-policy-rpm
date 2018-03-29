@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 154a8cf70407f08901f55f333e42e3b0342c9d08
+%global commit0 01924d88be61f3e27e247848a94c855fe00569dd
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 504d76b257ff5bd6e89ef782eccf1ea376da0ecc
+%global commit1 1255203e38764839fa90a34f43de98f81278756a
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -717,6 +717,19 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 29 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-11
+- Allow accountsd_t domain to dac override BZ(1561304)
+- Allow cockpit_ws_t domain to read system state BZ(1561053)
+- Allow postfix_map_t domain to use inherited user ptys BZ(1561295)
+- Allow abrt_dump_oops_t domain dac override BZ(1561467)
+- Allow l2tpd_t domain to run stream connect for sssd_t BZ(1561755)
+- Allow crontab domains to do dac override
+- Allow snapperd_t domain to unmount fs_t filesystems
+- Allow pcp processes to read fixed_disk devices BZ(1560816)
+- Allow unconfined and confined users to use dccp sockets
+- Allow systemd to manage bpf dirs/files
+- Allow traceroute_t to create dccp_sockets
+
 * Mon Mar 26 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-10
 - Fedora Atomic host using for temp files /sysroot/tmp patch, we should label same as /tmp adding file context equivalence BZ(1559531)
 
