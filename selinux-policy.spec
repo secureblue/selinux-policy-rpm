@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 01924d88be61f3e27e247848a94c855fe00569dd
+%global commit0 bb225028a9a5145547fb08cc8b18d1d17b1b4c02
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 1255203e38764839fa90a34f43de98f81278756a
+%global commit1 10b75cc2d3be4bc057bb63d254afaacd53a9cd03
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -717,6 +717,30 @@ exit 0
 %endif
 
 %changelog
+* Sat Apr 07 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-12
+- Add new boolean redis_enable_notify()
+- Label  /var/log/shibboleth-www(/.*) as httpd_sys_rw_content_t
+- Add new label for vmtools scripts and label it as vmtools_unconfined_t stored in /etc/vmware-tools/
+- Allow svnserve_t domain to manage kerberos rcache and read krb5 keytab
+- Add dac_override and dac_read_search capability to hypervvssd_t domain
+- Label /usr/lib/systemd/systemd-fence_sanlockd as fenced_exec_t
+- Allow samba to create /tmp/host_0 as krb5_host_rcache_t
+- Add dac_override capability to fsdaemon_t BZ(1564143)
+- Allow abrt_t domain to map dos files BZ(1564193)
+- Add dac_override capability to automount_t domain
+- Allow keepalived_t domain to connect to system dbus bus
+- Allow nfsd_t to read nvme block devices BZ(1562554)
+- Allow lircd_t domain to execute bin_t files BZ(1562835)
+- Allow l2tpd_t domain to read sssd public files BZ(1563355)
+- Allow logrotate_t domain to do dac_override BZ(1539327)
+- Remove labeling for /etc/vmware-tools to bin_t it should be vmtools_unconfined_exec_t
+- Add capability sys_resource to systemd_sysctl_t domain
+- Label all /dev/rbd* devices as fixed_disk_device_t
+- Allow xdm_t domain to mmap xserver_log_t files BZ(1564469)
+- Allow local_login_t domain to rread udev db
+- Allow systemd_gpt_generator_t to read /dev/random device
+- add definition of bpf class and systemd perms
+
 * Thu Mar 29 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-11
 - Allow accountsd_t domain to dac override BZ(1561304)
 - Allow cockpit_ws_t domain to read system state BZ(1561053)
