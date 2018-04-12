@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 bb225028a9a5145547fb08cc8b18d1d17b1b4c02
+%global commit0 b8ddd7e996c81e52fd793d69d2cfca8f21cffdbf
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 10b75cc2d3be4bc057bb63d254afaacd53a9cd03
+%global commit1 4b13776189d49c87144522f1b5a7ba0a58970f1b
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -717,6 +717,19 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 12 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-13
+- refpolicy: Update for kernel sctp support
+- Allow smbd_t send to nmbd_t via dgram sockets BZ(1563791)
+- Allow antivirus domain to be client for system dbus BZ(1562457)
+- Dontaudit requesting tlp_t domain kernel modules, its a kernel bug BZ(1562383)
+- Add new boolean: colord_use_nfs() BZ(1562818)
+- Allow pcp_pmcd_t domain to check access to mdadm BZ(1560317)
+- Allow colord_t to mmap gconf_home_t files
+- Add new boolean redis_enable_notify()
+- Label  /var/log/shibboleth-www(/.*) as httpd_sys_rw_content_t
+- Add new label for vmtools scripts and label it as vmtools_unconfined_t stored in /etc/vmware-tools/
+- Remove labeling for /etc/vmware-tools to bin_t it should be vmtools_unconfined_exec_t
+
 * Sat Apr 07 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-12
 - Add new boolean redis_enable_notify()
 - Label  /var/log/shibboleth-www(/.*) as httpd_sys_rw_content_t
