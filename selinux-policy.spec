@@ -438,7 +438,7 @@ mv %{buildroot}%{_usr}/share/man/man8/style.css %{buildroot}%{_usr}/share/selinu
 mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
 install -m 644 %{SOURCE102} %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
 sed -i 's/SELINUXPOLICYVERSION/%{version}-%{release}/' %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
-sed -i 's/SELINUXSTOREPATH/%{_sharestatedir}/selinux/' %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
+sed -i 's@SELINUXSTOREPATH@%{_sharedstatedir}/selinux@' %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
 
 
 rm -rf selinux_config
