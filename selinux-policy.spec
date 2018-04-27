@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 b8ddd7e996c81e52fd793d69d2cfca8f21cffdbf
+%global commit0 fee4738dd084c71e46aede3c55d1120522a855d6
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 4b13776189d49c87144522f1b5a7ba0a58970f1b
+%global commit1 6c883f6889d087c93133428c18bff50330828153
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -718,6 +718,75 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 27 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-14
+- Add dac_override capability to mailman_mail_t domain
+- Add dac_override capability to radvd_t domain
+- Update openvswitch policy
+- Add dac_override capability to oddjob_homedir_t domain
+- Allow slapd_t domain to mmap slapd_var_run_t files
+- Rename tang policy to tangd
+- Allow virtd_t domain to relabel virt_var_lib_t files
+- Allow logrotate_t domain to stop services via systemd
+- Add tang policy
+- Allow mozilla_plugin_t to create mozilla.pdf file in user homedir with label mozilla_home_t
+- Allow snapperd_t daemon to create unlabeled dirs.
+- Make httpd_var_run_t mountpoint
+- Allow hsqldb_t domain to mmap own temp files
+- We have inconsistency in cgi templates with upstream, we use _content_t, but refpolicy use httpd__content_t. Created aliasses to make it consistence
+- Allow Openvswitch adding netdev bridge ovs 2.7.2.10 FDP
+- Add new Boolean tomcat_use_execmem
+- Allow nfsd_t domain to read/write sysctl fs files
+- Allow conman to read system state
+- Allow brltty_t domain to be dbusd system client
+- Allow zebra_t domain to bind on babel udp port
+- Allow freeipmi domain to read sysfs_t files
+- Allow targetd_t domain mmap lvm config files
+- Allow abrt_t domain to manage kdump crash files
+- Add capability dac_override to antivirus domain
+- Allow svirt_t domain mmap svirt_image_t files BZ(1514538)
+- Allow ftpd_t domain to chat with systemd
+- Allow systemd init named socket activation for uuidd policy
+- Allow networkmanager domain to write to ecryptfs_t files BZ(1566706)
+- Allow l2tpd domain to stream connect to sssd BZ(1568160)
+- Dontaudit abrt_t to write to lib_t dirs BZ(1566784)
+- Allow NetworkManager_ssh_t domain transition to insmod_t BZ(1567630)
+- Allow certwatch to manage cert files BZ(1561418)
+- Merge pull request #53 from tmzullinger/rawhide
+- Merge pull request #52 from thetra0/rawhide
+- Allow abrt_dump_oops_t domain to mmap all non security files BZ(1565748)
+- Allow gpg_t domain mmap cert_t files Allow gpg_t mmap gpg_agent_t files
+- Allow NetworkManager_ssh_t domain use generic ptys. BZ(1565851)
+- Allow pppd_t domain read/write l2tpd pppox sockets BZ(1566096)
+- Allow xguest user use bluetooth sockets if xguest_use_bluetooth boolean is turned on.
+- Allow pppd_t domain creating pppox sockets BZ(1566271)
+- Allow abrt to map var_lib_t files
+- Allow chronyc to read system state BZ(1565217)
+- Allow keepalived_t domain to chat with systemd via dbus
+- Allow git to mmap git_(sys|user)_content_t files BZ(1518027)
+- Allow netutils_t domain to create bluetooth sockets
+- Allow traceroute to bind on generic sctp node
+- Allow traceroute to search network sysctls
+- Allow systemd to use virtio console
+- Label /dev/op_panel and /dev/opal-prd as opal_device_t
+- Label /run/ebtables.lock as iptables_var_run_t
+- Allow udev_t domain to manage udev_rules_t char files.
+- Assign babel_port_t label to udp port 6696
+- Add new interface lvm_map_config
+- Merge pull request #212 from stlaz/patch-1
+- Allow local_login_t reads of udev_var_run_t context
+- Associate sysctl_crypto_t fs with fs_t BZ(1569313)
+- Label /dev/vhost-vsock char device as vhost_device_t
+- Allow iptables_t domain to create dirs in etc_t with system_conf_t labels
+- Allow x userdomain to mmap xserver_tmpfs_t files
+- Allow sysadm_t to mount tracefs_t
+- Allow unconfined user all perms under bpf class BZ(1565738)
+- Allow SELinux users (except guest and xguest) to using bluetooth sockets
+- Add new interface files_map_var_lib_files()
+- Allow user_t and staff_t domains create netlink tcpdiag sockets
+- Allow systemd-networkd to read sysctl_t files
+- Allow systemd_networkd_t to read/write tun tap devices
+- refpolicy: Update for kernel sctp support
+
 * Thu Apr 12 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-13
 - refpolicy: Update for kernel sctp support
 - Allow smbd_t send to nmbd_t via dgram sockets BZ(1563791)
