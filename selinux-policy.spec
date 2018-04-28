@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 fee4738dd084c71e46aede3c55d1120522a855d6
+%global commit0 301aa80a689f78da6b0299c0e332ea56d510b309
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 6c883f6889d087c93133428c18bff50330828153
+%global commit1 01b5dd12bfe7adebc57458c30a924ba81e83e3ad
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -718,6 +718,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Apr 28 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-15
+- Allow unconfined_domain_type to create libs filetrans named content BZ(1513806)
+
 * Fri Apr 27 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-14
 - Add dac_override capability to mailman_mail_t domain
 - Add dac_override capability to radvd_t domain
