@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 301aa80a689f78da6b0299c0e332ea56d510b309
+%global commit0 17160eea7a10d81693754759c561c9b83fc2d422
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 01b5dd12bfe7adebc57458c30a924ba81e83e3ad
+%global commit1 4f6a859548cce112341679e720b88f7d1cb674d7
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -718,6 +718,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Apr 30 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-16
+- Allow systemd to mmap files with var_log_t label
+- Allow x_userdomains read/write to xserver session
+
 * Sat Apr 28 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-15
 - Allow unconfined_domain_type to create libs filetrans named content BZ(1513806)
 
