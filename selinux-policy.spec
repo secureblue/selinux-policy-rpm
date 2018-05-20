@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 718d75d6ef457c74ce1defac3b2d671b3d1f71eb
+%global commit0 cab8dc9056f382289b0559b3bdf336aa09ef8105
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 4f6a859548cce112341679e720b88f7d1cb674d7
+%global commit1 19624b4009a0a252a57e7192dea7d3d322fcd0da
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -718,6 +718,41 @@ exit 0
 %endif
 
 %changelog
+* Mon May 21 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-17
+- Add dac_override capability to remote_login_t domain
+- Allow chrome_sandbox_t to mmap tmp files
+- Update ulogd SELinux security policy
+- Allow rhsmcertd_t domain send signull to apache processes
+- Allow systemd socket activation for modemmanager
+- Allow geoclue to dbus chat with systemd
+- Fix file contexts on conntrackd policy
+- Temporary fix for varnish and apache adding capability for DAC_OVERRIDE
+- Allow lsmd_plugin_t domain to getattr lsm_t unix stream sockets
+- Add label for  /usr/sbin/pacemaker-remoted to have cluster_exec_t
+- Allow nscd_t domain to be system dbusd client
+- Allow abrt_t domain to read sysctl
+- Add dac_read_search capability for tangd
+- Allow systemd socket activation for rshd domain
+- Add label for /usr/libexec/cyrus-imapd/master as cyrus_exec_t to have proper SELinux domain transition from init_t to cyrus_t
+- Allow kdump_t domain to map /boot files
+- Allow conntrackd_t domain to send msgs to syslog
+- Label /usr/sbin/nhrpd and /usr/sbin/pimd binaries as zebra_exec_t
+- Allow swnserve_t domain to stream connect to sasl domain
+- Allow smbcontrol_t to create dirs with samba_var_t label
+- Remove execstack,execmem and execheap from domains setroubleshootd_t, locate_t and podsleuth_t to increase security. BZ(1579760)
+- Allow tangd to read public sssd files BZ(1509054)
+- Allow geoclue start with nnp systemd security feature with proper SELinux Domain transition BZ(1575212)
+- Allow ctdb_t domain modify ctdb_exec_t files
+- Allow firewalld_t domain to create netlink_netfilter sockets
+- Allow radiusd_t domain to read network sysctls
+- Allow pegasus_t domain to mount tracefs_t filesystem
+- Allow create systemd to mount pid files
+- Add files_map_boot_files() interface
+- Remove execstack,execmem and execheap from domain fsadm_t to increase security. BZ(1579760)
+- Fix typo xserver SELinux module
+- Allow systemd to mmap files with var_log_t label
+- Allow x_userdomains read/write to xserver session
+
 * Mon Apr 30 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-16
 - Allow systemd to mmap files with var_log_t label
 - Allow x_userdomains read/write to xserver session
