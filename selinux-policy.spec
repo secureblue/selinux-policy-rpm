@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 cab8dc9056f382289b0559b3bdf336aa09ef8105
+%global commit0 ba72e52d6e782b6c0bc4da292da81065d5b5c8b3
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 19624b4009a0a252a57e7192dea7d3d322fcd0da
+%global commit1 5ae0301be43d26dead51a7ec36f1c07b80dca638
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -718,6 +718,10 @@ exit 0
 %endif
 
 %changelog
+* Mon May 21 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-18
+- Disable secure mode environment cleansing for dirsrv_t
+- Allow udev execute /usr/libexec/gdm-disable-wayland in xdm_t domain which allows create /run/gdm/custom.conf with proper xdm_var_run_t label.
+
 * Mon May 21 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-17
 - Add dac_override capability to remote_login_t domain
 - Allow chrome_sandbox_t to mmap tmp files
