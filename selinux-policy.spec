@@ -24,12 +24,12 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 31
-%define POLICYCOREUTILSVER 2.7-1
-%define CHECKPOLICYVER 2.7-1
+%define POLICYCOREUTILSVER 2.8
+%define CHECKPOLICYVER 2.8
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 18%{?dist}
+Release: 19%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -718,6 +718,9 @@ exit 0
 %endif
 
 %changelog
+* Tue May 22 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-19
+- Increase dependency versions of policycoreutils and checkpolicy packages 
+
 * Mon May 21 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-18
 - Disable secure mode environment cleansing for dirsrv_t
 - Allow udev execute /usr/libexec/gdm-disable-wayland in xdm_t domain which allows create /run/gdm/custom.conf with proper xdm_var_run_t label.
