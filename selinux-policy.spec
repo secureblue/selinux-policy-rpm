@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 ba72e52d6e782b6c0bc4da292da81065d5b5c8b3
+%global commit0 877fde5e4cceb08ad0cf0e8110b1fca267e943f7
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 5ae0301be43d26dead51a7ec36f1c07b80dca638
+%global commit1 12d91dabfa5b0c6c8a69e76f3caae0e6d60c9d1b
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 19%{?dist}
+Release: 20%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -718,6 +718,29 @@ exit 0
 %endif
 
 %changelog
+* Thu May 24 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-20
+- Allow tangd_t domain to create tcp sockets and add new interface tangd_read_db_files
+- Allow mailman_mail_t domain to search for apache configs
+- Allow mailman_cgi_t domain to ioctl an httpd with a unix domain stream sockets.
+- Improve procmail_domtrans() to allow mmaping procmail_exec_t
+- Allow ptrace arbitrary processes
+- Allow jabberd_router_t domain read kerberos keytabs BZ(1573945)
+- Allow certmonger to geattr of filesystems BZ(1578755)
+- Update dev_map_xserver_misc interface to allo mmaping char devices instead of files
+- Allow noatsecure permission for all domain transitions from systemd.
+- Allow systemd to read tangd db files
+- Fix typo in ssh.if file
+- Allow xdm_t domain to mmap xserver_misc_device_t files
+- Allow xdm_t domain to execute systemd-coredump binary
+- Add bridge_socket, dccp_socket, ib_socket and mpls_socket to socket_class_set
+- Improve modutils_domtrans_insmod() interface to mmap insmod_exec_t binaries
+- Improve iptables_domtrans() interface to allow mmaping iptables_exec_t binary
+- Improve auth_domtrans_login_programinterface to allow also mmap login_exec_t binaries
+- Improve auth_domtrans_chk_passwd() interface to allow also mmaping chkpwd_exec_t binaries.
+- Allow mmap dhcpc_exec_t binaries in sysnet_domtrans_dhcpc interface
+- Improve running xorg with proper SELinux domain even if systemd security feature NoNewPrivileges is used
+
+
 * Tue May 22 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-19
 - Increase dependency versions of policycoreutils and checkpolicy packages 
 
