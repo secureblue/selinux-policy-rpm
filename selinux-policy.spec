@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 877fde5e4cceb08ad0cf0e8110b1fca267e943f7
+%global commit0 a1ec13e6114be5f88449a3f7e87468ca5f36ead5
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 12d91dabfa5b0c6c8a69e76f3caae0e6d60c9d1b
+%global commit1 6cf567fea24b91d5a6a82e37e66a0c01548846b2
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 20%{?dist}
+Release: 21%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -718,6 +718,23 @@ exit 0
 %endif
 
 %changelog
+* Sat May 26 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-21
+- Add dac_override to exim policy BZ(1574303)
+- Fix typo in conntrackd.fc file
+- Allow sssd_t to kill sssd_selinux_manager_t
+- Allow httpd_sys_script_t to connect to mongodb_port_t if boolean httpd_can_network_connect_db  is turned on
+- Allow chronyc_t to redirect ourput to /var/lib /var/log and /tmp
+- Allow policykit_auth_t to read udev db files BZ(1574419)
+- Allow varnishd_t do be dbus client BZ(1582251)
+- Allow cyrus_t domain to mmap own pid files BZ(1582183)
+- Allow user_mail_t domain to mmap etc_aliases_t files
+- Allow gkeyringd domains to run ssh agents
+- Allow gpg_pinentry_t domain read ssh state
+- Allow sysadm_u use xdm
+- Allow xdm_t domain to listen ofor unix dgram sockets BZ(1581495)
+- Add interface ssh_read_state()
+- Fix typo in sysnetwork.if file
+
 * Thu May 24 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-20
 - Allow tangd_t domain to create tcp sockets and add new interface tangd_read_db_files
 - Allow mailman_mail_t domain to search for apache configs
