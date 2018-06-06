@@ -5,7 +5,7 @@
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 93edf9a38fec7dac9845cb7d5630b4ae931e36f7
+%global commit1 f1b2ca4356336a0f8c018fb0d2a811df81f32467
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 22%{?dist}
+Release: 23%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -718,6 +718,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-23
+- Add dac_override capability to sendmail_t domian
+
 * Wed Jun 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-22
 - Fix typo in authconfig policy
 - Update ctdb domain to support gNFS setup
