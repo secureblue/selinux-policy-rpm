@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 a1ec13e6114be5f88449a3f7e87468ca5f36ead5
+%global commit0 d06c960c55dcf093800123327a58c4adf3ffe3dd
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 6cf567fea24b91d5a6a82e37e66a0c01548846b2
+%global commit1 93edf9a38fec7dac9845cb7d5630b4ae931e36f7
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 21%{?dist}
+Release: 22%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -718,6 +718,46 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-22
+- Fix typo in authconfig policy
+- Update ctdb domain to support gNFS setup
+- Allow authconfig_t dbus chat with policykit
+- Allow lircd_t domain to read system state
+- Revert "Allow fsdaemon_t do send emails BZ(1582701)"
+- Typo in uuidd policy
+- Allow tangd_t domain read certs
+- Allow vpnc_t domain to read configfs_t files/dirs BZ(1583107)
+- Allow vpnc_t domain to read generic certs BZ(1583100)
+- Label /var/lib/phpMyAdmin directory as httpd_sys_rw_content_t BZ(1584811)
+- Allow NetworkManager_ssh_t domain to be system dbud client
+- Allow virt_qemu_ga_t read utmp
+- Add capability dac_override to system_mail_t domain
+- Update uuidd policy to reflect last changes from base branch
+- Add cap dac_override to procmail_t domain
+- Allow sendmail to mmap etc_aliases_t files BZ(1578569)
+- Add new interface dbus_read_pid_sock_files()
+- Allow mpd_t domain read config_home files if mpd_enable_homedirs boolean will be enabled
+- Allow fsdaemon_t do send emails BZ(1582701)
+- Allow firewalld_t domain to request kernel module BZ(1573501)
+- Allow chronyd_t domain to send send msg via dgram socket BZ(1584757)
+- Add sys_admin capability to fprint_t SELinux domain
+- Allow cyrus_t domain to create own files under /var/run BZ(1582885)
+- Allow cachefiles_kernel_t domain to have capability dac_override
+- Update policy for ypserv_t domain
+- Allow zebra_t domain to bind on tcp/udp ports labeled as qpasa_agent_port_t
+- Allow cyrus to have dac_override capability
+- Dontaudit action when abrt-hook-ccpp is writing to nscd sockets
+- Fix homedir polyinstantion under mls
+- Fixed typo in init.if file
+- Allow systemd to remove generic tmpt files BZ(1583144)
+- Update init_named_socket_activation() interface to also allow systemd create objects in /var/run with proper label during socket activation
+- Allow systemd-networkd and systemd-resolved services read system-dbusd socket BZ(1579075)
+- Fix typo in authlogin SELinux security module
+- Allod nsswitch_domain attribute to be system dbusd client BZ(1584632)
+- Allow audisp_t domain to mmap audisp_exec_t binary
+- Update ssh_domtrans_keygen interface to allow mmap ssh_keygen_exec_t binary file
+- Label tcp/udp ports 2612 as qpasa_agetn_port_t
+
 * Sat May 26 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-21
 - Add dac_override to exim policy BZ(1574303)
 - Fix typo in conntrackd.fc file
