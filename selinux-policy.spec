@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 d06c960c55dcf093800123327a58c4adf3ffe3dd
+%global commit0 ae55b01a8df7f7c4afd8cd6697e848141352c3a2
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 f1b2ca4356336a0f8c018fb0d2a811df81f32467
+%global commit1 d23eef15f7aa7c9bee340a374b53e5a3cb485e90
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 23%{?dist}
+Release: 24%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -718,6 +718,41 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun 12 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-24
+- /usr/libexec/bluetooth/obexd should have only obexd_exec_t instead of bluetoothd_exec_t type
+- Allow ntop_t domain to create/map various sockets/files.
+- Enable the dictd to communicate via D-bus.
+- Allow inetd_child process to chat via dbus with abrt
+- Allow zabbix_agent_t domain to connect to redis_port_t
+- Allow rhsmcertd_t domain to read xenfs_t files
+- Allow zabbix_agent_t to run zabbix scripts
+- Fix openvswith SELinux module
+- Fix wrong path in tlp context file BZ(1586329)
+- Update brltty SELinux module
+- Allow rabbitmq_t domain to create own tmp files/dirs
+- Allow policykit_t mmap policykit_auth_exec_t files
+- Allow ipmievd_t domain to read general certs
+- Add sys_ptrace capability to pcp_pmie_t domain
+- Allow squid domain to exec ldconfig
+- Update gpg SELinux policy module
+- Allow mailman_domain to read system network state
+- Allow openvswitch_t domain to read neutron state and read/write fixed disk devices
+- Allow antivirus_domain to read all domain system state
+- Allow targetd_t domain to red gconf_home_t files/dirs
+- Label /usr/libexec/bluetooth/obexd as obexd_exec_t
+- Add interface nagios_unconfined_signull()
+- Fix typos in zabbix.te file
+- Add missing requires
+- Allow tomcat domain sends email
+- Fix typo in sge policy
+- Merge pull request #214 from wrabcak/fb-dhcpc
+- Allow dhcpc_t creating own socket files inside /var/run/ Allow dhcpc_t creating netlink_kobject_uevent_socket, netlink_generic_socket, rawip_socket BZ(1585971)
+- Allow confined users get AFS tokens
+- Allow sysadm_t domain to chat via dbus
+- Associate sysctl_kernel_t type with filesystem attribute
+- Allow syslogd_t domain to send signull to nagios_unconfined_plugin_t
+- Fix typo in netutils.te file
+
 * Wed Jun 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-23
 - Add dac_override capability to sendmail_t domian
 
