@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 ae55b01a8df7f7c4afd8cd6697e848141352c3a2
+%global commit0 003cd803fb79dd225b523adfda9d655beedbf383
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 d23eef15f7aa7c9bee340a374b53e5a3cb485e90
+%global commit1 494e26e0f9a9fd1208a7e03018815211a36ee2be
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 24%{?dist}
+Release: 25%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -718,6 +718,37 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 14 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-25
+- Merge pull request #60 from vmojzis/rawhide
+- Allow tangd_t domain stream connect to sssd
+- Allow oddjob_t domain to chat with systemd via dbus
+- Allow freeipmi domains to mmap sysfs files
+- Fix typo in logwatch interface file
+- Allow spamd_t to manage logwatch_cache_t files/dirs
+- Allow dnsmasw_t domain to create own tmp files and manage mnt files
+- Allow fail2ban_client_t to inherit rlimit information from parent process
+- Allow nscd_t to read kernel sysctls
+- Label /var/log/conman.d as conman_log_t
+- Add dac_override capability to tor_t domain
+- Allow certmonger_t to readwrite to user_tmp_t dirs
+- Allow abrt_upload_watch_t domain to read general certs
+- Allow chornyd_t read phc2sys_t shared memory
+- Add several allow rules for pesign policy:
+- Add setgid and setuid capabilities to mysqlfd_safe_t domain
+- Add tomcat_can_network_connect_db boolean
+- Update virt_use_sanlock() boolean to read sanlock state
+- Add sanlock_read_state() interface
+- Allow zoneminder_t to getattr of fs_t
+- Allow rhsmcertd_t domain to send signull to postgresql_t domain
+- Add log file type to collectd and allow corresponding access
+- Allow policykit_t domain to dbus chat with dhcpc_t
+- Allow traceroute_t domain to exec bin_t binaries
+- Allow systemd_passwd_agent_t domain to list sysfs Allow systemd_passwd_agent_t domain to dac_override
+- Add new interface dev_map_sysfs()
+- Allow sshd_keygen_t to execute plymouthd
+- Allow systemd_networkd_t create and relabel tun sockets
+- Add new interface postgresql_signull()
+
 * Tue Jun 12 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-24
 - /usr/libexec/bluetooth/obexd should have only obexd_exec_t instead of bluetoothd_exec_t type
 - Allow ntop_t domain to create/map various sockets/files.
