@@ -50,7 +50,6 @@ Source17: booleans-minimum.conf
 Source18: setrans-minimum.conf
 Source19: securetty_types-minimum
 Source20: customizable_types
-Source21: config.tgz
 Source22: users-mls
 Source23: users-targeted
 Source25: users-minimum
@@ -355,10 +354,9 @@ refpolicy_path=`pwd`
 cp $contrib_path/* $refpolicy_path/policy/modules/contrib
 
 mkdir selinux_config
-for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE14} %{SOURCE15} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE21} %{SOURCE22} %{SOURCE23} %{SOURCE25} %{SOURCE26} %{SOURCE31} %{SOURCE32};do
+for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE14} %{SOURCE15} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE22} %{SOURCE23} %{SOURCE25} %{SOURCE26} %{SOURCE31} %{SOURCE32};do
  cp $i selinux_config
 done
-tar zxvf selinux_config/config.tgz
 
 %install
 # Build targeted policy
