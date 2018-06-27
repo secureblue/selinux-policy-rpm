@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 003cd803fb79dd225b523adfda9d655beedbf383
+%global commit0 2248854aed6cf995e0e8b461faf88c4f68476dbb
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 494e26e0f9a9fd1208a7e03018815211a36ee2be
+%global commit1 23a0603743df50bbb47221cc79ecda5a522bb622
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 25%{?dist}
+Release: 26%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -716,6 +716,28 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 27 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-26
+- Allow psad domain to setrlimit. Allow psad domain to stream connect to dbus Allow psad domain to exec journalctl_exec_t binary
+- Update cups_filetrans_named_content() to allow caller domain create ppd directory with cupsd_etc_rw_t label
+- Allow abrt_t domain to write to rhsmcertd pid files
+- Allow pegasus_t domain to eexec lvm binaries and allow read/write access to lvm control
+- Add vhostmd_t domain to read/write to svirt images
+- Update kdump_manage_kdumpctl_tmp_files() interface to allow caller domain also mmap kdumpctl_tmp_t files
+- Allow sssd_t and slpad_t domains to mmap generic certs
+- Allow chronyc_t domain use inherited user ttys
+- Allow stapserver_t domain to mmap own tmp files
+- Update nscd_dontaudit_write_sock_file() to dontaudit also stream connect to nscd_t domain
+- Merge pull request #60 from vmojzis/rawhide
+- Allow tangd_t domain stream connect to sssd
+- Allow oddjob_t domain to chat with systemd via dbus
+- Allow freeipmi domains to mmap sysfs files
+- Fix typo in logwatch interface file
+- Allow sysadm_t and staff_t domains to use sudo io logging
+- Allow sysadm_t domain create sctp sockets
+- Allow traceroute_t domain to exec bin_t binaries
+- Allow systemd_passwd_agent_t domain to list sysfs Allow systemd_passwd_agent_t domain to dac_override
+- Add new interface dev_map_sysfs()
+
 * Thu Jun 14 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-25
 - Merge pull request #60 from vmojzis/rawhide
 - Allow tangd_t domain stream connect to sssd
