@@ -81,7 +81,6 @@ Based off of reference policy: Checked out revision  2.20091117
 
 
 %files 
-%defattr(-,root,root,-)
 %{!?_licensedir:%global license %%doc}
 %license COPYING
 %dir %{_usr}/share/selinux
@@ -102,7 +101,6 @@ Requires(pre): selinux-policy-targeted = %{version}-%{release}
 SELinux sandbox policy used for the policycoreutils-sandbox package
 
 %files sandbox
-%defattr(-,root,root,-)
 %verify(not md5 size mtime) /usr/share/selinux/packages/sandbox.pp
 
 %post sandbox
@@ -136,7 +134,6 @@ Requires(post): policycoreutils-devel >= %{POLICYCOREUTILSVER}
 SELinux policy development and man page package
 
 %files devel
-%defattr(-,root,root,-)
 %dir %{_usr}/share/selinux/devel
 %dir %{_usr}/share/selinux/devel/include
 %{_usr}/share/selinux/devel/include/*
@@ -162,7 +159,6 @@ Requires: selinux-policy = %{version}-%{release}
 SELinux policy documentation package
 
 %files doc
-%defattr(-,root,root,-)
 %{_mandir}/man*/*
 %{_mandir}/ru/*/*
 %doc %{_usr}/share/doc/%{name}
@@ -550,7 +546,6 @@ fi
 exit 0
 
 %files targeted -f %{buildroot}/%{_usr}/share/selinux/targeted/nonbasemodules.lst
-%defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/sysadm_u 
 %fileList targeted
@@ -646,7 +641,6 @@ fi
 exit 0
 
 %files minimum -f %{buildroot}/%{_usr}/share/selinux/minimum/nonbasemodules.lst
-%defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/sysadm_u 
 %fileList minimum
@@ -710,7 +704,6 @@ exit 0
 
 
 %files mls -f %{buildroot}/%{_usr}/share/selinux/mls/nonbasemodules.lst
-%defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/selinux/mls/contexts/users/unconfined_u
 %fileList mls
 %endif
