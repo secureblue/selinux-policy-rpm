@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 26%{?dist}
+Release: 27%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Jul 14 2018 Fedora Release Engineering <releng@fedoraproject.org> - 3.14.2-27
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
 * Wed Jun 27 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-26
 - Allow psad domain to setrlimit. Allow psad domain to stream connect to dbus Allow psad domain to exec journalctl_exec_t binary
 - Update cups_filetrans_named_content() to allow caller domain create ppd directory with cupsd_etc_rw_t label
