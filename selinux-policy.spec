@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 2248854aed6cf995e0e8b461faf88c4f68476dbb
+%global commit0 d61628691715136c744f049f4d61aeeec3c0d9fa
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 23a0603743df50bbb47221cc79ecda5a522bb622
+%global commit1 bfc11d6bd418bc719015ea876365d2f894e18499
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 27%{?dist}
+Release: 28%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,90 @@ exit 0
 %endif
 
 %changelog
+* Wed Jul 18 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-28
+- Allow cupsd_t domain to mmap cupsd_etc_t files
+- Allow kadmind_t domain to mmap krb5kdc_principal_t
+- Allow virtlogd_t domain to read virt_etc_t link files
+- Allow dirsrv_t domain to read crack db
+- Dontaudit pegasus_t to require sys_admin capability
+- Allow mysqld_t domain to exec mysqld_exec_t binary files
+- Allow abrt_t odmain to read rhsmcertd lib files
+- Allow winbind_t domain to request kernel module loads
+- Allow tomcat_domain to read cgroup_t files
+- Allow varnishlog_t domain to mmap varnishd_var_lib_t files
+- Allow innd_t domain to mmap news_spool_t files
+- Label HOME_DIR/mozilla.pdf file as mozilla_home_t instead of user_home_t
+- Allow fenced_t domain to reboot
+- Allow amanda_t domain to read network system state
+- Allow abrt_t domain to read rhsmcertd logs
+- Fix typo in radius policy
+- Update zoneminder policy to reflect latest features in zoneminder BZ(1592555)
+- Label /usr/bin/esmtp-wrapper as sendmail_exec_t
+- Update raid_access_check_mdadm() interface to dontaudit caller domain to mmap mdadm_exec_t binary files
+- Dontaudit thumb to read mmap_min_addr
+- Allow chronyd_t to send to system_cronjob_t via unix dgram socket BZ(1494904)
+- Allow mpd_t domain to mmap mpd_tmpfs_t files BZ(1585443)
+- Allow collectd_t domain to use ecryptfs files BZ(1592640)
+- Dontaudit mmap home type files for abrt_t domain
+- Allow fprintd_t domain creating own tmp files BZ(1590686)
+- Allow collectd_t domain to bind on bacula_port_t BZ(1590830)
+- Allow fail2ban_t domain to getpgid BZ(1591421)
+- Allow nagios_script_t domain to mmap nagios_log_t files BZ(1593808)
+- Allow pcp_pmcd_t domain to use sys_ptrace usernamespace cap
+- Allow sssd_selinux_manager_t to read/write to systemd sockets BZ(1595458)
+- Allow virt_qemu_ga_t domain to read network state BZ(1592145)
+- Allow radiusd_t domain to mmap radius_etc_rw_t files
+- Allow git_script_t domain to read and mmap gitosis_var_lib_t files BZ(1591729)
+- Add dac_read_search capability to thumb_t domain
+- Add dac_override capability to cups_pdf_t domain BZ(1594271)
+- Add net_admin capability to connntrackd_t domain BZ(1594221)
+- Allow gssproxy_t domain to domtrans into gssd_t domain BZ(1575234)
+- Fix interface init_dbus_chat in oddjob SELinux policy BZ(1590476)
+- Allow motion_t to mmap video devices BZ(1590446)
+- Add dac_override capability to mpd_t domain BZ(1585358)
+- Allow fsdaemon_t domain to write to mta home files BZ(1588212)
+- Allow virtlogd_t domain to chat via dbus with systemd_logind BZ(1589337)
+- Allow sssd_t domain to write to general cert files BZ(1589339)
+- Allow l2tpd_t domain to sends signull to ipsec domains BZ(1589483)
+- Allow cockpit_session_t to read kernel network state BZ(1596941)
+- Allow devicekit_power_t start with nnp systemd security feature with proper SELinux Domain transition BZ(1593817)
+- Update rhcs_rw_cluster_tmpfs() interface to allow caller domain to mmap cluster_tmpfs_t files
+- Allow chronyc_t domain to use nscd shm
+- Label /var/lib/tomcats dir as tomcat_var_lib_t
+- Allow lsmd_t domain to mmap lsmd_plugin_exec_t files
+- Add ibacm policy
+- Label /usr/sbin/rhn_check-[0-9]+.[0-9]+ as rpm_exec_t
+- Allow kdumpgui_t domain to allow execute and mmap all binaries labeled as kdumpgui_tmp_t
+- Dontaudit syslogd to watching top llevel dirs when imfile module is enabled
+- Allow userdomain sudo domains to use generic ptys
+- Allow systemd labeled as init_t to get sysvipc info BZ(1600877)
+- Label /sbin/xtables-legacy-multi and /sbin/xtables-nft-multi as iptables_exec_t BZ(1600690)
+- Remove duplicated userdom_delete_user_home_content_files
+- Merge pull request #216 from rhatdan/resolved
+- Allow load_policy_t domain to read/write to systemd sockets BZ(1582812)
+- Add new interface init_prog_run_bpf()
+- Allow unconfined and sysadm users to use bpftool BZ(1591440)
+- Label /run/cockpit/motd as etc_t BZ(1584167)
+- Allow systemd_machined_t domain to sendto syslogd_t over unix dgram sockets
+- Add interface userdom_dontaudit_mmap_user_home_content_files()
+- Allow systemd to listen bluetooth sockets BZ(1592223)
+- Allow systemd to remove user_home_t files BZ(1418463)
+- Allow xdm_t domain to mmap and read cert_t files BZ(1553761)
+- Allow nsswitch_domain to mmap passwd_file_t files BZ(1518655)
+- Allow systemd to delete user temp files BZ(1595189)
+- Allow systemd to mounton core kernel interface
+- Add dac_override capability to ipsec_t domain BZ(1589534)
+- Allow systemd domain to mmap lvm config files BZ(1594584)
+- Allow systemd to write systemd_logind_inhibit_var_run_t fifo files
+- Allows systemd to get attribues of core kernel interface BZ(1596928)
+- Allow systemd_modules_load_t to access unabeled infiniband pkeys
+- Add systemd_dbus_chat_resolved interface
+- Allow init_t domain to create netlink rdma sockets for ibacm policy
+- Update corecmd_exec_shell() interface to allow caller domain to mmap shell_exec_t files
+- Allow lvm_t domain to write files to all mls levels
+- Add to su_role_template allow rule for creating netlink_selinux sockets
+
+
 * Sat Jul 14 2018 Fedora Release Engineering <releng@fedoraproject.org> - 3.14.2-27
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
 
