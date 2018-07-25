@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 d61628691715136c744f049f4d61aeeec3c0d9fa
+%global commit0 cc3def49862b7cea6b321bdc1cd8bb9b715e7ffc
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 bfc11d6bd418bc719015ea876365d2f894e18499
+%global commit1 f0ca657fd17cb4c77bb1d7ee4422f94e397e7ac3
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 28%{?dist}
+Release: 29%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,47 @@ exit 0
 %endif
 
 %changelog
+* Wed Jul 25 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-29
+- Allow aide to mmap all files
+- Revert "Allow firewalld to create rawip sockets"
+- Revert "Allow firewalld_t do read iptables_var_run_t files"
+- Allow svirt_tcg_t domain to read system state of virtd_t domains
+- Update rhcs contexts to reflects the latest fenced changes
+- Allow httpd_t domain to rw user_tmp_t files
+- Fix typo in openct policy
+- Allow winbind_t domian to connect to all ephemeral ports
+- Allow firewalld_t do read iptables_var_run_t files
+- Allow abrt_t domain to mmap data_home files
+- Allow glusterd_t domain to mmap user_tmp_t files
+- Allow mongodb_t domain to mmap own var_lib_t files
+- Allow firewalld to read kernel usermodehelper state
+- Allow modemmanager_t to read sssd public files
+- Allow openct_t domain to mmap own var_run_t files
+- Allow nnp transition for devicekit daemons
+- Allow firewalld to create rawip sockets
+- Allow firewalld to getattr proc filesystem
+- Dontaudit sys_admin capability for pcscd_t domain
+- Revert "Allow pcsd_t domain sys_admin capability"
+- Allow fetchmail_t domain to stream connect to sssd
+- Allow pcsd_t domain sys_admin capability
+- Allow cupsd_t to create cupsd_etc_t dirs
+- Allow varnishlog_t domain to list varnishd_var_lib_t dirs
+- Allow mongodb_t domain to read system network state BZ(1599230)
+- Allow tgtd_t domain to create dirs in /var/run labeled as tgtd_var_run_t BZ(1492377)
+- Allow iscsid_t domain to mmap sysfs_t files
+- Allow httpd_t domain to mmap own cache files
+- Add sys_resource capability to nslcd_t domain
+- Fixed typo in logging_audisp_domain interface
+- Add interface files_mmap_all_files()
+- Add interface iptables_read_var_run()
+- Allow systemd to mounton init_var_run_t files
+- Update policy rules for auditd_t based on changes in audit version 3
+- Allow systemd_tmpfiles_t do mmap system db files
+- Merge branch 'rawhide' of github.com:fedora-selinux/selinux-policy into rawhide
+- Improve domain_transition_pattern to allow mmap entrypoint bin file.
+- Don't setup unlabeled_t as an entry_type
+- Allow unconfined_service_t to transition to container_runtime_t
+
 * Wed Jul 18 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-28
 - Allow cupsd_t domain to mmap cupsd_etc_t files
 - Allow kadmind_t domain to mmap krb5kdc_principal_t
