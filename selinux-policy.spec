@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 cc3def49862b7cea6b321bdc1cd8bb9b715e7ffc
+%global commit0 e08b2dab562597085bbc9800006a298a6fcdba0c
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 f0ca657fd17cb4c77bb1d7ee4422f94e397e7ac3
+%global commit1 6bfaa82e671e166c8483dffd4c56120562846f8e
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 29%{?dist}
+Release: 30%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,14 @@ exit 0
 %endif
 
 %changelog
+* Sun Jul 29 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-30
+- Allow sblim_sfcbd_t domain to mmap own tmpfs files
+- Allow nfsd_t domain to read krb5 keytab files
+- Allow nfsd_t domain to manage fadm pid files
+- Allow virt_domain to create icmp sockets BZ(1609142)
+- Dontaudit oracleasm_t domain to request sys_admin capability
+- Update logging_manage_all_logs() interface to allow caller domain map all logfiles
+
 * Wed Jul 25 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-29
 - Allow aide to mmap all files
 - Revert "Allow firewalld to create rawip sockets"
