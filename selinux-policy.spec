@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 e08b2dab562597085bbc9800006a298a6fcdba0c
+%global commit0 cf5a654b7ac989a686044cb450cf5856e763f4d5
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 6bfaa82e671e166c8483dffd4c56120562846f8e
+%global commit1 e60295e6037f32dc30a47ef7b77549dade16f7ef
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 30%{?dist}
+Release: 31%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,24 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 07 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-31
+- Allow kprop_t domain to read network state
+- Add support boltd policy
+- Allow kpropd domain to exec itself
+- Allow pdns_t to bind on tcp transproxy port
+- Add support for opafm service
+- Allow hsqldb_t domain to read cgroup files
+- Allow rngd_t domain to read generic certs
+- Allow innd_t domain to mmap own var_lib_t files
+- Update screen_role_temaplate interface
+- Allow chronyd_t domain to mmap own tmpfs files
+- Allow sblim_sfcbd_t domain to mmap own tmpfs files
+- Allow systemd to mounont boltd lib dirs
+- Allow sysadm_t domain to create rawip sockets
+- Allow sysadm_t domain to listen on socket
+- Update sudo_role_template() to allow caller domain also setattr generic ptys
+- Update logging_manage_all_logs() interface to allow caller domain map all logfiles
+
 * Sun Jul 29 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-30
 - Allow sblim_sfcbd_t domain to mmap own tmpfs files
 - Allow nfsd_t domain to read krb5 keytab files
