@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 cf5a654b7ac989a686044cb450cf5856e763f4d5
+%global commit0 8555de535032724934dbb7fb0d592c4345fa4c28
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 e60295e6037f32dc30a47ef7b77549dade16f7ef
+%global commit1 ab97c9dae9ef424a61dd503c5e139c7b099f6b34
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.2
-Release: 31%{?dist}
+Release: 32%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,22 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 10 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-32
+- Fix issue with aliases in apache interface file
+- Add same context for symlink as binary
+- Allow boltd_t to send logs to journal
+- Allow colord_use_nfs to allow colord also mmap nfs_t files
+- Allow mysqld_safe_t do execute itself
+- Allow smbd_t domain to chat via dbus with avahi daemon
+- cupsd_t domain will create /etc/cupsd/ppd as cupsd_etc_rw_t
+- Update screen_role_template to allow caller domain to have screen_exec_t as entrypoint do new domain
+- Add alias httpd__script_t to _script_t to make sepolicy generate working
+- Allow gpg_t domain to mmap gpg_agent_tmp_t files
+- label /var/lib/pgsql/data/log as postgresql_log_t
+- Allow sysadm_t domain to accept socket
+- Allow systemd to manage passwd_file_t
+- Allow sshd_t domain to mmap user_tmp_t files
+
 * Tue Aug 07 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-31
 - Allow kprop_t domain to read network state
 - Add support boltd policy
