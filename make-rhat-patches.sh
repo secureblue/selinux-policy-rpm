@@ -50,8 +50,8 @@ popd > /dev/null
 
 pushd $DISTGIT_PATH > /dev/null
 if [ $DOWNLOAD_DEFAULT_GITHUB_TARBALLS == 1 ]; then
-    wget -O selinux-policy-${BASE_SHORT_HEAD_ID}.tar.gz https://github.com/fedora-selinux/selinux-policy/archive/${BASE_HEAD_ID}/selinux-policy-${BASE_SHORT_HEAD_ID}.tar.gz &> /dev/null
-    wget -O selinux-policy-contrib-${CONTRIB_SHORT_HEAD_ID}.tar.gz https://github.com/fedora-selinux/selinux-policy-contrib/archive/${CONTRIB_HEAD_ID}/selinux-policy-contrib-${CONTRIB_SHORT_HEAD_ID}.tar.gz &> /dev/null
+    wget -O selinux-policy-${BASE_SHORT_HEAD_ID}.tar.gz https://github.com/fedora-selinux/selinux-policy/archive/${BASE_HEAD_ID}.tar.gz &> /dev/null
+    wget -O selinux-policy-contrib-${CONTRIB_SHORT_HEAD_ID}.tar.gz https://github.com/fedora-selinux/selinux-policy-contrib/archive/${CONTRIB_HEAD_ID}.tar.gz &> /dev/null
 fi
 cp $POLICYSOURCES/container-selinux/container-selinux.tgz .
 popd > /dev/null
