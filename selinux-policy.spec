@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 8555de535032724934dbb7fb0d592c4345fa4c28
+%global commit0 c8dfe84c09d2d197265f1d883f8b11527f5846c9
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 ab97c9dae9ef424a61dd503c5e139c7b099f6b34
+%global commit1 a3420086d85dcd5b7407c3101587047369c45ea1
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -28,8 +28,8 @@
 %define CHECKPOLICYVER 2.8
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.14.2
-Release: 32%{?dist}
+Version: 3.14.3
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,88 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 28 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-1
+- Allow ovs-vswitchd labeled as openvswitch_t domain communicate with qemu-kvm via UNIX stream socket
+- Add interface devicekit_mounton_var_lib()
+- Allow httpd_t domain to mmap tmp files
+- Allow tcsd_t domain to have dac_override capability
+- Allow cupsd_t to rename cupsd_etc_t files
+- Allow iptables_t domain to create rawip sockets
+- Allow amanda_t domain to mmap own tmpfs files
+- Allow fcoemon_t domain to write to sysfs_t dirs
+- Allow dovecot_auth_t domain to have dac_override capability
+- Allow geoclue_t domain to mmap own tmp files
+- Allow chronyc_t domain to read network state
+- Allow apcupsd_t domain to execute itself
+- Allow modemmanager_t domain to stream connect to sssd
+- Allow chonyc_t domain to rw userdomain pipes
+- Update dirsrvadmin_script_t policy to allow read httpd_tmp_t symlinks
+- Update dirsrv_read_share() interface to allow caller domain to mmap dirsrv_share_t files
+- Allow nagios_script_t domain to mmap nagios_spool_t files
+- Allow geoclue_t domain to mmap geoclue_var_lib_t files
+- Allow geoclue_t domain to map generic certs
+- Update munin_manage_var_lib_files to allow manage also dirs
+- Allow nsd_t domain to create new socket file in /var/run/nsd.ctl
+- Fix typo in virt SELinux policy module
+- Allow virtd_t domain to create netlink_socket
+- Allow rpm_t domain to write to audit
+- Allow nagios_script_t domain to mmap nagios_etc_t files
+- Update nscd_socket_use() to allow caller domain to stream connect to nscd_t
+- Allow kdumpctl_t domain to getattr fixed disk device in mls
+- Fix typo in stapserver policy
+- Dontaudit abrt_t domain to write to usr_t dirs
+- Revert "Allow rpcbind to bind on all unreserved udp ports"
+- Allow rpcbind to bind on all unreserved udp ports
+- Allow virtlogd to execute itself
+- Allow stapserver several actions: - execute own tmp files - mmap stapserver_var_lib_t files - create stapserver_tmpfs_t files
+- Allow ypxfr_t domain to stream connect to rpcbind and allos search sssd libs
+- Allos systemd to socket activate ibacm service
+- Allow dirsrv_t domain to mmap user_t files
+- Allow kdumpctl_t domain to manage kdumpctl_tmp_t fifo files
+- Allow kdumpctl to write to files on all levels
+- Allow httpd_t domain to mmap httpd_config_t files
+- Allow sanlock_t domain to connectto to unix_stream_socket
+- Revert "Add same context for symlink as binary"
+- Allow mysql execute rsync
+- Update nfsd_t policy because of ganesha features
+- Allow conman to getattr devpts_t
+- Allow tomcat_domain to connect to smtp ports
+- Allow tomcat_t domain to mmap tomcat_var_lib_t files
+- Allow nagios_t domain to mmap nagios_log_t files
+- Allow kpropd_t domain to mmap krb5kdc_principal_t files
+- Allow kdumpctl_t domain to read fixed disk storage
+- Fix issue with aliases in apache interface file
+- Add same context for symlink as binary
+- Allow boltd_t to send logs to journal
+- Allow colord_use_nfs to allow colord also mmap nfs_t files
+- Allow mysqld_safe_t do execute itself
+- Allow smbd_t domain to chat via dbus with avahi daemon
+- cupsd_t domain will create /etc/cupsd/ppd as cupsd_etc_rw_t
+- Update screen_role_template to allow caller domain to have screen_exec_t as entrypoint do new domain
+- Add alias httpd__script_t to _script_t to make sepolicy generate working
+- Allow dhcpc_t domain to read /dev/random
+- Allow systemd to mounton kernel system table
+- Allow systemd to mounton device_var_lib_t dirs
+- Label also chr_file /dev/mtd.* devices as fixed_disk_device_t
+- Allow syslogd_t domain to create netlink generic sockets
+- Label /dev/tpmrm[0-9]* as tpm_device_t
+- Update dev_filetrans_all_named_dev() to allow create event22-30 character files with label event_device_t
+- Update userdom_security_admin() and userdom_security_admin_template() to allow use auditctl
+- Allow insmod_t domain to read iptables pid files
+- Allow systemd to mounton /etc
+- Allow initrc_domain to mmap all binaries labeled as systemprocess_entry
+- Allow xserver_t domain to start using systemd socket activation
+- Tweak SELinux policy for systemd to allow DynamicUsers systemd feature
+- Associate several proc labels to fs_t
+- Update init_named_socket_activation() interface to allow systemd also create link files in /var/run
+- Fix typo in syslogd policy
+- Update syslogd policy to make working elasticsearch
+- Label tcp and udp ports 9200 as wap_wsp_port
+- Allow few domains to rw inherited kdumpctl tmp pipes
+- label /var/lib/pgsql/data/log as postgresql_log_t
+- Allow sysadm_t domain to accept socket
+- Allow systemd to manage passwd_file_t
+
 * Fri Aug 10 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.2-32
 - Fix issue with aliases in apache interface file
 - Add same context for symlink as binary
