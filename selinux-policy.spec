@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 c8dfe84c09d2d197265f1d883f8b11527f5846c9
+%global commit0 38c6414d2dac8b3e77914561f34babdf93ef27ff
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 a3420086d85dcd5b7407c3101587047369c45ea1
+%global commit1 5ed2192d563e34d3f1e7c4f7b2673af960de8769
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,53 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-2
+- Allow tomcat services create link file in /tmp
+- Label /etc/shorewall6 as shorewall_etc_t
+- Allow winbind_t domain kill in user namespaces
+- Allow firewalld_t domain to read random device
+- Allow abrt_t domain to do execmem
+- Allow geoclue_t domain to execute own var_lib_t files
+- Allow openfortivpn_t domain to read system network state
+- Allow dnsmasq_t domain to read networkmanager lib files
+- sssd: Allow to limit capabilities using libcap
+- sssd: Remove unnecessary capability
+- sssd: Do not audit usage of lib nss_systemd.so
+- Fix bug in nsd.fc, /var/run/nsd.ctl is socket file not file
+- Add correct namespace_init_exec_t context to /etc/security/namespace.d/*
+- Update nscd_socket_use to allow caller domain to mmap nscd_var_run_t files
+- Allow exim_t domain to mmap bin files
+- Allow mysqld_t domain to executed with nnp transition
+- Allow svirt_t domain to mmap svirt_image_t block files
+- Add caps dac_read_search and dav_override to pesign_t domain
+- Allow iscsid_t domain to mmap userio chr files
+- Add read interfaces for mysqld_log_t that was added in commit df832bf
+- Allow boltd_t to dbus chat with xdm_t
+- Conntrackd need to load kernel module to work
+- Allow mysqld sys_nice capability
+- Update boltd policy based on SELinux denials from rhbz#1607974
+- Allow systemd to create symlinks in for /var/lib
+- Add comment to show that template call also allows changing shells
+- Document userdom_change_password_template() behaviour
+- update files_mounton_kernel_symbol_table() interface to allow caller domain also mounton system_map_t file
+- Fix typo in logging SELinux module
+- Allow usertype to mmap user_tmp_type files
+- In domain_transition_pattern there is no permission allowing caller domain to execu_no_trans on entrypoint, this patch fixing this issue
+- Revert "Add execute_no_trans permission to mmap_exec_file_perms pattern"
+- Add boolean: domain_can_mmap_files.
+- Allow ipsec_t domian to mmap own tmp files
+- Add .gitignore file
+- Add execute_no_trans permission to mmap_exec_file_perms pattern
+- Allow sudodomain to search caller domain proc info
+- Allow audisp_remote_t domain to read auditd_etc_t
+- netlabel: Remove unnecessary sssd nsswitch related macros
+- Allow to use sss module in auth_use_nsswitch
+- Limit communication with init_t over dbus
+- Add actual modules.conf to the git repo
+- Add few interfaces to optional block
+- Allow sysadm_t and staff_t domain to manage systemd unit files
+- Add interface dev_map_userio_dev()
+
 * Tue Aug 28 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-1
 - Allow ovs-vswitchd labeled as openvswitch_t domain communicate with qemu-kvm via UNIX stream socket
 - Add interface devicekit_mounton_var_lib()
