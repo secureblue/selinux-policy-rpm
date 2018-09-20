@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 38c6414d2dac8b3e77914561f34babdf93ef27ff
+%global commit0 9c42b2893707c6a5a694c25b03ffafc951305575
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 5ed2192d563e34d3f1e7c4f7b2673af960de8769
+%global commit1 dab4b50b7d2268b6cfb675754903b1a413008bba
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,53 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 20 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-3
+- Allow certmonger to manage cockpit_var_run_t pid files
+- Allow cockpit_ws_t domain to manage cockpit services
+- Allow dirsrvadmin_script_t domain to list httpd_tmp_t dirs
+- Add interface apache_read_tmp_dirs()
+- Fix typo in cockpit interfaces we have cockpit_var_run_t files not cockpit_var_pid_t
+- Add interface apcupsd_read_power_files()
+- Allow systemd labeled as init_t to execute logrotate in logrotate_t domain
+- Allow dac_override capability to amanda_t domain
+- Allow geoclue_t domain to get attributes of fs_t filesystems
+- Update selinux policy for rhnsd_t domain based on changes in spacewalk-2.8-client
+- Allow cockpit_t domain to read systemd state
+- Allow abrt_t domain to write to usr_t files
+- Allow cockpit to create motd file in /var/run/cockpit
+- Label /usr/sbin/pcsd as cluster_exec_t
+- Allow pesign_t domain to getattr all fs
+- Allow tomcat servers to manage usr_t files
+- Dontaudit tomcat serves to append to /dev/random device
+- Allow dirsrvadmin_script_t domain to read httpd tmp files
+- Allow sbd_t domain to getattr of all char files in /dev and read sysfs_t files and dirs
+- Fix path where are sources for CI
+- Revert "Allow firewalld_t domain to read random device"
+- Add travis CI for selinux-policy-contrib repo
+- Allow postfix domains to mmap system db files
+- Allow geoclue_t domain to execute own tmp files
+- Update ibacm_read_pid_files interface to allow also reading link files
+- Allow zebra_t domain to create packet_sockets
+- Allow opafm_t domain to list sysfs
+- Label /usr/libexec/cyrus-imapd/cyrus-master as cyris_exec_t
+- Allow tomcat Tomcat to delete a temporary file used when compiling class files for JSPs.
+- Allow chronyd_t domain to read virt_var_lib_t files
+- Allow systemd to read apcupsd power files
+- Revert "Allow polydomain to create /tmp-inst labeled as tmp_t"
+- Allow polydomain to create /tmp-inst labeled as tmp_t
+- Allow polydomain to create /tmp-inst labeled as tmp_t
+- Allow systemd_resolved_t domain to bind on udp howl port
+- Add new boolean use_virtualbox Resolves: rhbz#1510478
+- Allow sshd_t domain to read cockpit pid files
+- Allow syslogd_t domain to manage cert_t files
+- Fix path where are sources for CI
+- Add travis.yml to to create CI for selinux-policy sources
+- Allow getattr as part of files_mounton_kernel_symbol_table.
+- Fix typo "aduit" -> "audit"
+- Revert "Add new interface dev_map_userio()"
+- Add new interface dev_map_userio()
+- Allow systemd to read ibacm pid files
+
 * Thu Sep 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-2
 - Allow tomcat services create link file in /tmp
 - Label /etc/shorewall6 as shorewall_etc_t
