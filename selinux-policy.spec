@@ -1,6 +1,6 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 9c42b2893707c6a5a694c25b03ffafc951305575
+%global commit0 446ee2abb3b37bb0fe27fa313048069d3c83b0e7
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Sep 24 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-4
+- Update sources to include SELinux policy for containers
+
 * Thu Sep 20 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-3
 - Allow certmonger to manage cockpit_var_run_t pid files
 - Allow cockpit_ws_t domain to manage cockpit services
