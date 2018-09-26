@@ -5,11 +5,11 @@ DISTGIT_PATH=$(pwd)
 FEDORA_VERSION=rawhide
 DOCKER_FEDORA_VERSION=master
 DISTGIT_BRANCH=master
-REPO_SELINUX_POLICY=${REPO_SELINUX_POLICY:-git@github.com:fedora-selinux/selinux-policy.git}
+REPO_SELINUX_POLICY=${REPO_SELINUX_POLICY:-https://github.com/fedora-selinux/selinux-policy}
 REPO_SELINUX_POLICY_BRANCH=${REPO_SELINUX_POLICY_BRANCH:-$FEDORA_VERSION}
-REPO_SELINUX_POLICY_CONTRIB=${REPO_SELINUX_POLICY_CONTRIB:-git@github.com:fedora-selinux/selinux-policy-contrib.git}
+REPO_SELINUX_POLICY_CONTRIB=${REPO_SELINUX_POLICY_CONTRIB:-https://github.com/fedora-selinux/selinux-policy-contrib}
 REPO_SELINUX_POLICY_CONTRIB_BRANCH=${REPO_SELINUX_POLICY_CONTRIB_BRANCH:-$FEDORA_VERSION}
-REPO_CONTAINER_SELINUX=${REPO_CONTAINER_SELINUX:-git@github.com:projectatomic/container-selinux.git}
+REPO_CONTAINER_SELINUX=${REPO_CONTAINER_SELINUX:-https://github.com/containers/container-selinux}
 
 # When -l is specified, we use locally created tarballs and don't download them from github
 DOWNLOAD_DEFAULT_GITHUB_TARBALLS=1
