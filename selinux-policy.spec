@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 446ee2abb3b37bb0fe27fa313048069d3c83b0e7
+%global commit0 08131262642800aecab1c830382056bcc312bd55
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 dab4b50b7d2268b6cfb675754903b1a413008bba
+%global commit1 ff6d7f41cdba4524422558bf381447c1f8181014
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,17 @@ exit 0
 %endif
 
 %changelog
+* Thu Oct 04 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-5
+- Allow dictd_t domain to mmap dictd_var_lib_t files BZ(1634650)
+- Fix typo in boltd.te policy
+- Allow fail2ban_t domain to mmap journal
+- Add kill capability to named_t domain
+- Allow neutron domain to read/write /var/run/utmp
+- Create boltd_var_run_t type for boltd pid files
+- Allow tomcat_domain to read /dev/random
+- Allow neutron_t domain to use pam
+- Add the port used by nsca (Nagios Service Check Acceptor)
+
 * Mon Sep 24 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-4
 - Update sources to include SELinux policy for containers
 
