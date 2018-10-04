@@ -67,7 +67,7 @@ Source35: container-selinux.tgz
 # Provide rpm macros for packages installing SELinux modules
 Source102: rpm.macros
 
-Url: %{git0-base}
+Url: %{git0}
 BuildArch: noarch
 BuildRequires: python3 gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2
 BuildRequires: gcc
