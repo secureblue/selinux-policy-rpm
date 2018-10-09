@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 08131262642800aecab1c830382056bcc312bd55
+%global commit0 493101e12381cd5fc03ef5d5b28ea59f5ea77e36
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 ff6d7f41cdba4524422558bf381447c1f8181014
+%global commit1 fdc0a2e0c507704fdfb15644cdbab41532411df2
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 5%{?dist}
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,12 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 09 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-6
+- Allow boltd_t to be activated by init socket activation
+- Allow virt_domain to read/write to virtd_t unix_stream socket because of new version of libvirt 4.4. BZ(1635803)
+- Update SELinux policy for libreswan based on the latest rebase 3.26
+- Fix typo in init_named_socket_activation interface
+
 * Thu Oct 04 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-5
 - Allow dictd_t domain to mmap dictd_var_lib_t files BZ(1634650)
 - Fix typo in boltd.te policy
