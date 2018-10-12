@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Oct 13 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-7
+- Update rpm macros for selinux policy from sources repository: https://github.com/fedora-selinux/selinux-policy-macros
+
 * Tue Oct 09 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-6
 - Allow boltd_t to be activated by init socket activation
 - Allow virt_domain to read/write to virtd_t unix_stream socket because of new version of libvirt 4.4. BZ(1635803)
