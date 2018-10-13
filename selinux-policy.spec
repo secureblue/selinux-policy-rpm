@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 493101e12381cd5fc03ef5d5b28ea59f5ea77e36
+%global commit0 8bcb254ccc7d4db69198f130eb064eb834df055f
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 fdc0a2e0c507704fdfb15644cdbab41532411df2
+%global commit1 765b73a30143dd95a99f1f41a7a5a6511ebcf12a
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Oct 13 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-8
+- ejabberd SELinux module removed, it's shipped by ejabberd-selinux package
+
 * Sat Oct 13 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-7
 - Update rpm macros for selinux policy from sources repository: https://github.com/fedora-selinux/selinux-policy-macros
 
