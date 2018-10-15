@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 8bcb254ccc7d4db69198f130eb064eb834df055f
+%global commit0 2d39d24bc2473eac94a5ccdfa373e29db041d3fd
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 765b73a30143dd95a99f1f41a7a5a6511ebcf12a
+%global commit1 5252fe6bb92d282173ba836b59172bc7c99609a8
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,15 @@ exit 0
 %endif
 
 %changelog
+* Mon Oct 15 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-9
+- Allow caller domains using cron_*_role to have entrypoint permission on system_cron_spool_t files BZ(1625645)
+- Add interface cron_system_spool_entrypoint()
+- Bolt added d-bus API for force-powering the thunderbolt controller, so system-dbusd needs acces to boltd pipes BZ(1637676)
+- Add interfaces for boltd SELinux module
+- Add dac_override capability to modemmanager_t domain BZ(1636608)
+- Allow systemd to mount boltd_var_run_t dirs BZ(1636823)
+- Label correctly /var/named/chroot*/dev/unrandom in bind chroot.
+
 * Sat Oct 13 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-8
 - ejabberd SELinux module removed, it's shipped by ejabberd-selinux package
 
