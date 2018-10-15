@@ -5,7 +5,7 @@
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 5252fe6bb92d282173ba836b59172bc7c99609a8
+%global commit1 a69f9e63d83dd5f603147ddf7a349e075c80959d
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 16 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-10
+- Allow boltd_t domain to dbus chat with fwupd_t domain BZ(1633786)
+
 * Mon Oct 15 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-9
 - Allow caller domains using cron_*_role to have entrypoint permission on system_cron_spool_t files BZ(1625645)
 - Add interface cron_system_spool_entrypoint()
