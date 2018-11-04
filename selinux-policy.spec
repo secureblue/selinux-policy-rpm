@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 a46eac200fe1261c59d4093721e3539139a1e45e
+%global commit0 62d90da2a38c1a701a5f177feb861d0d75357d55
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 6c30b43e6935ef82dc07dc56f4cbcb220ec814aa
+%global commit1 5a2a313e3ac16c6411fd3dd949a836061b33a526
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,16 @@ exit 0
 %endif
 
 %changelog
+* Sun Nov 04 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-12
+- Dontaudit thumb_t domain to setattr on lib_t dirs BZ(1643672)
+- Dontaudit cupsd_t domain to setattr lib_t dirs BZ(1636766)
+- Add dac_override capability to postgrey_t domain BZ(1638954)
+- Allow thumb_t domain to execute own tmpfs files BZ(1643698)
+- Allow xdm_t domain to manage dosfs_t files BZ(1645770)
+- Label systemd-timesyncd binary as systemd_timedated_exec_t to make it run in systemd_timedated_t domain BZ(1640801)
+- Improve fs_manage_ecryptfs_files to allow caller domain also mmap ecryptfs_t files BZ(1630675)
+- Label systemd-user-runtime-dir binary as systemd_logind_exec_t BZ(1644313)
+
 * Sun Nov 04 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-11
 - Add nnp transition rule for vnstatd_t domain using NoNewPrivileges systemd feature BZ(1643063)
 - Allow l2tpd_t domain to mmap /etc/passwd file BZ(1638948)
