@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 2d39d24bc2473eac94a5ccdfa373e29db041d3fd
+%global commit0 a46eac200fe1261c59d4093721e3539139a1e45e
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 a69f9e63d83dd5f603147ddf7a349e075c80959d
+%global commit1 6c30b43e6935ef82dc07dc56f4cbcb220ec814aa
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,28 @@ exit 0
 %endif
 
 %changelog
+* Sun Nov 04 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-11
+- Add nnp transition rule for vnstatd_t domain using NoNewPrivileges systemd feature BZ(1643063)
+- Allow l2tpd_t domain to mmap /etc/passwd file BZ(1638948)
+- Add dac_override capability to ftpd_t domain
+- Allow gpg_t to create own tmpfs dirs and sockets
+- Allow rhsmcertd_t domain to relabel cert_t files
+- Add SELinux policy for kpatch
+- Allow nova_t domain to use pam
+- sysstat: grant sysstat_t the search_dir_perms set
+- Label systemd-user-runtime-dir binary as systemd_logind_exec_t BZ(1644313)
+- Allow systemd_logind_t to read fixed dist device BZ(1645631)
+- Allow systemd_logind_t domain to read nvme devices BZ(1645567)
+- Allow systemd_rfkill_t domain to comunicate via dgram sockets with syslogd BZ(1638981)
+- kernel/files.fc: Label /run/motd.d(/.*)? as etc_t
+- Allow ipsec_mgmt_t process to send signals other than SIGKILL, SIGSTOP, or SIGCHLD to the ipsec_t domains BZ(1638949)
+- Allow X display manager to check status and reload services which are part of x_domain attribute
+- Add interface miscfiles_relabel_generic_cert()
+- Make kpatch policy active
+- Fix userdom_write_user_tmp_dirs() to allow caller domain also read/write user_tmp_t dirs
+- Dontaudit sys_admin capability for netutils_t domain
+- Label tcp and udp ports 2611 as qpasa_agent_port_t
+
 * Tue Oct 16 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-10
 - Allow boltd_t domain to dbus chat with fwupd_t domain BZ(1633786)
 
