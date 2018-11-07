@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 62d90da2a38c1a701a5f177feb861d0d75357d55
+%global commit0 4cbc1ae7dbe8f08edee55b33d1031f0ee0c6ff4e
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 5a2a313e3ac16c6411fd3dd949a836061b33a526
+%global commit1 a01743f0cd8f3fd2aa99b32ff01697eeb0918b0c
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,22 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov 07 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-13
+- Update pesign policy to allow pesign_t domain to read bind cache files/dirs
+- Add dac_override capability to mdadm_t domain
+- Create ibacm_tmpfs_t type for the ibacm policy
+- Dontaudit capability sys_admin for dhcpd_t domain
+- Makes rhsmcertd_t domain an exception to the constraint preventing changing the user identity in object contexts.
+- Allow abrt_t domain to mmap generic tmp_t files
+- Label /usr/sbin/wpa_cli as wpa_cli_exec_t
+- Allow sandbox_xserver_t domain write to user_tmp_t files
+- Allow certutil running as ipsec_mgmt_t domain to mmap ipsec_mgmt pid files Dontaudit ipsec_mgmt_t domain to write to the all mountpoints
+- Add interface files_map_generic_tmp_files()
+- Add dac_override capability to the syslogd_t domain
+- Create systemd_timedated_var_run_t label
+- Update systemd_timedated_t domain to allow create own pid files/access init_var_lib_t files and read dbus files BZ(1646202)
+- Add init_read_var_lib_lnk_files and init_read_var_lib_sock_files interfaces
+
 * Sun Nov 04 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-12
 - Dontaudit thumb_t domain to setattr on lib_t dirs BZ(1643672)
 - Dontaudit cupsd_t domain to setattr lib_t dirs BZ(1636766)
