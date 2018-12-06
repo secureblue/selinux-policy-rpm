@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 4cbc1ae7dbe8f08edee55b33d1031f0ee0c6ff4e
+%global commit0 509e071fb3ded4e982bdf7fdcdc8bbc8f7779172
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 a01743f0cd8f3fd2aa99b32ff01697eeb0918b0c
+%global commit1 a0e386916f8bbd64918c3ab98267431e8a78bfe9
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -709,6 +709,37 @@ exit 0
 %endif
 
 %changelog
+* Fri Dec 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-14
+- Remove all ganesha bits from gluster and rpc policy
+- Label /usr/share/spamassassin/sa-update.cron as spamd_update_exec_t
+- Add dac_override capability to ssad_t domains
+- Allow pesign_t domain to read gnome home configs
+- Label /usr/libexec/lm_sensors/sensord-service-wrapper as lsmd_exec_t
+- Allow rngd_t domains read kernel state
+- Allow certmonger_t domains to read bind cache
+- Allow ypbind_t domain to stream connect to sssd
+- Allow rngd_t domain to setsched
+- Allow sanlock_t domain to read/write sysfs_t files
+- Add dac_override capability to postfix_local_t domain
+- Allow ypbind_t to search sssd_var_lib_t dirs
+- Allow virt_qemu_ga_t domain to write to user_tmp_t files
+- Allow systemd_logind_t to dbus chat with virt_qemu_ga_t
+- Update sssd_manage_lib_files() interface to allow also mmap sssd_var_lib_t files
+- Add new interface sssd_signal()
+- Update xserver_filetrans_home_content() and xserver_filetrans_admin_home_content() unterfaces to allow caller domain to create .vnc dir in users homedir labeled as xdm_home_t
+- Update logging_filetrans_named_content() to allow caller domains of this interface to create /var/log/journal/remote directory labeled as var_log_t
+- Add sys_resource capability to the systemd_passwd_agent_t domain
+- Allow ipsec_t domains to read bind cache
+- kernel/files.fc: Label /run/motd as etc_t
+- Allow systemd to stream connect to userdomain processes
+- Label /var/lib/private/systemd/ as init_var_lib_t
+- Allow initrc_t domain to create new socket labeled as init_T
+- Allow audisp_remote_t domain remote logging client to read local audit events from relevant socket.
+- Add tracefs_t type to mountpoint attribute
+- Allow useradd_t and groupadd_t domains to send signals to sssd_t
+- Allow systemd_logind_t domain to remove directories labeled as tmpfs_t BZ(1648636)
+- Allow useradd_t and groupadd_t domains to access sssd files because of the new feature in shadow-utils
+
 * Wed Nov 07 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-13
 - Update pesign policy to allow pesign_t domain to read bind cache files/dirs
 - Add dac_override capability to mdadm_t domain
