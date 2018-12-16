@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -713,6 +713,9 @@ exit 0
 %endif
 
 %changelog
+* Sun Dec 16 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-15
+- Add macro-expander script to selinux-policy-devel package
+
 * Fri Dec 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-14
 - Remove all ganesha bits from gluster and rpc policy
 - Label /usr/share/spamassassin/sa-update.cron as spamd_update_exec_t
