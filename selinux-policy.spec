@@ -57,6 +57,7 @@ Source26: file_contexts.subs_dist
 Source27: selinux-policy.conf
 Source28: permissivedomains.cil
 Source30: booleans.subs_dist
+Source33: macro-expander
 
 Source35: container-selinux.tgz
 
@@ -134,6 +135,7 @@ Requires(post): policycoreutils-devel >= %{POLICYCOREUTILSVER}
 SELinux policy development and man page package
 
 %files devel
+%{_bindir}/macro-expander
 %dir %{_usr}/share/selinux/devel
 %dir %{_usr}/share/selinux/devel/include
 %{_usr}/share/selinux/devel/include/*
@@ -363,6 +365,8 @@ touch %{buildroot}%{_sysconfdir}/selinux/config
 touch %{buildroot}%{_sysconfdir}/sysconfig/selinux
 mkdir -p %{buildroot}%{_usr}/lib/tmpfiles.d/
 cp %{SOURCE27} %{buildroot}%{_usr}/lib/tmpfiles.d/
+mkdir -p %{buildroot}%{_bindir}
+cp %{SOURCE33} %{buildroot}%{_bindir}/
 
 # Always create policy module package directories
 mkdir -p %{buildroot}%{_usr}/share/selinux/{targeted,mls,minimum,modules}/
