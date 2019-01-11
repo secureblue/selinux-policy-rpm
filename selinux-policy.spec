@@ -1,6 +1,6 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 d0c5c811fee0a5de5571dab531babf6544b1def9
+%global commit0 0379b0e4a4b22a7e86d183a9cfdd5f38080ac38b
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -713,6 +713,11 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 11 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-17
+- Allow staff_t domain to read read_binfmt_misc filesystem
+- Add interface fs_read_binfmt_misc()
+- Revert "Allow staff_t to rw binfmt_misc_fs_t files BZ(1658975)"
+
 * Fri Jan 11 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-16
 - Allow sensord_t to execute own binary files
 - Allow pcp_pmlogger_t domain to getattr all filesystem BZ(1662432)
