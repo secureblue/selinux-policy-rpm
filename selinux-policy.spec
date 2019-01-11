@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 509e071fb3ded4e982bdf7fdcdc8bbc8f7779172
+%global commit0 d0c5c811fee0a5de5571dab531babf6544b1def9
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 a0e386916f8bbd64918c3ab98267431e8a78bfe9
+%global commit1 a265988e553a6f76d712aff33e2def21c38628ab
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -713,6 +713,36 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 11 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-16
+- Allow sensord_t to execute own binary files
+- Allow pcp_pmlogger_t domain to getattr all filesystem BZ(1662432)
+- Allow virtd_lxc_t domains use BPF BZ(1662613)
+- Allow openvpn_t domain to read systemd state BZ(1661065)
+- Dontaudit ptrace all domains for blueman_t BZ(1653671)
+- Used correct renamed interface for imapd_t domain
+- Change label of /usr/libexec/lm_sensors/sensord-service-wrapper from lsmd_exec_t to sensord_exec_t BZ(1662922)
+- Allow hddtemp_t domain to read nvme block devices BZ(1663579)
+- Add dac_override capability to spamd_t domain BZ(1645667)
+- Allow pcp_pmlogger_t to mount tracefs_t filesystem BZ(1662983)
+- Allow pcp_pmlogger_t domain to read al sysctls BZ(1662441)
+- Specify recipients that will be notified about build CI results.
+- Allow saslauthd_t domain to mmap own pid files BZ(1653024)
+- Add dac_override capability for snapperd_t domain BZ(1619356)
+- Make kpatch_t domain application domain to allow users to execute kpatch in kpatch_t domain.
+- Add ipc_owner capability to pcp_pmcd_t domain BZ(1655282)
+- Update pulseaudio_stream_connect() to allow caller domain create stream sockets to cumminicate with pulseaudio
+- Allow pcp_pmlogger_t domain to send signals to rpm_script_t BZ(1651030)
+- Add new interface: rpm_script_signal()
+- Allow init_t domain to mmap init_var_lib_t files and dontaudit leaked fd. BZ(1651008)
+- Make workin: systemd-run --system --pty bash BZ(1647162)
+- Allow ipsec_t domain dbus chat with systemd_resolved_t BZ(1662443)
+- Allow staff_t to rw binfmt_misc_fs_t files BZ(1658975)
+- Specify recipients that will be notified about build CI results.
+- Label /usr/lib/systemd/user as systemd_unit_file_t BZ(1652814)
+- Allow sysadm_t,staff_t and unconfined_t domain to execute kpatch as kpatch_t domain
+- Add rules to allow systemd to mounton systemd_timedated_var_lib_t.
+- Allow x_userdomains to stream connect to pulseaudio BZ(1658286)
+
 * Sun Dec 16 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-15
 - Add macro-expander script to selinux-policy-devel package
 
