@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 0379b0e4a4b22a7e86d183a9cfdd5f38080ac38b
+%global commit0 35f00c192427aff18892b9f1f150ee35b885f84a
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 a265988e553a6f76d712aff33e2def21c38628ab
+%global commit1 2664b0adafc3a35769ae5294cf9ecdf3fda47e1a
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
@@ -713,6 +713,17 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan 15 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-18
+- Allow plymouthd_t search efivarfs directory BZ(1664143)
+- Allow arpwatch send e-mail notifications BZ(1657327)
+- Allow tangd_t domain to bind on tcp ports labeled as tangd_port_t
+- Allow gssd_t domain to read/write kernel keyrings of every domain.
+- Allow systemd_timedated_t domain nnp_transition BZ(1666222)
+- Add the fs_search_efivarfs_dir interface
+- Create tangd_port_t with default label tcp/7406
+- Add interface domain_rw_all_domains_keyrings()
+- Some of the selinux-policy macros doesn't work in chroots/initial installs. BZ(1665643)
+
 * Fri Jan 11 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-17
 - Allow staff_t domain to read read_binfmt_misc filesystem
 - Add interface fs_read_binfmt_misc()
