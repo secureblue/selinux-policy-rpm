@@ -31,7 +31,6 @@ Name: selinux-policy
 Version: 3.14.3
 Release: 18%{?dist}
 License: GPLv2+
-Group: System Environment/Base
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
 Source1: modules-targeted-base.conf
@@ -94,7 +93,6 @@ Based off of reference policy: Checked out revision  2.20091117
 
 %package sandbox
 Summary: SELinux policy sandbox
-Group: System Environment/Base
 Requires(pre): selinux-policy-base = %{version}-%{release}
 Requires(pre): selinux-policy-targeted = %{version}-%{release}
 
@@ -124,7 +122,6 @@ exit 0
 
 %package devel
 Summary: SELinux policy devel
-Group: System Environment/Base
 Requires(pre): selinux-policy = %{version}-%{release}
 Requires: selinux-policy = %{version}-%{release}
 Requires: m4 checkpolicy >= %{CHECKPOLICYVER}
@@ -153,7 +150,6 @@ exit 0
 
 %package doc
 Summary: SELinux policy documentation
-Group: System Environment/Base
 Requires(pre): selinux-policy = %{version}-%{release}
 Requires: selinux-policy = %{version}-%{release}
 
@@ -482,7 +478,6 @@ exit 0
 %package targeted
 Summary: SELinux targeted base policy
 Provides: selinux-policy-base = %{version}-%{release}
-Group: System Environment/Base
 Obsoletes: selinux-policy-targeted-sources < 2
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
@@ -560,7 +555,6 @@ exit 0
 %package minimum
 Summary: SELinux minimum base policy
 Provides: selinux-policy-base = %{version}-%{release}
-Group: System Environment/Base
 Requires(post): policycoreutils-python-utils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
@@ -653,7 +647,6 @@ exit 0
 %if %{BUILD_MLS}
 %package mls 
 Summary: SELinux mls base policy
-Group: System Environment/Base
 Provides: selinux-policy-base = %{version}-%{release}
 Obsoletes: selinux-policy-mls-sources < 2
 Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER} setransd
