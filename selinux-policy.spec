@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 35f00c192427aff18892b9f1f150ee35b885f84a
+%global commit0 5181cbd448c7aea433aad45675befadda96002e2
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 2664b0adafc3a35769ae5294cf9ecdf3fda47e1a
+%global commit1 992defd63683a26684dbbca3e4d1d652cd340f00
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 18%{?dist}
+Release: 19%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -706,6 +706,20 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan 29 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-19
+- Add new xdp_socket class
+- Update dbus_role_template interface to allow userdomains to accept data from userdomain dbus domains
+- Allow boltd_t domain to read cache_home_t files BZ(1669911)
+- Allow winbind_t domain to check for existence of processes labeled as systemd_hostnamed_t BZ(1669912)
+- Allow gpg_agent_t to create own tmpfs dirs and sockets
+- Allow openvpn_t domain to manage vpnc pidfiles BZ(1667572)
+- Add multiple interfaces for vpnc interface file
+- Label /var/run/fcgiwrap dir as httpd_var_run_t BZ(1655702)
+- In MongoDB 3.4.16, 3.6.6, 4.0.0 and later, mongod reads netstat info from proc and stores it in its diagnostic system (FTDC). See: https://jira.mongodb.org/browse/SERVER-31400 This means that we need to adjust the policy so that the mongod process is allowed to open and read /proc/net/netstat, which typically has symlinks (e.g. /proc/net/snmp).
+- Allow gssd_t domain to manage kernel keyrings of every domain.
+- Revert "Allow gssd_t domain to read/write kernel keyrings of every domain."
+- Allow plymouthd_t search efivarfs directory BZ(1664143)
+
 * Tue Jan 15 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-18
 - Allow plymouthd_t search efivarfs directory BZ(1664143)
 - Allow arpwatch send e-mail notifications BZ(1657327)
