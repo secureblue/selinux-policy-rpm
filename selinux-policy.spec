@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 5181cbd448c7aea433aad45675befadda96002e2
+%global commit0 07bdaa4e38ad031370335669a7df22fc8836dea0
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 992defd63683a26684dbbca3e4d1d652cd340f00
+%global commit1 b4944ea2d50d41863dec6ba41d1cc815395da494
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 19%{?dist}
+Release: 20%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -706,6 +706,18 @@ exit 0
 %endif
 
 %changelog
+* Sat Feb 02 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-20
+- Allow sensord_t domain to use nsswitch and execute shell
+- Allow opafm_t domain to execute lib_t files
+- Allow opafm_t domain to manage kdump_crash_t files and dirs
+- Allow virt domains to read/write cephfs filesystems
+- Allow virtual machine to write to fixed_disk_device_t
+- Update kdump_manage_crash() interface to allow also manage dirs by caller domain Resolves: rhbz#1491585
+- Allow svnserve_t domain to create in /tmp svn_0 file labeled as krb5_host_rcache_t
+- Allow vhostmd_t read libvirt configuration files
+- Update dbus_role_template interface to allow userdomains to accept data from userdomain dbus domains
+- Add miscfiles_filetrans_named_content_letsencrypt() to optional_block - Allow unconfined domains to create letsencrypt directory in /var/lib labeled as cert_t - Allow staff_t user to systemctl iptables units. - Allow systemd to read selinux logind config - obj_perm_sets.spt: Add xdp_socket to socket_class_set. - Add xdp_socket security class and access vectors - Allow transition from init_t domain to user_t domain during ssh login with confined user user_u
+
 * Tue Jan 29 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-19
 - Add new xdp_socket class
 - Update dbus_role_template interface to allow userdomains to accept data from userdomain dbus domains
