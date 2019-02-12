@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 07bdaa4e38ad031370335669a7df22fc8836dea0
+%global commit0 8258bc10ab4591c277398a872364355be7b15cd4
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 b4944ea2d50d41863dec6ba41d1cc815395da494
+%global commit1 8b8ce9b1a026b041163de4ab4ef29e9515dbf541
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 20%{?dist}
+Release: 21%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -706,6 +706,24 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 12 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-21
+- Allow glusterd_t to write to automount unnamed pipe Resolves: rhbz#1674243
+- Allow ddclient_t to setcap Resolves: rhbz#1674298
+- Add dac_override capability to vpnc_t domain
+- Add dac_override capability to spamd_t domain
+- Allow ibacm_t domain to read system state and label all ibacm sockets and symlinks as ibacm_var_run_t in /var/run
+- Allow read network state of system for processes labeled as ibacm_t
+- Allow ibacm_t domain to send dgram sockets to kernel processes
+- Allow dovecot_t to connect to MySQL UNIX socket
+- Fix CI for use on forks
+- Fix typo bug in sensord policy
+- Update ibacm_t policy after testing lastest version of this component
+- Allow sensord_t domain to mmap own log files
+- Allow virt_doamin to read/write dev device
+- Add dac_override capability for ipa_helper_t
+- Update policy with multiple allow rules to make working installing VM in MLS policy
+- Allow syslogd_t domain to send null signal to all domains on system Resolves: rhbz#1673847 - Merge branch 'rawhide' of github.com:fedora-selinux/selinux-policy into rawhide - Allow systemd-logind daemon to remove shared memory during logout Resolves: rhbz#1674172 - Always label /home symlinks as home_root_t - Update mount_read_pid_files macro to allow also list mount_var_run_t dirs - Fix typo bug in userdomain SELinux policy - Merge branch 'rawhide' of github.com:fedora-selinux/selinux-policy into rawhide - Allow user domains to stop systemd user sessions during logout process - Fix CI for use on forks - Label /dev/sev char device as sev_device_t - Add s_manage_fusefs_named_sockets interface - Allow systemd-journald to receive messages including a memfd
+
 * Sat Feb 02 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-20
 - Allow sensord_t domain to use nsswitch and execute shell
 - Allow opafm_t domain to execute lib_t files
