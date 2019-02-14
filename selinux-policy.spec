@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 8258bc10ab4591c277398a872364355be7b15cd4
+%global commit0 18ccb6cef4e6c0b8709a3ccca6999a327fad4b95
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 8b8ce9b1a026b041163de4ab4ef29e9515dbf541
+%global commit1 7e2f1782919c406a1881c62d49b72bd194e0f991
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.3
-Release: 21%{?dist}
+Release: 22%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -706,6 +706,12 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 14 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-22
+- Allow dovecot_t domain to connect to mysql db
+- Add dac_override capability for sbd_t SELinux domain
+- Add dac_override capability for  spamd_update_t domain
+- Allow nnp transition for domains fsadm_t, lvm_t and mount_t - Add fs_manage_fusefs_named_pipes interface
+
 * Tue Feb 12 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-21
 - Allow glusterd_t to write to automount unnamed pipe Resolves: rhbz#1674243
 - Allow ddclient_t to setcap Resolves: rhbz#1674298
