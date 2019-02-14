@@ -337,6 +337,47 @@ mkdir -p %{buildroot}/%{_libexecdir}/selinux/ \
 #install -m 644 -p %{SOURCE101} %{buildroot}/%{_unitdir}/ \
 #ln -s ../selinux-factory-reset@.service %{buildroot}/%{_unitdir}/basic.target.wants/selinux-factory-reset@%1.service
 
+# Make sure the config is consistent with what packages are installed in the system
+# this covers cases when system is installed with selinux-policy-{mls,minimal}
+# or selinux-policy-{targeted,mls,minimal} where switched but the machine has not
+# been rebooted yet.
+# The macro should be called at the beginning of "post" (to make sure load_policy does not fail)
+# and in "posttrans" (to make sure that the store is consistent when all package transitions are done)
+# Parameter determines the policy type to be set in case of miss-configuration (if backup value is not usable)
+# Steps:
+# * load values from config and its backup
+# * check whether SELINUXTYPE from backup is usable and make sure that it's set in the config if so
+# * use "targeted" if it's being installed and BACKUP_SELINUXTYPE cannot be used
+# * check whether SELINUXTYPE in the config is usable and change it to newly installed policy if it isn't
+
+%define checkConfigConsistency() \
+. %{_sysconfdir}/selinux/config; \
+if [ -f %{_sysconfdir}/selinux/.config_backup ]; then \
+     . %{_sysconfdir}/selinux/.config_backup; \
+else \
+     BACKUP_SELINUXTYPE=targeted; \
+fi; \
+if ls %{_sysconfdir}/selinux/$BACKUP_SELINUXTYPE/policy/policy.* &>/dev/null; then \
+     if [ "$BACKUP_SELINUXTYPE" != "$SELINUXTYPE" ]; then \
+          sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE=$BACKUP_SELINUXTYPE/g' %{_sysconfdir}/selinux/config; \
+     fi; \
+elif [ "%1" = "targeted" ]; then \
+     sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE=%1/g' %{_sysconfdir}/selinux/config; \
+elif ! ls  %{_sysconfdir}/selinux/$SELINUXTYPE/policy/policy.* &>/dev/null; then \
+     sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE=%1/g' %{_sysconfdir}/selinux/config; \
+fi;
+
+
+# Create hidden backup of /etc/selinux/config and prepend BACKUP_ to names
+# of variables inside so that they are easy to use later
+# Should only be used in "pretrans" -- config content can change during RPM operations
+%define backupConfig() \
+%{__rm} -f %{_sysconfdir}/selinux/.config_backup \
+if [ -f %{_sysconfdir}/selinux/config ]; then \
+     cp %{_sysconfdir}/selinux/config %{_sysconfdir}/selinux/.config_backup; \
+     sed -i 's/^SELINUX/BACKUP_SELINUX/g' %{_sysconfdir}/selinux/.config_backup; \
+fi;
+
 %build
 
 %prep 
@@ -493,12 +534,19 @@ Conflicts: container-selinux < 2:1.12.1-22
 %description targeted
 SELinux Reference policy targeted base module.
 
+%pretrans targeted
+%backupConfig
+
 %pre targeted
 %preInstall targeted
 
 %post targeted
+%checkConfigConsistency targeted
 %postInstall $1 targeted
 exit 0
+
+%posttrans targeted
+%checkConfigConsistency targeted
 
 %postun targeted
 if [ $1 = 0 ]; then
@@ -565,6 +613,9 @@ Conflicts: container-selinux <= 1.9.0-9
 %description minimum
 SELinux Reference policy minimum base module.
 
+%pretrans minimum
+%backupConfig
+
 %pre minimum
 %preInstall minimum
 if [ $1 -ne 1 ]; then
@@ -572,6 +623,7 @@ if [ $1 -ne 1 ]; then
 fi
 
 %post minimum
+%checkConfigConsistency minimum
 contribpackages=`cat /usr/share/selinux/minimum/modules-contrib.lst`
 basepackages=`cat /usr/share/selinux/minimum/modules-base.lst`
 if [ ! -d /var/lib/selinux/minimum/active/modules/disabled ]; then
@@ -602,6 +654,9 @@ done
 %relabel minimum
 fi
 exit 0
+
+%posttrans minimum
+%checkConfigConsistency minimum
 
 %postun minimum
 if [ $1 = 0 ]; then
@@ -660,12 +715,19 @@ Conflicts: container-selinux <= 1.9.0-9
 %description mls 
 SELinux Reference policy mls base module.
 
+%pretrans mls
+%backupConfig
+
 %pre mls 
 %preInstall mls
 
 %post mls 
+%checkConfigConsistency mls
 %postInstall $1 mls
 exit 0
+
+%posttrans mls
+%checkConfigConsistency mls
 
 %postun mls
 if [ $1 = 0 ]; then
