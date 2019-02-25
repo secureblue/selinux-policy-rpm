@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 18ccb6cef4e6c0b8709a3ccca6999a327fad4b95
+%global commit0 108b4cd659ae333951747a931593a4ecbac89b59
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 7e2f1782919c406a1881c62d49b72bd194e0f991
+%global commit1 af9fa4f244e473c37d955ea0283e44440fcfcd5d
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -28,8 +28,8 @@
 %define CHECKPOLICYVER 2.8
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.14.3
-Release: 22%{?dist}
+Version: 3.14.4
+Release: 1%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -768,6 +768,13 @@ exit 0
 %endif
 
 %changelog
+* Mon Feb 25 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-1
+- Allow openvpn_t domain to set capability BZ(1680276)
+- Update redis_enable_notify() boolean to fix sending e-mail by redis when this boolean is turned on
+- Allow chronyd_t domain to send data over dgram socket
+- Add rolekit_dgram_send() interface
+- Fix bug in userdom_restricted_xwindows_user_template() template to disallow all user domains to access admin_home_t - kernel/files.fc: Label /var/run/motd.d(./*)? and /var/run/motd as pam_var_run_t
+
 * Thu Feb 14 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-22
 - Allow dovecot_t domain to connect to mysql db
 - Add dac_override capability for sbd_t SELinux domain
