@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 108b4cd659ae333951747a931593a4ecbac89b59
+%global commit0 aa6253cf8dbcff8d0d73a94c95b22a4813481bd8
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 af9fa4f244e473c37d955ea0283e44440fcfcd5d
+%global commit1 925fb5e79748b46e0dd5962ed2df760a9a287079
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -768,6 +768,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 26 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-2
+- Merge insmod_t, depmod_t and update_modules_t do kmod_t
+
 * Mon Feb 25 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-1
 - Allow openvpn_t domain to set capability BZ(1680276)
 - Update redis_enable_notify() boolean to fix sending e-mail by redis when this boolean is turned on
