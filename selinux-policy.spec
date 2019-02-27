@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -706,6 +706,10 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 27 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-3
+- Reverting https://src.fedoraproject.org/rpms/selinux-policy/pull-request/15 because "%pretrans" cannot use shell scripts.
+Resolves: rhbz#1683365
+
 * Tue Feb 26 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-2
 - Merge insmod_t, depmod_t and update_modules_t do kmod_t
 
