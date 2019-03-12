@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 aa6253cf8dbcff8d0d73a94c95b22a4813481bd8
+%global commit0 4c00590e9ef306b76eddd6099f21f4a2a2953d5b
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 925fb5e79748b46e0dd5962ed2df760a9a287079
+%global commit1 c199027807f785d4c18da80d89b000c75d80137f
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -706,6 +706,30 @@ exit 0
 %endif
 
 %changelog
+* Wed Mar 12 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-4
+- Update vmtools policy
+- Allow virt_qemu_ga_t domain to read udev_var_run_t files
+- Update nagios_run_sudo boolean with few allow rules related to accessing sssd
+- Update travis CI to install selinux-policy dependencies without checking for gpg check
+- Allow journalctl_t domain to mmap syslogd_var_run_t files
+- Allow smokeping process to mmap own var lib files and allow set process group. Resolves: rhbz#1661046
+- Allow sbd_t domain to bypass permission checks for sending signals
+- Allow sbd_t domain read/write all sysctls
+- Allow kpatch_t domain to communicate with policykit_t domsin over dbus
+- Allow boltd_t to stream connect to sytem dbus
+- Allow zabbix_t domain to create sockets labeled as zabbix_var_run_t BZ(1683820)
+- Allow all domains to send dbus msgs to vmtools_unconfined_t processes
+- Label /dev/pkey as crypt_device_t
+- Allow sudodomains to write to systemd_logind_sessions_t pipes.
+- Label /usr/lib64/libcuda.so.XX.XX library as textrel_shlib_t.
+- Allow ifconfig_t domain to read /dev/random BZ(1687516)
+- Fix interface modutils_run_kmod() where was used old interface modutils_domtrans_insmod instead of new one modutils_domtrans_kmod() Resolves: rhbz#1686660
+- Update travis CI to install selinux-policy dependencies without checking for gpg check
+- Label /usr/sbin/nodm as xdm_exec_t same as other display managers
+- Update userdom_admin_user_template() and init_prog_run_bpf() interfaces to make working bpftool for confined admin
+- Label /usr/sbin/e2mmpstatus as fsadm_exec_t Resolves: rhbz#1684221
+- Update unconfined_dbus_send() interface to allow both direction communication over dbus with unconfined process.
+
 * Wed Feb 27 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-3
 - Reverting https://src.fedoraproject.org/rpms/selinux-policy/pull-request/15 because "%pretrans" cannot use shell scripts.
 Resolves: rhbz#1683365
