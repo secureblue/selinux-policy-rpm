@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 4c00590e9ef306b76eddd6099f21f4a2a2953d5b
+%global commit0 b28842ef918897da153800b2df47bb991250c421
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 c199027807f785d4c18da80d89b000c75d80137f
+%global commit1 dc92f2da061156c3e952a6b910dc49fc47c44d25
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -706,6 +706,21 @@ exit 0
 %endif
 
 %changelog
+* Tue Mar 19 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-5
+- Update xen SELinux module
+- Improve labeling for PCP plugins
+- Allow varnishd_t domain to read sysfs_t files
+- Update vmtools policy
+- Allow virt_qemu_ga_t domain to read udev_var_run_t files
+- Update nagios_run_sudo boolean with few allow rules related to accessing sssd
+- Update file context for modutils rhbz#1689975
+- Label /dev/xen/hypercall and /dev/xen/xenbus_backend as xen_device_t Resolves: rhbz#1679293
+- Grant permissions for onloadfs files of all classes.
+- Allow all domains to send dbus msgs to vmtools_unconfined_t processes
+- Label /dev/pkey as crypt_device_t
+- Allow sudodomains to write to systemd_logind_sessions_t pipes.
+- Label /usr/lib64/libcuda.so.XX.XX library as textrel_shlib_t.
+
 * Tue Mar 12 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-4
 - Update vmtools policy
 - Allow virt_qemu_ga_t domain to read udev_var_run_t files
