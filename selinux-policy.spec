@@ -706,7 +706,7 @@ exit 0
 %endif
 
 %changelog
-* Wed Mar 12 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-4
+* Tue Mar 12 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-4
 - Update vmtools policy
 - Allow virt_qemu_ga_t domain to read udev_var_run_t files
 - Update nagios_run_sudo boolean with few allow rules related to accessing sssd
@@ -843,7 +843,7 @@ Resolves: rhbz#1683365
 * Sun Dec 16 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-15
 - Add macro-expander script to selinux-policy-devel package
 
-* Fri Dec 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-14
+* Thu Dec 06 2018 Lukas Vrabec <lvrabec@redhat.com> - 3.14.3-14
 - Remove all ganesha bits from gluster and rpc policy
 - Label /usr/share/spamassassin/sa-update.cron as spamd_update_exec_t
 - Add dac_override capability to ssad_t domains
