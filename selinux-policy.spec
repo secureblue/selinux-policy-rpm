@@ -56,8 +56,13 @@ Source26: file_contexts.subs_dist
 Source27: selinux-policy.conf
 Source28: permissivedomains.cil
 Source30: booleans.subs_dist
+
+# Tool helps during policy development, to expand system m4 macros to raw allow rules
+# Git repo: https://github.com/fedora-selinux/macro-expander.git
 Source33: macro-expander
 
+# Include SELinux policy for container from separate container-selinux repo
+# Git repo: https://github.com/containers/container-selinux.git
 Source35: container-selinux.tgz
 
 # Do a factory reset when there's no policy.kern file in a store
