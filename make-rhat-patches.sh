@@ -10,6 +10,7 @@ REPO_SELINUX_POLICY_BRANCH=${REPO_SELINUX_POLICY_BRANCH:-$FEDORA_VERSION}
 REPO_SELINUX_POLICY_CONTRIB=${REPO_SELINUX_POLICY_CONTRIB:-https://github.com/fedora-selinux/selinux-policy-contrib}
 REPO_SELINUX_POLICY_CONTRIB_BRANCH=${REPO_SELINUX_POLICY_CONTRIB_BRANCH:-$FEDORA_VERSION}
 REPO_CONTAINER_SELINUX=${REPO_CONTAINER_SELINUX:-https://github.com/containers/container-selinux}
+REPO_MACRO_EXPANDER=${REPO_MACRO_EXPANDER:-https://github.com/fedora-selinux/macro-expander.git}
 
 # When -l is specified, we use locally created tarballs and don't download them from github
 DOWNLOAD_DEFAULT_GITHUB_TARBALLS=1
@@ -25,6 +26,7 @@ pushd $POLICYSOURCES > /dev/null
 git clone -q $REPO_SELINUX_POLICY selinux-policy
 git clone -q $REPO_SELINUX_POLICY_CONTRIB selinux-policy-contrib
 git clone -q $REPO_CONTAINER_SELINUX container-selinux
+git clone -q $REPO_MACRO_EXPANDER macro-expander
 
 pushd selinux-policy > /dev/null
 # prepare policy patches against upstream commits matching the last upstream merge
@@ -54,6 +56,7 @@ if [ $DOWNLOAD_DEFAULT_GITHUB_TARBALLS == 1 ]; then
     wget -O selinux-policy-contrib-${CONTRIB_SHORT_HEAD_ID}.tar.gz https://github.com/fedora-selinux/selinux-policy-contrib/archive/${CONTRIB_HEAD_ID}.tar.gz &> /dev/null
 fi
 cp $POLICYSOURCES/container-selinux/container-selinux.tgz .
+cp $POLICYSOURCES/macro-expander/macro-expander.sh ./macro-expander
 popd > /dev/null
 
 popd > /dev/null
