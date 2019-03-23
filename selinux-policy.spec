@@ -415,6 +415,9 @@ rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
 %installFactoryResetFiles mls
 %endif
 
+# remove leftovers when save-previous=true (semanage.conf) is used
+rm -rf %{buildroot}%{_sharedstatedir}/selinux/{minimum,targeted,mls}/previous
+
 mkdir -p %{buildroot}%{_mandir}
 cp -R  man/* %{buildroot}%{_mandir}
 make UNK_PERMS=allow NAME=targeted TYPE=mcs DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} PKGNAME=%{name} MLS_CATS=1024 MCS_CATS=1024 install-docs
