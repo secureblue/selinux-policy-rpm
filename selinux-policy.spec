@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 b28842ef918897da153800b2df47bb991250c421
+%global commit0 b78306bdff7cf7960c539477d5886e3e91c75a18
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 dc92f2da061156c3e952a6b910dc49fc47c44d25
+%global commit1 ef0c1e086e735f3a3864091e610914bc85a067dc
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -706,6 +706,13 @@ exit 0
 %endif
 
 %changelog
+* Sat Mar 23 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-6
+- Allow boltd_t domain to write to sysfs_t dirs BZ(1689287)
+- Allow fail2ban execute journalctl BZ(1689034)
+- Update sudodomains to make working confined users run sudo/su
+- Introduce new boolean unconfined_dyntrans_all.
+- Allow iptables_t domain to read NetworkManager state BZ(1690881)
+
 * Tue Mar 19 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-5
 - Update xen SELinux module
 - Improve labeling for PCP plugins
