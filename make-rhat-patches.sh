@@ -67,7 +67,7 @@ sed -i "s/%global commit0 [^ ]*$/%global commit0 $BASE_HEAD_ID/" selinux-policy.
 sed -i "s/%global commit1 [^ ]*$/%global commit1 $CONTRIB_HEAD_ID/" selinux-policy.spec
 
 # Update sources
-sha512sum --tag selinux-policy-${BASE_SHORT_HEAD_ID}.tar.gz selinux-policy-contrib-${CONTRIB_SHORT_HEAD_ID}.tar.gz container-selinux.tgz > sources
+sha512sum --tag selinux-policy-${BASE_SHORT_HEAD_ID}.tar.gz selinux-policy-contrib-${CONTRIB_SHORT_HEAD_ID}.tar.gz container-selinux.tgz macro-expander > sources
 
 echo -e "\nSELinux policy tarballs  and container.tgz with container policy files have been created."
 echo "Commit ids of selinux-policy and selinux-policy-contrib in spec file were changed to:"
