@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 b78306bdff7cf7960c539477d5886e3e91c75a18
+%global commit0 549ed432e0e7c6348687e3737aa29fd6e91f6e74
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 ef0c1e086e735f3a3864091e610914bc85a067dc
+%global commit1 e753aa82ec360bb2715ef2cc8b00eeb1719e1c26
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -714,6 +714,44 @@ exit 0
 %endif
 
 %changelog
+* Wed Apr 03 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-7
+- Allow fontconfig file transition for xguest_u user
+- Add gnome_filetrans_fontconfig_home_content interface
+- Add permissions needed by systemd's machinectl shell/login
+- Update SELinux policy for xen services
+- Add dac_override capability for kdumpctl_t process domain
+- Allow chronyd_t domain to exec shell
+- Fix varnisncsa typo
+- Allow init start freenx-server BZ(1678025)
+- Create logrotate_use_fusefs boolean
+- Add tcpd_wrapped_domain for telnetd BZ(1676940)
+- Allow tcpd bind to services ports BZ(1676940)
+- Update mysql_filetrans_named_content() to allow cluster to create mysql dirs in /var/run with proper label mysqld_var_run_t
+- Make shell_exec_t type as entrypoint for vmtools_unconfined_t.
+- Merge branch 'rawhide' of github.com:fedora-selinux/selinux-policy-contrib into rawhide
+- Allow virtlogd_t domain to create virt_etc_rw_t files in virt_etc_t
+- Allow esmtp access .esmtprc BZ(1691149)
+- Merge branch 'rawhide' of github.com:fedora-selinux/selinux-policy-contrib into rawhide
+- Allow tlp_t domain to read nvme block devices BZ(1692154)
+- Add support for smart card authentication in cockpit BZ(1690444)
+- Add permissions needed by systemd's machinectl shell/login
+- Allow kmod_t domain to mmap modules_dep_t files.
+- Allow systemd_machined_t dac_override capability BZ(1670787)
+- Update modutils_read_module_deps_files() interface to also allow mmap module_deps_t files
+- Allow unconfined_domain_type to use bpf tools BZ(1694115)
+- Revert "Allow unconfined_domain_type to use bpf tools BZ(1694115)"
+- Merge branch 'rawhide' of github.com:fedora-selinux/selinux-policy into rawhide
+- Allow unconfined_domain_type to use bpf tools BZ(1694115)
+- Allow init_t read mnt_t symlinks BZ(1637070)
+- Update dev_filetrans_all_named_dev() interface
+- Allow xdm_t domain to execmod temp files BZ(1686675)
+- Revert "Allow xdm_t domain to create own tmp files BZ(1686675)"
+- Allow getty_t, local_login_t, chkpwd_t and passwd_t to use usbttys. BZ(1691582)
+- Allow confined users labeled as staff_t to run iptables.
+- Merge branch 'rawhide' of github.com:fedora-selinux/selinux-policy into rawhide
+- Allow xdm_t domain to create own tmp files BZ(1686675)
+- Add miscfiles_dontaudit_map_generic_certs interface.
+
 * Sat Mar 23 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-6
 - Allow boltd_t domain to write to sysfs_t dirs BZ(1689287)
 - Allow fail2ban execute journalctl BZ(1689034)
