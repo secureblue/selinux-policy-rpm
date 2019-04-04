@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 549ed432e0e7c6348687e3737aa29fd6e91f6e74
+%global commit0 50cc590ecdd0797c653a7685b559b5c48e9c3d30
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 e753aa82ec360bb2715ef2cc8b00eeb1719e1c26
+%global commit1 7010ac2d758cea65ee6aad1a9a8814c52e1ae89b
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
