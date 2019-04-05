@@ -1,6 +1,6 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 50cc590ecdd0797c653a7685b559b5c48e9c3d30
+%global commit0 f1590bba44512c226c35927e8afaa33b31bba36d
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -714,6 +714,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 05 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-8
+- Allow systemd to mounton several systemd direstory to increase security of systemd
+Resolves: rhbz#1696201
+
 * Wed Apr 03 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-7
 - Allow fontconfig file transition for xguest_u user
 - Add gnome_filetrans_fontconfig_home_content interface
