@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 f1590bba44512c226c35927e8afaa33b31bba36d
+%global commit0 f8a234739cc2409b70ebeca3147856f026482aff
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 7010ac2d758cea65ee6aad1a9a8814c52e1ae89b
+%global commit1 8659df15169ae04f8e92992709feb826fb22016b
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,21 @@ exit 0
 %endif
 
 %changelog
+* Mon Apr 08 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-9
+- Merge #18 `Add check for config file consistency`
+- Allow tlp_t domain also write to nvme_devices block devices BZ(1696943)
+- Fix typo in rhsmcertd SELinux module
+- Allow dnsmasq_t domain to manage NetworkManager_var_lib_t files
+- Allow rhsmcertd_t domain to read yum.log file labeled as rpm_log_t
+- Allow unconfined users to use vsock unlabeled sockets
+- Add interface kernel_rw_unlabeled_vsock_socket()
+- Allow unconfined users to use smc unlabeled sockets
+- Add interface kernel_rw_unlabeled_smc_socket
+- Allow systemd_resolved_t domain to read system network state BZ(1697039)
+- Allow systemd to mounton kernel sysctls BZ(1696201)
+- Add interface kernel_mounton_kernel_sysctl() BZ(1696201)
+- Allow systemd to mounton several systemd direstory to increase security of systemd Resolves: rhbz#1696201
+
 * Fri Apr 05 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-8
 - Allow systemd to mounton several systemd direstory to increase security of systemd
 Resolves: rhbz#1696201
