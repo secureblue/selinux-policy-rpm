@@ -1,6 +1,6 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 f8a234739cc2409b70ebeca3147856f026482aff
+%global commit0 379f4fb842e1b2c7a4b7c365265e0bdab52b2be4
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 09 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-10
+- Allow systemd_modules_load to read modules_dep_t files
+- Allow systemd labeled as init_t to setattr on unallocated ttys BZ(1697667)
+
 * Mon Apr 08 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-9
 - Merge #18 `Add check for config file consistency`
 - Allow tlp_t domain also write to nvme_devices block devices BZ(1696943)
