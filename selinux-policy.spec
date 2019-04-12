@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 379f4fb842e1b2c7a4b7c365265e0bdab52b2be4
+%global commit0 2163c68418f8ac9e3ae8fa57bb0068a6b648f109
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 8659df15169ae04f8e92992709feb826fb22016b
+%global commit1 b78d1b1ed3768cb6241486b76edd9b473fe60e6f
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,13 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 12 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-11
+- Allow mongod_t domain to lsearch in cgroups BZ(1698743)
+- Allow rngd communication with pcscd BZ(1679217)
+- Create cockpit_tmpfs_t and allow cockpit ws and session to use it BZ(1698405)
+- Fix broken networkmanager interface for allowing manage lib files for dnsmasq_t.
+- Update logging_send_audit_msgs(sudodomain() to control TTY auditing for netlink socket for audit service
+
 * Tue Apr 09 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-10
 - Allow systemd_modules_load to read modules_dep_t files
 - Allow systemd labeled as init_t to setattr on unallocated ttys BZ(1697667)
