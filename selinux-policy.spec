@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 2163c68418f8ac9e3ae8fa57bb0068a6b648f109
+%global commit0 6ed8a7287528f71218ddea3afedc54c95c39b9e4
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 b78d1b1ed3768cb6241486b76edd9b473fe60e6f
+%global commit1 d00ed3cca362cbdcc43be9111cb3d27c2b3b5266
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,18 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 19 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-12
+- Fix typo in cups SELinux policy
+- Allow iscsid_t to read modules deps BZ(1700245)
+- Allow cups_pdf_t domain to create cupsd_log_t dirs in /var/log BZ(1700442)
+- Allow httpd_rotatelogs_t to execute generic binaries
+- Update system_dbus policy because of dbus-broker-20-2
+- Allow httpd_t doman to read/write /dev/zero device  BZ(1700758)
+- Allow tlp_t domain to read module deps files BZ(1699459)
+- Add file context for /usr/lib/dotnet/dotnet
+- Update dev_rw_zero() interface by adding map permission
+- Allow bounded transition for executing init scripts
+
 * Fri Apr 12 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-11
 - Allow mongod_t domain to lsearch in cgroups BZ(1698743)
 - Allow rngd communication with pcscd BZ(1679217)
