@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 6ed8a7287528f71218ddea3afedc54c95c39b9e4
+%global commit0 54c05f2645a660c545ec406558b42687df2552a7
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 d00ed3cca362cbdcc43be9111cb3d27c2b3b5266
+%global commit1 5a0561d7b67ae8403d4e1a44acfc8db40ee269a5
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,26 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 25 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-13
+- Introduce deny_bluetooth boolean
+- Allow greylist_milter_t to read network system state BZ(1702672)
+- Allow freeipmi domains to mmap freeipmi_var_cache_t files
+- Allow rhsmcertd_t and rpm_t domains to chat over dbus
+- Allow thumb_t domain to delete cache_home_t files BZ(1701643)
+- Update gnome_role_template() to allow _gkeyringd_t domains to chat with systemd_logind over dbus
+- Add new interface boltd_dbus_chat()
+- Allow fwupd_t and modemmanager_t domains to communicate over dbus BZ(1701791)
+- Allow keepalived_t domain to create and use netlink_connector sockets BZ(1701750)
+- Allow cockpit_ws_t domain to set limits BZ(1701703)
+- Update Nagios policy when sudo is used
+- Deamon rhsmcertd is able to install certs for docker again
+- Introduce deny_bluetooth boolean
+- Don't allow a container to connect to random services
+- Remove file context /usr/share/spamassassin/sa-update\.cron -> bin_t to label sa-update.cron as spamd_update_exec_t.
+- Allow systemd_logind_t and systemd_resolved_t domains to chat over dbus
+- Allow unconfined_t to use bpf tools
+- Allow x_userdomains to communicate with boltd daemon over dbus
+
 * Fri Apr 19 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-12
 - Fix typo in cups SELinux policy
 - Allow iscsid_t to read modules deps BZ(1700245)
