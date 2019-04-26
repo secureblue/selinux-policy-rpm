@@ -1,6 +1,6 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 54c05f2645a660c545ec406558b42687df2552a7
+%global commit0 088381c4e36d3b4d4b289ac27a2a2a97f953585e
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 26 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-14
+- Allow transition from cockpit_session to unpriv user domains
+
 * Thu Apr 25 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-13
 - Introduce deny_bluetooth boolean
 - Allow greylist_milter_t to read network system state BZ(1702672)
