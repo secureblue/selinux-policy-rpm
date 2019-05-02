@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 088381c4e36d3b4d4b289ac27a2a2a97f953585e
+%global commit0 c5e58b6c669747beeaca6ecf98f501f754ab871f
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 5a0561d7b67ae8403d4e1a44acfc8db40ee269a5
+%global commit1 e33aa41687d9585e96fb87ac73168055ab4b8b8f
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,16 @@ exit 0
 %endif
 
 %changelog
+* Thu May 02 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-15
+- Allow iscsid_t domain to mmap modules_dep_t files
+- Allow ngaios to use chown capability
+- Dontaudit gpg_domain to create netlink_audit sockets
+- Remove role transition in rpm_run() interface to allow sysadm_r jump to rpm_t type. BZ(1704251)
+- Allow dirsrv_t domain to execute own tmp files BZ(1703111)
+- Update fs_rw_cephfs_files() interface to allow also caller domain to read/write cephpfs_t lnk files
+- Update domain_can_mmap_files() boolean to allow also mmap lnk files
+- Improve userdom interfaces to drop guest_u SELinux user to use nsswitch
+
 * Fri Apr 26 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-14
 - Allow transition from cockpit_session to unpriv user domains
 
