@@ -5,7 +5,7 @@
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 e33aa41687d9585e96fb87ac73168055ab4b8b8f
+%global commit1 721b2bf5c8086d4f9718c8d97cc9375ea6c827cb
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,9 @@ exit 0
 %endif
 
 %changelog
+* Fri May 03 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-16
+- Add fcontext for apachectl util to fix missing output when executed "httpd -t" from this script.
+
 * Thu May 02 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-15
 - Allow iscsid_t domain to mmap modules_dep_t files
 - Allow ngaios to use chown capability
