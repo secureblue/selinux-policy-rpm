@@ -1,6 +1,6 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 c5e58b6c669747beeaca6ecf98f501f754ab871f
+%global commit0 8eaf5bc83147ef2a4420363a9a5508338e7e4f56
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
