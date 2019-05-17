@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 8eaf5bc83147ef2a4420363a9a5508338e7e4f56
+%global commit0 62e78cf9f07ef77f1c9d7ce8633dd433310c59d6
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 721b2bf5c8086d4f9718c8d97cc9375ea6c827cb
+%global commit1 38d51f0bce3aa41b5ebde42f27792c183c17f379
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,28 @@ exit 0
 %endif
 
 %changelog
+* Fri May 17 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-17
+- Alow nrpe_t to send signull to sssd domain when nagios_run_sudo boolean is turned on
+- Allow nrpe_t domain to be dbus cliennt
+- Add interface sssd_signull()
+- Label /usr/bin/tshark as wireshark_exec_t
+- Fix typo in dbus_role_template()
+- Allow userdomains to send data over dgram sockets to userdomains dbus services BZ(1710119)
+- Allow userdomains dbus domain to execute dbus broker. BZ(1710113)
+- Allow dovedot_deliver_t setuid/setgid capabilities BZ(1709572)
+- Allow virt domains to access xserver devices BZ(1705685)
+- Allow aide to be executed by systemd with correct (aide_t) domain BZ(1648512)
+- Dontaudit svirt_tcg_t domain to read process state of libvirt BZ(1594598)
+- Allow pcp_pmie_t domain to use fsetid capability BZ(1708082)
+- Allow pcp_pmlogger_t to use setrlimit BZ(1708951)
+- Allow gpsd_t domain to read udev db BZ(1709025)
+- Add sys_ptrace capaiblity for  namespace_init_t domain
+- Allow systemd to execute sa-update in spamd_update_t domain BZ(1705331)
+- Allow rhsmcertd_t domain to read rpm cache files
+- Label /efi same as /boot/efi boot_t BZ(1571962)
+- Allow transition from udev_t to tlp_t BZ(1705246)
+- Remove initrc_exec_t for /usr/sbin/apachectl file
+
 * Fri May 03 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-16
 - Add fcontext for apachectl util to fix missing output when executed "httpd -t" from this script.
 
