@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 62e78cf9f07ef77f1c9d7ce8633dd433310c59d6
+%global commit0 78cbf0a9d74895e255a68ae92688fb6b5288f363
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 38d51f0bce3aa41b5ebde42f27792c183c17f379
+%global commit1 ebaeade60f7b8f2f0697fc0d6c2be7132c6bb531
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,28 @@ exit 0
 %endif
 
 %changelog
+* Fri May 17 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-18
+- Fix typo in gpg SELinux module
+- Update gpg policy to make ti working with confined users
+- Add domain transition that systemd labeled as init_t can execute spamd_update_exec_t binary to run newly created process as spamd_update_t
+- Remove allow rule for virt_qemu_ga_t to write/append user_tmp_t files
+- Label /var/run/user/*/dbus-1 as session_dbusd_tmp_t
+- Add dac_override capability to namespace_init_t domain
+- Label /usr/sbin/corosync-qdevice as cluster_exec_t
+- Allow NetworkManager_ssh_t domain to open communication channel with system dbus. BZ(1677484)
+- Label /usr/libexec/dnf-utils as debuginfo_exec_t
+- Alow nrpe_t to send signull to sssd domain when nagios_run_sudo boolean is turned on
+- Allow nrpe_t domain to be dbus cliennt
+- Add interface sssd_signull()
+- Label /usr/bin/tshark as wireshark_exec_t
+- Update userdomains to allow confined users to create gpg keys
+- Allow associate all filesystem_types with fs_t
+- Dontaudit syslogd_t using kill in unamespaces BZ(1711122)
+- Allow init_t to manage session_dbusd_tmp_t dirs
+- Allow systemd_gpt_generator_t to read/write to clearance
+- Allow su_domain_type to getattr to /dev/gpmctl
+- Update userdom_login_user_template() template to make working systemd user session for guest and xguest SELinux users
+
 * Fri May 17 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-17
 - Alow nrpe_t to send signull to sssd domain when nagios_run_sudo boolean is turned on
 - Allow nrpe_t domain to be dbus cliennt
