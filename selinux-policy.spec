@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 78cbf0a9d74895e255a68ae92688fb6b5288f363
+%global commit0 50e97b781ea7a501c06f8a86e94cbbdfe5a86720
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 ebaeade60f7b8f2f0697fc0d6c2be7132c6bb531
+%global commit1 efd95248a3e798cde8f7ed2e5667561add118588
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 18%{?dist}
+Release: 19%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,47 @@ exit 0
 %endif
 
 %changelog
+* Mon May 27 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-19
+- Fix bind_read_cache() interface to allow only read perms to caller domains
+- [speech-dispatcher.if] m4 macro names can not have - in them
+- Grant varnishlog_t access to varnishd_etc_t
+- Allow nrpe_t domain to read process state of systemd_logind_t
+- Allow mongod_t domain to connect on https port BZ(1711922)
+- Allow chronyc_t domain to create own tmpfiles and allow communicate send data over unix dgram sockets
+- Dontaudit spamd_update_t domain to read all domains states BZ(1711799)
+- Allow pcp_pmie_t domain to use sys_ptrace usernamespace cap BZ(1705871)
+- Allow userdomains to send data over dgram sockets to userdomains dbus services BZ(1710119)
+- Revert "Allow userdomains to send data over dgram sockets to userdomains dbus services BZ(1710119)"
+- Make boinc_var_lib_t mountpoint BZ(1711682)
+- Allow wireshark_t domain to create fifo temp files
+- All NetworkManager_ssh_t rules have to be in same optional block with ssh_basic_client_template(), fixing this bug in NetworkManager policy
+- Allow dbus chat between NetworkManager_t and NetworkManager_ssh_t domains. BZ(1677484)
+- Fix typo in gpg SELinux module
+- Update gpg policy to make ti working with confined users
+- Add domain transition that systemd labeled as init_t can execute spamd_update_exec_t binary to run newly created process as spamd_update_t
+- Remove allow rule for virt_qemu_ga_t to write/append user_tmp_t files
+- Label /var/run/user/*/dbus-1 as session_dbusd_tmp_t
+- Add dac_override capability to namespace_init_t domain
+- Label /usr/sbin/corosync-qdevice as cluster_exec_t
+- Allow NetworkManager_ssh_t domain to open communication channel with system dbus. BZ(1677484)
+- Label /usr/libexec/dnf-utils as debuginfo_exec_t
+- Alow nrpe_t to send signull to sssd domain when nagios_run_sudo boolean is turned on
+- Allow nrpe_t domain to be dbus cliennt
+- Add interface sssd_signull()
+- Build in parallel on Travis
+- Fix parallel build of the policy
+- Revert "Make able deply overcloud via neutron_t to label nsfs as fs_t"
+- Add interface systemd_logind_read_state()
+- Fix find commands in Makefiles
+- Allow systemd-timesyncd to read network state BZ(1694272)
+- Update userdomains to allow confined users to create gpg keys
+- Allow associate all filesystem_types with fs_t
+- Dontaudit syslogd_t using kill in unamespaces BZ(1711122)
+- Allow init_t to manage session_dbusd_tmp_t dirs
+- Allow systemd_gpt_generator_t to read/write to clearance
+- Allow su_domain_type to getattr to /dev/gpmctl
+- Update userdom_login_user_template() template to make working systemd user session for guest and xguest SELinux users
+
 * Fri May 17 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-18
 - Fix typo in gpg SELinux module
 - Update gpg policy to make ti working with confined users
