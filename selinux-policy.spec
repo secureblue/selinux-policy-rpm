@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 50e97b781ea7a501c06f8a86e94cbbdfe5a86720
+%global commit0 26ad838210206ef428322035335b92090fcee7c9
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 efd95248a3e798cde8f7ed2e5667561add118588
+%global commit1 7dabd9fa102e21b3e7c91a0e2eef6854e9f0f40d
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 19%{?dist}
+Release: 20%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,14 @@ exit 0
 %endif
 
 %changelog
+* Thu May 30 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-20
+- Allow pcp_pmcd_t domain to domtrans to mdadm_t domain BZ(1714800)
+- Allow spamd_update_t to exec itsef
+- Fix broken logwatch SELinux module
+- Allow logwatch_mail_t to manage logwatch cache files/dirs
+- Update wireshark_t domain to use several sockets
+- Allow sysctl_rpc_t and sysctl_irq_t to be stored on fs_t
+
 * Mon May 27 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-19
 - Fix bind_read_cache() interface to allow only read perms to caller domains
 - [speech-dispatcher.if] m4 macro names can not have - in them
