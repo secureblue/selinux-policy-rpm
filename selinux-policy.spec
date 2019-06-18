@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 26ad838210206ef428322035335b92090fcee7c9
+%global commit0 5b2d4897031e5981a7eff958e030449c45f6a124
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 7dabd9fa102e21b3e7c91a0e2eef6854e9f0f40d
+%global commit1 2f9692d829113985c576641ec0dd5192340e5645
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 20%{?dist}
+Release: 21%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,38 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun 18 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-21
+- Add vnstatd_var_lib_t to mountpoint attribute BZ(1648864)
+- cockpit: Support split-out TLS proxy
+- Allow dkim_milter_t to use shell BZ(1716937)
+- Create explicit fc rule for mailman executable BZ(1666004)
+- Update interface networkmanager_manage_pid_files() to allow manage also dirs
+- Allow dhcpd_t domain to mmap dnssec_t files BZ(1718701)
+- Add new interface bind_map_dnssec_keys()
+- Update virt_use_nfs() boolean to allow virt_t to mmap nfs_t files
+- Allow redis_t domain to read public sssd files
+- Allow fetchmail_t to connect to dovecot stream sockets BZ(1715569)
+- Allow confined users to login via cockpit
+- Allow nfsd_t domain to do chroot becasue of new version of nfsd
+- Add gpg_agent_roles to system_r roles
+- Allow qpidd_t domain to getattr all fs_t filesystem and mmap usr_t files
+- Allow rhsmcertd_t domain to manage rpm cache
+- Allow sbd_t domain to read tmpfs_t symlinks
+- Allow ctdb_t domain to manage samba_var_t files/links/sockets and dirs
+- Allow kadmind_t domain to read home config data
+- Allow sbd_t domain to readwrite cgroups
+- Allow NetworkManager_t domain to read nsfs_t files BZ(1715597)
+- Label /var/log/pacemaker/pacemaker as cluster_var_log_t
+- Allow certmonger_t domain to manage named cache files/dirs
+- Allow pcp_pmcd_t domain to domtrans to mdadm_t domain BZ(1714800)
+- Allow crack_t domain read /et/passwd files
+- Label fontconfig cache and config files and directories BZ(1659905)
+- Allow dhcpc_t domain to manage network manager pid files
+- Label /usr/sbin/nft as iptables_exec_t
+- Allow userdomain attribute to manage cockpit_ws_t stream sockets
+- Allow ssh_agent_type to read/write cockpit_session_t unnamed pipes
+- Add interface ssh_agent_signal()
+
 * Thu May 30 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-20
 - Allow pcp_pmcd_t domain to domtrans to mdadm_t domain BZ(1714800)
 - Allow spamd_update_t to exec itsef
