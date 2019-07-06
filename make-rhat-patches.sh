@@ -57,6 +57,7 @@ if [ $DOWNLOAD_DEFAULT_GITHUB_TARBALLS == 1 ]; then
 fi
 cp $POLICYSOURCES/container-selinux/container-selinux.tgz .
 cp $POLICYSOURCES/macro-expander/macro-expander.sh ./macro-expander
+chmod +x ./macro-expander
 popd > /dev/null
 
 popd > /dev/null
