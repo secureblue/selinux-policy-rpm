@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 5b2d4897031e5981a7eff958e030449c45f6a124
+%global commit0 905153ec95cbd126ca77dccae57ef453bc0ad2a5
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 2f9692d829113985c576641ec0dd5192340e5645
+%global commit1 7d3bcf40795a24bc1f808deeb5c5b1a54ecc6197
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 21%{?dist}
+Release: 22%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,34 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 08 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-22
+- Label /var/kerberos/krb5 as krb5_keytab_t
+- Allow glusterd_t domain to setpgid
+- Allow lsmd_t domain to execute /usr/bin/debuginfo-install
+- Allow sbd_t domain to manage cgroup dirs
+- Allow opafm_t domain to modify scheduling information of another process.
+- Allow wireshark_t domain to create netlink netfilter sockets
+- Allow gpg_agent_t domain to use nsswitch
+- Allow httpd script types to mmap httpd rw content
+- Allow dkim_milter_t domain to execute shell BZ(17116937)
+- Allow sbd_t domain to use nsswitch
+- Allow rhsmcertd_t domain to send signull to all domains
+- Allow snort_t domain to create netlink netfilter sockets BZ(1723184)
+- Dontaudit blueman to read state of all domains on system BZ(1722696)
+- Allow boltd_t domain to use ps and get state of all domains on system. BZ(1723217)
+- Allow rtkit_daemon_t to uise sys_ptrace usernamespace capability BZ(1723308)
+- Replace "-" by "_" in types names
+- Change condor_domain declaration in condor_systemctl
+- Allow firewalld_t domain to read iptables_var_run_t files BZ(1722405)
+- Allow auditd_t domain to send signals to audisp_remote_t domain
+- Allow systemd labeled as init_t domain to read/write faillog_t. BZ(1723132)
+- Allow systemd_tmpfiles_t domain to relabel from usermodehelper_t files
+- Add interface kernel_relabelfrom_usermodehelper()
+- Dontaudit unpriv_userdomain to manage boot_t files
+- Allow xdm_t domain to mmap /var/lib/gdm/.cache/fontconfig BZ(1725509)
+- Allow systemd to execute bootloader grub2-set-bootflag BZ(1722531)
+- Allow associate efivarfs_t on sysfs_t
+
 * Tue Jun 18 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-21
 - Add vnstatd_var_lib_t to mountpoint attribute BZ(1648864)
 - cockpit: Support split-out TLS proxy
