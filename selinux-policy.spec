@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 905153ec95cbd126ca77dccae57ef453bc0ad2a5
+%global commit0 f1ee18a0881e4e4e31c5431079b8ad607fbf20bb
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 7d3bcf40795a24bc1f808deeb5c5b1a54ecc6197
+%global commit1 9e9bb01a0b4a6e716368c4c73639363daae12fe7
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 22%{?dist}
+Release: 23%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,11 @@ exit 0
 %endif
 
 %changelog
+* Wed Jul 10 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-23
+- Update dbusd policy and netowrkmanager to allow confined users to connect to vpn over NetworkManager
+- Fix all interfaces which cannot by compiled because of typos
+- Allow X userdomains to mmap user_fonts_cache_t dirs
+
 * Mon Jul 08 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-22
 - Label /var/kerberos/krb5 as krb5_keytab_t
 - Allow glusterd_t domain to setpgid
