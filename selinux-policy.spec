@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 f1ee18a0881e4e4e31c5431079b8ad607fbf20bb
+%global commit0 89359670764aa34dd1e03fae712cfd08dc00b3fd
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 9e9bb01a0b4a6e716368c4c73639363daae12fe7
+%global commit1 2e0b14ec0adfc0c5b0865d3ec09a30a9cfe996c6
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 23%{?dist}
+Release: 24%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,49 @@ exit 0
 %endif
 
 %changelog
+* Wed Jul 17 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-24
+- Label user cron spool file with user_cron_spool_t
+- Update gnome_role_template() template to allow sysadm_t confined user to login to xsession
+- Allow lograte_t domain to manage collect_rw_content files and dirs
+- Add interface collectd_manage_rw_content()
+- Allow systemd_hostnamed_t domain to dbus chat with sosreport_t domain
+- Update  tomcat_can_network_connect_db boolean to allow tomcat domains also connect to redis ports
+- Allow mysqld_t domain to manage cluster pid files
+- Relabel  /usr/sbin/virtlockd from virt_exec_t to virtlogd_exec_t.
+- Allow ptp4l_t domain to write to pmc socket which is created by pmc command line tool
+- Allow dkim-milter to send e-mails BZ(1716937)
+- Update spamassasin policy to make working /usr/share/spamassassin/sa-update.cron script BZ(1711799)
+- Update svnserve_t policy to make working svnserve hooks
+- Allow varnishlog_t domain to check for presence of varnishd_t domains
+- Update sandboxX policy to make working firefox inside SELinux sandbox
+- Remove allow rule from svirt_transition_svirt_sandbox interface to don't allow containers to connect to random services
+- Allow httpd_t domain to read /var/lib/softhsm/tokens to allow httpd daemon to use pkcs#11 devices
+- Allow gssd_t domain to list tmpfs_t dirs
+- Allow mdadm_t domain to read tmpfs_t files
+- Allow sbd_t domain to check presence of processes labeled as cluster_t
+- Dontaudit httpd_sys_script_t to read systemd unit files
+- Allow blkmapd_t domain to read nvme devices
+- Update cpucontrol_t domain to make working microcode service
+- Allow domain transition from logwatch_t do postfix_postqueue_t
+- Allow chronyc_t domain to create and write to non_security files in case when sysadmin is redirecting output to file e.g: 'chronyc -n tracking > /var/lib/test'
+- Allow httpd_sys_script_t domain to mmap httpcontent
+- Allow sbd_t to manage cgroups_t files
+- Update wireshark policy to make working tshar labeled as wireshark_t
+- Update virt_use_nfs boolean to allow svirt_t domain to mmap nfs_t files
+- Allow sysadm_t domain to create netlink selinux sockets
+- Make cgdcbxd active in Fedora upstream sources
+- Allow sysadm_t domain to dbus chat with rtkit daemon
+- Allow x_userdomains to nnp domain transition to thumb_t domain
+- Allow unconfined_domain_type to setattr own process lnk files.
+- Add interface files_write_generic_pid_sockets()
+- Dontaudit writing to user home dirs by gnome-keyring-daemon
+- Allow staff and admin domains to setpcap in user namespace
+- Allow staff and sysadm to use lockdev
+- Allow staff and sysadm users to run iotop.
+- Dontaudit traceroute_t domain require sys_admin capability
+- Dontaudit dbus chat between kernel_t and init_t
+- Allow systemd labeled as init_t to create mountpoints without any specific label as default_t
+
 * Wed Jul 10 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-23
 - Update dbusd policy and netowrkmanager to allow confined users to connect to vpn over NetworkManager
 - Fix all interfaces which cannot by compiled because of typos
