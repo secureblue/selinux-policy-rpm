@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 89359670764aa34dd1e03fae712cfd08dc00b3fd
+%global commit0 2f909f93138b6b66f8a6bc62afdbe5598da00f29
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 2e0b14ec0adfc0c5b0865d3ec09a30a9cfe996c6
+%global commit1 da6544c44b41dc3bd64d333437619f05577d1a96
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 24%{?dist}
+Release: 25%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,39 @@ exit 0
 %endif
 
 %changelog
+* Fri Jul 26 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-25
+- Allow spamd_update_t domain to read network state of system BZ(1733172)
+- Allow dlm_controld_t domain to transition to the lvm_t
+- Allow sandbox_web_client_t domain to do sys_chroot in user namespace
+- Allow virtlockd process read virtlockd.conf file
+- Add more permissions for session dbus types to make working dbus broker with systemd user sessions
+- Allow sssd_t domain to read gnome config and named cache files
+- Allow brltty to request to load kernel module
+- Add svnserve_tmp_t label forl svnserve temp files to system private tmp
+- Allow sssd_t domain to read kernel net sysctls BZ(1732185)
+- Run timedatex service as timedatex_t
+- Allow mysqld_t domain to domtrans to ifconfig_t domain when executing ifconfig tool
+- Allow cyrus work with PrivateTmp
+- Make cgdcbxd_t domain working with SELinux enforcing.
+- Make working wireshark execute byt confined users staff_t and sysadm_t
+- Dontaudit virt_domain to manage ~/.cache dirs BZ(1730963)
+- Allow svnserve_t domain to read system state
+- allow named_t to map named_cache_t files
+- Label user cron spool file with user_cron_spool_t
+- Update gnome_role_template() template to allow sysadm_t confined user to login to xsession
+- Allow lograte_t domain to manage collect_rw_content files and dirs
+- Add interface collectd_manage_rw_content()
+- Allow ifconfig_t domain to manage vmware logs
+- Remove system_r role from staff_u user.
+- Make new timedatex policy module active
+- Add systemd_private_tmp_type attribute
+- Allow systemd to load kernel modules during boot process.
+- Allow sysadm_t and staff_t domains to read wireshark shared memory
+- Label /usr/libexec/utempter/utempter  as utemper_exec_t
+- Allow ipsec_t domain to read/write  l2tpd pipe BZ(1731197)
+- Allow sysadm_t domain to create netlink selinux sockets
+- Make cgdcbxd active in Fedora upstream sources
+
 * Wed Jul 17 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-24
 - Label user cron spool file with user_cron_spool_t
 - Update gnome_role_template() template to allow sysadm_t confined user to login to xsession
