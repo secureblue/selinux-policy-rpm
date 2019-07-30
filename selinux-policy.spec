@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 2f909f93138b6b66f8a6bc62afdbe5598da00f29
+%global commit0 da92bd2462c7b6f3509705c32c743d4e74aa0517
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 da6544c44b41dc3bd64d333437619f05577d1a96
+%global commit1 2b47485a9b821fedd0ecde87ebacaf539c90bf7d
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 25%{?dist}
+Release: 26%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,17 @@ exit 0
 %endif
 
 %changelog
+* Tue Jul 30 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-26
+- New policy for rrdcached
+- Allow dhcpd_t domain to read network sysctls.
+- Allow nut services to communicate with unconfined domains
+- Allow virt_domain to Support ecryptfs home dirs.
+- Allow domain transition lsmd_t to sensord_t
+- Allow httpd_t to signull mailman_cgi_t process
+- Make rrdcached policy active
+- Label /etc/sysconfig/ip6?tables\.save as system_conf_t Resolves: rhbz#1733542
+- Allow machinectl to run pull-tar BZ(1724247)
+
 * Fri Jul 26 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-25
 - Allow spamd_update_t domain to read network state of system BZ(1733172)
 - Allow dlm_controld_t domain to transition to the lvm_t
