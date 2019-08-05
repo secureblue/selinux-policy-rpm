@@ -5,7 +5,7 @@
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 2b47485a9b821fedd0ecde87ebacaf539c90bf7d
+%global commit1 b7144a2bc612b9d65145ed485fe1531c064a9ce3
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 26%{?dist}
+Release: 27%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,12 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 05 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-27
+- Allow tlp domain run tlp in trace mode BZ(1737106)
+- Make timedatex_t domain system dbus bus client BZ(1737239)
+- Allow cgdcbxd_t domain to list cgroup dirs
+- Allow systemd to create and bindmount dirs. BZ(1734831)
+
 * Tue Jul 30 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-26
 - New policy for rrdcached
 - Allow dhcpd_t domain to read network sysctls.
