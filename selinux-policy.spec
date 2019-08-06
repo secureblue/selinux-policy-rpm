@@ -1,6 +1,6 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 da92bd2462c7b6f3509705c32c743d4e74aa0517
+%global commit0 cd63aff25446f708713cd6f9f65001e2b35b3427
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 27%{?dist}
+Release: 28%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 06 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-28
+- Allow systemd to create and bindmount dirs. BZ(1734831)
+
 * Mon Aug 05 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-27
 - Allow tlp domain run tlp in trace mode BZ(1737106)
 - Make timedatex_t domain system dbus bus client BZ(1737239)
