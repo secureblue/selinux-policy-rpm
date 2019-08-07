@@ -5,7 +5,7 @@
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 b7144a2bc612b9d65145ed485fe1531c064a9ce3
+%global commit1 e563a8d1d64f11841d6e5f7cca6ecddbdb9a0123
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 28%{?dist}
+Release: 29%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,11 @@ exit 0
 %endif
 
 %changelog
+* Wed Aug 07 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-29
+- Allow dlm_controld_t domain setgid capability
+- Fix SELinux modules not installing in chroots.
+Resolves: rhbz#1665643
+
 * Tue Aug 06 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-28
 - Allow systemd to create and bindmount dirs. BZ(1734831)
 
