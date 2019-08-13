@@ -28,8 +28,8 @@
 %define CHECKPOLICYVER 2.8
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.14.4
-Release: 31%{?dist}
+Version: 3.14.5
+Release: 1%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 13 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-1
+- Bump version
+
 * Tue Aug 13 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-31
 - Update timedatex policy BZ(1734197)
 
