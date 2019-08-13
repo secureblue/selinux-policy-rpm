@@ -5,7 +5,7 @@
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 43968483ee1c505dea7ec17dd1789cc1b6fcb831
+%global commit1 c55a896148db8d2b16ef06149399a6c6b110d8b5
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 30%{?dist}
+Release: 31%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 13 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-31
+- Update timedatex policy BZ(1734197)
+
 * Tue Aug 13 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-30
 - cockpit: Allow cockpit-session to read cockpit-tls state
 - Allow zebrat_t domain to read state of NetworkManager_t processes BZ(1739983)
