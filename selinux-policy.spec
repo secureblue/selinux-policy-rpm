@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 cd63aff25446f708713cd6f9f65001e2b35b3427
+%global commit0 b313a79dbfd2fba545e00f31aa53d29c6f2b2722
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 e563a8d1d64f11841d6e5f7cca6ecddbdb9a0123
+%global commit1 43968483ee1c505dea7ec17dd1789cc1b6fcb831
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.4
-Release: 29%{?dist}
+Release: 30%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,25 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug 13 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-30
+- cockpit: Allow cockpit-session to read cockpit-tls state
+- Allow zebrat_t domain to read state of NetworkManager_t processes BZ(1739983)
+- Allow named_t domain to read/write samba_var_t files BZ(1738794)
+- Dontaudit abrt_t domain to read root_t files
+- Allow ipa_dnskey_t domain to read kerberos keytab
+- Allow mongod_t domain to read cgroup_t files BZ(1739357)
+- Update ibacm_t policy
+- Allow systemd to relabel all files on system.
+- Revert "Add new boolean systemd_can_relabel"
+- Allow xdm_t domain to read kernel sysctl BZ(1740385)
+- Add sys_admin capability for xdm_t in user namespace. BZ(1740386)
+- Allow dbus communications with resolved for DNS lookups
+- Add new boolean systemd_can_relabel
+- Allow auditd_t domain to create auditd_tmp_t temporary files and dirs in /tmp or /var/tmp
+- Label '/var/usrlocal/(.*/)?sbin(/.*)?' as bin_t
+- Update systemd_dontaudit_read_unit_files() interface to dontaudit alos listing dirs
+- Run lvmdbusd service as lvm_t
+
 * Wed Aug 07 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.4-29
 - Allow dlm_controld_t domain setgid capability
 - Fix SELinux modules not installing in chroots.
