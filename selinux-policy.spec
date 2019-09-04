@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 b313a79dbfd2fba545e00f31aa53d29c6f2b2722
+%global commit0 6a0cb453ba0dcbbc7e75fa04a6647936ccdb339a
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 c55a896148db8d2b16ef06149399a6c6b110d8b5
+%global commit1 8ce79b2c82b2d3e62bb4b22404e755bad7131c98
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,36 @@ exit 0
 %endif
 
 %changelog
+* Wed Sep 04 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-2
+- Allow zabbix_t domain to manage zabbix_var_lib_t sock files and connect to unix_stream_socket
+- Dontaudit sandbox web types to setattr lib_t dirs
+- Dontaudit system_mail_t domains to check for existence other applications on system BZ(1747369)
+- Allow haproxy_t domain to read network state of system
+- Allow processes labeled as keepalived_t domain to get process group
+- Introduce dbusd_unit_file_type
+- Allow pesign_t domain to read/write named cache files.
+- Label /var/log/hawkey.log as rpm_log_t and update rpm named filetrans interfaces.
+- Allow httpd_t domain to read/write named_cache_t files
+- Add new interface bind_rw_cache()
+- Allow cupsd_t domain to create directory with name ppd in dirs labeled as cupsd_etc_t with label cupsd_rw_etc_t.
+- Update cpucontrol_t SELinux policy
+- Allow pcp_pmcd_t domain to bind on udp port labeled as statsd_port_t
+- Run lldpd service as lldpad_t.
+- Allow spamd_update_t domain to create unix dgram sockets.
+- Update dbus role template for confined users to allow login into x session
+- Label /usr/libexec/microcode_ctl/reload_microcode as cpucontrol_exec_t
+- Fix typo in networkmanager_append_log() interface
+- Update collectd policy to allow daemon create /var/log/collectd with collectd_log_t label
+- Allow login user type to use systemd user session
+- Allow xdm_t domain to start dbusd services.
+- Introduce new type xdm_unit_file_t
+- Remove allowing all domain to communicate over pipes with all domain under rpm_transition_domain attribute
+- Allow systemd labeled as init_t to remove sockets with tmp_t label BZ(1745632)
+- Allow ipsec_t domain to read/write named cache files
+- Allow sysadm_t to create hawkey log file with rpm_log_t SELinux label
+- Allow domains systemd_networkd_t and systemd_logind_t to chat over dbus
+- Label udp 8125 port as statsd_port_t
+
 * Tue Aug 13 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-1
 - Bump version
 
