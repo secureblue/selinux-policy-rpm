@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 6a0cb453ba0dcbbc7e75fa04a6647936ccdb339a
+%global commit0 3e6f5ff6a8472c461de91690fe49fe2f12f76066
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 8ce79b2c82b2d3e62bb4b22404e755bad7131c98
+%global commit1 c5a8fd2a369b81fa96880776dc723a4038af1c49
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,53 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 13 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-3
+- Add sys_ptrace capability to pcp_pmlogger_t domain BZ(1751816)
+- Allow gssproxy_t domain read state of all processes on system
+- Fix typo in cachefilesd module
+- Allow cachefilesd_t domain to read/write cachefiles_device_t devices
+- Remove setting label for /dev/cachefilesd char device from cachefilesd policy. This should be added in base policy
+- Add sys_admin capability for keepalived_t labeled processes
+- Allow user_mail_domain attribute to manage files labeled as etc_aliases_t.
+- Create new type ipmievd_helper_t domain for loading kernel modules.
+- Run stratisd service as stratisd_t
+- Fix abrt_upload_watch_t in abrt policy
+- Update keepalived policy
+- Update cron_role, cron_admin_role and cron_unconfined_role to avoid *_t_t types
+- Revert "Create admin_crontab_t and admin_crontab_tmp_t types"
+- Revert "Update cron_role() template to accept third parameter with SELinux domain prefix"
+- Allow amanda_t to manage its var lib files and read random_device_t
+- Create admin_crontab_t and admin_crontab_tmp_t types
+- Add setgid and setuid capabilities to keepalived_t domain
+- Update cron_role() template to accept third parameter with SELinux domain prefix
+- Allow psad_t domain to create tcp diag sockets BZ(1750324)
+- Allow systemd to mount fwupd_cache_t BZ(1750288)
+- Allow chronyc_t domain to append to all non_security files
+- Update zebra SELinux policy to make it work also with frr service
+- Allow rtkit_daemon_t domain set process nice value in user namespaces BZ(1750024)
+- Dontaudit rhsmcertd_t to write to dirs labeled as lib_t BZ(1556763)
+- Label /var/run/mysql as mysqld_var_run_t
+- Allow chronyd_t domain to manage and create chronyd_tmp_t dirs,files,sock_file objects.
+- Update timedatex policy to manage localization
+- Allow sandbox_web_type domains to sys_ptrace and sys_chroot in user namespaces
+- Update gnome_dontaudit_read_config
+- Allow devicekit_var_lib_t dirs to be created by systemd during service startup. BZ(1748997)
+- Allow systemd labeled as init_t domain to remount rootfs filesystem
+- Add interface files_remount_rootfs()
+- Dontaudit sys_admin capability for iptables_t SELinux domain
+- Label /dev/cachefilesd as cachefiles_device_t
+- Make stratisd policy active
+- Allow userdomains to dbus chat with policykit daemon
+- Update userdomains to pass correct parametes based on updates from cron_*_role interfaces
+- New interface files_append_non_security_files()
+- Label 2618/tcp and 2618/udp as priority_e_com_port_t
+- Label 2616/tcp and 2616/udp as appswitch_emp_port_t
+- Label 2615/tcp and 2615/udp as firepower_port_t
+- Label 2610/tcp and 2610/udp as versa_tek_port_t
+- Label 2613/tcp and 2613/udp as smntubootstrap_port_t
+- Label 3784/tcp and 3784/udp as bfd_control_port_t
+- Remove rule allowing all processes to stream connect to unconfined domains
+
 * Wed Sep 04 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-2
 - Allow zabbix_t domain to manage zabbix_var_lib_t sock files and connect to unix_stream_socket
 - Dontaudit sandbox web types to setattr lib_t dirs
