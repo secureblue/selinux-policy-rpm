@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 37ef1961203fdfe99780ab25c0ca288a0d3d3a84
+%global commit0 31db3dc710352793e122ccc2bab65f1de1021a77
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 b43d580f345a4d6e7cabfed01522ccbb5cf39309
+%global commit1 c3a90b316124b7615e957a95bf09a5db48ddce42
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,13 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 20 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-5
+- Fix ipa_custodia_stream_connect interface
+- Allow systemd_modules_load_t domain to read systemd pid files
+- Add new interface init_read_pid_files()
+- Allow systemd labeled as init_t domain to manage faillog_t objects
+- Add file context ipsec_var_run_t for /var/run/charon\.dck to ipsec.fc
+
 * Fri Sep 20 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-4
 - Run ipa-custodia as ipa_custodia_t
 - Update webalizer_t SELinux policy
