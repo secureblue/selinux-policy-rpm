@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 3e6f5ff6a8472c461de91690fe49fe2f12f76066
+%global commit0 37ef1961203fdfe99780ab25c0ca288a0d3d3a84
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 c5a8fd2a369b81fa96880776dc723a4038af1c49
+%global commit1 b43d580f345a4d6e7cabfed01522ccbb5cf39309
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,26 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 20 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-4
+- Run ipa-custodia as ipa_custodia_t
+- Update webalizer_t SELinux policy
+- Dontaudit thumb_t domain to getattr of nsfs_t files BZ(1753598)
+- Allow rhsmcertd_t domain to read rtas_errd lock files
+- Add new interface rtas_errd_read_lock()
+- Update allow rules set for nrpe_t domain
+- Update timedatex SELinux policy to to sychronizate time with GNOME and add new macro chronyd_service_status to chronyd.if
+- Allow avahi_t to send msg to lpr_t
+- Label /dev/shm/dirsrv/ with dirsrv_tmpfs_t label
+- Allow dlm_controld_t domain to read random device
+- Label libvirt drivers as virtd_exec_t
+- Add sys_ptrace capability to pcp_pmlogger_t domain BZ(1751816)
+- Allow gssproxy_t domain read state of all processes on system
+- Add new macro systemd_timedated_status to systemd.if to get timedated service status
+- Introduce xdm_manage_bootloader booelan
+- Revert "Unconfined domains, need to create content with the correct labels"
+- Allow xdm_t domain to read sssd pid files BZ(1753240)
+- Move open, audit_access, and execmod to common file perms
+
 * Fri Sep 13 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-3
 - Add sys_ptrace capability to pcp_pmlogger_t domain BZ(1751816)
 - Allow gssproxy_t domain read state of all processes on system
