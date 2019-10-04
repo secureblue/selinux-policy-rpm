@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 31db3dc710352793e122ccc2bab65f1de1021a77
+%global commit0 d63d681bef779d7f83956f5ba968cde2a25f77fd
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 bfb130fe27395f109ebbeb7d861304b5efd546f3
+%global commit1 2c0ecb3472e18e26894ab629dca36ad09999e4af
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,39 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 04 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-6
+- Update aide_t domain to allow this tool to analyze also /dev filesystem
+- Allow bitlbee_t domain map files in /usr
+- Allow stratisd to getattr of fixed disk device nodes
+- Add net_broadcast capability to openvswitch_t domain BZ(1716044)
+- Allow exim_t to read mysqld conf files if exim_can_connect_db is enabled. BZ(1756973)
+- Allow cobblerd_t domain search apache configuration dirs
+- Dontaudit NetworkManager_t domain to write to kdump temp pipies BZ(1750428)
+- Label /var/log/collectd.log as collectd_log_t
+- Allow boltd_t domain to manage sysfs files and dirs BZ(1754360)
+- Add fowner capability to the pcp_pmlogger_t domain BZ(1754767)
+- networkmanager: allow NetworkManager_t to create bluetooth_socket
+- Fix ipa_custodia_stream_connect interface
+- Add new interface udev_getattr_rules_chr_files()
+- Make dbus-broker service working on s390x arch
+- Add new interface dev_mounton_all_device_nodes()
+- Add new interface dev_create_all_files()
+- Allow systemd(init_t) to load kernel modules
+- Allow ldconfig_t domain to manage initrc_tmp_t objects
+- Add new interface init_write_initrc_tmp_pipes()
+- Add new interface init_manage_script_tmp_files()
+- Allow xdm_t setpcap capability in user namespace BZ(1756790)
+- Allow x_userdomain to mmap generic SSL certificates
+- Allow xdm_t domain to user netlink_route sockets BZ(1756791)
+- Update files_create_var_lib_dirs() interface to allow caller domain also set attributes of var_lib_t directory BZ(1754245)
+- Allow sudo userdomain to run rpm related commands
+- Add sys_admin capability for ipsec_t domain
+- Allow systemd_modules_load_t domain to read systemd pid files
+- Add new interface init_read_pid_files()
+- Allow systemd labeled as init_t domain to manage faillog_t objects
+- Add file context ipsec_var_run_t for /var/run/charon\.dck to ipsec.fc
+- Make ipa_custodia policy active
+
 * Fri Sep 20 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-5
 - Fix ipa_custodia_stream_connect interface
 - Allow systemd_modules_load_t domain to read systemd pid files
