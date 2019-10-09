@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 d63d681bef779d7f83956f5ba968cde2a25f77fd
+%global commit0 aa4c0707e6664ede25e49f57d3c9b4d267650ca1
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 2c0ecb3472e18e26894ab629dca36ad09999e4af
+%global commit1 84cf0f5cf648b7ff7047af65ecee908d4293bfb0
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,23 @@ exit 0
 %endif
 
 %changelog
+* Wed Oct 09 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-7
+- Revert "nova.fc: fix duplicated slash"
+- Introduce new bolean httpd_use_opencryptoki
+- Add new interface apache_read_state()
+- Allow setroubleshoot_fixit_t to read random_device_t
+- Label /etc/named direcotory as named_conf_t BZ(1759495)
+- nova.fc: fix duplicated slash
+- Allow dkim to execute sendmail
+- Update virt_read_content interface to allow caller domain mmap virt_content_t block devices and files
+- Update aide_t domain to allow this tool to analyze also /dev filesystem
+- Update interface modutils_read_module_deps to allow caller domain also mmap modules_dep_t files BZ(1758634)
+- Allow avahi_t to send msg to xdm_t
+- Allow systemd_logind to read dosfs files & dirs Allow systemd-logind - a system service that manages user logins, to read files and list dirs on a DOS filesystem
+- Update dev_manage_sysfs() to support managing also lnk files BZ(1759019)
+- Allow systemd_logind_t domain to read blk_files in domain removable_device_t
+- Add new interface udev_getattr_rules_chr_files()
+
 * Fri Oct 04 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-6
 - Update aide_t domain to allow this tool to analyze also /dev filesystem
 - Allow bitlbee_t domain map files in /usr
