@@ -5,7 +5,7 @@
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 84cf0f5cf648b7ff7047af65ecee908d4293bfb0
+%global commit1 7c1c105c839013b090b342c05fe1d4c686e8426c
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,10 @@ exit 0
 %endif
 
 %changelog
+* Wed Oct 09 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-8
+- Update apache and pkcs policies to make active opencryptoki rules
+- Allow ipa_ods_exporter_t domain to read krb5_keytab files BZ(1759884)
+
 * Wed Oct 09 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-7
 - Revert "nova.fc: fix duplicated slash"
 - Introduce new bolean httpd_use_opencryptoki
