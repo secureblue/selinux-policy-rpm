@@ -5,7 +5,7 @@
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 7c1c105c839013b090b342c05fe1d4c686e8426c
+%global commit1 070f96cf0f59735f1d01cb7f9427292b7f112fd3
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 11 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-9
+- Allow networkmanager_t domain domain transition to chronyc_t domain BZ(1760226)
+
 * Wed Oct 09 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-8
 - Update apache and pkcs policies to make active opencryptoki rules
 - Allow ipa_ods_exporter_t domain to read krb5_keytab files BZ(1759884)
