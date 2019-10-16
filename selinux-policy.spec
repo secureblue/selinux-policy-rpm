@@ -419,7 +419,7 @@ touch %{buildroot}%{_sysconfdir}/sysconfig/selinux
 mkdir -p %{buildroot}%{_usr}/lib/tmpfiles.d/
 cp %{SOURCE27} %{buildroot}%{_usr}/lib/tmpfiles.d/
 mkdir -p %{buildroot}%{_bindir}
-cp %{SOURCE33} %{buildroot}%{_bindir}/
+install -m 755  %{SOURCE33} %{buildroot}%{_bindir}/
 
 # Always create policy module package directories
 mkdir -p %{buildroot}%{_usr}/share/selinux/{targeted,mls,minimum,modules}/
