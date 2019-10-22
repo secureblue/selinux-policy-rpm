@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 aa4c0707e6664ede25e49f57d3c9b4d267650ca1
+%global commit0 c95997f82617ebaf9b87845b3a2b5c721b99b212
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 070f96cf0f59735f1d01cb7f9427292b7f112fd3
+%global commit1 7adf7883d0fdd9349f09ceb121e68a63d25503cd
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,19 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 22 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-10
+- Update timedatex policy to add macros, more detail below
+- Allow nagios_script_t domain list files labled sysfs_t.
+- Allow jetty_t domain search and read cgroup_t files.
+- Allow Gluster mount client to mount files_type
+- Dontaudit and disallow sys_admin capability for keepalived_t domain
+- Update numad policy to allow signull, kill, nice and trace processes
+- Allow ipmievd_t to RW watchdog devices
+- Allow ldconfig_t domain to manage initrc_tmp_t link files Allow netutils_t domain to write to initrc_tmp_t fifo files
+- Allow user domains to manage user session services
+- Allow staff and user users to get status of user systemd session
+- Update sudo_role_template() to allow caller domain to read syslog pid files
+
 * Fri Oct 11 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-9
 - Allow networkmanager_t domain domain transition to chronyc_t domain BZ(1760226)
 
