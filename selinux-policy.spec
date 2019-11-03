@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 7b7648b9040e7af3c95047f562b151b712757fab
+%global commit0 40f6bccc38526717eb8ff2032d3c915bc77ad3d1
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 6b3a80044b76f0aaf7b3dd09c4651dd37fa26db9
+%global commit1 dee19b8b41fcf9ca57e9e019b30b112a7546c030
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,27 @@ exit 0
 %endif
 
 %changelog
+* Sun Nov 03 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-12
+- Label /var/cache/nginx as httpd_cache_t
+- Allow abrt_upload_watch_t domain to send dgram msgs to kernel processes and stream connect to journald
+- Created dnsmasq_use_ipset boolean
+- Allow capability dac_override in logwatch_mail_t domain
+- Allow automount_t domain to execute ping in own SELinux domain (ping_t)
+- Allow tmpreaper_t domain to getattr files labeled as mtrr_device_t
+- Allow collectd_t domain to create netlink_generic_socket sockets
+- Allow rhsmcertd_t domain to read/write rtas_errd_var_lock_t files
+- Allow tmpwatch process labeled as tmpreaper_t domain to execute fuser command.
+- Label /etc/postfix/chroot-update as postfix_exec_t
+- Update tmpreaper_t policy due to fuser command
+- Allow kdump_t domain to create netlink_route and udp sockets
+- Allow stratisd to connect to dbus
+- Allow fail2ban_t domain to create netlink netfilter sockets.
+- Allow dovecot get filesystem quotas
+- Allow networkmanager_t domain to execute chronyd binary in chronyd_t domain. BZ(1765689)
+- Allow systemd-tmpfiles processes to set rlimit information
+- Allow cephfs to use xattrs for storing contexts
+- Update files_filetrans_named_content() interface to allow caller domain to create /oldroot /.profile with correct label etc_runtime_t
+
 * Fri Oct 25 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-11
 - Allow confined users to run newaliases
 - Add interface mysql_dontaudit_rw_db()
