@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 40f6bccc38526717eb8ff2032d3c915bc77ad3d1
+%global commit0 425358721b94b80f2597a9fb1fd269051b92e1aa
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 dee19b8b41fcf9ca57e9e019b30b112a7546c030
+%global commit1 6c531fbe9839ed089245918743948f844a8f58da
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,25 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov 13 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-13
+- Fix typo bugs in rtas_errd_read_lock() interface
+- cockpit: Drop cockpit-cert-session
+- Allow timedatex_t domain to systemctl chronyd domains
+- Allow ipa_helper_t to read kr5_keytab_t files
+- cockpit: Allow cockpit-session to read cockpit-tls state directory
+- Allow stratisd_t domain to read nvme and fixed disk devices
+- Update lldpad_t policy module
+- Dontaudit tmpreaper_t getting attributes from sysctl_type files
+- cockpit: Support https instance factory
+- Added macro for timedatex to chat over dbus.
+- Fix typo in dev_filetrans_all_named_dev()
+- Update files_manage_etc_runtime_files() interface to allow manage also dirs
+- Fix typo in cachefiles device
+- Dontaudit sys_admin capability for auditd_t domains
+- Allow x_userdomain to read adjtime_t files
+- Allow users using template userdom_unpriv_user_template() to run bpf tool
+- Allow x_userdomain to dbus_chat with timedatex.
+
 * Sun Nov 03 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-12
 - Label /var/cache/nginx as httpd_cache_t
 - Allow abrt_upload_watch_t domain to send dgram msgs to kernel processes and stream connect to journald
