@@ -65,10 +65,6 @@ Source33: macro-expander
 # Git repo: https://github.com/containers/container-selinux.git
 Source35: container-selinux.tgz
 
-# Do a factory reset when there's no policy.kern file in a store
-# http://bugzilla.redhat.com/1290659
-#Source100: selinux-factory-reset
-#Source101: selinux-factory-reset@.service
 # Provide rpm macros for packages installing SELinux modules
 Source102: rpm.macros
 
@@ -208,7 +204,6 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 
 %define fileList() \
 %defattr(-,root,root) \
-%{_datadir}/selinux/%1 \
 %dir %{_sysconfdir}/selinux/%1 \
 %config(noreplace) %{_sysconfdir}/selinux/%1/setrans.conf \
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/selinux/%1/seusers \
@@ -256,6 +251,10 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/xguest_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/user_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u \
+%{_datadir}/selinux/%1/base.lst \
+%{_datadir}/selinux/%1/modules-base.lst \
+%{_datadir}/selinux/%1/modules-contrib.lst \
+%{_datadir}/selinux/%1/nonbasemodules.lst \
 %{_sharedstatedir}/selinux/%1/active/commit_num \
 %{_sharedstatedir}/selinux/%1/active/users_extra \
 %{_sharedstatedir}/selinux/%1/active/homedir_template \
@@ -266,9 +265,6 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %ghost %{_sharedstatedir}/selinux/%1/active/seusers.linked \
 %ghost %{_sharedstatedir}/selinux/%1/active/users_extra.linked \
 %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/file_contexts.homedirs \
-#%{_libexecdir}/selinux/selinux-factory-reset \
-#%{_unitdir}/selinux-factory-reset@.service \
-#%{_unitdir}/basic.target.wants/selinux-factory-reset@%1.service \
 %nil
 
 %define relabel() \
@@ -332,17 +328,6 @@ for i in $contrib_modules $base_modules; do \
         echo "%verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/100/$i" >> %{buildroot}/%{_usr}/share/selinux/%1/nonbasemodules.lst \
     fi; \
 done;
-
-%define installFactoryResetFiles() \
-mkdir -p %{buildroot}%{_datadir}/selinux/%1/default \
-cp -R --preserve=mode,ownership,timestamps,links %{buildroot}%{_sharedstatedir}/selinux/%1/active %{buildroot}%{_datadir}/selinux/%1/default/ \
-find %{buildroot}%{_datadir}/selinux/%1/default/ -name hll | xargs rm \
-find %{buildroot}%{_datadir}/selinux/%1/default/ -name lang_ext | xargs sed -i 's/pp/cil/' \
-mkdir -p %{buildroot}/%{_libexecdir}/selinux/ \
-#install -p %{SOURCE100} %{buildroot}/%{_libexecdir}/selinux/ \
-#mkdir   -m 755 -p %{buildroot}/%{_unitdir}/basic.target.wants/ \
-#install -m 644 -p %{SOURCE101} %{buildroot}/%{_unitdir}/ \
-#ln -s ../selinux-factory-reset@.service %{buildroot}/%{_unitdir}/basic.target.wants/selinux-factory-reset@%1.service
 
 # Make sure the config is consistent with what packages are installed in the system
 # this covers cases when system is installed with selinux-policy-{mls,minimal}
@@ -447,7 +432,6 @@ rm -rf %{buildroot}%{_sharedstatedir}/selinux/targeted/active/modules/100/sandbo
 mv sandbox.pp %{buildroot}/usr/share/selinux/packages/sandbox.pp
 %modulesList targeted
 %nonBaseModulesList targeted
-%installFactoryResetFiles targeted
 %endif
 
 %if %{BUILD_MINIMUM}
@@ -461,7 +445,6 @@ rm -f %{buildroot}/%{_sysconfdir}/selinux/minimum/modules/active/modules/sandbox
 rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
 %modulesList minimum
 %nonBaseModulesList minimum
-%installFactoryResetFiles minimum
 %endif
 
 %if %{BUILD_MLS}
@@ -471,7 +454,6 @@ rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
 %installCmds mls mls deny
 %modulesList mls
 %nonBaseModulesList mls
-%installFactoryResetFiles mls
 %endif
 
 # remove leftovers when save-previous=true (semanage.conf) is used
