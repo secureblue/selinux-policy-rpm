@@ -23,13 +23,13 @@
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
-%define POLICYVER 31
+%define POLICYVER 32
 %define POLICYCOREUTILSVER 2.8
 %define CHECKPOLICYVER 2.8
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov 13 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-14
+- Increase version of kernel compiled binary policy to 32 because of new SELinux userspace v3.0
+
 * Wed Nov 13 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-13
 - Fix typo bugs in rtas_errd_read_lock() interface
 - cockpit: Drop cockpit-cert-session
