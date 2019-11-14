@@ -24,12 +24,12 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 32
-%define POLICYCOREUTILSVER 2.8
-%define CHECKPOLICYVER 2.8
+%define POLICYCOREUTILSVER 3.0
+%define CHECKPOLICYVER 3.0
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 14 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-15
+- Increase SELinux userspace version which should be required.
+
 * Wed Nov 13 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-14
 - Increase version of kernel compiled binary policy to 32 because of new SELinux userspace v3.0
 
