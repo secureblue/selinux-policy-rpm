@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 425358721b94b80f2597a9fb1fd269051b92e1aa
+%global commit0 a9839a5cc8e1f2cefd1dba7c2fcdf39529e905fb
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 6c531fbe9839ed089245918743948f844a8f58da
+%global commit1 50417020c0ed7ed1e521eb12f58dd91372063caf
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,14 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 21 2019 Zdenek Pytela <zpytela@redhat.com> - 3.14.5-16
+- Allow timedatex_t domain dbus chat with both confined and unconfined users
+- Allow timedatex_t domain dbus chat with unconfined users
+- Allow NetworkManager_t manage dhcpc_state_t BZ(1770698)
+- Make unconfined domains part of domain_named_attribute
+- Label tcp ports 24816,24817 as pulp_port_t
+- Remove duplicate entries for initrc_t in init.te
+
 * Thu Nov 14 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-15
 - Increase SELinux userspace version which should be required.
 
