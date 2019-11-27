@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 a9839a5cc8e1f2cefd1dba7c2fcdf39529e905fb
+%global commit0 90b328406aea1168714563924a291d4673be58c0
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 50417020c0ed7ed1e521eb12f58dd91372063caf
+%global commit1 35568c715194d6f4f408996f0060b6b554147ddf
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,20 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov 27 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-17
+- Fix nonexisting types in rtas_errd_rw_lock interface
+- Allow snmpd_t domain to trace processes in user namespace
+- Allow timedatex_t domain to read relatime clock and adjtime_t files
+- Allow zebra_t domain to execute zebra binaries
+- Label /usr/lib/NetworkManager/dispatcher as NetworkManager_initrc_exec_t
+- Allow ksmtuned_t domain to trace processes in user namespace
+- Allow systemd to read symlinks in /var/lib
+- Update dev_mounton_all_device_nodes() interface
+- Add the miscfiles_map_generic_certs macro to the sysnet_dns_name_resolve macro.
+- Allow systemd_domain to map files in /usr.
+- Allow strongswan start using swanctl method BZ(1773381)
+- Dontaudit systemd_tmpfiles_t getattr of all file types BZ(1772976)
+
 * Thu Nov 21 2019 Zdenek Pytela <zpytela@redhat.com> - 3.14.5-16
 - Allow timedatex_t domain dbus chat with both confined and unconfined users
 - Allow timedatex_t domain dbus chat with unconfined users
