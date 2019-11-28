@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 90b328406aea1168714563924a291d4673be58c0
+%global commit0 ae2c4ae2e50de03ec62b6457902b3a572e86529a
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 35568c715194d6f4f408996f0060b6b554147ddf
+%global commit1 46d44de3590ea9fcb0f227ea577c7ebf445eddfd
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -787,6 +787,12 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 28 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-18
+- Introduce new type pdns_var_lib_t
+- Allow zebra_t domain to read files labled as nsfs_t.
+- Allow systemd to setattr on all device_nodes
+- Allow systemd to mounton and list all proc types
+
 * Wed Nov 27 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-17
 - Fix nonexisting types in rtas_errd_rw_lock interface
 - Allow snmpd_t domain to trace processes in user namespace
