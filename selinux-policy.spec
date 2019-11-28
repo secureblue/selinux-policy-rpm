@@ -1,6 +1,6 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 ae2c4ae2e50de03ec62b6457902b3a572e86529a
+%global commit0 4881d15bc1acac413e0ba897de088850cada4de4
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
@@ -788,6 +788,7 @@ exit 0
 
 %changelog
 * Thu Nov 28 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-18
+- Allow systemd to read all proc
 - Introduce new type pdns_var_lib_t
 - Allow zebra_t domain to read files labled as nsfs_t.
 - Allow systemd to setattr on all device_nodes
