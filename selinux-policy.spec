@@ -166,9 +166,11 @@ SELinux policy documentation package
 %{_mandir}/ru/*/*
 %doc %{_usr}/share/doc/%{name}
 
+%define common_params DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024
+
 %define makeCmds() \
-%make_build UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024 bare \
-%make_build UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024  conf \
+%make_build %common_params UNK_PERMS=%3 NAME=%1 TYPE=%2 bare \
+%make_build %common_params UNK_PERMS=%3 NAME=%1 TYPE=%2 conf \
 cp -f selinux_config/booleans-%1.conf ./policy/booleans.conf \
 cp -f selinux_config/users-%1 ./policy/users \
 #cp -f selinux_config/modules-%1-base.conf  ./policy/modules.conf \
@@ -182,11 +184,11 @@ if [ %3 == "contrib" ];then \
 fi; \
 
 %define installCmds() \
-%make_build UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024 base.pp \
-%make_build validate UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024 modules \
-make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} MLS_CATS=1024 MCS_CATS=1024 install \
-make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} MLS_CATS=1024 MCS_CATS=1024 install-appconfig \
-make UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} MLS_CATS=1024 MCS_CATS=1024 SEMODULE="semodule -p %{buildroot} -X 100 " load \
+%make_build %common_params UNK_PERMS=%3 NAME=%1 TYPE=%2 base.pp \
+%make_build %common_params UNK_PERMS=%3 NAME=%1 TYPE=%2 validate modules \
+make %common_params UNK_PERMS=%3 NAME=%1 TYPE=%2 DESTDIR=%{buildroot} install \
+make %common_params UNK_PERMS=%3 NAME=%1 TYPE=%2 DESTDIR=%{buildroot} install-appconfig \
+make %common_params UNK_PERMS=%3 NAME=%1 TYPE=%2 DESTDIR=%{buildroot} SEMODULE="semodule -p %{buildroot} -X 100 " load \
 %{__mkdir} -p %{buildroot}/%{_sysconfdir}/selinux/%1/logins \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
 install -m0644 selinux_config/securetty_types-%1 %{buildroot}%{_sysconfdir}/selinux/%1/contexts/securetty_types \
@@ -433,15 +435,15 @@ make clean
 # Build targeted policy
 # Commented out because only targeted ref policy currently builds
 cp %{SOURCE28} %{buildroot}/
-%makeCmds targeted mcs n allow
+%makeCmds targeted mcs allow
 %makeModulesConf targeted base contrib
-%installCmds targeted mcs n allow
+%installCmds targeted mcs allow
 # install permissivedomains.cil
 semodule -p %{buildroot} -X 100 -s targeted -i %{buildroot}/permissivedomains.cil
 rm -rf %{buildroot}/permissivedomains.cil
 # recreate sandbox.pp
 rm -rf %{buildroot}%{_sharedstatedir}/selinux/targeted/active/modules/100/sandbox
-%make_build UNK_PERMS=%4 NAME=%1 TYPE=%2 DISTRO=%{distro} UBAC=n DIRECT_INITRC=%3 MONOLITHIC=%{monolithic} DESTDIR=%{buildroot} MLS_CATS=1024 MCS_CATS=1024 sandbox.pp
+%make_build %common_params UNK_PERMS=allow NAME=targeted TYPE=mcs sandbox.pp
 mv sandbox.pp %{buildroot}/usr/share/selinux/packages/sandbox.pp
 %modulesList targeted
 %nonBaseModulesList targeted
@@ -452,9 +454,9 @@ mv sandbox.pp %{buildroot}/usr/share/selinux/packages/sandbox.pp
 # Build minimum policy
 # Commented out because only minimum ref policy currently builds
 mkdir -p %{buildroot}%{_usr}/share/selinux/minimum
-%makeCmds minimum mcs n allow
+%makeCmds minimum mcs allow
 %makeModulesConf targeted base contrib
-%installCmds minimum mcs n allow
+%installCmds minimum mcs allow
 rm -f %{buildroot}/%{_sysconfdir}/selinux/minimum/modules/active/modules/sandbox.pp
 rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
 %modulesList minimum
@@ -464,9 +466,9 @@ rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
 
 %if %{BUILD_MLS}
 # Build mls policy
-%makeCmds mls mls n deny
+%makeCmds mls mls deny
 %makeModulesConf mls base contrib
-%installCmds mls mls n deny
+%installCmds mls mls deny
 %modulesList mls
 %nonBaseModulesList mls
 %installFactoryResetFiles mls
