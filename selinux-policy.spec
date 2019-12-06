@@ -268,16 +268,15 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %nil
 
 %define relabel() \
-. %{_sysconfdir}/selinux/config; \
+. %{_sysconfdir}/selinux/config &> /dev/null || true; \
 FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
-/usr/sbin/selinuxenabled; \
-if [ $? = 0  -a "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
+if /usr/sbin/selinuxenabled && [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      /sbin/fixfiles -C ${FILE_CONTEXT}.pre restore &> /dev/null > /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
 fi; \
 if /sbin/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null;then \
     continue; \
-fi; \
+fi;
 
 %define preInstall() \
 if [ $1 -ne 1 ] && [ -s /etc/selinux/config ]; then \
@@ -301,7 +300,7 @@ if [ $1 -ne 1 ] && [ -s /etc/selinux/config ]; then \
 fi;
 
 %define postInstall() \
-. %{_sysconfdir}/selinux/config; \
+. %{_sysconfdir}/selinux/config &> /dev/null || true; \
 if [ -e /etc/selinux/%2/.rebuild ]; then \
    rm /etc/selinux/%2/.rebuild; \
    /usr/sbin/semodule -B -n -s %2; \
@@ -342,24 +341,26 @@ done;
 # * use "targeted" if it's being installed and BACKUP_SELINUXTYPE cannot be used
 # * check whether SELINUXTYPE in the config is usable and change it to newly installed policy if it isn't
 %define checkConfigConsistency() \
-. %{_sysconfdir}/selinux/config; \
 if [ -f %{_sysconfdir}/selinux/.config_backup ]; then \
-     . %{_sysconfdir}/selinux/.config_backup; \
+    . %{_sysconfdir}/selinux/.config_backup; \
 else \
-     BACKUP_SELINUXTYPE=targeted; \
+    BACKUP_SELINUXTYPE=targeted; \
 fi; \
-if ls %{_sysconfdir}/selinux/$BACKUP_SELINUXTYPE/policy/policy.* &>/dev/null; then \
-     if [ "$BACKUP_SELINUXTYPE" != "$SELINUXTYPE" ]; then \
-          sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE='"$BACKUP_SELINUXTYPE"'/g' %{_sysconfdir}/selinux/config; \
-     fi; \
-elif [ "%1" = "targeted" ]; then \
-     if [ "%1" != "$SELINUXTYPE" ]; then \
-          sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE=%1/g' %{_sysconfdir}/selinux/config; \
-     fi; \
-elif ! ls  %{_sysconfdir}/selinux/$SELINUXTYPE/policy/policy.* &>/dev/null; then \
-     if [ "%1" != "$SELINUXTYPE" ]; then \
-          sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE=%1/g' %{_sysconfdir}/selinux/config; \
-     fi; \
+if [ -s %{_sysconfdir}/selinux/config ]; then \
+    . %{_sysconfdir}/selinux/config; \
+    if ls %{_sysconfdir}/selinux/$BACKUP_SELINUXTYPE/policy/policy.* &>/dev/null; then \
+        if [ "$BACKUP_SELINUXTYPE" != "$SELINUXTYPE" ]; then \
+            sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE='"$BACKUP_SELINUXTYPE"'/g' %{_sysconfdir}/selinux/config; \
+        fi; \
+    elif [ "%1" = "targeted" ]; then \
+        if [ "%1" != "$SELINUXTYPE" ]; then \
+            sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE=%1/g' %{_sysconfdir}/selinux/config; \
+        fi; \
+    elif ! ls  %{_sysconfdir}/selinux/$SELINUXTYPE/policy/policy.* &>/dev/null; then \
+        if [ "%1" != "$SELINUXTYPE" ]; then \
+            sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE=%1/g' %{_sysconfdir}/selinux/config; \
+        fi; \
+    fi; \
 fi;
 
 # Create hidden backup of /etc/selinux/config and prepend BACKUP_ to names
@@ -553,13 +554,13 @@ exit 0
 
 %postun targeted
 if [ $1 = 0 ]; then
-    source /etc/selinux/config
+    source %{_sysconfdir}/selinux/config &> /dev/null || true
     if [ "$SELINUXTYPE" = "targeted" ]; then
         setenforce 0 2> /dev/null
-        if [ ! -s /etc/selinux/config ]; then
-            echo "SELINUX=disabled" > /etc/selinux/config
+        if [ ! -s %{_sysconfdir}/selinux/config ]; then
+            echo "SELINUX=disabled" > %{_sysconfdir}/selinux/config
         else
-            sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+            sed -i 's/^SELINUX=.*/SELINUX=disabled/g' %{_sysconfdir}/selinux/config
         fi
     fi
 fi
@@ -663,13 +664,13 @@ exit 0
 
 %postun minimum
 if [ $1 = 0 ]; then
-    source /etc/selinux/config
+    source %{_sysconfdir}/selinux/config &> /dev/null || true
     if [ "$SELINUXTYPE" = "minimum" ]; then
         setenforce 0 2> /dev/null
-        if [ ! -s /etc/selinux/config ]; then
-            echo "SELINUX=disabled" > /etc/selinux/config
+        if [ ! -s %{_sysconfdir}/selinux/config ]; then
+            echo "SELINUX=disabled" > %{_sysconfdir}/selinux/config
         else
-            sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+            sed -i 's/^SELINUX=.*/SELINUX=disabled/g' %{_sysconfdir}/selinux/config
         fi
     fi
 fi
@@ -734,13 +735,13 @@ exit 0
 
 %postun mls
 if [ $1 = 0 ]; then
-    source /etc/selinux/config
+    source %{_sysconfdir}/selinux/config &> /dev/null || true;
     if [ "$SELINUXTYPE" = "mls" ]; then
         setenforce 0 2> /dev/null
-        if [ ! -s /etc/selinux/config ]; then
-            echo "SELINUX=disabled" > /etc/selinux/config
+        if [ ! -s %{_sysconfdir}/selinux/config ]; then
+            echo "SELINUX=disabled" > %{_sysconfdir}/selinux/config
         else
-            sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+            sed -i 's/^SELINUX=.*/SELINUX=disabled/g' %{_sysconfdir}/selinux/config
         fi
     fi
 fi
