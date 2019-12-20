@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 4881d15bc1acac413e0ba897de088850cada4de4
+%global commit0 789c6593214fa10b15d2c628822cffe985417f5a
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 46d44de3590ea9fcb0f227ea577c7ebf445eddfd
+%global commit1 43e2de656ea04a4309c98039a1fcddf416ef6dba
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 18%{?dist}
+Release: 19%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -789,6 +789,30 @@ exit 0
 %endif
 
 %changelog
+* Fri Dec 20 2019 Zdenek Pytela <zpytela@redhat.com> - 3.14.5-19
+- Allow init_t nnp domain transition to kmod_t
+- Allow userdomain dbus chat with systemd_resolved_t
+- Allow init_t read and setattr on /var/lib/fprintd
+- Allow sysadm_t dbus chat with colord_t
+- Allow confined users run fwupdmgr
+- Allow confined users run machinectl
+- Allow systemd labeled as init_t domain to create dirs labeled as var_t
+- Allow systemd labeled as init_t do read/write tpm_device_t chr files BZ(1778079)
+- Add new file context rabbitmq_conf_t.
+- Allow journalctl read init state BZ(1731753)
+- Add fprintd_read_var_lib_dir and fprintd_setattr_var_lib_dir interfaces
+- Allow pulseaudio create .config and dgram sendto to unpriv_userdomain
+- Change type in transition for /var/cache/{dnf,yum} directory
+- Allow cockpit_ws_t read efivarfs_t BZ(1777085)
+- Allow abrt_dump_oops_t domain to create udp sockets BZ(1778030)
+- Allow named_t domain to mmap named_zone_t files BZ(1647493)
+- Make boinc_var_lib_t label system mountdir attribute
+- Allow stratis_t domain to request load modules
+- Update fail2ban policy
+- Allow spamd_update_t access antivirus_unit_file_t BZ(1774092)
+- Allow uuidd_t Domain trasition from sytemd into confined domain with NoNewPrivileges Systemd Security feature.
+- Allow rdisc_t Domain trasition from sytemd into confined domain with NoNewPrivileges Systemd Security feature.
+
 * Thu Nov 28 2019 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-18
 - Allow systemd to read all proc
 - Introduce new type pdns_var_lib_t
