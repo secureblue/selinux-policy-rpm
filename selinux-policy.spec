@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 789c6593214fa10b15d2c628822cffe985417f5a
+%global commit0 b169ed68eafa6e5ce675629d8ff21ded5f645107
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 43e2de656ea04a4309c98039a1fcddf416ef6dba
+%global commit1 cabad1ffdee56048ffbc69424b64163d4a6edd06
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 19%{?dist}
+Release: 20%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -771,6 +771,21 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 13 2020 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-20
+- Fix typo in anaconda SELinux module
+- Allow rtkit_t domain  to control scheduling for your install_t processes
+- Boolean: rngd_t to use executable memory
+- Allow rngd_t domain to use nsswitch BZ(1787661)
+- Allow exim to execute bin_t without domain trans
+- Allow create udp sockets for abrt_upload_watch_t domains
+- Drop label zebra_t for frr binaries
+- Allow NetworkManager_t domain to get status of samba services
+- Update milter policy to allow use sendmail
+- Modify file context for .local directory to match exactly BZ(1637401)
+- Allow init_t domain to create own socket files in /tmp
+- Allow ipsec_mgmt_t domain to mmap ipsec_conf_file_t files
+- Create files_create_non_security_dirs() interface
+
 * Fri Dec 20 2019 Zdenek Pytela <zpytela@redhat.com> - 3.14.5-19
 - Allow init_t nnp domain transition to kmod_t
 - Allow userdomain dbus chat with systemd_resolved_t
