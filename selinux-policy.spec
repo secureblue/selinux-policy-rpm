@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 b169ed68eafa6e5ce675629d8ff21ded5f645107
+%global commit0 533b7be0d2b9f6ad895b36cedb2d010ee8be9c03
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 cabad1ffdee56048ffbc69424b64163d4a6edd06
+%global commit1 be783bd4b9aa52ed0bbb5555128659a3e1c91410
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 20%{?dist}
+Release: 21%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,19 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 24 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.5-21
+- Dontaudit timedatex_t read file_contexts_t and validate security contexts
+- Make stratisd_t domain unconfined for now.
+- stratisd_t policy updates.
+- Label /var/spool/plymouth/boot.log as plymouthd_var_log_t
+- Label /stratis as stratisd_data_t
+- Allow opafm_t to create and use netlink rdma sockets.
+- Allow stratisd_t domain to read/write fixed disk devices and removable devices.
+- Added macro for stratisd to chat over dbus
+- Add dac_override capability to stratisd_t domain
+- Allow init_t set the nice level of all domains BZ(1778088)
+- Allow userdomain to chat with stratisd over dbus.
+
 * Mon Jan 13 2020 Lukas Vrabec <lvrabec@redhat.com> - 3.14.5-20
 - Fix typo in anaconda SELinux module
 - Allow rtkit_t domain  to control scheduling for your install_t processes
