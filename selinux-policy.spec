@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 533b7be0d2b9f6ad895b36cedb2d010ee8be9c03
+%global commit0 9e0b4dd06e1de366a0ca53e879bf3069a64b654b
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 be783bd4b9aa52ed0bbb5555128659a3e1c91410
+%global commit1 f23171a07d8668859906e4e0d9df1171a8e4f183
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 22%{?dist}
+Release: 23%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,20 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 31 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.5-23
+- Allow thumb_t connect to system_dbusd_t BZ(1795044)
+- Allow saslauthd_t filetrans variable files for /tmp directory
+- Added apache create log dirs macro
+- Tiny documentation fix
+- Allow openfortivpn_t to manage net_conf_t files.
+- Introduce boolean openfortivpn_can_network_connect.
+- Dontaudit domain chronyd_t to list in user home dirs.
+- Allow init_t to create apache log dirs.
+- Add file transition for /dev/nvidia-uvm BZ(1770588)
+- Allow syslog_t to read efivarfs_t files
+- Add ioctl to term_dontaudit_use_ptmx macro
+- Update xserver_rw_session macro
+
 * Thu Jan 30 2020 Fedora Release Engineering <releng@fedoraproject.org> - 3.14.5-22
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 
