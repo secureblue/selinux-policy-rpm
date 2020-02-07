@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 9e0b4dd06e1de366a0ca53e879bf3069a64b654b
+%global commit0 9d5b9be423d3dfa31e3d20dd6f6dfc2d46b036ff
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 f23171a07d8668859906e4e0d9df1171a8e4f183
+%global commit1 7f1b345d2092cbd62280c8111079b86c87385e3e
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.5
-Release: 23%{?dist}
+Release: 24%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,12 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 07 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.5-24
+- Allow ptp4l_t create and use packet_socket sockets
+- Allow ipa_custodia_t create and use netlink_route_socket sockets.
+- Allow networkmanager_t transition to setfiles_t
+- Create init_create_dirs boolean to allow init create directories
+
 * Fri Jan 31 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.5-23
 - Allow thumb_t connect to system_dbusd_t BZ(1795044)
 - Allow saslauthd_t filetrans variable files for /tmp directory
