@@ -28,8 +28,8 @@
 %define CHECKPOLICYVER 3.0
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.14.5
-Release: 24%{?dist}
+Version: 3.14.6
+Release: 1%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,9 @@ exit 0
 %endif
 
 %changelog
+* Sun Feb 16 2020 Lukas Vrabec  <lvrabec@redhat.com> - 3.14.6-1
+- Bump version to 3.14.6 because fedora 32 was branched
+
 * Fri Feb 07 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.5-24
 - Allow ptp4l_t create and use packet_socket sockets
 - Allow ipa_custodia_t create and use netlink_route_socket sockets.
