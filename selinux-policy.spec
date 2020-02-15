@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 9d5b9be423d3dfa31e3d20dd6f6dfc2d46b036ff
+%global commit0 4be621b5d5561591600f39ab3ff039b366c61eb1
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 7f1b345d2092cbd62280c8111079b86c87385e3e
+%global commit1 6178b11224d23f9816db53ceff7533dd844afef4
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,16 @@ exit 0
 %endif
 
 %changelog
+* Sat Feb 15 2020 Lukas Vrabec <lvrabec@redhat.com> - 3.14.6-2
+- Allow vhostmd communication with hosted virtual machines
+- Add and update virt interfaces
+- Update radiusd policy
+- Allow systemd_private_tmp(named_tmp_t)
+- Allow bacula dac_override capability
+- Allow systemd_networkd_t to read efivarfs
+- Add support for systemd-userdbd
+- Allow systemd system services read efivarfs files
+
 * Sun Feb 16 2020 Lukas Vrabec  <lvrabec@redhat.com> - 3.14.6-1
 - Bump version to 3.14.6 because fedora 32 was branched
 
