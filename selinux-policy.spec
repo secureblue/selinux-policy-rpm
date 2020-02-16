@@ -786,7 +786,7 @@ exit 0
 - Add support for systemd-userdbd
 - Allow systemd system services read efivarfs files
 
-* Sun Feb 16 2020 Lukas Vrabec  <lvrabec@redhat.com> - 3.14.6-1
+* Sat Feb 15 2020 Lukas Vrabec  <lvrabec@redhat.com> - 3.14.6-1
 - Bump version to 3.14.6 because fedora 32 was branched
 
 * Fri Feb 07 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.5-24
