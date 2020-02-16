@@ -1,6 +1,6 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 4be621b5d5561591600f39ab3ff039b366c61eb1
+%global commit0 a303d1d9a4d777c978b83677e5453c0dc40a5207
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,10 @@ exit 0
 %endif
 
 %changelog
+* Sun Feb 16 2020 Lukas Vrabec <lvrabec@redhat.com> - 3.14.6-3
+- Allow systemd labeled as init_t to manage systemd_userdbd_runtime_t symlinks
+- Allow systemd_userdbd_t domain to read efivarfs files
+
 * Sat Feb 15 2020 Lukas Vrabec <lvrabec@redhat.com> - 3.14.6-2
 - Allow vhostmd communication with hosted virtual machines
 - Add and update virt interfaces
