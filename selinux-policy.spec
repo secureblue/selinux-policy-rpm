@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 a303d1d9a4d777c978b83677e5453c0dc40a5207
+%global commit0 d5268be21538b700a57f7b89399615fde06dd9bc
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 6178b11224d23f9816db53ceff7533dd844afef4
+%global commit1 f2a3549c2ffa2ad553923054809b3c8c91d0dcf0
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,12 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 18 2020 Lukas Vrabec <lvrabec@redhat.com> - 3.14.6-4
+- Update virt_read_qemu_pid_files inteface
+- Allow systemd_logind_t domain to getattr cgroup filesystem
+- Allow systemd_logind_t domain to manage user_tmp_t char and block devices
+- Allow nsswitch_domain attribute to stream connect to systemd process
+
 * Sun Feb 16 2020 Lukas Vrabec <lvrabec@redhat.com> - 3.14.6-3
 - Allow systemd labeled as init_t to manage systemd_userdbd_runtime_t symlinks
 - Allow systemd_userdbd_t domain to read efivarfs files
