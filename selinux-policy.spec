@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 d5268be21538b700a57f7b89399615fde06dd9bc
+%global commit0 bde5c9e912959102393fb3708633c39f138e280f
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 f2a3549c2ffa2ad553923054809b3c8c91d0dcf0
+%global commit1 f7a21a9f173e1c8071718b1dea40eed2271c284d
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,14 @@ exit 0
 %endif
 
 %changelog
+* Sat Feb 22 2020 Lukas Vrabec <lvrabec@redhat.com> - 3.14.6-5
+- Allow certmonger_t domain to read pkcs_slotd lock files
+- Allow httpd_t domain to mmap own var_lib_t files BZ(1804853)
+- Allow ipda_custodia_t to create udp_socket and added permission nlmsg_read for netlink_route_sockets
+- Make file context more variable for /usr/bin/fusermount and /bin/fusermount
+- Allow local_login_t domain to getattr cgroup filesystem
+- Allow systemd_logind_t domain to manage user_tmp_t char and block devices
+
 * Tue Feb 18 2020 Lukas Vrabec <lvrabec@redhat.com> - 3.14.6-4
 - Update virt_read_qemu_pid_files inteface
 - Allow systemd_logind_t domain to getattr cgroup filesystem
