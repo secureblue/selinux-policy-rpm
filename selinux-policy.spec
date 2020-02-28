@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 bde5c9e912959102393fb3708633c39f138e280f
+%global commit0 deadfd15c2ae442cc0e204d315962f3aac88e9ba
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 f7a21a9f173e1c8071718b1dea40eed2271c284d
+%global commit1 08def7c154b5be4ce7b11643d71d59fe98ea2bfc
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 28 2020 Lukas Vrabec <lvrabec@redhat.com> - 3.14.6-6
+- Allow postfix stream connect to cyrus through runtime socket
+- Dontaudit daemons to set and get scheduling policy/parameters
+
 * Sat Feb 22 2020 Lukas Vrabec <lvrabec@redhat.com> - 3.14.6-5
 - Allow certmonger_t domain to read pkcs_slotd lock files
 - Allow httpd_t domain to mmap own var_lib_t files BZ(1804853)
