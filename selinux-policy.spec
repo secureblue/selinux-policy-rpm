@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 ff8908fb2162625769f20f937e2882067a497885
+%global commit0 649b10d5388475271c48b0c4a3892c475dbc4a1b
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 5406e9a4f4ae4a95e15fea717ccfa63fe4835264
+%global commit1 d504071e851e1710816970154529d2afcf8f856c
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,14 @@ exit 0
 %endif
 
 %changelog
+* Fri Mar 13 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-8
+- Allow NetworkManager read its unit files and manage services
+- Add init_daemon_domain() for geoclue_t
+- Allow to use nnp_transition in pulseaudio_role
+- Allow pdns_t domain to map files in /usr.
+- Label all NetworkManager fortisslvpn plugins as openfortivpn_exec_t
+- Allow login_pgm create and bind on netlink_selinux_socket
+
 * Mon Mar 09 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-7
 - Allow sssd read systemd-resolved runtime directory
 - Allow sssd read NetworkManager's runtime directory
