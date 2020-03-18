@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 649b10d5388475271c48b0c4a3892c475dbc4a1b
+%global commit0 0072731f6c926cba7d4fb603b8ad0a625503c33c
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 d504071e851e1710816970154529d2afcf8f856c
+%global commit1 ab515a173ec0966a0a4f4c2822d0cef77e2a10b7
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,10 @@ exit 0
 %endif
 
 %changelog
+* Wed Mar 18 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-9
+- Allow zabbix_t manage and filetrans temporary socket files
+- Makefile: fix tmp/%.mod.fc target
+
 * Fri Mar 13 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-8
 - Allow NetworkManager read its unit files and manage services
 - Add init_daemon_domain() for geoclue_t
