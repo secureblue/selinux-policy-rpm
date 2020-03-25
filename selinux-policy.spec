@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 0072731f6c926cba7d4fb603b8ad0a625503c33c
+%global commit0 a9a124efb4b03f40c01b66a73deb59f364281f86
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 ab515a173ec0966a0a4f4c2822d0cef77e2a10b7
+%global commit1 2c38d3505ec6b7e5c267eb93a0d414e7c7ac47a7
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,14 @@ exit 0
 %endif
 
 %changelog
+* Wed Mar 25 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-10
+- Allow openfortivpn exec shell
+- Remove label session_dbusd_tmp_t for /run/user/USERID/systemd
+- Add ibacm_t ipc_lock capability
+- Allow ipsec_t connectto ipsec_mgmt_t
+- Remove ipa_custodia
+- Allow systemd-journald to read user_tmp_t symlinks
+
 * Wed Mar 18 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-9
 - Allow zabbix_t manage and filetrans temporary socket files
 - Makefile: fix tmp/%.mod.fc target
