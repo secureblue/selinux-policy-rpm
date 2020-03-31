@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 a9a124efb4b03f40c01b66a73deb59f364281f86
+%global commit0 50a6afe26d1b3083c339adc1c5f6193ec0cb71cd
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 2c38d3505ec6b7e5c267eb93a0d414e7c7ac47a7
+%global commit1 d5da0422ebc96d5acbe912aa8d5c3bc8a1ace015
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Mar 31 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-11
+- Allow NetworkManager manage dhcpd unit files
+- Update ninfod policy to add nnp transition from systemd to ninfod
+- Remove container interface calling by named_filetrans_domain.
+
 * Wed Mar 25 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-10
 - Allow openfortivpn exec shell
 - Remove label session_dbusd_tmp_t for /run/user/USERID/systemd
