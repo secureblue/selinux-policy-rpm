@@ -280,9 +280,11 @@ fi;
 
 %define preInstall() \
 if [ $1 -ne 1 ] && [ -s %{_sysconfdir}/selinux/config ]; then \
-     if [ -d %{_sharedstatedir}/selinux/%1/active/modules/100/ganesha ]; then \
-        %{_sbindir}/semodule -n -d ganesha; \
-     fi; \
+     for MOD_NAME in ganesha ipa_custodia; do \
+        if [ -d %{_sharedstatedir}/selinux/%1/active/modules/100/$MOD_NAME ]; then \
+           %{_sbindir}/semodule -n -d $MOD_NAME; \
+        fi; \
+     done; \
      . %{_sysconfdir}/selinux/config; \
      FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
      if [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT} ]; then \
