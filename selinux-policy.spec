@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 50a6afe26d1b3083c339adc1c5f6193ec0cb71cd
+%global commit0 ad1d35503f55f535401daa0a59913aa559c38d44
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 d5da0422ebc96d5acbe912aa8d5c3bc8a1ace015
+%global commit1 6db7310a3b7385e07359a978a46c52d7ec22bedd
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -772,6 +772,17 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 14 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-12
+- Allow rngd create netlink_kobject_uevent_socket and read udev runtime files
+- Allow ssh-keygen create file in /var/lib/glusterd
+- Update ctdbd_manage_lib_files() to also allow mmap ctdbd_var_lib_t files
+- Merge ipa and ipa_custodia modules
+- Allow NetworkManager_ssh_t to execute_no_trans for binary ssh_exec_t
+- Introduce daemons_dontaudit_scheduling boolean
+- Modify path for arping in netutils.fc to match both bin and sbin
+- Change file context for /var/run/pam_ssh to match file transition
+- Add file context entry and file transition for /var/run/pam_timestamp
+
 * Tue Mar 31 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-11
 - Allow NetworkManager manage dhcpd unit files
 - Update ninfod policy to add nnp transition from systemd to ninfod
