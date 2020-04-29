@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 ad1d35503f55f535401daa0a59913aa559c38d44
+%global commit0 b5836428b2a73ac6fee5fc101a630ea79095a82f
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 6db7310a3b7385e07359a978a46c52d7ec22bedd
+%global commit1 80860a357b13706296074de5e53362dd46887577
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -774,6 +774,14 @@ exit 0
 %endif
 
 %changelog
+* Wed Apr 29 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-13
+- Update networkmanager_read_pid_files() to allow also list_dir_perms
+- Update policy for NetworkManager_ssh_t
+- Allow glusterd synchronize between master and slave
+- Allow spamc_t domain to read network state
+- Allow strongswan use tun/tap devices and keys
+- Allow systemd_userdbd_t domain logging to journal
+
 * Tue Apr 14 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-12
 - Allow rngd create netlink_kobject_uevent_socket and read udev runtime files
 - Allow ssh-keygen create file in /var/lib/glusterd
