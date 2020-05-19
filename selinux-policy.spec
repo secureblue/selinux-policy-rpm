@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 b5836428b2a73ac6fee5fc101a630ea79095a82f
+%global commit0 6d966941f05ea6148bd91886e7bf91d7ae59690c
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 80860a357b13706296074de5e53362dd46887577
+%global commit1 cafd50640ad014d92e9efdc9aef3dbde638f1816
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -774,6 +774,20 @@ exit 0
 %endif
 
 %changelog
+* Tue May 19 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-14
+- Allow chronyc_t domain to use nsswitch
+- Allow nscd_socket_use() for domains in nscd_use() unconditionally
+- Add allow rules for lttng-sessiond domain
+- Label dirsrv systemd unit files and add dirsrv_systemctl()
+- Allow gluster geo-replication in rsync mode
+- Allow nagios_plugin_domain execute programs in bin directories
+- Allow sys_admin capability for domain labeled systemd_bootchart_t
+- Split the arping path regexp to 2 lines to prevent from relabeling
+- Allow tcpdump sniffing offloaded (RDMA) traffic
+- Revert "Change arping path regexp to work around fixfiles incorrect handling"
+- Change arping path regexp to work around fixfiles incorrect handling
+- Allow read efivarfs_t files by domains executing systemctl file
+
 * Wed Apr 29 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-13
 - Update networkmanager_read_pid_files() to allow also list_dir_perms
 - Update policy for NetworkManager_ssh_t
