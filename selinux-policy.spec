@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 6d966941f05ea6148bd91886e7bf91d7ae59690c
+%global commit0 7dd92fda6b04b5c90feb038aabefb728a8773750
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 cafd50640ad014d92e9efdc9aef3dbde638f1816
+%global commit1 22a72723552b1c4bc6dd42f7f55fd9dd42426c3c
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -774,6 +774,25 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 04 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-15
+- Add fetchmail_uidl_cache_t type for /var/mail/.fetchmail.pid
+- Support multiple ways of tlp invocation
+- Allow qemu-kvm read and write /dev/mapper/control
+- Introduce logrotate_use_cifs boolean
+- Allow ptp4l_t sys_admin capability to run bpf programs
+- Allow to getattr files on an nsfs filesystem
+- httpd: Allow NoNewPriv transition from systemd
+- Allow rhsmd read process state of all domains and kernel threads
+- Allow rhsmd mmap /etc/passwd
+- Allow systemd-logind manage efivarfs files
+- Allow initrc_t tlp_filetrans_named_content()
+- Allow systemd_resolved_t to read efivarfs
+- Allow systemd_modules_load_t to read efivarfs
+- Introduce systemd_read_efivarfs_type attribute
+- Allow named transition for /run/tlp from a user shell
+- Allow ipsec_mgmt_t mmap ipsec_conf_file_t files
+- Add file context for /sys/kernel/tracing
+
 * Tue May 19 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-14
 - Allow chronyc_t domain to use nsswitch
 - Allow nscd_socket_use() for domains in nscd_use() unconditionally
