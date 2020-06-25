@@ -268,7 +268,9 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %nil
 
 %define relabel() \
-. %{_sysconfdir}/selinux/config &> /dev/null || true; \
+if [ -s %{_sysconfdir}/selinux/config ]; then \
+    . %{_sysconfdir}/selinux/config &> /dev/null || true; \
+fi; \
 FILE_CONTEXT=%{_sysconfdir}/selinux/%1/contexts/files/file_contexts; \
 if %{_sbindir}/selinuxenabled && [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.pre ]; then \
      %{_sbindir}/fixfiles -C ${FILE_CONTEXT}.pre restore &> /dev/null > /dev/null; \
@@ -302,7 +304,9 @@ if [ $1 -ne 1 ] && [ -s %{_sysconfdir}/selinux/config ]; then \
 fi;
 
 %define postInstall() \
-. %{_sysconfdir}/selinux/config &> /dev/null || true; \
+if [ -s %{_sysconfdir}/selinux/config ]; then \
+    . %{_sysconfdir}/selinux/config &> /dev/null || true; \
+fi; \
 if [ -e %{_sysconfdir}/selinux/%2/.rebuild ]; then \
    rm %{_sysconfdir}/selinux/%2/.rebuild; \
    %{_sbindir}/semodule -B -n -s %2; \
@@ -556,7 +560,9 @@ exit 0
 
 %postun targeted
 if [ $1 = 0 ]; then
-    source %{_sysconfdir}/selinux/config &> /dev/null || true
+    if [ -s %{_sysconfdir}/selinux/config ]; then
+        source %{_sysconfdir}/selinux/config &> /dev/null || true
+    fi
     if [ "$SELINUXTYPE" = "targeted" ]; then
         %{_sbindir}/setenforce 0 2> /dev/null
         if [ ! -s %{_sysconfdir}/selinux/config ]; then
@@ -666,7 +672,9 @@ exit 0
 
 %postun minimum
 if [ $1 = 0 ]; then
-    source %{_sysconfdir}/selinux/config &> /dev/null || true
+    if [ -s %{_sysconfdir}/selinux/config ]; then
+        source %{_sysconfdir}/selinux/config &> /dev/null || true
+    fi
     if [ "$SELINUXTYPE" = "minimum" ]; then
         %{_sbindir}/setenforce 0 2> /dev/null
         if [ ! -s %{_sysconfdir}/selinux/config ]; then
@@ -737,7 +745,9 @@ exit 0
 
 %postun mls
 if [ $1 = 0 ]; then
-    source %{_sysconfdir}/selinux/config &> /dev/null || true;
+    if [ -s %{_sysconfdir}/selinux/config ]; then
+        source %{_sysconfdir}/selinux/config &> /dev/null || true
+    fi
     if [ "$SELINUXTYPE" = "mls" ]; then
         %{_sbindir}/setenforce 0 2> /dev/null
         if [ ! -s %{_sysconfdir}/selinux/config ]; then
