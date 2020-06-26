@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 7dd92fda6b04b5c90feb038aabefb728a8773750
+%global commit0 427796e812ddf1284b6f78f41efd8137fe26f2f0
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 22a72723552b1c4bc6dd42f7f55fd9dd42426c3c
+%global commit1 2a1096a616c714d0bc4eb0d94e42ccab369c0db5
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -784,6 +784,43 @@ exit 0
 %endif
 
 %changelog
+* Fri Jun 26 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-17
+- Allow pdns server to read system state
+- Allow irqbalance nnp_transition
+- Fix description tag for the sssd_connect_all_unreserved_ports tunable
+- Allow journalctl process set its resource limits
+- Add sssd_access_kernel_keys tunable to conditionally access kernel keys
+- Make keepalived work with network namespaces
+- Create sssd_connect_all_unreserved_ports boolean
+- Allow hypervkvpd to request kernel to load a module
+- Allow systemd_private_tmp(dirsrv_tmp_t)
+- Allow microcode_ctl get attributes of sysfs directories
+- Remove duplicate files_dontaudit_list_tmp(radiusd_t) line
+- Allow radiusd connect to gssproxy over unix domain stream socket
+- Add fwupd_cache_t file context for '/var/cache/fwupd(/.*)?'
+- Allow qemu read and write /dev/mapper/control
+- Allow tlp_t can_exec() tlp_exec_t
+- Dontaudit vpnc_t setting its process scheduling
+- Remove files_mmap_usr_files() call for particular domains
+- Allow dirsrv_t list cgroup directories
+- Crete the kerberos_write_kadmind_tmp_files() interface
+- Allow realmd_t dbus chat with accountsd_t
+- Label systemd-growfs and systemd-makefs       as fsadm_exec_t
+- Allow staff_u and user_u setattr generic usb devices
+- Allow sysadm_t dbus chat with accountsd
+- Modify kernel_rw_key() not to include append permission
+- Add kernel_rw_key() interface to access to kernel keyrings
+- Modify systemd_delete_private_tmp() to use delete_*_pattern macros
+- Allow systemd-modules to load kernel modules
+- Add cachefiles_dev_t as a typealias to cachefiles_device_t
+- Allow libkrb5 lib read client keytabs
+- Allow domain mmap usr_t files
+- Remove files_mmap_usr_files() call for systemd domains
+- Allow sshd write to kadmind temporary files
+- Do not audit staff_t and user_t attempts to manage boot_t entries
+- Add files_dontaudit_manage_boot_dirs() interface
+- Allow systemd-tty-ask-password-agent read efivarfs files
+
 * Thu Jun 25 2020 Adam Williamson <awilliam@redhat.com> - 3.14.6-16
 - Fix scriptlets when /etc/selinux/config does not exist
 
