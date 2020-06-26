@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -784,6 +784,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 25 2020 Adam Williamson <awilliam@redhat.com> - 3.14.6-16
+- Fix scriptlets when /etc/selinux/config does not exist
+
 * Thu Jun 04 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-15
 - Add fetchmail_uidl_cache_t type for /var/mail/.fetchmail.pid
 - Support multiple ways of tlp invocation
