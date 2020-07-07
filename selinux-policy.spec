@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 427796e812ddf1284b6f78f41efd8137fe26f2f0
+%global commit0 f0e48785589982929a4b597c6a663dde980e468d
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 2a1096a616c714d0bc4eb0d94e42ccab369c0db5
+%global commit1 f55cbfd889cdd7dac3e2a7d334684f607127c1ae
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -784,6 +784,18 @@ exit 0
 %endif
 
 %changelog
+* Tue Jul 07 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-18
+- Allow oddjob_t process noatsecure permission for ipa_helper_t
+- Allow keepalived manage its private type runtime directories
+- Update irqbalance runtime directory file context
+- Allow irqbalance file transition for pid sock_files and directories
+- Allow systemd_private_tmp(dirsrv_tmp_t) instead of dirsrv_t
+- Allow virtlogd_t manage virt lib files
+- Allow systemd set efivarfs files attributes
+- Support systemctl --user in machinectl
+- Allow chkpwd_t read and write systemd-machined devpts character nodes
+- Allow init_t write to inherited systemd-logind sessions pipes
+
 * Fri Jun 26 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-17
 - Allow pdns server to read system state
 - Allow irqbalance nnp_transition
