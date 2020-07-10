@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 f0e48785589982929a4b597c6a663dde980e468d
+%global commit0 d5c0a2dcce5b8947468572a84725dbec78646a14
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 f55cbfd889cdd7dac3e2a7d334684f607127c1ae
+%global commit1 27225b9de42be65760194536680c9d596f1a1895
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 18%{?dist}
+Release: 19%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -784,6 +784,16 @@ exit 0
 %endif
 
 %changelog
+* Fri Jul 10 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-19
+- Additional support for keepalived running in a namespace
+- Remove systemd_dbus_chat_resolved(pcp_pmie_t)
+- virt: remove the libvirt qmf rules
+- Allow certmonger manage dirsrv services
+- Run ipa_helper_noatsecure(oddjob_t) only if the interface exists
+- Allow domain dbus chat with systemd-resolved
+- Define file context for /var/run/netns directory only
+- Revert "Add support for fuse.glusterfs"
+
 * Tue Jul 07 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-18
 - Allow oddjob_t process noatsecure permission for ipa_helper_t
 - Allow keepalived manage its private type runtime directories
