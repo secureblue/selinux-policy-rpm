@@ -1,6 +1,6 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 d5c0a2dcce5b8947468572a84725dbec78646a14
+%global commit0 9c84d687e0fef5d8e4e25273bd25f58c28a7c67c
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
@@ -24,12 +24,12 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 32
-%define POLICYCOREUTILSVER 3.0
-%define CHECKPOLICYVER 3.0
+%define POLICYCOREUTILSVER 3.1
+%define CHECKPOLICYVER 3.1
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 19%{?dist}
+Release: 20%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -784,6 +784,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 13 2020 Lukas Vrabec <lvrabec@redhat.com> - 3.14.6-20
+- Align gen_tunable() syntax with sepolgen
+
 * Fri Jul 10 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-19
 - Additional support for keepalived running in a namespace
 - Remove systemd_dbus_chat_resolved(pcp_pmie_t)
