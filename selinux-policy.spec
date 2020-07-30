@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 9c84d687e0fef5d8e4e25273bd25f58c28a7c67c
+%global commit0 395220122fcd6b93956c758a2a5094487254a89e
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 27225b9de42be65760194536680c9d596f1a1895
+%global commit1 72b352431e6cdce2bd6a26ad942d373f42dbba58
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 21%{?dist}
+Release: 22%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -784,6 +784,24 @@ exit 0
 %endif
 
 %changelog
+* Thu Jul 30 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-22
+- Allow virtlockd only getattr and lock block devices
+- Allow qemu-ga read all non security file types conditionally
+- Allow virtlockd manage VMs posix file locks
+- Allow smbd get attributes of device files labeled samba_share_t
+- Label /tmp/krb5_0.rcache2 with krb5_host_rcache_t
+- Add a new httpd_can_manage_courier_spool boolean
+- Create interface courier_manage_spool_sockets() in courier policy to allow to search dir and allow manage sock files
+- Revert "Allow qemu-kvm read and write /dev/mapper/control"
+- Revert "Allow qemu read and write /dev/mapper/control"
+- Revert "Dontaudit and disallow sys_admin capability for keepalived_t domain"
+- Dontaudit pcscd_t setting its process scheduling
+- Dontaudit thumb_t setting its process scheduling
+- Allow munin domain transition with NoNewPrivileges
+- Add dev_lock_all_blk_files() interface
+- Allow auditd manage kerberos host rcache files
+- Allow systemd-logind dbus chat with fwupd
+
 * Wed Jul 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - 3.14.6-21
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 
