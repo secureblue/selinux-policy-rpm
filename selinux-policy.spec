@@ -1,6 +1,6 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 395220122fcd6b93956c758a2a5094487254a89e
+%global commit0 217d49334447021da909edf8b07007e319540ae3
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 22%{?dist}
+Release: 23%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -784,6 +784,15 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 03 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-23
+- Revert "Add support for /sys/fs/kdbus and allow login_pgm domain to access it."
+- Revert "Add interface to allow types to associate with cgroup filesystems"
+- Revert "kdbusfs should not be accessible for now."
+- Revert "kdbusfs should not be accessible for now by default for shipped policies. It should be moved to kdbus.pp"
+- Revert "Add kdbus.pp policy to allow access /sys/fs/kdbus. It needs to go with own module because this is workaround for now to avoid SELinux in enforcing mode."
+- Remove the legacy kdbus module
+- Remove "kdbus = module" from modules-targeted-base.conf
+
 * Thu Jul 30 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-22
 - Allow virtlockd only getattr and lock block devices
 - Allow qemu-ga read all non security file types conditionally
