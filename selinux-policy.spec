@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 217d49334447021da909edf8b07007e319540ae3
+%global commit0 6fe205674f9cd1face5e2cf1aeb90d265ef89ba8
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 72b352431e6cdce2bd6a26ad942d373f42dbba58
+%global commit1 9b7cf700494669ec9b27e59abe53beae09a8c7c7
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 23%{?dist}
+Release: 24%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -282,7 +282,7 @@ fi;
 
 %define preInstall() \
 if [ $1 -ne 1 ] && [ -s %{_sysconfdir}/selinux/config ]; then \
-     for MOD_NAME in ganesha ipa_custodia; do \
+     for MOD_NAME in ganesha ipa_custodia kdbus; do \
         if [ -d %{_sharedstatedir}/selinux/%1/active/modules/100/$MOD_NAME ]; then \
            %{_sbindir}/semodule -n -d $MOD_NAME; \
         fi; \
@@ -784,6 +784,18 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 13 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-24
+- Add ipa_helper_noatsecure() interface unconditionally
+- Conditionally allow nagios_plugin_domain dbus chat with init
+- Revert "Update allow rules set for nrpe_t domain"
+- Add ipa_helper_noatsecure() interface to ipa.if
+- Label /usr/libexec/qemu-pr-helper with virtd_exec_t
+- Allow kadmind manage kerberos host rcache
+- Allow nsswitch_domain to connect to systemd-machined using a unix socket
+- Define named file transition for sshd on /tmp/krb5_0.rcache2
+- Allow systemd-machined create userdbd runtime sock files
+- Disable kdbus module before updating
+
 * Mon Aug 03 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-23
 - Revert "Add support for /sys/fs/kdbus and allow login_pgm domain to access it."
 - Revert "Add interface to allow types to associate with cgroup filesystems"
