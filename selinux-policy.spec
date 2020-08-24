@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 6fe205674f9cd1face5e2cf1aeb90d265ef89ba8
+%global commit0 099ea7b7bd113cac657f98d406c77839cce98859
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 9b7cf700494669ec9b27e59abe53beae09a8c7c7
+%global commit1 7c37fdec5dbf351cd55491174ae06c983e4e72bc
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.6
-Release: 24%{?dist}
+Release: 25%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -784,6 +784,23 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 24 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-25
+- Allow certmonger fowner capability
+- The nfsdcld service is now confined by SELinux
+- Change transitions for ~/.config/Yubico
+- Allow all users to connect to systemd-userdbd with a unix socket
+- Add file context for ~/.config/Yubico
+- Allow syslogd_t domain to read/write tmpfs systemd-bootchart files
+- Allow login_pgm attribute to get attributes in proc_t
+- Allow passwd to get attributes in proc_t
+- Revert "Allow passwd to get attributes in proc_t"
+- Revert "Allow login_pgm attribute to get attributes in proc_t"
+- Allow login_pgm attribute to get attributes in proc_t
+- Allow passwd to get attributes in proc_t
+- Allow traceroute_t and ping_t to bind generic nodes.
+- Create macro corenet_icmp_bind_generic_node()
+- Allow unconfined_t to node_bind icmp_sockets in node_t domain
+
 * Thu Aug 13 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-24
 - Add ipa_helper_noatsecure() interface unconditionally
 - Conditionally allow nagios_plugin_domain dbus chat with init
