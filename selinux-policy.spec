@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 099ea7b7bd113cac657f98d406c77839cce98859
+%global commit0 4585c55ec6bab755a423aebc9fe5dd462f865e6e
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 7c37fdec5dbf351cd55491174ae06c983e4e72bc
+%global commit1 d78dc0ec3b51123b8e635ff7452b47fb066b579d
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -28,8 +28,8 @@
 %define CHECKPOLICYVER 3.1
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.14.6
-Release: 25%{?dist}
+Version: 3.14.7
+Release: 1%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -784,6 +784,16 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 08 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-1
+- Bump version as Fedora 33 has been branched
+- Allow php-fpm write access to /var/run/redis/redis.sock
+- Allow journalctl to read and write to inherited user domain tty
+- Update rkt policy to allow rkt_t domain to read sysfs filesystem
+- Allow arpwatch create and use rdma socket
+- Allow plymouth sys_chroot capability
+- Allow gnome-initial-setup execute in a xdm sandbox
+- Add new devices and filesystem interfaces
+
 * Mon Aug 24 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.6-25
 - Allow certmonger fowner capability
 - The nfsdcld service is now confined by SELinux
