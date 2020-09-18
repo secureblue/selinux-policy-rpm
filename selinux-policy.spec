@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 4585c55ec6bab755a423aebc9fe5dd462f865e6e
+%global commit0 16e3987a0b7c3c127586e3c5a55e1634cafac4a4
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 d78dc0ec3b51123b8e635ff7452b47fb066b579d
+%global commit1 a79abdab093f548370496c9a22bc7ab08b98c684
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -784,6 +784,12 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 18 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-2
+- Allow openvswitch fowner capability and create netlink sockets
+- Allow additional permissions for gnome-initial-setup
+- Add to map non_security_files to the userdom_admin_user_template template
+- kernel/filesystem: Add exfat support (no extended attributes)
+
 * Tue Sep 08 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-1
 - Bump version as Fedora 33 has been branched
 - Allow php-fpm write access to /var/run/redis/redis.sock
