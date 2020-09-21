@@ -1,6 +1,6 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 16e3987a0b7c3c127586e3c5a55e1634cafac4a4
+%global commit0 496bf1e94c18665a635dfe2e9e68bc589ed7f40f
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -784,6 +784,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Sep 21 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-3
+- Check out the right -contrib branch in Travis
+
 * Fri Sep 18 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-2
 - Allow openvswitch fowner capability and create netlink sockets
 - Allow additional permissions for gnome-initial-setup
