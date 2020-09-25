@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 496bf1e94c18665a635dfe2e9e68bc589ed7f40f
+%global commit0 8ae4dfa61e69e2d88a038d3823a224ee94cecec2
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 a79abdab093f548370496c9a22bc7ab08b98c684
+%global commit1 b1dcbc59a940c762dfe4e07117cd5615f8b5c99a
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -799,6 +799,17 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 25 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-4
+- Allow chronyd_t to accept and make NTS-KE connections
+- Allow domain write to an automount unnamed pipe
+- Label /var/run/zincati/public/motd.d/* as motd_var_run_t
+- Allow login programs to (only) read MOTD files and symlinks
+- Relabel /usr/sbin/charon-systemd as ipsec_exec_t
+- Confine systemd-sleep service
+- Add fstools_rw_swap_files() interface
+- Label 4460/tcp port as ntske_port_t
+- Add lvm_dbus_send_msg(), lvm_rw_var_run() interfaces
+
 * Mon Sep 21 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-3
 - Check out the right -contrib branch in Travis
 
