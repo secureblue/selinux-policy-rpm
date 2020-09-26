@@ -1,12 +1,7 @@
-# github repo with selinux-policy base sources
-%global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 f1505fca7063b21b5f2ef90f904032c5cc023a22
-%global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
-
-# github repo with selinux-policy contrib sources
-%global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 dad9c7670560b550c3837a3bd2237a94c3e54814
-%global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
+# github repo with selinux-policy sources
+%global giturl https://github.com/fedora-selinux/selinux-policy
+%global commit 6c91ffd68953945d6ccda57789f62985abdc9bd6
+%global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
 %define polyinstatiate n
@@ -31,8 +26,7 @@ Name: selinux-policy
 Version: 3.14.7
 Release: 9%{?dist}
 License: GPLv2+
-Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
-Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
+Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
 Source31: modules-targeted-contrib.conf
 Source2: booleans-targeted.conf
@@ -68,7 +62,7 @@ Source35: container-selinux.tgz
 # Provide rpm macros for packages installing SELinux modules
 Source102: rpm.macros
 
-Url: %{git0}
+Url: %{giturl}
 BuildArch: noarch
 BuildRequires: python3 gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
@@ -399,12 +393,8 @@ end
 %build
 
 %prep
-%setup -n %{name}-contrib-%{commit1} -q -b 29
-tar -xf %{SOURCE35}
-contrib_path=`pwd`
-%setup -n %{name}-%{commit0} -q
-refpolicy_path=`pwd`
-cp $contrib_path/* $refpolicy_path/policy/modules/contrib
+%setup -n %{name}-%{commit} -q
+tar -C policy/modules/contrib -xf %{SOURCE35}
 
 mkdir selinux_config
 for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE14} %{SOURCE15} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE22} %{SOURCE23} %{SOURCE25} %{SOURCE26} %{SOURCE31} %{SOURCE32};do
