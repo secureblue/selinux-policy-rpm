@@ -80,9 +80,9 @@ Provides: selinux-policy-base = %{version}-%{release}
 Suggests: selinux-policy-targeted
 
 %description 
-SELinux Base package for SELinux Reference Policy - modular.
-Based off of reference policy: Checked out revision  2.20091117
-
+SELinux core policy package.
+Originally based off of reference policy,
+the policy has been adjusted to provide support for Fedora.
 
 %files 
 %{!?_licensedir:%global license %%doc}
@@ -96,12 +96,12 @@ Based off of reference policy: Checked out revision  2.20091117
 %{_rpmconfigdir}/macros.d/macros.selinux-policy
 
 %package sandbox
-Summary: SELinux policy sandbox
+Summary: SELinux sandbox policy
 Requires(pre): selinux-policy-base = %{version}-%{release}
 Requires(pre): selinux-policy-targeted = %{version}-%{release}
 
 %description sandbox
-SELinux sandbox policy used for the policycoreutils-sandbox package
+SELinux sandbox policy for use with the sandbox utility.
 
 %files sandbox
 %verify(not md5 size mtime) %{_datadir}/selinux/packages/sandbox.pp
@@ -125,7 +125,7 @@ fi;
 exit 0
 
 %package devel
-Summary: SELinux policy devel
+Summary: SELinux policy development files
 Requires(pre): selinux-policy = %{version}-%{release}
 Requires: selinux-policy = %{version}-%{release}
 Requires: m4 checkpolicy >= %{CHECKPOLICYVER}
@@ -133,7 +133,12 @@ Requires: /usr/bin/make
 Requires(post): policycoreutils-devel >= %{POLICYCOREUTILSVER}
 
 %description devel
-SELinux policy development and man page package
+SELinux policy development package.
+This package contains:
+- interfaces, macros, and patterns for policy development
+- a policy example
+- the macro-expander utility
+and some additional files.
 
 %files devel
 %{_bindir}/macro-expander
@@ -158,7 +163,8 @@ Requires(pre): selinux-policy = %{version}-%{release}
 Requires: selinux-policy = %{version}-%{release}
 
 %description doc
-SELinux policy documentation package
+SELinux policy documentation package.
+This package contains manual pages and documentation of the policy modules.
 
 %files doc
 %{_mandir}/man*/*
@@ -545,8 +551,8 @@ exit 0
 
 %if %{BUILD_TARGETED}
 %package targeted
-Summary: SELinux targeted base policy
-Provides: selinux-policy-any = %{version}-%{release}
+Summary: SELinux targeted policy
+Provides: selinux-policy-base = %{version}-%{release}
 Obsoletes: selinux-policy-targeted-sources < 2
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
@@ -560,7 +566,7 @@ Conflicts:  389-ds-base < 1.2.7, 389-admin < 1.1.12
 Conflicts: container-selinux < 2:1.12.1-22
 
 %description targeted
-SELinux Reference policy targeted base module.
+SELinux targeted policy package.
 
 %pretrans targeted -p <lua>
 %backupConfigLua
@@ -631,8 +637,8 @@ exit 0
 
 %if %{BUILD_MINIMUM}
 %package minimum
-Summary: SELinux minimum base policy
-Provides: selinux-policy-any = %{version}-%{release}
+Summary: SELinux minimum policy
+Provides: selinux-policy-base = %{version}-%{release}
 Requires(post): policycoreutils-python-utils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
@@ -641,7 +647,7 @@ Conflicts:  seedit
 Conflicts: container-selinux <= 1.9.0-9
 
 %description minimum
-SELinux Reference policy minimum base module.
+SELinux minimum policy package.
 
 %pretrans minimum -p <lua>
 %backupConfigLua
@@ -733,8 +739,8 @@ exit 0
 
 %if %{BUILD_MLS}
 %package mls 
-Summary: SELinux mls base policy
-Provides: selinux-policy-any = %{version}-%{release}
+Summary: SELinux MLS policy
+Provides: selinux-policy-base = %{version}-%{release}
 Obsoletes: selinux-policy-mls-sources < 2
 Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER} setransd
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
@@ -745,7 +751,7 @@ Conflicts:  seedit
 Conflicts: container-selinux <= 1.9.0-9
 
 %description mls 
-SELinux Reference policy mls base module.
+SELinux MLS (Multi Level Security) policy package.
 
 %pretrans mls -p <lua>
 %backupConfigLua
