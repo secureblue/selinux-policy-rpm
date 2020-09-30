@@ -75,6 +75,9 @@ BuildRequires: gcc
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(post): /bin/awk /usr/bin/sha512sum
 Requires: rpm-plugin-selinux
+Requires: selinux-policy-any = %{version}-%{release}
+Provides: selinux-policy-base = %{version}-%{release}
+Suggests: selinux-policy-targeted
 
 %description 
 SELinux Base package for SELinux Reference Policy - modular.
@@ -543,7 +546,7 @@ exit 0
 %if %{BUILD_TARGETED}
 %package targeted
 Summary: SELinux targeted base policy
-Provides: selinux-policy-base = %{version}-%{release}
+Provides: selinux-policy-any = %{version}-%{release}
 Obsoletes: selinux-policy-targeted-sources < 2
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
@@ -629,7 +632,7 @@ exit 0
 %if %{BUILD_MINIMUM}
 %package minimum
 Summary: SELinux minimum base policy
-Provides: selinux-policy-base = %{version}-%{release}
+Provides: selinux-policy-any = %{version}-%{release}
 Requires(post): policycoreutils-python-utils >= %{POLICYCOREUTILSVER}
 Requires(pre): coreutils
 Requires(pre): selinux-policy = %{version}-%{release}
@@ -731,7 +734,7 @@ exit 0
 %if %{BUILD_MLS}
 %package mls 
 Summary: SELinux mls base policy
-Provides: selinux-policy-base = %{version}-%{release}
+Provides: selinux-policy-any = %{version}-%{release}
 Obsoletes: selinux-policy-mls-sources < 2
 Requires: policycoreutils-newrole >= %{POLICYCOREUTILSVER} setransd
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
