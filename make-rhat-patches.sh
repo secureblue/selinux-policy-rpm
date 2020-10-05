@@ -23,14 +23,15 @@ git checkout $DISTGIT_BRANCH -q
 POLICYSOURCES=`mktemp -d --tmpdir policysources.XXXXXX`
 pushd $POLICYSOURCES > /dev/null
 
-git clone -q $REPO_SELINUX_POLICY selinux-policy
-git clone -q $REPO_SELINUX_POLICY_CONTRIB selinux-policy-contrib
-git clone -q $REPO_CONTAINER_SELINUX container-selinux
-git clone -q $REPO_MACRO_EXPANDER macro-expander
+git clone --depth=1 -q $REPO_SELINUX_POLICY selinux-policy \
+    -b $REPO_SELINUX_POLICY_BRANCH
+git clone --depth=1 -q $REPO_SELINUX_POLICY_CONTRIB selinux-policy-contrib \
+    -b $REPO_SELINUX_POLICY_CONTRIB_BRANCH
+git clone --depth=1 -q $REPO_CONTAINER_SELINUX container-selinux
+git clone --depth=1 -q $REPO_MACRO_EXPANDER macro-expander
 
 pushd selinux-policy > /dev/null
 # prepare policy patches against upstream commits matching the last upstream merge
-git checkout $REPO_SELINUX_POLICY_BRANCH
 BASE_HEAD_ID=$(git rev-parse HEAD)
 BASE_SHORT_HEAD_ID=$(c=${BASE_HEAD_ID}; echo ${c:0:7})
 git archive --prefix=selinux-policy-$BASE_HEAD_ID/ --format tgz HEAD > $DISTGIT_PATH/selinux-policy-$BASE_SHORT_HEAD_ID.tar.gz
@@ -38,7 +39,6 @@ popd > /dev/null
 
 pushd selinux-policy-contrib > /dev/null
 # prepare policy patches against upstream commits matching the last upstream merge
-git checkout $REPO_SELINUX_POLICY_CONTRIB_BRANCH
 CONTRIB_HEAD_ID=$(git rev-parse HEAD)
 CONTRIB_SHORT_HEAD_ID=$(c=${CONTRIB_HEAD_ID}; echo ${c:0:7})
 git archive --prefix=selinux-policy-contrib-$CONTRIB_HEAD_ID/ --format tgz HEAD > $DISTGIT_PATH/selinux-policy-contrib-$CONTRIB_SHORT_HEAD_ID.tar.gz
