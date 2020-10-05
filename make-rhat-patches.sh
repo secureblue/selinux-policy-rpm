@@ -20,7 +20,7 @@ fi
 
 git checkout $DISTGIT_BRANCH -q
 
-POLICYSOURCES=`mktemp -d policysources.XXXXXX`
+POLICYSOURCES=`mktemp -d --tmpdir policysources.XXXXXX`
 pushd $POLICYSOURCES > /dev/null
 
 git clone -q $REPO_SELINUX_POLICY selinux-policy
