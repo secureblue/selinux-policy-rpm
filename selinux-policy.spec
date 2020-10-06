@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 8ae4dfa61e69e2d88a038d3823a224ee94cecec2
+%global commit0 9bb39f6de7ebfb2f108ee5762cb25f7d343f6ede
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 b1dcbc59a940c762dfe4e07117cd5615f8b5c99a
+%global commit1 ed1077e91e1c95362ab220d8200175d7d02eaf41
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -799,6 +799,13 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 06 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-5
+- Remove empty line from rshd.fc
+- Allow systemd-logind read swap files
+- Add fstools_read_swap_files() interface
+- Allow dyntransition from sshd_t to unconfined_t
+- Removed adding to attribute unpriv_userdomain from userdom_unpriv_type template
+
 * Fri Sep 25 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-4
 - Allow chronyd_t to accept and make NTS-KE connections
 - Allow domain write to an automount unnamed pipe
