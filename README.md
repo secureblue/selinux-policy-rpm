@@ -20,7 +20,7 @@ On GitHub, we have two repositories (selinux-policy and selinux-policy-contrib )
     origin/rawhide
 
     $ cd selinux-policy-contrib
-    $ git remote -v 
+    $ git remote -v
     origin	git@github.com:fedora-selinux/selinux-policy-contrib.git (fetch)
 
     $ git branch -r
@@ -38,13 +38,13 @@ Package sources in dist-git are generally composed from a _selinux-policy and _s
 ## Build process
 
 1. clone [fedora-selinux/selinux-policy](https://github.com/fedora-selinux/selinux-policy) repository
-	
+
 		$ cd ~/devel/github
 		$ git clone git@github.com:fedora-selinux/selinux-policy.git
 		$ cd selinux-policy
 
 2. clone [fedora-selinux/selinux-policy-contrib](https://github.com/fedora-selinux/selinux-policy-contrib) repository
-	
+
 		$ cd ~/devel/github
 		$ git clone git@github.com:fedora-selinux/selinux-policy-contrib.git
 		$ cd selinux-policy-contrib
@@ -54,7 +54,7 @@ Package sources in dist-git are generally composed from a _selinux-policy and _s
 4. clone **selinux-policy** dist-git repository
 
 		$ cd ~/devel/dist-git
-		$ fedpkg clone selinux-policy 
+		$ fedpkg clone selinux-policy
 		$ cd selinux-policy
 
 4. Download the latest snaphots from selinux-policy and selinux-policy-contrib github repositories
@@ -63,6 +63,5 @@ Package sources in dist-git are generally composed from a _selinux-policy and _s
 
 5. add changes to the dist-git repository, bump release, create a changelog entry, commit and push
 6. build the package
-	
-         $ fedpkg build
 
+         $ fedpkg build
