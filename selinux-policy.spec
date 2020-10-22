@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 9bb39f6de7ebfb2f108ee5762cb25f7d343f6ede
+%global commit0 4e77f92781238f6f7d58bdc54de4782e12e87802
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 ed1077e91e1c95362ab220d8200175d7d02eaf41
+%global commit1 8b0ce8bfc91e990efcfb03ce3defae0b17682a7d
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -807,6 +807,19 @@ exit 0
 %endif
 
 %changelog
+* Thu Oct 22 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-6
+- rpc.fc: Include /etc/exports.d dir & files
+- Create chronyd_pid_filetrans() interface
+- Change invalid type redisd_t to redis_t in redis_stream_connect()
+- Revert "Removed adding to attribute unpriv_userdomain from userdom_unpriv_type template"
+- Allow init dbus chat with kernel
+- Allow initrc_t create /run/chronyd-dhcp directory with a transition
+- Drop gcc from dependencies in Travis CI
+- fc_sort.py: Use "==" for comparing integers.
+- re-implement fc_sort in python
+- Remove invalid file context line
+- Drop git from dependencies in Travis CI
+
 * Tue Oct 06 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-5
 - Remove empty line from rshd.fc
 - Allow systemd-logind read swap files
