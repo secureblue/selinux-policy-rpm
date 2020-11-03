@@ -23,13 +23,13 @@
 %if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
 %define BUILD_MLS 1
 %endif
-%define POLICYVER 32
-%define POLICYCOREUTILSVER 3.1
-%define CHECKPOLICYVER 3.1
+%define POLICYVER 33
+%define POLICYCOREUTILSVER 3.1-5
+%define CHECKPOLICYVER 3.1-4
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -807,6 +807,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov  3 2020 Petr Lautrbach <plautrba@redhat.com> - 3.14.7-7
+- Rebuild with latest libsepol
+- Bump policy version to 33
+
 * Thu Oct 22 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-6
 - rpc.fc: Include /etc/exports.d dir & files
 - Create chronyd_pid_filetrans() interface
