@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 4e77f92781238f6f7d58bdc54de4782e12e87802
+%global commit0 a324430fd4e7a1bf6aa64757a951a8a6320aa47e
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 8b0ce8bfc91e990efcfb03ce3defae0b17682a7d
+%global commit1 0cfef67283f2b55664c99611f2fcdf8fd47c63d9
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -807,6 +807,31 @@ exit 0
 %endif
 
 %changelog
+* Fri Nov 13 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-8
+- Set correct default file context for /usr/libexec/pcp/lib/*
+- Introduce rpmdb_t type
+- Allow slapd manage files/dirs in ldap certificates directory
+- Revert "Allow certmonger add new entries in a generic certificates directory"
+- Allow certmonger add new entries in a generic certificates directory
+- Allow slapd add new entries in ldap certificates directory
+- Remove retired PCP pmwebd and pmmgr daemons (since 5.0)
+- Let keepalived bind a raw socket
+- Add default file context for /usr/libexec/pcp/lib/*
+- squid: Allow net_raw capability when squid_use_tproxy is enabled
+- systemd: allow networkd to check namespaces
+- Add ability to read init_var_run_t where fs_read_efivarfs_files is allowed
+- Allow resolved to created varlink sockets and the domain to talk to it
+- selinux: tweak selinux_get_enforce_mode() to allow status page to be used
+- systemd: allow all systemd services to check selinux status
+- Set default file context for /var/lib/ipsec/nss
+- Allow user domains transition to rpmdb_t
+- Revert "Add miscfiles_add_entry_generic_cert_dirs() interface"
+- Revert "Add miscfiles_create_generic_cert_dirs() interface"
+- Update miscfiles_manage_all_certs() to include managing directories
+- Add miscfiles_create_generic_cert_dirs() interface
+- Add miscfiles_add_entry_generic_cert_dirs() interface
+- Revert "Label /var/run/zincati/public/motd.d/* as motd_var_run_t"
+
 * Tue Nov  3 2020 Petr Lautrbach <plautrba@redhat.com> - 3.14.7-7
 - Rebuild with latest libsepol
 - Bump policy version to 33
