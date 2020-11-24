@@ -1,11 +1,11 @@
 # github repo with selinux-policy base sources
 %global git0 https://github.com/fedora-selinux/selinux-policy
-%global commit0 a324430fd4e7a1bf6aa64757a951a8a6320aa47e
+%global commit0 f1505fca7063b21b5f2ef90f904032c5cc023a22
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 
 # github repo with selinux-policy contrib sources
 %global git1 https://github.com/fedora-selinux/selinux-policy-contrib
-%global commit1 0cfef67283f2b55664c99611f2fcdf8fd47c63d9
+%global commit1 dad9c7670560b550c3837a3bd2237a94c3e54814
 %global shortcommit1 %(c=%{commit1}; echo ${c:0:7})
 
 %define distro redhat
@@ -29,7 +29,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+
 Source: %{git0}/archive/%{commit0}/%{name}-%{shortcommit0}.tar.gz
 Source29: %{git1}/archive/%{commit1}/%{name}-contrib-%{shortcommit1}.tar.gz
@@ -807,6 +807,21 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 24 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-9
+- Allow varnish map its private tmp files
+- Allow dovecot bind to smtp ports
+- Change fetchmail temporary files path to /var/spool/mail
+- Allow cups_pdf_t domain to communicate with unix_dgram_socket
+- Set file context for symlinks in /etc/httpd to etc_t
+- Allow rpmdb rw access to inherited console, ttys, and ptys
+- Allow dnsmasq read public files
+- Announce merging of selinux-policy and selinux-policy-contrib
+- Label /etc/resolv.conf as net_conf_t only if it is a plain file
+- Fix range for unreserved ports
+- Add files_search_non_security_dirs() interface
+- Introduce logging_syslogd_append_public_content tunable
+- Add miscfiles_append_public_files() interface
+
 * Fri Nov 13 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-8
 - Set correct default file context for /usr/libexec/pcp/lib/*
 - Introduce rpmdb_t type
