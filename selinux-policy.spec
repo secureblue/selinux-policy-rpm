@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 6c91ffd68953945d6ccda57789f62985abdc9bd6
+%global commit d4ba4f91dd7b02b09059163fe7fe112a2293ee25
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -797,6 +797,13 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 26 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-10
+- Allow Xephyr connect to 6000/tcp port and open user ptys
+- Allow kexec manage generic tmp files
+- Update targetd nfs & lvm
+- Add interface rpc_manage_exports
+- Merge selinux-policy and selinux-policy-contrib repos
+
 * Tue Nov 24 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-9
 - Allow varnish map its private tmp files
 - Allow dovecot bind to smtp ports
