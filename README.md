@@ -1,6 +1,6 @@
 ## Purpose
 
-SELinux Fedora Policy is a fork of the [SElinux reference policy](https://github.com/SELinuxProject/refpolicy/). The [fedora-selinux/selinux-policy](https://github.com/selinux-policy/selinux-policy.git) repo makes Fedora packaging simpler and more transparent for packagers, upstream developers, and users. It is used for applying downstream Fedora fixes, for communication about proposed/committed changes, and for communication with upstream and the community. It reflects the upstream repository structure to make submitting patches to upstream easy.
+SELinux Fedora Policy is a fork of the [SELinux reference policy](https://github.com/SELinuxProject/refpolicy/). The [fedora-selinux/selinux-policy](https://github.com/selinux-policy/selinux-policy.git) repo makes Fedora packaging simpler and more transparent for packagers, upstream developers, and users. It is used for applying downstream Fedora fixes, for communication about proposed/committed changes, and for communication with upstream and the community. It reflects the upstream repository structure to make submitting patches to upstream easy.
 
 ## Structure
 
@@ -21,7 +21,7 @@ On GitHub, we have one repository containing the policy sources.
 Note: As opposed to dist-git, the Rawhide content resides in the _rawhide_ branch rather than _master_.
 
 ### dist-git
-Package sources in dist-git are composed from _selinux-policy_, and _macro-expander_ repository snapshot tarballs, _container-selinux_ policy files snapshot, and from other config files.
+Package sources in dist-git are composed from the _selinux-policy_ repository snapshot tarball, _container-selinux_ policy files snapshot, the _macro-expander_ script snapshot, and from other config files.
 
 ## Build process
 
@@ -31,7 +31,7 @@ Package sources in dist-git are composed from _selinux-policy_, and _macro-expan
         $ git clone git@github.com:fedora-selinux/selinux-policy.git
         $ cd selinux-policy
 
-2. Create, backport, cherry-pick needed changes to a particular branch and push them.
+2. Create, backport, or cherry-pick needed changes to a particular branch and push them.
 
 3. Clone the **selinux-policy** dist-git repository.
 
@@ -39,11 +39,11 @@ Package sources in dist-git are composed from _selinux-policy_, and _macro-expan
         $ fedpkg clone selinux-policy
         $ cd selinux-policy
 
-4. Download the latest snaphot from the selinux-policy github repository.
+4. Download the latest snapshot from the selinux-policy GitHub repository.
 
         $ ./make-rhat-patches.sh
 
-5. Add changes to the dist-git repository, bump release, create a changelog entry, commit and push.
+5. Add changes to the dist-git repository, bump release, create a changelog entry, commit, and push.
 6. Build the package.
 
         $ fedpkg build
