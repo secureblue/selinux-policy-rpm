@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit d4ba4f91dd7b02b09059163fe7fe112a2293ee25
+%global commit d18c06ec6cdd5cb00207781f926c30e3706268bf
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -797,6 +797,21 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec  9 15:39:03 CET 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-11
+- Allow systemd-logind manage init's pid files
+- Allow tcsd the setgid capability
+- Allow systemd-resolved manage its private runtime symlinks
+- Update systemd_resolved_read_pid() to also read symlinks
+- Update systemd-sleep policy
+- Add groupadd_t fowner capability
+- Migrate to GitHub Actions
+- Update README.md to reflect the state after contrib and base merge
+- Add README.md announcing merging of selinux-policy and selinux-policy-contrib
+- Adapt .travis.yml to contrib merge
+- Merge contrib into the main repo
+- Prepare to merge contrib repo
+- Move stuff around to match the main repo
+
 * Thu Nov 26 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-10
 - Allow Xephyr connect to 6000/tcp port and open user ptys
 - Allow kexec manage generic tmp files
