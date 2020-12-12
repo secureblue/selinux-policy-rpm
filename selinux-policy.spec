@@ -424,14 +424,11 @@ mkdir -p %{buildroot}%{_datadir}/selinux/packages
 make clean
 %if %{BUILD_TARGETED}
 # Build targeted policy
-# Commented out because only targeted ref policy currently builds
-cp %{SOURCE28} %{buildroot}/
 %makeCmds targeted mcs allow
 %makeModulesConf targeted base contrib
 %installCmds targeted mcs allow
 # install permissivedomains.cil
-%{_sbindir}/semodule -p %{buildroot} -X 100 -s targeted -i %{buildroot}/permissivedomains.cil
-rm -rf %{buildroot}/permissivedomains.cil
+%{_sbindir}/semodule -p %{buildroot} -X 100 -s targeted -i %{SOURCE28}
 # recreate sandbox.pp
 rm -rf %{buildroot}%{_sharedstatedir}/selinux/targeted/active/modules/100/sandbox
 %make_build %common_params UNK_PERMS=allow NAME=targeted TYPE=mcs sandbox.pp
