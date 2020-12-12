@@ -444,7 +444,6 @@ mkdir -p %{buildroot}%{_datadir}/selinux/minimum
 %makeCmds minimum mcs allow
 %makeModulesConf targeted base contrib
 %installCmds minimum mcs allow
-rm -f %{buildroot}%{_sysconfdir}/selinux/minimum/modules/active/modules/sandbox.pp
 rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
 %modulesList minimum
 %nonBaseModulesList minimum
