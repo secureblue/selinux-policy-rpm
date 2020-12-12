@@ -439,8 +439,6 @@ mv sandbox.pp %{buildroot}%{_datadir}/selinux/packages/sandbox.pp
 
 %if %{BUILD_MINIMUM}
 # Build minimum policy
-# Commented out because only minimum ref policy currently builds
-mkdir -p %{buildroot}%{_datadir}/selinux/minimum
 %makeCmds minimum mcs allow
 %makeModulesConf targeted base contrib
 %installCmds minimum mcs allow
