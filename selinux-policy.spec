@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit d18c06ec6cdd5cb00207781f926c30e3706268bf
+%global commit 826033875b0857b0b7519cd809aa581978a4ddde
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -798,6 +798,23 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 15 16:24:44 CET 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-12
+- Allow dovecot_auth_t stat /proc filesystem
+- Allow sysadm_u user and unconfined_domain_type manage perf_events
+- Allow pcp-pmcd manage perf_events
+- Add manage_perf_event_perms object permissions set
+- Add perf_event access vectors.
+- Allow sssd, unix_chkpwd, groupadd stat /proc filesystem
+- Allow stub-resolv.conf to be a symlink
+- sysnetwork.if: avoid directly referencing systemd_resolved_var_run_t
+- Create the systemd_dbus_chat_resolved() compatibility interface
+- Allow nsswitch-domain write to systemd-resolved PID socket files
+- Add systemd_resolved_write_pid_sock_files() interface
+- Add default file context for "/var/run/chrony-dhcp(/.*)?"
+- Allow timedatex dbus chat with cron system domain
+- Add cron_dbus_chat_system_job() interface
+- Allow systemd-logind manage init's pid files
+
 * Wed Dec  9 15:39:03 CET 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-11
 - Allow systemd-logind manage init's pid files
 - Allow tcsd the setgid capability
