@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 826033875b0857b0b7519cd809aa581978a4ddde
+%global commit 5b841a63b80fc0fbf22fe54eaf8ff3af80dadb53
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -792,6 +792,13 @@ exit 0
 %endif
 
 %changelog
+* Thu Dec 17 20:07:23 CET 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-13
+- Label /dev/isst_interface as cpu_device_t
+- Dontaudit firewalld dac_override capability
+- Allow ipsec set the context of a SPD entry to the default context
+- Build binary RPMs in CI
+- Add SRPM build scripts for COPR
+
 * Tue Dec 15 16:24:44 CET 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-12
 - Allow dovecot_auth_t stat /proc filesystem
 - Allow sysadm_u user and unconfined_domain_type manage perf_events
