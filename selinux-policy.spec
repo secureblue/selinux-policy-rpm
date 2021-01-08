@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 5b841a63b80fc0fbf22fe54eaf8ff3af80dadb53
+%global commit c23c6a5242560e8a9946db5bf4440adc0f39febc
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -792,6 +792,19 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan  8 18:41:06 CET 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-14
+- Allow domain read usermodehelper state information
+- Remove all kernel_read_usermodehelper_state() interface calls
+- .copr: improve timestamp format
+- Allow wireshark create and use rdma socket
+- Allow domain stat /proc filesystem
+- Remove all kernel_getattr_proc() interface calls
+- Revert "Allow passwd to get attributes in proc_t"
+- Revert "Allow dovecot_auth_t stat /proc filesystem"
+- Revert "Allow sssd, unix_chkpwd, groupadd stat /proc filesystem"
+- Allow sssd read /run/systemd directory
+- Label /dev/vhost-vdpa-[0-9]+ as vhost_device_t
+
 * Thu Dec 17 20:07:23 CET 2020 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-13
 - Label /dev/isst_interface as cpu_device_t
 - Dontaudit firewalld dac_override capability
