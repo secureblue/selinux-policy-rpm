@@ -258,12 +258,12 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %{_datadir}/selinux/%1/modules-base.lst \
 %{_datadir}/selinux/%1/modules-contrib.lst \
 %{_datadir}/selinux/%1/nonbasemodules.lst \
-%{_sharedstatedir}/selinux/%1/active/commit_num \
-%{_sharedstatedir}/selinux/%1/active/users_extra \
-%{_sharedstatedir}/selinux/%1/active/homedir_template \
-%{_sharedstatedir}/selinux/%1/active/seusers \
-%{_sharedstatedir}/selinux/%1/active/file_contexts \
-%{_sharedstatedir}/selinux/%1/active/policy.kern \
+%verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/commit_num \
+%verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/users_extra \
+%verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/homedir_template \
+%verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/seusers \
+%verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/file_contexts \
+%verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/policy.kern \
 %ghost %{_sharedstatedir}/selinux/%1/active/policy.linked \
 %ghost %{_sharedstatedir}/selinux/%1/active/seusers.linked \
 %ghost %{_sharedstatedir}/selinux/%1/active/users_extra.linked \
