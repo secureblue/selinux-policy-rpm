@@ -19,12 +19,12 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 33
-%define POLICYCOREUTILSVER 3.1-5
-%define CHECKPOLICYVER 3.1-4
+%define POLICYCOREUTILSVER 3.2
+%define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -792,6 +792,11 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 22 2021 Petr Lautrbach <plautrba@redhat.com> - 3.14.7-15
+- Update specfile to not verify md5/size/mtime for active store files
+- Add /var/mnt equivalency to /mnt
+- Rebuild with SELinux userspace 3.2-rc1 release
+
 * Fri Jan  8 18:41:06 CET 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-14
 - Allow domain read usermodehelper state information
 - Remove all kernel_read_usermodehelper_state() interface calls
