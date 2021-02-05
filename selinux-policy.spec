@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit c23c6a5242560e8a9946db5bf4440adc0f39febc
+%global commit 46ba041ba302d1550c230f7359627701b99b1479
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -792,6 +792,38 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 05 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-17
+- Update .copr/make-srpm.sh to use rawhide as DISTGIT_BRANCH
+- Dontaudit setsched for rndc
+- Allow systemd-logind destroy entries in message queue
+- Add userdom_destroy_unpriv_user_msgq() interface
+- ci: Install build dependencies from koji
+- Dontaudit vhostmd to write in /var/lib/rpm/ dir and allow signull rpm
+- Add new cmadmin port for bfdd dameon
+- virtiofs supports Xattrs and SELinux
+- Allow domain write to systemd-resolved PID socket files
+- Label /var/run/pcsd-ruby.socket       socket with cluster_var_run_t type
+- Allow rhsmcertd_t domain transition to kpatch_t
+- Revert "Add kpatch_exec() interface"
+- Revert "Allow rhsmcertd execute kpatch"
+- Allow openvswitch create and use xfrm netlink sockets
+- Allow openvswitch_t perf_event write permission
+- Add kpatch_exec() interface
+- Allow rhsmcertd execute kpatch
+- Adds rule to allow glusterd to access RDMA socket
+- radius: Lexical sort of service-specific corenet rules by service name
+- VQP: Include IANA-assigned TCP/1589
+- radius: Allow binding to the VQP port (VMPS)
+- radius: Allow binding to the BDF Control and Echo ports
+- radius: Allow binding to the DHCP client port
+- radius: Allow net_raw; allow binding to the DHCP server ports
+- Add rsync_sys_admin tunable to allow rsync sys_admin capability
+- Allow staff_u run pam_console_apply
+- Allow openvswitch_t perf_event open permission
+- Allow sysadm read and write /dev/rfkill
+- Allow certmonger fsetid capability
+- Allow domain read usermodehelper state information
+
 * Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 3.14.7-16
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
 
