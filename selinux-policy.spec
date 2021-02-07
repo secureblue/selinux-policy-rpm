@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 46ba041ba302d1550c230f7359627701b99b1479
+%global commit fed45e38dd9e0cad60c130c633ba150530b35d9c
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.7
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -792,6 +792,34 @@ exit 0
 %endif
 
 %changelog
+* Sun Feb 07 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-18
+- Allow lockdown confidentiality for domains using perf_event
+- define lockdown class and access
+- Add perfmon capability for all domains using perf_event
+- Allow ptp4l_t bpf capability to run bpf programs
+- Revert "Allow ptp4l_t sys_admin capability to run bpf programs"
+- access_vectors: Add new capabilities to cap2
+- Allow systemd and systemd-resolved watch dbus pid objects
+- Add new watch interfaces in the base and userdomain policy
+- Add watch permissions for contrib packages
+- Allow xdm watch /usr directories
+- Allow getty watch its private runtime files
+- Add watch permissions for nscd and sssd
+- Add watch permissions for firewalld and NetworkManager
+- Add watch permissions for syslogd
+- Add watch permissions for systemd services
+- Allow restorecond watch /etc dirs
+- Add watch permissions for user domain types
+- Add watch permissions for init
+- Add basic watch interfaces for systemd
+- Add basic watch interfaces to the base module
+- Add additional watch object permissions sets and patterns
+- Allow init_t to watch localization symlinks
+- Allow init_t to watch mount directories
+- Allow init_t to watch cgroup files
+- Add basic watch patterns
+- Add new watch* permissions
+
 * Fri Feb 05 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-17
 - Update .copr/make-srpm.sh to use rawhide as DISTGIT_BRANCH
 - Dontaudit setsched for rndc
