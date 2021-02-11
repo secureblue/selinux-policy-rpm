@@ -254,10 +254,12 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/xguest_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/user_u \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u \
+%dir %{_datadir}/selinux/%1 \
 %{_datadir}/selinux/%1/base.lst \
 %{_datadir}/selinux/%1/modules-base.lst \
 %{_datadir}/selinux/%1/modules-contrib.lst \
 %{_datadir}/selinux/%1/nonbasemodules.lst \
+%dir %{_sharedstatedir}/selinux/%1 \
 %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/commit_num \
 %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/users_extra \
 %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/homedir_template \
