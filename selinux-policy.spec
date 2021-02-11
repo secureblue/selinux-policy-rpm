@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit fed45e38dd9e0cad60c130c633ba150530b35d9c
+%global commit 17c7cdc19d47f1da9d712d4d42521e146f775117
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,8 +23,8 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.14.7
-Release: 18%{?dist}
+Version: 3.14.8
+Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -792,6 +792,18 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 11 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-1
+- Bump version as Fedora 34 has been branched off rawhide
+- Allow xdm watch its private lib dirs, /etc, /usr
+- Allow systemd-importd create /run/systemd/machines.lock file
+- Allow rhsmcertd_t read kpatch lib files
+- Add integrity lockdown permission into dev_read_raw_memory()
+- Add confidentiality lockdown permission into fs_rw_tracefs_files()
+- Allow gpsd read and write ptp4l_t shared memory.
+- Allow colord watch its private lib files and /usr
+- Allow init watch_reads mount PID files
+- Allow IPsec and Certmonger to use opencryptoki services
+
 * Sun Feb 07 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.7-18
 - Allow lockdown confidentiality for domains using perf_event
 - define lockdown class and access
