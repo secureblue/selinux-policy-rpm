@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 17c7cdc19d47f1da9d712d4d42521e146f775117
+%global commit e82ad03883fec6968f07d229ce8720dd593ee72e
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.8
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -792,6 +792,22 @@ exit 0
 %endif
 
 %changelog
+* Mon Feb 15 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-2
+- Allow userdomain watch various filesystem objects
+- Allow systemd-logind and systemd-sleep integrity lockdown permission
+- Allow unconfined_t and kprop_t to create krb5_0.rcache2 with the right context
+- Allow pulseaudio watch devices and systemd-logind session dirs
+- Allow abrt-dump-journal-* watch generic log dirs and /run/log/journal dir
+- Remove duplicate files_mounton_etc(init_t) call
+- Add watch permissions to manage_* object permissions sets
+- Allow journalctl watch generic log dirs and /run/log/journal dir
+- Label /etc/resolv.conf as net_conf_t even when it's a symlink
+- Allow SSSD to watch /var/run/NetworkManager
+- Allow dnsmasq_t to watch /etc
+- Remove unnecessary lines from the new watch interfaces
+- Fix docstring for init_watch_dir()
+- Allow xdm watch its private lib dirs, /etc, /usr
+
 * Thu Feb 11 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-1
 - Bump version as Fedora 34 has been branched off rawhide
 - Allow xdm watch its private lib dirs, /etc, /usr
