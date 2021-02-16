@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit e82ad03883fec6968f07d229ce8720dd593ee72e
+%global commit e4ea1e13059ac475c3f012a3f58cbf0b0e554164
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.8
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -792,6 +792,18 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 16 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-3
+- Allow unconfined integrity lockdown permission
+- Relocate confidentiality lockdown rule from unconfined_domain_type to unconfined
+- Allow systemd-machined manage systemd-userdbd runtime sockets
+- Enable systemd-sysctl domtrans for udev
+- Introduce kernel_load_unsigned_module interface and use it for couple domains
+- Allow gpg watch user gpg secrets dirs
+- Build also the container module in CI
+- Remove duplicate code from kernel.te
+- Allow restorecond to watch all non-auth directories
+- Allow restorecond to watch its config file
+
 * Mon Feb 15 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-2
 - Allow userdomain watch various filesystem objects
 - Allow systemd-logind and systemd-sleep integrity lockdown permission
