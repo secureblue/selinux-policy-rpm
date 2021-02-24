@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit e4ea1e13059ac475c3f012a3f58cbf0b0e554164
+%global commit feefaa074e75466aa75c29f17a3d83ac6ce004f0
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.8
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -792,6 +792,39 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 24 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-4
+- iptables.fc: Add missing legacy entries
+- iptables.fc: Remove some duplicate entries
+- iptables.fc: Remove duplicate file context entries
+- Allow libvirtd to create generic netlink sockets
+- Allow libvirtd the fsetid capability
+- Allow libvirtd to read /run/utmp
+- Dontaudit sys_ptrace capability when calling systemctl
+- Allow udisksd to read /dev/random
+- Allow udisksd to watch files under /run/mount
+- Allow udisksd to watch /etc
+- Allow crond to watch user_cron_spool_t directories
+- Allow accountsd watch xdm config directories
+- Label /etc/avahi with avahi_conf_t
+- Allow sssd get cgroup filesystems attributes and search cgroup dirs
+- Allow systemd-hostnamed read udev runtime data
+- Remove dev_getattr_sysfs_fs() interface calls for particular domains
+- Allow domain stat the /sys filesystem
+- Dontaudit NetworkManager write to initrc_tmp_t pipes
+- policykit.te: Clean up watch rule for policykit_auth_t
+- Revert further unnecessary watch rules
+- Revert "Allow getty watch its private runtime files"
+- Allow systemd watch generic /var directories
+- Allow init watch network config files and lnk_files
+- Allow systemd-sleep get attributes of fixed disk device nodes
+- Complete initial policy for systemd-coredump
+- Label SDC(scini) Dell Driver
+- Allow upowerd to send syslog messages
+- Remove the disk write permissions from tlp_t
+- Label NVMe devices as fixed_disk_device_t
+- Allow rhsmcertd bind tcp sockets to a generic node
+- Allow systemd-importd manage machines.lock file
+
 * Tue Feb 16 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-3
 - Allow unconfined integrity lockdown permission
 - Relocate confidentiality lockdown rule from unconfined_domain_type to unconfined
