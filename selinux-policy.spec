@@ -279,6 +279,10 @@ if %{_sbindir}/selinuxenabled && [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.p
      %{_sbindir}/fixfiles -C ${FILE_CONTEXT}.pre restore &> /dev/null > /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
 fi; \
+# the /dev/nvme* device files type changed, therefore explicit relabeling \
+# of /dev/nvme* is needed as fixfiles excludes /dev \
+# this is a temporary workaround till April 2021 \
+[ -f /dev/nvme0 ] && %{_sbindir}/restorecon /dev/nvme* \
 if %{_sbindir}/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null;then \
     continue; \
 fi;
