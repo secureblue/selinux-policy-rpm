@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit feefaa074e75466aa75c29f17a3d83ac6ce004f0
+%global commit f465aac2379225d7afd6ac4a30cf0e23f92d492a
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.8
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -796,6 +796,16 @@ exit 0
 %endif
 
 %changelog
+* Wed Mar 03 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-5
+- Allow apmd watch generic device directories
+- Allow kdump load a new kernel
+- Add confidentiality lockdown permission to kernel_read_core_if()
+- Allow keepalived read nsfs files
+- Allow local_login_t get attributes of filesystems with ext attributes
+- Allow keepalived read/write its private memfd: objects
+- Add missing declaration in rpm_named_filetrans()
+- Change param description in cron interfaces to userdomain_prefix
+
 * Wed Feb 24 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-4
 - iptables.fc: Add missing legacy entries
 - iptables.fc: Remove some duplicate entries
