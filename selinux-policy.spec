@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit f465aac2379225d7afd6ac4a30cf0e23f92d492a
+%global commit e3da92314ccfcc7b263aa44d0c9f824703df197c
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.8
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -796,6 +796,20 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 11 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-6
+- Allow polkit-agent-helper-1 read logind sessions files
+- Allow polkit-agent-helper read init state
+- Allow login_userdomain watch generic device dirs
+- Allow login_userdomain listen on bluetooth sockets
+- Allow user_t and staff_t bind netlink_generic_socket
+- Allow login_userdomain write inaccessible nodes
+- Allow transition from xdm domain to unconfined_t domain.
+- Add 'make validate' step to CI
+- Disallow user_t run su/sudo and staff_t run su
+- Fix typo in rsyncd.conf in rsync.if
+- Add an alias for nvme_device_t
+- Allow systemd watch and watch_reads unallocated ttys
+
 * Wed Mar 03 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-5
 - Allow apmd watch generic device directories
 - Allow kdump load a new kernel
