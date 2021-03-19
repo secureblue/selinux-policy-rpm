@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit e3da92314ccfcc7b263aa44d0c9f824703df197c
+%global commit d552a9bea539b67ebe404601074887a8c48a3f3b
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.8
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -796,6 +796,17 @@ exit 0
 %endif
 
 %changelog
+* Fri Mar 19 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-7
+- Allow xdm_t watch systemd-logind session dirs
+- Allow xdm_t transition to system_dbusd_t
+- Allow confined users login into graphic session
+- Allow login_userdomain watch systemd login session dirs
+- install_t: Allow NoNewPriv transition from systemd
+- Remove setuid/setgid capabilities from mysqld_t
+- Add context for new mariadbd executable files
+- Allow netutils_t create netlink generic socket
+- Allow systemd the audit_control capability conditionally
+
 * Thu Mar 11 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-6
 - Allow polkit-agent-helper-1 read logind sessions files
 - Allow polkit-agent-helper read init state
