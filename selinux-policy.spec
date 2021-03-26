@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit d552a9bea539b67ebe404601074887a8c48a3f3b
+%global commit 485578ca5fa9c5c4613a5e2af687d6ffba9785ab
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 3.14.8
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -796,6 +796,19 @@ exit 0
 %endif
 
 %changelog
+* Fri Mar 26 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-8
+- Allow arpwatch_t create netlink generic socket
+- Allow postgrey read network state
+- Add watch_mount_dirs_pattern file pattern
+- Allow bluetooth_t dbus chat with fwupd_t
+- Allow xdm_t watch accountsd lib directories
+- Add additional interfaces for watching /boot
+- Allow sssd_t get attributes of tmpfs filesystems
+- Allow local_login_t get attributes of tmpfs filesystems
+- Dontaudit domain the fowner capability
+- Extend fs_manage_nfsd_fs() to allow managing dirs as well
+- Allow spice-vdagentd watch systemd-logind session dirs
+
 * Fri Mar 19 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-7
 - Allow xdm_t watch systemd-logind session dirs
 - Allow xdm_t transition to system_dbusd_t
