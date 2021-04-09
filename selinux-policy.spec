@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 485578ca5fa9c5c4613a5e2af687d6ffba9785ab
+%global commit e08db953f4e4c662f62d1c8d3ec790c9d0833734
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,8 +23,8 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 3.14.8
-Release: 8%{?dist}
+Version: 34.3
+Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -796,6 +796,41 @@ exit 0
 %endif
 
 %changelog
+* Fri Apr 09 2021 Zdenek Pytela <zpytela@redhat.com> - 34.3-1
+- Label /etc/redis as redis_conf_t
+- Add brltty new permissions required by new upstream version
+- Allow cups-lpd read its private runtime socket files
+- Dontaudit daemon open and read init_t file
+- Add file context specification for /var/tmp/tmp-inst
+- Allow brltty create and use bluetooth_socket
+- Allow usbmuxd get attributes of cgroup filesystems
+
+* Tue Apr 06 2021 Zdenek Pytela <zpytela@redhat.com> - 34.2-1
+- Allow usbmuxd get attributes of cgroup filesystems
+- Allow accounts-daemon get attributes of cgroup filesystems
+- Allow pool-geoclue get attributes of cgroup filesystems
+- allow systemd-sleep to set timer for suspend-then-hibernate
+- Allow aide connect to systemd-userdbd with a unix socket
+- Add new interfaces with watch_mount and watch_with_perm permissions
+- Add file context specification for /usr/libexec/realmd
+- Allow /tmp file transition for dbus-daemon also for sock_file
+- Allow login_userdomain create cgroup files
+- Allow plymouthd_t exec generic program in bin directories
+
+* Thu Apr 01 2021 Zdenek Pytela <zpytela@redhat.com> - 34.1-1
+- Change the package versioning
+
+* Thu Apr 01 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-10
+- Allow plymouthd_t exec generic program in bin directories
+- Allow dhcpc_t domain transition to chronyc_t
+- Allow login_userdomain bind xmsg port
+- Allow ibacm the net_raw and sys_rawio capabilities
+- Allow nsswitch_domain read cgroup files
+- Allow systemd-sleep create hardware state information files
+
+* Mon Mar 29 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-9
+- Add watch_with_perm_dirs_pattern file pattern
+
 * Fri Mar 26 2021 Zdenek Pytela <zpytela@redhat.com> - 3.14.8-8
 - Allow arpwatch_t create netlink generic socket
 - Allow postgrey read network state
