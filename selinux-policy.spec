@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit e08db953f4e4c662f62d1c8d3ec790c9d0833734
+%global commit 8a1746df03519636f179cc7bcc58029118822a8f
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.3
+Version: 34.4
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -796,6 +796,22 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 27 2021 Zdenek Pytela <zpytela@redhat.com> - 34.4-1
+- Allow domain create anonymous inodes
+- Add anon_inode class to the policy
+- Allow systemd-coredump getattr nsfs files and net_admin capability
+- Allow systemd-sleep transition to sysstat_t
+- Allow systemd -sleep transition to tlp_t
+- Allow systemd-sleep transition to unconfined_service_t on bin_t executables
+- Allow systemd-timedated watch runtime dir and its parent
+- Allow system dbusd read /var/lib symlinks
+- Allow unconfined_service_t confidentiality and integrity lockdown
+- Label /var/lib/brltty with brltty_var_lib_t
+- Allow domain and unconfined_domain_type watch /proc/PID dirs
+- Additional permission for confined users loging into graphic session
+- Make for screen fsetid/setuid/setgid permission conditional
+- Allow for confined users acces to wtmp and run utempter
+
 * Fri Apr 09 2021 Zdenek Pytela <zpytela@redhat.com> - 34.3-1
 - Label /etc/redis as redis_conf_t
 - Add brltty new permissions required by new upstream version
