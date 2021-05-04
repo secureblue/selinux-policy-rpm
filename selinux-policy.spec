@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 8a1746df03519636f179cc7bcc58029118822a8f
+%global commit e1e1381cb68157a427405fcef50fd081ba1aae4d
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.4
+Version: 34.5
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -796,6 +796,22 @@ exit 0
 %endif
 
 %changelog
+* Tue May 04 2021 Zdenek Pytela <zpytela@redhat.com> - 34.5-1
+- Grant execmem to varnishlog_t
+- We no longer need signull for varnishlog_t
+- Add map permission to varnishd_read_lib_files
+- Allow systemd-sleep tlp_filetrans_named_content()
+- Allow systemd-sleep execute generic programs
+- Allow systemd-sleep execute shell
+- Allow to sendmail read/write kerberos host rcache files
+- Allow freshclam get attributes of cgroup filesystems
+- Fix context of /run/systemd/timesync
+- Allow udev create /run/gdm with proper type
+- Allow chronyc socket file transition in user temp directory
+- Allow virtlogd_t to create virt_var_lockd_t dir
+- Allow pluto IKEv2 / ESP over TCP
+
+
 * Tue Apr 27 2021 Zdenek Pytela <zpytela@redhat.com> - 34.4-1
 - Allow domain create anonymous inodes
 - Add anon_inode class to the policy
