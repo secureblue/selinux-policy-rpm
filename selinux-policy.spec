@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit e1e1381cb68157a427405fcef50fd081ba1aae4d
+%global commit bc7eb6f794d670d25b569571042eae390cbc7617
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.5
+Version: 34.6
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -796,6 +796,17 @@ exit 0
 %endif
 
 %changelog
+* Fri May 07 2021 Zdenek Pytela <zpytela@redhat.com> - 34.6-1
+- Make domains use kernel_write_perf_event() and kernel_manage_perf_event()
+- Add kernel_write_perf_event() and kernel_manage_perf_event()
+- Allow syslogd_t watch root and var directories
+- Allow unconfined_t read other processes perf_event records
+- Allow login_userdomain read and map /var/lib/systemd files
+- Allow NetworkManager watch its config dir
+- Allow NetworkManager read and write z90crypt device
+- Allow tgtd create and use rdma socket
+- Allow aide connect to init with a unix socket
+
 * Tue May 04 2021 Zdenek Pytela <zpytela@redhat.com> - 34.5-1
 - Grant execmem to varnishlog_t
 - We no longer need signull for varnishlog_t
