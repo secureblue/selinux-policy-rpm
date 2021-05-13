@@ -59,6 +59,8 @@ Source33: macro-expander
 # Git repo: https://github.com/containers/container-selinux.git
 Source35: container-selinux.tgz
 
+Source36: selinux-check-proper-disable.service
+
 # Provide rpm macros for packages installing SELinux modules
 Source102: rpm.macros
 
@@ -66,6 +68,7 @@ Url: %{giturl}
 BuildArch: noarch
 BuildRequires: python3 gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2
 BuildRequires: make
+BuildRequires: systemd-rpm-macros
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(post): /bin/awk /usr/bin/sha512sum
 Requires: rpm-plugin-selinux
@@ -88,6 +91,7 @@ the policy has been adjusted to provide support for Fedora.
 %ghost %{_sysconfdir}/sysconfig/selinux
 %{_usr}/lib/tmpfiles.d/selinux-policy.conf
 %{_rpmconfigdir}/macros.d/macros.selinux-policy
+%{_unitdir}/selinux-check-proper-disable.service
 
 %package sandbox
 Summary: SELinux sandbox policy
@@ -480,9 +484,13 @@ install -m 644 %{SOURCE102} %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux
 sed -i 's/SELINUXPOLICYVERSION/%{version}-%{release}/' %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
 sed -i 's@SELINUXSTOREPATH@%{_sharedstatedir}/selinux@' %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
 
+mkdir -p %{buildroot}%{_unitdir}
+install -m 644 %{SOURCE36} %{buildroot}%{_unitdir}
 
 rm -rf selinux_config
+
 %post
+%systemd_post selinux-check-proper-disable.service
 if [ ! -s %{_sysconfdir}/selinux/config ]; then
 #
 #     New install so we will default to targeted policy
@@ -524,7 +532,11 @@ else
 fi
 exit 0
 
+%preun
+%systemd_preun selinux-check-proper-disable.service
+
 %postun
+%systemd_postun selinux-check-proper-disable.service
 if [ $1 = 0 ]; then
      %{_sbindir}/setenforce 0 2> /dev/null
      if [ ! -s %{_sysconfdir}/selinux/config ]; then
