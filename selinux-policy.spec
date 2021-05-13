@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit bc7eb6f794d670d25b569571042eae390cbc7617
+%global commit c05289b0d8ff717db3a9f5b9ca249c180f8fd7fc
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.6
+Version: 34.7
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -796,6 +796,25 @@ exit 0
 %endif
 
 %changelog
+* Thu May 13 2021 Zdenek Pytela <zpytela@redhat.com> - 34.7-1
+- Allow tgtd read and write infiniband devices
+- Add a comment on virt_sandbox booleans with empty content
+- Deprecate duplicate dev_write_generic_sock_files() interface
+- Allow vnstatd_t map vnstatd_var_lib_t files
+- Allow privoxy execmem
+- Allow pmdakvm read information from the debug filesystem
+- Add lockdown integrity into kernel_read_debugfs() and kernel_manage_debugfs()
+- Add permissions to delete lnk_files into gnome_delete_home_config()
+- Remove rules for inotifyfs
+- Remove rules for anon_inodefs
+- Allow systemd nnp_transition to login_userdomain
+- Allow unconfined_t write other processes perf_event records
+- Allow sysadm_t dbus chat with tuned
+- Allow tuned write profile files with file transition
+- Allow tuned manage perf_events
+- Make domains use kernel_write_perf_event() and kernel_manage_perf_event()
+
+
 * Fri May 07 2021 Zdenek Pytela <zpytela@redhat.com> - 34.6-1
 - Make domains use kernel_write_perf_event() and kernel_manage_perf_event()
 - Add kernel_write_perf_event() and kernel_manage_perf_event()
