@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit c05289b0d8ff717db3a9f5b9ca249c180f8fd7fc
+%global commit 84d400b50cd328c24885b6579ee32c729092ddb8
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.7
+Version: 34.8
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -796,6 +796,16 @@ exit 0
 %endif
 
 %changelog
+* Thu May 20 2021 Zdenek Pytela <zpytela@redhat.com> - 34.8-1
+- Allow local_login_t nnp_transition to login_userdomain
+- Allow asterisk watch localization symlinks
+- Allow NetworkManager_t to watch /etc
+- Label /var/lib/kdump with kdump_var_lib_t
+- Allow amanda get attributes of cgroup filesystems
+- Allow sysadm_t nnp_domtrans to systemd_tmpfiles_t
+- Allow install_t nnp_domtrans to setfiles_mac_t
+- Allow fcoemon create sysfs files
+
 * Thu May 13 2021 Zdenek Pytela <zpytela@redhat.com> - 34.7-1
 - Allow tgtd read and write infiniband devices
 - Add a comment on virt_sandbox booleans with empty content
