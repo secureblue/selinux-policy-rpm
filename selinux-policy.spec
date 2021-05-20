@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 34.8
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -279,10 +279,6 @@ if %{_sbindir}/selinuxenabled && [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.p
      %{_sbindir}/fixfiles -C ${FILE_CONTEXT}.pre restore &> /dev/null > /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
 fi; \
-# the /dev/nvme* device files type changed, therefore explicit relabeling \
-# of /dev/nvme* is needed as fixfiles excludes /dev \
-# this is a temporary workaround till April 2021 \
-[ -f /dev/nvme0 ] && %{_sbindir}/restorecon /dev/nvme* \
 if %{_sbindir}/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null;then \
     continue; \
 fi;
@@ -796,6 +792,9 @@ exit 0
 %endif
 
 %changelog
+* Thu May 20 2021 Zdenek Pytela <zpytela@redhat.com> - 34.8-2
+- Remove temporary explicit /dev/nvme relabeling
+
 * Thu May 20 2021 Zdenek Pytela <zpytela@redhat.com> - 34.8-1
 - Allow local_login_t nnp_transition to login_userdomain
 - Allow asterisk watch localization symlinks
