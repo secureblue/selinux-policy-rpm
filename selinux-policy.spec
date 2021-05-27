@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 84d400b50cd328c24885b6579ee32c729092ddb8
+%global commit 2ed658b0f359f464daaf11587740f7f02fbb7175
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,8 +23,8 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.8
-Release: 2%{?dist}
+Version: 34.9
+Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -792,6 +792,27 @@ exit 0
 %endif
 
 %changelog
+* Thu May 27 2021 Zdenek Pytela <zpytela@redhat.com> - 34.9-1
+- Add kerberos object filetrans for nsswitchdomain
+- Allow fail2ban watch various log files
+- Add logging_watch_audit_log_files() and logging_watch_audit_log_dirs()
+- Remove further modules recently removed from refpolicy
+- Remove modules not shipped and not present in refpolicy
+- Revert "Add permission open to files_read_inherited_tmp_files() interface"
+- Revert "Allow pcp_pmlogger_t to use setrlimit BZ(1708951)"
+- Revert "Dontaudit logrotate to setrlimit itself. rhbz#1309604"
+- Revert "Allow cockpit_ws_t domain to set limits BZ(1701703)"
+- Dontaudit setrlimit for domains that exec systemctl
+- Allow kdump_t net_admin capability
+- Allow nsswitch_domain read init pid lnk_files
+- Label /dev/trng with random_device_t
+- Label /run/systemd/default-hostname with hostname_etc_t
+- Add default file context specification for dnf log files
+- Label /dev/zram[0-9]+ block device files with fixed_disk_device_t
+- Label /dev/udmabuf character device with dma_device_t
+- Label /dev/dma_heap/* char devices with dma_device_t
+- Label /dev/acpi_thermal_rel char device with acpi_device_t
+
 * Thu May 20 2021 Zdenek Pytela <zpytela@redhat.com> - 34.8-2
 - Remove temporary explicit /dev/nvme relabeling
 
