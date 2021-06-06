@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 2ed658b0f359f464daaf11587740f7f02fbb7175
+%global commit 3f7821fedda121e9e8f287c55c1ac4e6c069aade
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.9
+Version: 34.10
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -792,6 +792,18 @@ exit 0
 %endif
 
 %changelog
+* Sun Jun 06 2021 Zdenek Pytela <zpytela@redhat.com> - 34.10-1
+- Allow using opencryptoki for ipsec
+- Allow using opencryptoki for certmonger
+- Label var.lib.opencryptoki.* files and create pkcs_tmpfs_filetrans()
+- Label /dev/dma_heap with dma_device_dir_t
+- Allow syslogd watch non security dirs conditionally
+- Introduce logging_syslogd_list_non_security_dirs tunable
+- Remove openhpi module
+- Allow udev to watch fixed disk devices
+- Allow httpd_sys_script_t read, write, and map hugetlbfs files
+- Allow apcupsd get attributes of cgroup filesystems
+
 * Thu May 27 2021 Zdenek Pytela <zpytela@redhat.com> - 34.9-1
 - Add kerberos object filetrans for nsswitchdomain
 - Allow fail2ban watch various log files
