@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 3f7821fedda121e9e8f287c55c1ac4e6c069aade
+%global commit b358de719df0b724d3164240a430cc4e02be15d0
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.10
+Version: 34.11
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -792,6 +792,13 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 09 2021 Zdenek Pytela <zpytela@redhat.com> - 34.11-1
+- Allow sanlock get attributes of cgroup filesystems
+- Associate dma_device_dir_t with device filesystem
+- Set default file context for /var/run/systemd instead of /run/systemd
+- Allow nmap create and use rdma socket
+- Allow pkcs-slotd create and use netlink_kobject_uevent_socket
+
 * Sun Jun 06 2021 Zdenek Pytela <zpytela@redhat.com> - 34.10-1
 - Allow using opencryptoki for ipsec
 - Allow using opencryptoki for certmonger
