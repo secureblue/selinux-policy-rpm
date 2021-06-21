@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit b358de719df0b724d3164240a430cc4e02be15d0
+%global commit 85f35a10d97af810016aa668dc24f8e5bbc36596
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.11
+Version: 34.12
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -792,6 +792,25 @@ exit 0
 %endif
 
 %changelog
+* Mon Jun 21 2021 Zdenek Pytela <zpytela@redhat.com> - 34.12-1
+- Label /dev/dma_heap/* char devices with dma_device_t
+- Revert "Label /dev/dma_heap/* char devices with dma_device_t"
+- Revert "Label /dev/dma_heap with dma_device_dir_t"
+- Revert "Associate dma_device_dir_t with device filesystem"
+- Add the lockdown integrity permission to dev_map_userio_dev()
+- Allow systemd-modules-load read/write tracefs files
+- Allow sssd watch /run/systemd
+- Label /usr/bin/arping plain file with netutils_exec_t
+- Label /run/fsck with fsadm_var_run_t
+- Label /usr/bin/Xwayland with xserver_exec_t
+- Allow systemd-timesyncd watch dbus runtime dir
+- Allow asterisk watch localization files
+- Allow iscsid read all process stat
+- iptables.fc: Add missing legacy-restore and legacy-save entries
+- Label /run/libvirt/common with virt_common_var_run_t
+- Label /.k5identity file allow read of this file to rpc.gssd
+- Make usbmuxd_t a daemon
+
 * Wed Jun 09 2021 Zdenek Pytela <zpytela@redhat.com> - 34.11-1
 - Allow sanlock get attributes of cgroup filesystems
 - Associate dma_device_dir_t with device filesystem
