@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 34.12
-Release: 1%{?dist}
+Release: 2
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -285,6 +285,10 @@ if %{_sbindir}/selinuxenabled && [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.p
      %{_sbindir}/fixfiles -C ${FILE_CONTEXT}.pre restore &> /dev/null > /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
 fi; \
+# the type of the /dev/dma_heap directory has changed, therefore explicit relabeling \
+# is needed as fixfiles excludes /dev \
+# this is a temporary workaround till July 2021 \
+[ -f /dev/dma_heap ] && %{_sbindir}/restorecon -R /dev/dma_heap \
 if %{_sbindir}/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null;then \
     continue; \
 fi;
@@ -806,6 +810,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun 22 2021 Zdenek Pytela <zpytela@redhat.com> - 34.12-2
+- Add a systemd service to check that SELinux is disabled properly
+- specfile: Add unowned dir to the macro
+- Relabel /dev/dma_heap explicitly
+
 * Mon Jun 21 2021 Zdenek Pytela <zpytela@redhat.com> - 34.12-1
 - Label /dev/dma_heap/* char devices with dma_device_t
 - Revert "Label /dev/dma_heap/* char devices with dma_device_t"
