@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 85f35a10d97af810016aa668dc24f8e5bbc36596
+%global commit 85d254ceaa5c4ec8fbf658e9cbccbd996b7ba12f
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,8 +23,8 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.12
-Release: 2
+Version: 34.13
+Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -810,6 +810,11 @@ exit 0
 %endif
 
 %changelog
+* Thu Jul 01 2021 Zdenek Pytela <zpytela@redhat.com> - 34.13-1
+- Allow radius map its library files
+- Allow nftables read NetworkManager unnamed pipes
+- Allow logrotate rotate container log files
+
 * Tue Jun 22 2021 Zdenek Pytela <zpytela@redhat.com> - 34.12-2
 - Add a systemd service to check that SELinux is disabled properly
 - specfile: Add unowned dir to the macro
