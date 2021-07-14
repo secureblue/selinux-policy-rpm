@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 85d254ceaa5c4ec8fbf658e9cbccbd996b7ba12f
+%global commit 0fc68a1f54d3789a30461f76f3469b6190be95dd
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.13
+Version: 34.14
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -810,6 +810,19 @@ exit 0
 %endif
 
 %changelog
+* Wed Jul 14 2021 Zdenek Pytela <zpytela@redhat.com> - 34.14-1
+- Revert "update libs_filetrans_named_content() to have support for /usr/lib/debug directory"
+- Remove references to init_watch_path_type attribute
+- Remove all redundant watch permissions for systemd
+- Allow systemd watch non_security_file_type dirs, files, lnk_files
+- Removed adding to attribute unpriv_userdomain from userdom_unpriv_type template
+- Allow bacula get attributes of cgroup filesystems
+- Allow systemd-journal-upload watch logs and journal
+- Create a policy for systemd-journal-upload
+- Allow tcpdump and nmap get attributes of infiniband_device_t
+- Allow arpwatch get attributes of infiniband_device_t devices
+- Label /dev/wmi/dell-smbios as acpi_device_t
+
 * Thu Jul 01 2021 Zdenek Pytela <zpytela@redhat.com> - 34.13-1
 - Allow radius map its library files
 - Allow nftables read NetworkManager unnamed pipes
