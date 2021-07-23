@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 34.14
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -810,6 +810,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Jul 23 2021 Fedora Release Engineering <releng@fedoraproject.org> - 34.14-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
+
 * Wed Jul 14 2021 Zdenek Pytela <zpytela@redhat.com> - 34.14-1
 - Revert "update libs_filetrans_named_content() to have support for /usr/lib/debug directory"
 - Remove references to init_watch_path_type attribute
