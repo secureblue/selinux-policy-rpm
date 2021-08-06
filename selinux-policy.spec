@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 0fc68a1f54d3789a30461f76f3469b6190be95dd
+%global commit 66323a2d3fef73b2a6aa8b32f8cf6d8d78fa0d3b
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,8 +23,8 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.14
-Release: 2%{?dist}
+Version: 34.15
+Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -810,6 +810,23 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 06 2021 Zdenek Pytela <zpytela@redhat.com> - 34.15-1
+- Disable seccomp on CI containers
+- Allow systemd-machined stop generic service units
+- Allow virtlogd_t read process state of user domains
+- Add "/" at the beginning of dev/shm/var\.lib\.opencryptoki.* regexp
+- Label /dev/crypto/nx-gzip with accelerator_device_t
+- Update the policy for systemd-journal-upload
+- Allow unconfined domains to bpf all other domains
+- Confine rhsm service and rhsm-facts service as rhsmcertd_t
+- Allow fcoemon talk with unconfined user over unix domain datagram socket
+- Allow abrt_domain read and write z90crypt device
+- Allow mdadm read iscsi pid files
+- Change dev_getattr_infiniband_dev() to use getattr_chr_files_pattern()
+- Label /usr/lib/pcs/pcs_snmp_agent with cluster_exec_t
+- Allow hostapd bind UDP sockets to the dhcpd port
+- Unconfined domains should not be confined
+
 * Fri Jul 23 2021 Fedora Release Engineering <releng@fedoraproject.org> - 34.14-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
 
