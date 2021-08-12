@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 66323a2d3fef73b2a6aa8b32f8cf6d8d78fa0d3b
+%global commit 14f55fbbd083aa0bee8dd76f8084221e9b813e79
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.15
+Version: 34.16
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -810,6 +810,26 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 12 2021 Zdenek Pytela <zpytela@redhat.com> - 34.16-1
+- Allow systemd-timesyncd watch system dbus pid socket files
+- Allow firewalld drop capabilities
+- Allow rhsmcertd execute gpg
+- Allow lldpad send to kdump over a unix dgram socket
+- Allow systemd-gpt-auto-generator read udev pid files
+- Set default file context for /sys/firmware/efi/efivars
+- Allow tcpdump run as a systemd service
+- Allow nmap create and use netlink generic socket
+- Allow nscd watch system db files in /var/db
+- Allow cockpit_ws_t get attributes of fs_t filesystems
+- Allow sysadm acces to kernel module resources
+- Allow sysadm to read/write scsi files and manage shadow
+- Allow sysadm access to files_unconfined and bind rpc ports
+- Allow sysadm read and view kernel keyrings
+- Allow journal mmap and read var lib files
+- Allow tuned to read rhsmcertd config files
+- Allow bootloader to read tuned etc files
+- Label /usr/bin/qemu-storage-daemon with virtd_exec_t
+
 * Fri Aug 06 2021 Zdenek Pytela <zpytela@redhat.com> - 34.15-1
 - Disable seccomp on CI containers
 - Allow systemd-machined stop generic service units
