@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 34.17
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -808,6 +808,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 27 2021 Zdenek Pytela <zpytela@redhat.com> - 34.17-5
+- Add ica module to modules-targeted-contrib.conf
+
 * Fri Aug 27 2021 Zdenek Pytela <zpytela@redhat.com> - 34.17-4
 - Add trailing \ to the relabel() block which is needed even in a comment
 
