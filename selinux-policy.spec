@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 14f55fbbd083aa0bee8dd76f8084221e9b813e79
+%global commit e85301a7dd56d0a1e06332cc3255649ad26efbe3
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.16
+Version: 34.17
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -810,6 +810,30 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 27 2021 Zdenek Pytela <zpytela@redhat.com> - 34.17-1
+- Add support for at-spi
+- Add permissions for system dbus processes
+- Allow various domains work with ICA crypto accelerator
+- Add ica module
+- Revert "Support using ICA crypto accelerator on s390x arch"
+- Allow systemd to delete fwupd var cache files
+- Allow vmtools_unconfined_t domain transition to rpm_script_t
+- Allow dirsrv read slapd tmpfs files
+- Revert "Label /dev/shm/dirsrv/ with dirsrv_tmpfs_t label"
+- Rename samba_exec() to samba_exec_net()
+- Support using ICA crypto accelerator on s390x arch
+- Allow systemd delete /run/systemd/default-hostname
+- Allow tcpdump read system state information in /proc
+- Allow rhsmcertd to create cache file in /var/cache/cloud-what
+- Allow D-bus communication between avahi and sosreport
+- Label /usr/libexec/gdm-runtime-config with xdm_exec_t
+- Allow lldpad send to kdumpctl over a unix dgram socket
+- Revert "Allow lldpad send to kdump over a unix dgram socket"
+- Allow chronyc respond to a user chronyd instance
+- Allow ptp4l respond to pmc
+- Allow lldpad send to unconfined_t over a unix dgram socket
+- Allow sssd to set samba setting
+
 * Thu Aug 12 2021 Zdenek Pytela <zpytela@redhat.com> - 34.16-1
 - Allow systemd-timesyncd watch system dbus pid socket files
 - Allow firewalld drop capabilities
