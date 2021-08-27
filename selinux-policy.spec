@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 34.17
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -285,7 +285,7 @@ if %{_sbindir}/selinuxenabled && [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.p
      %{_sbindir}/fixfiles -C ${FILE_CONTEXT}.pre restore &> /dev/null > /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
 fi; \
-# rebuilding the rpm database still can sometimes result in an incorrect context
+# rebuilding the rpm database still can sometimes result in an incorrect context \
 %{_sbindir}/restorecon -R /var/lib/rpm \
 if %{_sbindir}/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null;then \
     continue; \
@@ -808,6 +808,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 27 2021 Zdenek Pytela <zpytela@redhat.com> - 34.17-4
+- Add trailing \ to the relabel() block which is needed even in a comment
+
 * Fri Aug 27 2021 Zdenek Pytela <zpytela@redhat.com> - 34.17-3
 - Add ica module to modules-targeted.conf
 
