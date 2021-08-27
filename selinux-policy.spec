@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 34.17
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -808,6 +808,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Aug 27 2021 Zdenek Pytela <zpytela@redhat.com> - 34.17-3
+- Add ica module to modules-targeted.conf
+
 * Fri Aug 27 2021 Zdenek Pytela <zpytela@redhat.com> - 34.17-2
 - Relabel /var/lib/rpm explicitly
 - Revert "Relabel /dev/dma_heap explicitly"
