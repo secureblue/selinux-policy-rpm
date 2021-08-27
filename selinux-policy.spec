@@ -285,10 +285,6 @@ if %{_sbindir}/selinuxenabled && [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.p
      %{_sbindir}/fixfiles -C ${FILE_CONTEXT}.pre restore &> /dev/null > /dev/null; \
      rm -f ${FILE_CONTEXT}.pre; \
 fi; \
-# the type of the /dev/dma_heap directory has changed, therefore explicit relabeling \
-# is needed as fixfiles excludes /dev \
-# this is a temporary workaround till July 2021 \
-[ -f /dev/dma_heap ] && %{_sbindir}/restorecon -R /dev/dma_heap \
 if %{_sbindir}/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null;then \
     continue; \
 fi;
