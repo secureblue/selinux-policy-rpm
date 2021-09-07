@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit e85301a7dd56d0a1e06332cc3255649ad26efbe3
+%global commit e372b3af701100cab13ef556225ec7d69839e1a3
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,8 +23,8 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.17
-Release: 5%{?dist}
+Version: 34.18
+Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -808,6 +808,14 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 07 2021 Zdenek Pytela <zpytela@redhat.com> - 34.18-1
+- Allow ModemManager create a qipcrtr socket
+- Allow ModemManager request to load a kernel module
+- Label /usr/sbin/virtproxyd as virtd_exec_t
+- Allow communication between at-spi and gdm processes
+- Update ica_filetrans_named_content() with create_file_perms
+- Fix the gnome_atspi_domtrans() interface summary
+
 * Fri Aug 27 2021 Zdenek Pytela <zpytela@redhat.com> - 34.17-5
 - Add ica module to modules-targeted-contrib.conf
 
