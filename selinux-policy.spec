@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit e372b3af701100cab13ef556225ec7d69839e1a3
+%global commit 5b852ec5b41ccbaaceeeab5ed3002378cde2675e
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.18
+Version: 34.19
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,12 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 09 2021 Zdenek Pytela <zpytela@redhat.com> - 34.19-1
+- Update the dhcp client local policy
+- Allow firewalld load kernel modules
+- Allow postfix_domain to sendto unix dgram sockets.
+- Allow systemd watch unallocated ttys
+
 * Tue Sep 07 2021 Zdenek Pytela <zpytela@redhat.com> - 34.18-1
 - Allow ModemManager create a qipcrtr socket
 - Allow ModemManager request to load a kernel module
