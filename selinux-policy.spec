@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 5b852ec5b41ccbaaceeeab5ed3002378cde2675e
+%global commit 79a2c551b9efced446614dc6e11cf30cc4b62d52
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.19
+Version: 34.20
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,19 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 16 2021 Zdenek Pytela <zpytela@redhat.com> - 34.20-1
+- cleanup unused codes
+- Fix typo in the gnome_exec_atspi() interface summary
+- Allow xdm execute gnome-atspi services
+- Allow gnome at-spi processes execute dbus-daemon in caller domain
+- Allow xdm watch dbus configuration
+- Allow xdm execute dbus-daemon in the caller domain
+- Revert "Allow xdm_t transition to system_dbusd_t"
+- Allow at-spi-bus-launcher read and map xdm pid files
+- Allow dhcpcd set its resource limits
+- Allow systemd-sleep get removable devices attributes
+- Allow usbmuxd get attributes of fs_t filesystems
+
 * Thu Sep 09 2021 Zdenek Pytela <zpytela@redhat.com> - 34.19-1
 - Update the dhcp client local policy
 - Allow firewalld load kernel modules
