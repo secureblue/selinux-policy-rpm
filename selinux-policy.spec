@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 79a2c551b9efced446614dc6e11cf30cc4b62d52
+%global commit 1715509773b3387a0c74423c05d53eb401d9b470
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.20
+Version: 34.21
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,27 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 23 2021 Zdenek Pytela <zpytela@redhat.com> - 34.21-1
+- Add bluetooth-related permissions into a tunable block
+- Allow gnome at-spi processes create and use stream sockets
+- Allow usbmuxd get attributes of tmpfs_t filesystems
+- Allow fprintd install a sleep delay inhibitor
+- Allow collectd get attributes of infiniband devices
+- Allow collectd create and user netlink rdma socket
+- Allow collectd map packet_socket
+- Allow snort create and use blootooth socket
+- Allow systemd watch and watch_reads console devices
+- Allow snort create and use generic netlink socket
+- Allow NetworkManager dbus chat with fwupd
+- Allow unconfined domains read/write domain perf_events
+- Allow scripts to enter LUKS password
+- Update mount_manage_pid_files() to use manage_files_pattern
+- Support hitless reloads feature in haproxy
+- Allow haproxy list the sysfs directories content
+- Allow gnome at-spi processes get attributes of tmpfs filesystems
+- Allow unbound connectto unix_stream_socket
+- Allow rhsmcertd_t dbus chat with anaconda install_t
+
 * Thu Sep 16 2021 Zdenek Pytela <zpytela@redhat.com> - 34.20-1
 - cleanup unused codes
 - Fix typo in the gnome_exec_atspi() interface summary
