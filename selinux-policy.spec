@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 1715509773b3387a0c74423c05d53eb401d9b470
+%global commit d9870e9b28ccafd392d0ecef6cc5b0d807120fcc
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 34.21
+Version: 35.1
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,15 @@ exit 0
 %endif
 
 %changelog
+* Thu Oct 07 2021 Zdenek Pytela <zpytela@redhat.com> - 35.1-1
+- Add fedoratp module
+- Allow xdm_t domain transition to fedoratp_t
+- Allow ModemManager create and use netlink route socket
+- Add default file context for /run/gssproxy.default.sock
+- Allow xdm_t watch fonts directories
+- Allow xdm_t watch generic directories in /lib
+- Allow xdm_t watch generic pid directories
+
 * Thu Sep 23 2021 Zdenek Pytela <zpytela@redhat.com> - 34.21-1
 - Add bluetooth-related permissions into a tunable block
 - Allow gnome at-spi processes create and use stream sockets
