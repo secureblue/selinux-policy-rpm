@@ -599,7 +599,7 @@ fi
 exit 0
 
 
-%triggerin -- pcre
+%triggerin -- pcre2
 %{_sbindir}/selinuxenabled && %{_sbindir}/semodule -nB
 exit 0
 
