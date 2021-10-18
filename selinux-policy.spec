@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit d9870e9b28ccafd392d0ecef6cc5b0d807120fcc
+%global commit eecd3964f51de1404d343e3b0e6696f9774801d0
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 35.1
+Version: 35.2
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,23 @@ exit 0
 %endif
 
 %changelog
+* Mon Oct 18 2021 Zdenek Pytela <zpytela@redhat.com> - 35.2-1
+- Allow fedora-third-party execute "flatpak remote-add"
+- Add files_manage_var_lib_files() interface
+- Add write permisson to userfaultfd_anon_inode_perms
+- Allow proper function sosreport via iotop
+- Allow proper function sosreport in sysadmin role
+- Allow fedora-third-party to connect to the system log service
+- Allow fedora-third-party dbus chat with policykit
+- Allow chrony-wait service start with DynamicUser=yes
+- Allow management of lnk_files if similar access to regular files
+- Allow unconfined_t transition to mozilla_plugin_t with NoNewPrivileges
+- Allow systemd-resolved watch /run/systemd
+- Allow fedora-third-party create and use unix_dgram_socket
+- Removing pkcs_tmpfs_filetrans interface and edit pkcs policy files
+- Allow login_userdomain named filetrans to pkcs_slotd_tmpfs_t domain
+
+
 * Thu Oct 07 2021 Zdenek Pytela <zpytela@redhat.com> - 35.1-1
 - Add fedoratp module
 - Allow xdm_t domain transition to fedoratp_t
