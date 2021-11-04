@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit eecd3964f51de1404d343e3b0e6696f9774801d0
+%global commit 02b35cff10d8743e075379c062f565f2bb97c032
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 35.2
+Version: 35.5
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,41 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 04 2021 Zdenek Pytela <zpytela@redhat.com> - 35.5-1
+- Support sanlock VG automated recovery on storage access loss 2/2
+- Support sanlock VG automated recovery on storage access loss 1/2
+- Revert "Support sanlock VG automated recovery on storage access loss"
+- Allow tlp get service units status
+- Allow fedora-third-party manage 3rd party repos
+- Allow xdm_t nnp_transition to login_userdomain
+- Add the auth_read_passwd_file() interface
+- Allow redis-sentinel execute a notification script
+- Allow fetchmail search cgroup directories
+- Allow lvm_t to read/write devicekit disk semaphores
+- Allow devicekit_disk_t to use /dev/mapper/control
+- Allow devicekit_disk_t to get IPC info from the kernel
+- Allow devicekit_disk_t to read systemd-logind pid files
+- Allow devicekit_disk_t to mount filesystems on mnt_t directories
+- Allow devicekit_disk_t to manage mount_var_run_t files
+- Allow rasdaemon sys_admin capability to verify the CAP_SYS_ADMIN of the soft_offline_page function implemented in the kernel
+- Use $releasever in koji repo to reduce rawhide hardcoding
+- authlogin: add fcontext for tcb
+- Add erofs as a SELinux capable file system
+- Allow systemd execute user bin files
+- Support sanlock VG automated recovery on storage access loss
+- Support new PING_CHECK health checker in keepalived
+
+* Wed Oct 20 2021 Zdenek Pytela <zpytela@redhat.com> - 35.4-1
+- Allow fedora-third-party map generic cache files
+- Add gnome_map_generic_cache_files() interface
+- Add files_manage_var_lib_dirs() interface
+- Allow fedora-third party manage gpg keys
+- Allow fedora-third-party run "flatpak remote-add --from flathub"
+
+* Tue Oct 19 2021 Zdenek Pytela <zpytela@redhat.com> - 35.3-1
+- Allow fedora-third-party run flatpak post-install actions
+- Allow fedora-third-party set_setsched and sys_nice
+
 * Mon Oct 18 2021 Zdenek Pytela <zpytela@redhat.com> - 35.2-1
 - Allow fedora-third-party execute "flatpak remote-add"
 - Add files_manage_var_lib_files() interface
