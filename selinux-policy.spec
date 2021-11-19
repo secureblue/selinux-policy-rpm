@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 02b35cff10d8743e075379c062f565f2bb97c032
+%global commit 6a6fff9f00a02723d3a9c58e892e12a527df8efa
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 35.5
+Version: 35.6
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,18 @@ exit 0
 %endif
 
 %changelog
+* Fri Nov 19 2021 Zdenek Pytela <zpytela@redhat.com> - 35.6-1
+- Allow PID 1 and dbus-broker IPC with a systemd user session
+- Allow rpmdb read generic SSL certificates
+- Allow rpmdb read admin home config files
+- Report warning on duplicate definition of interface
+- Allow redis get attributes of filesystems with extended attributes
+- Allow sysadm_t dbus chat with realmd_t
+- Make cupsd_lpd_t a daemon
+- Allow tlp dbus-chat with NetworkManager
+- filesystem: add fs_use_trans for ramfs
+- Allow systemd-logind destroy unconfined user's IPC objects
+
 * Thu Nov 04 2021 Zdenek Pytela <zpytela@redhat.com> - 35.5-1
 - Support sanlock VG automated recovery on storage access loss 2/2
 - Support sanlock VG automated recovery on storage access loss 1/2
