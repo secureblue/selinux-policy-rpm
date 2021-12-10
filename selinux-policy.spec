@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 6a6fff9f00a02723d3a9c58e892e12a527df8efa
+%global commit 07b06a7f6cb1f41b92de5d29d21ac89c4d362457
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 35.6
+Version: 35.7
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,26 @@ exit 0
 %endif
 
 %changelog
+* Fri Dec 10 2021 Zdenek Pytela <zpytela@redhat.com> - 35.7-1
+- Allow systemd read unlabeled symbolic links
+- Label abrt-action-generate-backtrace with abrt_handle_event_exec_t
+- Allow dnsmasq watch /etc/dnsmasq.d directories
+- Allow rhsmcertd get attributes of tmpfs_t filesystems
+- Allow lldpd use an snmp subagent over a tcp socket
+- Allow xdm watch generic directories in /var/lib
+- Allow login_userdomain open/read/map system journal
+- Allow sysadm_t connect to cluster domains over a unix stream socket
+- Allow sysadm_t read/write pkcs shared memory segments
+- Allow sysadm_t connect to sanlock over a unix stream socket
+- Allow sysadm_t dbus chat with sssd
+- Allow sysadm_t set attributes on character device nodes
+- Allow sysadm_t read and write watchdog devices
+- Allow smbcontrol use additional socket types
+- Allow cloud-init dbus chat with systemd-logind
+- Allow svnserve send mail from the system
+- Update userdom_exec_user_tmp_files() with an entrypoint rule
+- Allow sudodomain send a null signal to sshd processes
+
 * Fri Nov 19 2021 Zdenek Pytela <zpytela@redhat.com> - 35.6-1
 - Allow PID 1 and dbus-broker IPC with a systemd user session
 - Allow rpmdb read generic SSL certificates
