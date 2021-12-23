@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 07b06a7f6cb1f41b92de5d29d21ac89c4d362457
+%global commit b1497c15f68bf0ceac2b19684582266e717bd079
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 35.7
+Version: 35.8
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,20 @@ exit 0
 %endif
 
 %changelog
+* Thu Dec 23 2021 Zdenek Pytela <zpytela@redhat.com> - 35.8-1
+- Allow haproxy get attributes of filesystems with extended attributes
+- Allow haproxy get attributes of cgroup filesystems
+- Allow sysadm execute sysadmctl in sysadm_t domain using sudo
+- Allow userdomains use pam_ssh_agent_auth for passwordless sudo
+- Allow sudodomains execute passwd in the passwd domain
+- Allow braille printing in selinux
+- Allow sandbox_xserver_t map sandbox_file_t
+- Label /dev/ngXnY and /dev/nvme-subsysX with fixed_disk_device_t
+- Add hwtracing_device_t type for hardware-level tracing and debugging
+- Label port 9528/tcp with openqa_liveview
+- Label /var/lib/shorewall6-lite with shorewall_var_lib_t
+- Document Security Flask model in the policy
+
 * Fri Dec 10 2021 Zdenek Pytela <zpytela@redhat.com> - 35.7-1
 - Allow systemd read unlabeled symbolic links
 - Label abrt-action-generate-backtrace with abrt_handle_event_exec_t
