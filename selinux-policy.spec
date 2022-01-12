@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit b1497c15f68bf0ceac2b19684582266e717bd079
+%global commit 84dd4309ad6d644edea2c3cf448f516f4e008c04
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 35.8
+Version: 35.9
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,24 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 12 2022 Zdenek Pytela <zpytela@redhat.com> - 35.9-1
+- Allow sshd read filesystem sysctl files
+- Revert "Allow sshd read sysctl files"
+- Allow tlp read its systemd unit
+- Allow gssproxy access to various system files.
+- Allow gssproxy read, write, and map ica tmpfs files
+- Allow gssproxy read and write z90crypt device
+- Allow sssd_kcm read and write z90crypt device
+- Allow smbcontrol read the network state information
+- Allow virt_domain map vhost devices
+- Allow fcoemon request the kernel to load a module
+- Allow sshd read sysctl files
+- Ensure that `/run/systemd/*` are properly labeled
+- Allow admin userdomains use socketpair()
+- Change /run/user/[0-9]+ to /run/user/%{USERID} for proper labeling
+- Allow lldpd connect to snmpd with a unix domain stream socket
+- Dontaudit pkcsslotd sys_admin capability
+
 * Thu Dec 23 2021 Zdenek Pytela <zpytela@redhat.com> - 35.8-1
 - Allow haproxy get attributes of filesystems with extended attributes
 - Allow haproxy get attributes of cgroup filesystems
