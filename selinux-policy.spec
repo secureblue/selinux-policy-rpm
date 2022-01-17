@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 84dd4309ad6d644edea2c3cf448f516f4e008c04
+%global commit b909895c58d7709343e59e24f115d5ede1f46944
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 35.9
+Version: 35.10
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,28 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 17 2022 Zdenek Pytela <zpytela@redhat.com> - 35.10-1
+- Allow login_userdomain watch systemd-machined PID directories
+- Allow login_userdomain watch systemd-logind PID directories
+- Allow login_userdomain watch accountsd lib directories
+- Allow login_userdomain watch localization directories
+- Allow login_userdomain watch various files and dirs
+- Allow login_userdomain watch generic directories in /tmp
+- Allow rhsm-service read/write its private memfd: objects
+- Allow radiusd connect to the radacct port
+- Allow systemd-io-bridge ioctl rpm_script_t
+- Allow systemd-coredump userns capabilities and root mounton
+- Allow systemd-coredump read and write usermodehelper state
+- Allow login_userdomain create session_dbusd tmp socket files
+- Allow gkeyringd_domain write to session_dbusd tmp socket files
+- Allow systemd-logind delete session_dbusd tmp socket files
+- Allow gdm-x-session write to session dbus tmp sock files
+- Label /etc/cockpit/ws-certs.d with cert_t
+- Allow kpropd get attributes of cgroup filesystems
+- Allow administrative users the bpf capability
+- Allow sysadm_t start and stop transient services
+- Connect triggerin to pcre2 instead of pcre
+
 * Wed Jan 12 2022 Zdenek Pytela <zpytela@redhat.com> - 35.9-1
 - Allow sshd read filesystem sysctl files
 - Revert "Allow sshd read sysctl files"
