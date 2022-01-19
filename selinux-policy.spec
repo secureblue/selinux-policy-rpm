@@ -320,8 +320,8 @@ if [ -s %{_sysconfdir}/selinux/config ]; then \
 fi; \
 if [ -e %{_sysconfdir}/selinux/%2/.rebuild ]; then \
    rm %{_sysconfdir}/selinux/%2/.rebuild; \
-   %{_sbindir}/semodule -B -n -s %2; \
 fi; \
+%{_sbindir}/semodule -B -n -s %2; \
 [ "${SELINUXTYPE}" == "%2" ] && %{_sbindir}/selinuxenabled && load_policy; \
 if [ %1 -eq 1 ]; then \
    %{_sbindir}/restorecon -R /root /var/log /run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null; \
