@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit b909895c58d7709343e59e24f115d5ede1f46944
+%global commit a3b543d959064d8384e892b3c24e2f26016e1112
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 35.10
+Version: 35.11
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,11 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 19 2022 Zdenek Pytela <zpytela@redhat.com> - 35.11-1
+- Revert "Label /etc/cockpit/ws-certs.d with cert_t"
+- Allow login_userdomain write to session_dbusd tmp socket files
+- Label /var/run/user/%{USERID}/dbus with session_dbusd_tmp_t
+
 * Mon Jan 17 2022 Zdenek Pytela <zpytela@redhat.com> - 35.10-1
 - Allow login_userdomain watch systemd-machined PID directories
 - Allow login_userdomain watch systemd-logind PID directories
