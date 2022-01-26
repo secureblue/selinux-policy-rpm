@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit a3b543d959064d8384e892b3c24e2f26016e1112
+%global commit d33ccb64dee2f105b69d6ff5dd0b9d448c5fdbe1
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 35.11
+Version: 35.12
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,20 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 26 2022 Zdenek Pytela <zpytela@redhat.com> - 35.12-1
+- Fix badly indented used interfaces
+- Allow domain transition to sssd_t
+- Dontaudit sfcbd sys_ptrace cap_userns
+- Label /var/lib/plocate with locate_var_lib_t
+- Allow hostapd talk with unconfined user over unix domain dgram socket
+- Allow NetworkManager talk with unconfined user over unix domain dgram socket
+- Allow system_mail_t read inherited apache system content rw files
+- Add apache_read_inherited_sys_content_rw_files() interface
+- Allow rhsm-service execute its private memfd: objects
+- Allow dirsrv read configfs files and directories
+- Label /run/stratisd with stratisd_var_run_t
+- Allow tumblerd write to session_dbusd tmp socket files
+
 * Wed Jan 19 2022 Zdenek Pytela <zpytela@redhat.com> - 35.11-1
 - Revert "Label /etc/cockpit/ws-certs.d with cert_t"
 - Allow login_userdomain write to session_dbusd tmp socket files
