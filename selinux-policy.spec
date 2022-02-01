@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit d33ccb64dee2f105b69d6ff5dd0b9d448c5fdbe1
+%global commit 569208d534e1a53d75b187ec44ecda856ee6139c
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 35.12
+Version: 35.13
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,18 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 01 2022 Zdenek Pytela <zpytela@redhat.com> - 35.13-1
+- Allow systemd services watch dbusd pid directory and its parents
+- Allow ModemManager connect to the unconfined user domain
+- Label /dev/wwan.+ with modem_manager_t
+- Allow alsactl set group Process ID of a process
+- Allow domtrans to sssd_t and role access to sssd
+- Creating interface sssd_run_sssd()
+- Label utilities for exFAT filesystems with fsadm_exec_t
+- Label /dev/nvme-fabrics with fixed_disk_device_t
+- Allow init delete generic tmp named pipes
+- Allow timedatex dbus chat with xdm
+
 * Wed Jan 26 2022 Zdenek Pytela <zpytela@redhat.com> - 35.12-1
 - Fix badly indented used interfaces
 - Allow domain transition to sssd_t
