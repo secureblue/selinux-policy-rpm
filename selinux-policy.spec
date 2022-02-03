@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 569208d534e1a53d75b187ec44ecda856ee6139c
+%global commit d94a645307b0e9de23bf9dd560b30e30dd72ec65
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 35.13
+Version: 36.1
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,18 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 03 2022 Zdenek Pytela <zpytela@redhat.com> - 36.1-1
+- Label exFAT utilities at /usr/sbin
+- policy/modules/contrib: Support /usr/lib/sysimage/rpm as the rpmdb path
+- Enable genfs_seclabel_symlinks policy capability
+- Sync policy/policy_capabilities with refpolicy
+- refpolicy: drop unused socket security classes
+- Label new utility of NetworkManager nm-priv-helper
+- Label NetworkManager-dispatcher service with separate context
+- Allow sanlock get attributes of filesystems with extended attributes
+- Associate stratisd_data_t with device filesystem
+- Allow init read stratis data symlinks
+
 * Tue Feb 01 2022 Zdenek Pytela <zpytela@redhat.com> - 35.13-1
 - Allow systemd services watch dbusd pid directory and its parents
 - Allow ModemManager connect to the unconfined user domain
