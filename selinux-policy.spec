@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit d94a645307b0e9de23bf9dd560b30e30dd72ec65
+%global commit 369f900039cff9443e86fdf7254ba8b11dc6adb5
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 36.1
+Version: 36.2
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -808,6 +808,27 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 11 2022 Zdenek Pytela <zpytela@redhat.com> - 36.2-1
+- Allow sysadm_passwd_t to relabel passwd and group files
+- Allow confined sysadmin to use tool vipw
+- Allow login_userdomain map /var/lib/directories
+- Allow login_userdomain watch library and fonts dirs
+- Allow login_userdomain watch system configuration dirs
+- Allow login_userdomain read systemd runtime files
+- Allow ctdb create cluster logs
+- Allow alsa bind mixer controls to led triggers
+- New policy for insight-client
+- Add mctp_socket security class and access vectors
+- Fix koji repo URL pattern
+- Update chronyd_pid_filetrans() to allow create dirs
+- Update NetworkManager-dispatcher policy
+- Allow unconfined to run virtd bpf
+- Allow nm-privhelper setsched permission and send system logs
+- Add the map permission to common_anon_inode_perm permission set
+- Rename userfaultfd_anon_inode_perms to common_inode_perms
+- Allow confined users to use kinit,klist and etc.
+- Allow rhsmcertd create rpm hawkey logs with correct label
+
 * Thu Feb 03 2022 Zdenek Pytela <zpytela@redhat.com> - 36.1-1
 - Label exFAT utilities at /usr/sbin
 - policy/modules/contrib: Support /usr/lib/sysimage/rpm as the rpmdb path
