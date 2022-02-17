@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 369f900039cff9443e86fdf7254ba8b11dc6adb5
+%global commit e0c5ad17b8fc9547912085b142476a5eee6109cb
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 36.2
+Version: 36.3
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -143,6 +143,7 @@ and some additional files.
 %dir %{_datadir}/selinux/devel
 %dir %{_datadir}/selinux/devel/include
 %{_datadir}/selinux/devel/include/*
+%exclude %{_datadir}/selinux/devel/include/container.if
 %dir %{_datadir}/selinux/devel/html
 %{_datadir}/selinux/devel/html/*html
 %{_datadir}/selinux/devel/html/*css
@@ -286,7 +287,7 @@ if %{_sbindir}/selinuxenabled && [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.p
      rm -f ${FILE_CONTEXT}.pre; \
 fi; \
 # rebuilding the rpm database still can sometimes result in an incorrect context \
-%{_sbindir}/restorecon -R /var/lib/rpm \
+%{_sbindir}/restorecon -R /usr/lib/sysimage/rpm \
 if %{_sbindir}/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null;then \
     continue; \
 fi;
@@ -808,6 +809,25 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 17 2022 Zdenek Pytela <zpytela@redhat.com> - 36.3-1
+- Update NetworkManager-dispatcher policy to use scripts
+- Allow init mounton kernel messages device
+- Revert "Make dbus-broker service working on s390x arch"
+- Remove permissive domain for insights_client_t
+- Allow userdomain read symlinks in /var/lib
+- Allow iptables list cgroup directories
+- Dontaudit mdadm list dirsrv tmpfs dirs
+- Dontaudit dirsrv search filesystem sysctl directories
+- Allow chage domtrans to sssd
+- Allow postfix_domain read dovecot certificates
+- Allow systemd-networkd create and use netlink netfilter socket
+- Allow nm-dispatcher read nm-dispatcher-script symlinks
+- filesystem.te: add genfscon rule for ntfs3 filesystem
+- Allow rhsmcertd get attributes of cgroup filesystems
+- Allow sandbox_web_client_t watch various dirs
+- Exclude container.if from policy devel files
+- Run restorecon on /usr/lib/sysimage/rpm instead of /var/lib/rpm
+
 * Fri Feb 11 2022 Zdenek Pytela <zpytela@redhat.com> - 36.2-1
 - Allow sysadm_passwd_t to relabel passwd and group files
 - Allow confined sysadmin to use tool vipw
