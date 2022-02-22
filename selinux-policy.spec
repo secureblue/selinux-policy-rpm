@@ -19,12 +19,12 @@
 %define BUILD_MLS 1
 %endif
 %define POLICYVER 33
-%define POLICYCOREUTILSVER 3.2
+%define POLICYCOREUTILSVER 3.3-4
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 36.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -275,6 +275,7 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %ghost %{_sharedstatedir}/selinux/%1/active/seusers.linked \
 %ghost %{_sharedstatedir}/selinux/%1/active/users_extra.linked \
 %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/file_contexts.homedirs \
+%verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules_checksum \
 %nil
 
 %define relabel() \
@@ -809,6 +810,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 22 2022 Zdenek Pytela <zpytela@redhat.com> - 36.3-2
+- Update specfile to buildrequire policycoreutils-devel >= 3.3-4
+- Add modules_checksum to %files
+
 * Thu Feb 17 2022 Zdenek Pytela <zpytela@redhat.com> - 36.3-1
 - Update NetworkManager-dispatcher policy to use scripts
 - Allow init mounton kernel messages device
