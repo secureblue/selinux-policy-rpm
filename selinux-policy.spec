@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 36.4
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -810,6 +810,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 23 2022 Zdenek Pytela <zpytela@redhat.com> - 36.4-2
+- Add insights_client module to modules-targeted-contrib.conf
+
 * Wed Feb 23 2022 Zdenek Pytela <zpytela@redhat.com> - 36.4-1
 - Update NetworkManager-dispatcher cloud and chronyc policy
 - Update insights-client: fc pattern, motd, writing to etc
