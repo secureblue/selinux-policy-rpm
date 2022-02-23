@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit e0c5ad17b8fc9547912085b142476a5eee6109cb
+%global commit 51d529f4b8921fd25fa497e8fd5b9034cd4ef650
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,8 +23,8 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 36.3
-Release: 2%{?dist}
+Version: 36.4
+Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -810,6 +810,13 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 23 2022 Zdenek Pytela <zpytela@redhat.com> - 36.4-1
+- Update NetworkManager-dispatcher cloud and chronyc policy
+- Update insights-client: fc pattern, motd, writing to etc
+- Allow systemd-sysctl read the security state information
+- Allow init create and mounton to support PrivateDevices
+- Allow sosreport dbus chat abrt systemd timedatex
+
 * Tue Feb 22 2022 Zdenek Pytela <zpytela@redhat.com> - 36.3-2
 - Update specfile to buildrequire policycoreutils-devel >= 3.3-4
 - Add modules_checksum to %files
