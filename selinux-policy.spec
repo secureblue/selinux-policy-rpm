@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 51d529f4b8921fd25fa497e8fd5b9034cd4ef650
+%global commit d8f8145b1624f256b63d4f5e24aebe11db35dd22
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,8 +23,8 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 36.4
-Release: 2%{?dist}
+Version: 36.5
+Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -810,6 +810,22 @@ exit 0
 %endif
 
 %changelog
+* Fri Mar 18 2022 Zdenek Pytela <zpytela@redhat.com> - 36.5-1
+- Add support for nm-dispatcher console helper scripts
+- Allow nm-dispatcher plugins read its directory and sysfs
+- Do not let system_cronjob_t create redhat-access-insights.log with var_log_t
+- devices: Add a comment about cardmgr_dev_t
+- Add basic policy for BinderFS
+- Label /var/run/ecblp0 pipe with cupsd_var_run_t
+- Allow rpmdb create directory in /usr/lib/sysimage
+- Allow rngd drop privileges via setuid/setgid/setcap
+- Allow init watch and watch_reads user ttys
+- Allow systemd-logind dbus chat with sosreport
+- Allow chronyd send a message to sosreport over datagram socket
+- Remove unnecessary /etc file transitions for insights-client
+- Label all content in /var/lib/insights with insights_client_var_lib_t
+- Update insights-client policy
+
 * Wed Feb 23 2022 Zdenek Pytela <zpytela@redhat.com> - 36.4-2
 - Add insights_client module to modules-targeted-contrib.conf
 
