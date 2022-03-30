@@ -150,7 +150,7 @@ and some additional files.
 %{_datadir}/selinux/devel/Makefile
 %{_datadir}/selinux/devel/example.*
 %{_datadir}/selinux/devel/policy.*
-%ghost %{_sharedstatedir}/sepolgen/interface_info
+%ghost %verify(not md5 size mode mtime) %{_sharedstatedir}/sepolgen/interface_info
 
 %post devel
 %{_sbindir}/selinuxenabled && %{_bindir}/sepolgen-ifgen 2>/dev/null
