@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit d8f8145b1624f256b63d4f5e24aebe11db35dd22
+%global commit c86d943538f907c2e6b20ffda0a8d2b5b5bd2e34
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 36.5
+Version: 36.6
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -810,6 +810,26 @@ exit 0
 %endif
 
 %changelog
+* Mon Apr 04 2022 Zdenek Pytela <zpytela@redhat.com> - 36.6-1
+- Add support for systemd-network-generator
+- Add the io_uring class
+- Allow nm-dispatcher dhclient plugin append to init stream sockets
+- Relax the naming pattern for systemd private shared libraries
+- Allow nm-dispatcher iscsid plugin append to init socket
+- Add the init_append_stream_sockets() interface
+- Allow nm-dispatcher dnssec-trigger script to execute pidof
+- Add support for nm-dispatcher dnssec-trigger scripts
+- Allow chronyd talk with unconfined user over unix domain dgram socket
+- Allow fenced read kerberos key tables
+- Add support for nm-dispatcher ddclient scripts
+- Add systemd_getattr_generic_unit_files() interface
+- Allow fprintd read and write hardware state information
+- Allow exim watch generic certificate directories
+- Remove duplicate fc entries for corosync and corosync-notifyd
+- Label corosync-cfgtool with cluster_exec_t
+- Allow qemu-kvm create and use netlink rdma sockets
+- Allow logrotate a domain transition to cluster administrative domain
+
 * Fri Mar 18 2022 Zdenek Pytela <zpytela@redhat.com> - 36.5-1
 - Add support for nm-dispatcher console helper scripts
 - Allow nm-dispatcher plugins read its directory and sysfs
