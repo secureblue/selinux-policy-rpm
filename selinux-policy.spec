@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 36.6
+Version: 36.7
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -810,6 +810,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 21 2022 Zdenek Pytela <zpytela@redhat.com> - 36.7-1
+- Add stalld module to modules-targeted-contrib.conf
+
 * Mon Apr 04 2022 Zdenek Pytela <zpytela@redhat.com> - 36.6-1
 - Add support for systemd-network-generator
 - Add the io_uring class
