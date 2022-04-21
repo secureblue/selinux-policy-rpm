@@ -583,6 +583,7 @@ exit 0
 
 %posttrans targeted
 %checkConfigConsistency targeted
+%{_sbindir}/restorecon -R /usr/lib/sysimage/rpm /var/lib/rpm /etc/NetworkManager/dispatcher.d
 
 %postun targeted
 if [ $1 = 0 ]; then
@@ -695,6 +696,7 @@ exit 0
 
 %posttrans minimum
 %checkConfigConsistency minimum
+%{_sbindir}/restorecon -R /usr/lib/sysimage/rpm /var/lib/rpm /etc/NetworkManager/dispatcher.d
 
 %postun minimum
 if [ $1 = 0 ]; then
@@ -768,6 +770,7 @@ exit 0
 
 %posttrans mls
 %checkConfigConsistency mls
+%{_sbindir}/restorecon -R /usr/lib/sysimage/rpm /var/lib/rpm /etc/NetworkManager/dispatcher.d
 
 %postun mls
 if [ $1 = 0 ]; then
@@ -810,6 +813,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 21 2022 Zdenek Pytela <zpytela@redhat.com> - 36.7-2
+- Relabel explicitly some dirs in %posttrans scriptlets
+
 * Thu Apr 21 2022 Zdenek Pytela <zpytela@redhat.com> - 36.7-1
 - Add stalld module to modules-targeted-contrib.conf
 
