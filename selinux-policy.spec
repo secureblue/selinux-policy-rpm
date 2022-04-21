@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit c86d943538f907c2e6b20ffda0a8d2b5b5bd2e34
+%global commit 6dd0ca5b26b8d48d3fdb90333f27402a32624d83
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -813,6 +813,23 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 21 2022 Zdenek Pytela <zpytela@redhat.com> - 36.7-3
+- Add support for nm-dispatcher tlp-rdw scripts
+- Update github actions to satisfy git 2.36 stricter rules
+- New policy for stalld
+- Allow colord read generic files in /var/lib
+- Allow xdm mounton user temporary socket files
+- Allow systemd-gpt-auto-generator create and use netlink_kobject_uevent_socket
+- Allow sssd domtrans to pkcs_slotd_t
+- Allow keepalived setsched and sys_nice
+- Allow xdm map generic files in /var/lib
+- Allow xdm read generic symbolic links in /var/lib
+- Allow pppd create a file in the locks directory
+- Add file map permission to lpd_manage_spool() interface
+- Allow system dbus daemon watch generic directories in /var/lib
+- Allow pcscd the sys_ptrace userns capability
+- Add the corecmd_watch_bin_dirs() interface
+
 * Thu Apr 21 2022 Zdenek Pytela <zpytela@redhat.com> - 36.7-2
 - Relabel explicitly some dirs in %posttrans scriptlets
 
