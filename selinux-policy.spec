@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 6dd0ca5b26b8d48d3fdb90333f27402a32624d83
+%global commit 0476ff2d8cf20dc339d7972ec87c98939599287a
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 36.7
+Version: 36.8
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -813,6 +813,19 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 26 2022 Zdenek Pytela <zpytela@redhat.com> - 36.8-1
+- Allow nm-dispatcher chronyc plugin append to init stream sockets
+- Allow tmpreaper the sys_ptrace userns capability
+- Label /usr/libexec/vdsm/supervdsmd and vdsmd with virtd_exec_t
+- Allow nm-dispatcher tlp plugin read/write the wireless device
+- Allow nm-dispatcher tlp plugin append to init socket
+- Allow nm-dispatcher tlp plugin be client of a system bus
+- Allow nm-dispatcher list its configuration directory
+- Ecryptfs-private support
+- Allow colord map /var/lib directories
+- Allow ntlm_auth read the network state information
+- Allow insights-client search rhnsd configuration directory
+
 * Thu Apr 21 2022 Zdenek Pytela <zpytela@redhat.com> - 36.7-3
 - Add support for nm-dispatcher tlp-rdw scripts
 - Update github actions to satisfy git 2.36 stricter rules
