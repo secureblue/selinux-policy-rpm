@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 0476ff2d8cf20dc339d7972ec87c98939599287a
+%global commit e1e216b25df1bdb4eb7dbb8f73f32927ad6f3d1f
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 36.8
+Version: 37.1
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -813,6 +813,15 @@ exit 0
 %endif
 
 %changelog
+* Mon May 02 2022 Zdenek Pytela <zpytela@redhat.com> - 37.1-1
+- Fix users for SELinux userspace 3.4
+- Label /var/run/machine-id as machineid_t
+- Add stalld to modules.conf
+- Use files_tmpfs_file() for rhsmcertd_tmpfs_t
+- Allow blueman read/write its private memfd: objects
+- Allow insights-client read rhnsd config files
+- Allow insights-client create_socket_perms for tcp/udp sockets
+
 * Tue Apr 26 2022 Zdenek Pytela <zpytela@redhat.com> - 36.8-1
 - Allow nm-dispatcher chronyc plugin append to init stream sockets
 - Allow tmpreaper the sys_ptrace userns capability
