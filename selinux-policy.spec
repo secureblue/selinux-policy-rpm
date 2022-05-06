@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 37.1
+Version: 38.1
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -583,7 +583,7 @@ exit 0
 
 %posttrans targeted
 %checkConfigConsistency targeted
-%{_sbindir}/restorecon -R /usr/lib/sysimage/rpm /var/lib/rpm /etc/NetworkManager/dispatcher.d
+%{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm /etc/NetworkManager/dispatcher.d
 
 %postun targeted
 if [ $1 = 0 ]; then
@@ -696,7 +696,7 @@ exit 0
 
 %posttrans minimum
 %checkConfigConsistency minimum
-%{_sbindir}/restorecon -R /usr/lib/sysimage/rpm /var/lib/rpm /etc/NetworkManager/dispatcher.d
+%{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm /etc/NetworkManager/dispatcher.d
 
 %postun minimum
 if [ $1 = 0 ]; then
@@ -770,7 +770,7 @@ exit 0
 
 %posttrans mls
 %checkConfigConsistency mls
-%{_sbindir}/restorecon -R /usr/lib/sysimage/rpm /var/lib/rpm /etc/NetworkManager/dispatcher.d
+%{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm /etc/NetworkManager/dispatcher.d
 
 %postun mls
 if [ $1 = 0 ]; then
@@ -813,6 +813,9 @@ exit 0
 %endif
 
 %changelog
+* Fri May 06 2022 Zdenek Pytela <zpytela@redhat.com> - 38.1-1
+- run restorecon with "-i" not to report errors
+
 * Mon May 02 2022 Zdenek Pytela <zpytela@redhat.com> - 37.1-1
 - Fix users for SELinux userspace 3.4
 - Label /var/run/machine-id as machineid_t
