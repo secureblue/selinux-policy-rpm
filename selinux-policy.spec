@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit e1e216b25df1bdb4eb7dbb8f73f32927ad6f3d1f
+%global commit c1ceef9712d0ac2b4643a0d9187c737b3580cf73
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 38.1
+Version: 37.2
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -813,8 +813,31 @@ exit 0
 %endif
 
 %changelog
-* Fri May 06 2022 Zdenek Pytela <zpytela@redhat.com> - 38.1-1
-- run restorecon with "-i" not to report errors
+* Fri May 06 2022 Zdenek Pytela <zpytela@redhat.com> - 37.2-1
+- Use the networkmanager_dispatcher_plugin attribute in allow rules
+- Make a custom nm-dispatcher plugin transition
+- Label port 4784/tcp and 4784/udp with bfd_multi
+- Allow systemd watch and watch_reads user ptys
+- Allow sblim-gatherd the kill capability
+- Label more vdsm utils with virtd_exec_t
+- Add ksm service to ksmtuned
+- Add rhcd policy
+- Dontaudit guest attempts to dbus chat with systemd domains
+- Dontaudit guest attempts to dbus chat with system bus types
+- Use a named transition in systemd_hwdb_manage_config()
+- Add default fc specifications for patterns in /opt
+- Add the files_create_etc_files() interface
+- Allow nm-dispatcher console plugin create and write files in /etc
+- Allow nm-dispatcher console plugin transition to the setfiles domain
+- Allow more nm-dispatcher plugins append to init stream sockets
+- Allow nm-dispatcher tlp plugin dbus chat with nm
+- Reorder networkmanager_dispatcher_plugin_template() calls
+- Allow svirt connectto virtlogd
+- Allow blueman map its private memfd: files
+- Allow sysadm user execute init scripts with a transition
+- Allow sblim-sfcbd connect to sblim-reposd stream
+- Allow keepalived_unconfined_script_t dbus chat with init
+- Run restorecon with "-i" not to report errors
 
 * Mon May 02 2022 Zdenek Pytela <zpytela@redhat.com> - 37.1-1
 - Fix users for SELinux userspace 3.4
