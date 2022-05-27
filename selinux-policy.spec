@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit c1ceef9712d0ac2b4643a0d9187c737b3580cf73
+%global commit 2a051bc60695ca5b381b806acbf2e2af040c0158
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 37.2
+Version: 37.3
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -813,6 +813,24 @@ exit 0
 %endif
 
 %changelog
+* Fri May 27 2022 Zdenek Pytela <zpytela@redhat.com> - 37.3-1
+- Allow nm-dispatcher custom plugin execute systemctl
+- Allow nm-dispatcher custom plugin dbus chat with nm
+- Allow nm-dispatcher custom plugin create and use udp socket
+- Allow nm-dispatcher custom plugin create and use netlink_route_socket
+- Use create_netlink_socket_perms in netlink_route_socket class permissions
+- Add support for nm-dispatcher sendmail scripts
+- Allow sslh net_admin capability
+- Allow insights-client manage gpg admin home content
+- Add the gpg_manage_admin_home_content() interface
+- Allow rhsmcertd create generic log files
+- Update logging_create_generic_logs() to use create_files_pattern()
+- Label /var/cache/insights with insights_client_cache_t
+- Allow insights-client search gconf homedir
+- Allow insights-client create and use unix_dgram_socket
+- Allow blueman execute its private memfd: files
+- Move the chown call into make-srpm.sh
+
 * Fri May 06 2022 Zdenek Pytela <zpytela@redhat.com> - 37.2-1
 - Use the networkmanager_dispatcher_plugin attribute in allow rules
 - Make a custom nm-dispatcher plugin transition
