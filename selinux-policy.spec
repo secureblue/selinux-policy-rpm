@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 2a051bc60695ca5b381b806acbf2e2af040c0158
+%global commit 7694f3d5ddc360f428e54f168b521859ff0a4ee1
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 37.3
+Version: 37.4
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -813,6 +813,17 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun 07 2022 Zdenek Pytela <zpytela@redhat.com> - 37.4-1
+- Allow auditd_t noatsecure for a transition to audisp_remote_t
+- Allow ctdbd nlmsg_read on netlink_tcpdiag_socket
+- Allow pcp_domain execute its private memfd: objects
+- Add support for samba-dcerpcd
+- Add policy for wireguard
+- Confine targetcli
+- Allow systemd work with install_t unix stream sockets
+- Allow iscsid the sys_ptrace userns capability
+- Allow xdm connect to unconfined_service_t over a unix stream socket
+
 * Fri May 27 2022 Zdenek Pytela <zpytela@redhat.com> - 37.3-1
 - Allow nm-dispatcher custom plugin execute systemctl
 - Allow nm-dispatcher custom plugin dbus chat with nm
