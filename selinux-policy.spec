@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 7694f3d5ddc360f428e54f168b521859ff0a4ee1
+%global commit 3def661da783b254bd5c9509947a17fc894d31d0
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 37.4
+Version: 37.5
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -816,6 +816,32 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 22 2022 Zdenek Pytela <zpytela@redhat.com> - 37.5-1
+- Allow transition to insights_client named content
+- Add the insights_client_filetrans_named_content() interface
+- Update policy for insights-client to run additional commands 3
+- Allow dhclient manage pid files used by chronyd
+- Allow stalld get scheduling policy of kernel threads
+- Allow samba-dcerpcd work with sssd
+- Allow dlm_controld send a null signal to a cluster daemon
+- Allow ksmctl create hardware state information files
+- Allow winbind_rpcd_t connect to self over a unix_stream_socket
+- Update samba-dcerpcd policy for kerberos usage
+- Allow insights-client execute its private memfd: objects
+- Update policy for insights-client to run additional commands 2
+- Use insights_client_tmp_t instead of insights_client_var_tmp_t
+- Change space indentation to tab in insights-client
+- Use socket permissions sets in insights-client
+- Update policy for insights-client to run additional commands
+- Change rpm_setattr_db_files() to use a pattern
+- Allow init_t to rw insights_client unnamed pipe
+- Add rpm setattr db files macro
+- Fix insights client
+- Update kernel_read_unix_sysctls() for sysctl_net_unix_t handling
+- Allow rabbitmq to access its private memfd: objects
+- Update policy for samba-dcerpcd
+- Allow stalld setsched and sys_nice
+
 * Tue Jun 07 2022 Zdenek Pytela <zpytela@redhat.com> - 37.4-1
 - Allow auditd_t noatsecure for a transition to audisp_remote_t
 - Allow ctdbd nlmsg_read on netlink_tcpdiag_socket
