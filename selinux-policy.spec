@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 3def661da783b254bd5c9509947a17fc894d31d0
+%global commit 6ad8e300b7525ad9a1236983fffbfb8ec18f51e3
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 37.5
+Version: 37.6
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -816,6 +816,32 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 29 2022 Zdenek Pytela <zpytela@redhat.com> - 37.6-1
+- Allow stalld set scheduling policy of kernel threads
+- Allow targetclid read /var/target files
+- Allow targetclid read generic SSL certificates (fixed)
+- Allow firewalld read the contents of the sysfs filesystem
+- Fix file context pattern for /var/target
+- Use insights_client_etc_t in insights_search_config()
+- Allow nm-dispatcher ddclient plugin handle systemd services
+- Allow nm-dispatcher winbind plugin run smbcontrol
+- Allow nm-dispatcher custom plugin create and use unix dgram socket
+- Update samba-dcerpcd policy for kerberos usage 2
+- Allow keepalived read the contents of the sysfs filesystem
+- Allow amandad read network sysctls
+- Allow cups-lpd read network sysctls
+- Allow kpropd read network sysctls
+- Update insights_client_filetrans_named_content()
+- Allow rabbitmq to use systemd notify
+- Label /var/target with targetd_var_t
+- Allow targetclid read generic SSL certificates
+- Update rhcd policy
+- Allow rhcd search insights configuration directories
+- Add the kernel_read_proc_files() interface
+- Require policycoreutils >= 3.4-1
+- Add a script for enclosing interfaces in ifndef statements
+- Disable rpm verification on interface_info
+
 * Wed Jun 22 2022 Zdenek Pytela <zpytela@redhat.com> - 37.5-1
 - Allow transition to insights_client named content
 - Add the insights_client_filetrans_named_content() interface
