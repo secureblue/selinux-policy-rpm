@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 6ad8e300b7525ad9a1236983fffbfb8ec18f51e3
+%global commit 37512b85ed2712a57370c9df57db84b96b3d0f9d
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 37.6
+Version: 37.7
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -816,6 +816,19 @@ exit 0
 %endif
 
 %changelog
+* Thu Jul 14 2022 Zdenek Pytela <zpytela@redhat.com> - 37.7-1
+- Update winbind_rpcd_t
+- Allow some domains use sd_notify()
+- Revert "Allow rabbitmq to use systemd notify"
+- fix(sedoctool.py): Fix syntax warning: "is not" with a literal
+- Allow nm-dispatcher console plugin manage etc files
+- Allow networkmanager_dispatcher_plugin list NetworkManager_etc_t dirs
+- Allow nm-dispatcher console plugin setfscreate
+- Support using systemd-update-helper in rpm scriptlets
+- Allow nm-dispatcher winbind plugin read samba config files
+- Allow domain use userfaultfd over all domains
+- Allow cups-lpd read network sysctls
+
 * Wed Jun 29 2022 Zdenek Pytela <zpytela@redhat.com> - 37.6-1
 - Allow stalld set scheduling policy of kernel threads
 - Allow targetclid read /var/target files
