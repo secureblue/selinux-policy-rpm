@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 37.7
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -816,6 +816,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Jul 23 2022 Fedora Release Engineering <releng@fedoraproject.org> - 37.7-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
+
 * Thu Jul 14 2022 Zdenek Pytela <zpytela@redhat.com> - 37.7-1
 - Update winbind_rpcd_t
 - Allow some domains use sd_notify()
