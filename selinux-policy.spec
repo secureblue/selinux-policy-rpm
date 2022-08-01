@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 37512b85ed2712a57370c9df57db84b96b3d0f9d
+%global commit 732080208e6841a86d7b19710602ae7f749f224d
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,8 +23,8 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 37.7
-Release: 2%{?dist}
+Version: 37.8
+Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -816,6 +816,18 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 01 2022 Zdenek Pytela <zpytela@redhat.com> - 37.8-1
+- Allow sa-update to get init status and start systemd files
+- Use insights_client_filetrans_named_content
+- Make default file context match with named transitions
+- Allow nm-dispatcher tlp plugin send system log messages
+- Allow nm-dispatcher tlp plugin create and use unix_dgram_socket
+- Add permissions to manage lnk_files into gnome_manage_home_config
+- Allow rhsmcertd to read insights config files
+- Label /etc/insights-client/machine-id
+- fix(devices.fc): Replace single quote in comment to solve parsing issues
+- Make NetworkManager_dispatcher_custom_t an unconfined domain
+
 * Sat Jul 23 2022 Fedora Release Engineering <releng@fedoraproject.org> - 37.7-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
 
