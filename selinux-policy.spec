@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 732080208e6841a86d7b19710602ae7f749f224d
+%global commit 74a82f55c34a26e138d8ba4577a349e302ee0a1e
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 37.8
+Version: 37.9
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -816,6 +816,34 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 11 2022 Zdenek Pytela <zpytela@redhat.com> - 37.9-1
+- Allow nm-dispatcher custom plugin dbus chat with nm
+- Allow nm-dispatcher sendmail plugin get status of systemd services
+- Allow xdm read the kernel key ring
+- Allow login_userdomain check status of mount units
+- Allow postfix/smtp and postfix/virtual read kerberos key table
+- Allow services execute systemd-notify
+- Do not allow login_userdomain use sd_notify()
+- Allow launch-xenstored read filesystem sysctls
+- Allow systemd-modules-load write to /dev/kmsg and send a message to syslogd
+- Allow openvswitch fsetid capability
+- Allow openvswitch use its private tmpfs files and dirs
+- Allow openvswitch search tracefs dirs
+- Allow pmdalinux read files on an nfsd filesystem
+- Allow winbind-rpcd write to winbind pid files
+- Allow networkmanager to signal unconfined process
+- Allow systemd_hostnamed label /run/systemd/* as hostnamed_etc_t
+- Allow samba-bgqd get a printer list
+- fix(init.fc): Fix section description
+- Allow fedora-third-party read the passwords file
+- Remove permissive domain for rhcd_t
+- Allow pmie read network state information and network sysctls
+- Revert "Dontaudit domain the fowner capability"
+- Allow sysadm_t to run bpftool on the userdomain attribute
+- Add the userdom_prog_run_bpf_userdomain() interface
+- Allow insights-client rpm named file transitions
+- Add /var/tmp/insights-archive to insights_client_filetrans_named_content
+
 * Mon Aug 01 2022 Zdenek Pytela <zpytela@redhat.com> - 37.8-1
 - Allow sa-update to get init status and start systemd files
 - Use insights_client_filetrans_named_content
