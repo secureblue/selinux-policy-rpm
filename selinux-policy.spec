@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 74a82f55c34a26e138d8ba4577a349e302ee0a1e
+%global commit c19e4cb9a3f23f2b14c31c978627f9c486a369f4
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 37.9
+Version: 37.10
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -816,6 +816,32 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 02 2022 Zdenek Pytela <zpytela@redhat.com> - 37.10-1
+- Allow ipsec_t read/write tpm devices
+- Allow rhcd execute all executables
+- Update rhcd policy for executing additional commands 2
+- Update insights-client policy for additional commands execution 2
+- Allow sysadm_t read raw memory devices
+- Allow chronyd send and receive chronyd/ntp client packets
+- Allow ssh client read kerberos homedir config files
+- Label /var/log/rhc-worker-playbook with rhcd_var_log_t
+- Update insights-client policy (auditctl, gpg, journal)
+- Allow system_cronjob_t domtrans to rpm_script_t
+- Allow smbd_t process noatsecure permission for winbind_rpcd_t
+- Update tor_bind_all_unreserved_ports interface
+- Allow chronyd bind UDP sockets to ptp_event ports.
+- Allow unconfined and sysadm users transition for /root/.gnupg
+- Add gpg_filetrans_admin_home_content() interface
+- Update rhcd policy for executing additional commands
+- Update insights-client policy for additional commands execution
+- Add userdom_view_all_users_keys() interface
+- Allow gpg read and write generic pty type
+- Allow chronyc read and write generic pty type
+- Allow system_dbusd ioctl kernel with a unix stream sockets
+- Allow samba-bgqd to read a printer list
+- Allow stalld get and set scheduling policy of all domains.
+- Allow unconfined_t transition to targetclid_home_t
+
 * Thu Aug 11 2022 Zdenek Pytela <zpytela@redhat.com> - 37.9-1
 - Allow nm-dispatcher custom plugin dbus chat with nm
 - Allow nm-dispatcher sendmail plugin get status of systemd services
