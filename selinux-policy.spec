@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit c19e4cb9a3f23f2b14c31c978627f9c486a369f4
+%global commit e485345b572121f09778da9c146cf1bcd22ae0cf
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 37.10
+Version: 37.11
 Release: 1%{?dist}
 License: GPLv2+
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -816,6 +816,33 @@ exit 0
 %endif
 
 %changelog
+* Wed Sep 14 2022 Zdenek Pytela <zpytela@redhat.com> - 37.11-1
+- Allow tor get filesystem attributes
+- Allow utempter append to login_userdomain stream
+- Allow login_userdomain accept a stream connection to XDM
+- Allow login_userdomain write to boltd named pipes
+- Allow staff_u and user_u users write to bolt pipe
+- Allow login_userdomain watch various directories
+- Update rhcd policy for executing additional commands 5
+- Update rhcd policy for executing additional commands 4
+- Allow rhcd create rpm hawkey logs with correct label
+- Allow systemd-gpt-auto-generator to check for empty dirs
+- Update rhcd policy for executing additional commands 3
+- Allow journalctl read rhcd fifo files
+- Update insights-client policy for additional commands execution 5
+- Allow init remount all file_type filesystems
+- Confine insights-client systemd unit
+- Update insights-client policy for additional commands execution 4
+- Allow pcp pmcd search tracefs and acct_data dirs
+- Allow httpd read network sysctls
+- Dontaudit domain map permission on directories
+- Revert "Allow X userdomains to mmap user_fonts_cache_t dirs"
+- Revert "Allow xdm_t domain to mmap /var/lib/gdm/.cache/fontconfig BZ(1725509)"
+- Update insights-client policy for additional commands execution 3
+- Allow systemd permissions needed for sandboxed services
+- Add rhcd module
+- Make dependency on rpm-plugin-selinux unordered
+
 * Fri Sep 02 2022 Zdenek Pytela <zpytela@redhat.com> - 37.10-1
 - Allow ipsec_t read/write tpm devices
 - Allow rhcd execute all executables
