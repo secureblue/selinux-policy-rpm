@@ -699,7 +699,7 @@ exit 0
 
 %posttrans minimum
 %checkConfigConsistency minimum
-%{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm /etc/NetworkManager/dispatcher.d
+%{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm
 
 %postun minimum
 if [ $1 = 0 ]; then
@@ -773,7 +773,7 @@ exit 0
 
 %posttrans mls
 %checkConfigConsistency mls
-%{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm /etc/NetworkManager/dispatcher.d
+%{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm
 
 %postun mls
 if [ $1 = 0 ]; then
