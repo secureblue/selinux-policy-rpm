@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 4343b56750c77ff3fc562c1dddc24ad5da115a12
+%global commit b42deb870faaa63be41cd6b6b9d8a5846205e6ea
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 38.3
+Version: 38.4
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -813,6 +813,28 @@ exit 0
 %endif
 
 %changelog
+* Mon Dec 19 2022 Zdenek Pytela <zpytela@redhat.com> - 38.4-1
+- Allow NetworkManager and wpa_supplicant the bpf capability
+- Allow systemd-rfkill the bpf capability
+- Allow winbind-rpcd manage samba_share_t files and dirs
+- Label /var/lib/httpd/md(/.*)? with httpd_sys_rw_content_t
+- Allow gpsd the sys_ptrace userns capability
+- Introduce gpsd_tmp_t for sockfiles managed by gpsd_t
+- Allow load_policy_t write to unallocated ttys
+- Allow ndc read hardware state information
+- Allow system mail service read inherited certmonger runtime files
+- Add lpr_roles  to system_r roles
+- Revert "Allow insights-client run lpr and allow the proper role"
+- Allow stalld to read /sys/kernel/security/lockdown file
+- Allow keepalived to set resource limits
+- Add policy for mptcpd
+- Add policy for rshim
+- Allow admin users to create user namespaces
+- Allow journalctl relabel with var_log_t and syslogd_var_run_t files
+- Do not run restorecon /etc/NetworkManager/dispatcher.d in targeted
+- Trim changelog so that it starts at F35 time
+- Add mptcpd and rshim modules
+
 * Wed Dec 14 2022 Zdenek Pytela <zpytela@redhat.com> - 38.3-1
 - Allow insights-client dbus chat with various services
 - Allow insights-client tcp connect to various ports
