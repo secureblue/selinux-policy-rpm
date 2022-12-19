@@ -584,9 +584,6 @@ exit 0
 %posttrans targeted
 %checkConfigConsistency targeted
 %{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm
-if [ -d /etc/NetworkManager/dispatcher.d ]; then
-%{_sbindir}/restorecon -Ri /etc/NetworkManager/dispatcher.d
-fi
 
 %postun targeted
 if [ $1 = 0 ]; then
