@@ -1,3 +1,8 @@
+# Conditionals for policy types (all built by default)
+%bcond targeted 1
+%bcond minimum  1
+%bcond mls      1
+
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
 %global commit 52d7b9cd0bc95a912a7ac5b5a0ba9e2e0af9ae1d
@@ -6,18 +11,7 @@
 %define distro redhat
 %define polyinstatiate n
 %define monolithic n
-%if %{?BUILD_DOC:0}%{!?BUILD_DOC:1}
-%define BUILD_DOC 1
-%endif
-%if %{?BUILD_TARGETED:0}%{!?BUILD_TARGETED:1}
-%define BUILD_TARGETED 1
-%endif
-%if %{?BUILD_MINIMUM:0}%{!?BUILD_MINIMUM:1}
-%define BUILD_MINIMUM 1
-%endif
-%if %{?BUILD_MLS:0}%{!?BUILD_MLS:1}
-%define BUILD_MLS 1
-%endif
+
 %define POLICYVER 33
 %define POLICYCOREUTILSVER 3.4-1
 %define CHECKPOLICYVER 3.2
@@ -455,7 +449,7 @@ install -m 755 %{SOURCE39} %{buildroot}%{_sysconfdir}/dnf/protected.d/
 
 # Install devel
 make clean
-%if %{BUILD_TARGETED}
+%if %{with targeted}
 # Build targeted policy
 %makeCmds targeted mcs allow
 %makeModulesConf targeted base contrib
@@ -470,7 +464,7 @@ mv sandbox.pp %{buildroot}%{_datadir}/selinux/packages/sandbox.pp
 %nonBaseModulesList targeted
 %endif
 
-%if %{BUILD_MINIMUM}
+%if %{with minimum}
 # Build minimum policy
 %makeCmds minimum mcs allow
 %makeModulesConf targeted base contrib
@@ -480,7 +474,7 @@ rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
 %nonBaseModulesList minimum
 %endif
 
-%if %{BUILD_MLS}
+%if %{with mls}
 # Build mls policy
 %makeCmds mls mls deny
 %makeModulesConf mls base contrib
@@ -574,7 +568,7 @@ if [ $1 = 0 ]; then
 fi
 exit 0
 
-%if %{BUILD_TARGETED}
+%if %{with targeted}
 %package targeted
 Summary: SELinux targeted policy
 Provides: selinux-policy-any = %{version}-%{release}
@@ -678,7 +672,7 @@ exit 0
 %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/permissivedomains
 %endif
 
-%if %{BUILD_MINIMUM}
+%if %{with minimum}
 %package minimum
 Summary: SELinux minimum policy
 Provides: selinux-policy-any = %{version}-%{release}
@@ -782,7 +776,7 @@ exit 0
 %fileList minimum
 %endif
 
-%if %{BUILD_MLS}
+%if %{with mls}
 %package mls
 Summary: SELinux MLS policy
 Provides: selinux-policy-any = %{version}-%{release}
