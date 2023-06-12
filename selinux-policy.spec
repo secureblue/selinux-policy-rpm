@@ -168,6 +168,7 @@ This package contains manual pages and documentation of the policy modules.
 %files doc
 %{_mandir}/man*/*
 %{_mandir}/ru/*/*
+%exclude %{_mandir}/man8/container_selinux.8.gz
 %doc %{_datadir}/doc/%{name}
 
 %define common_params DISTRO=%{distro} UBAC=n DIRECT_INITRC=n MONOLITHIC=%{monolithic} MLS_CATS=1024 MCS_CATS=1024
