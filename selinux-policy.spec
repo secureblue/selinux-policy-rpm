@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 10f97f8f911402735ec67cc4704c4061999bd949
+%global commit d98adbe88460ae672b4c26472f6de6729db8e680
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 38.20
+Version: 38.21
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -814,6 +814,20 @@ exit 0
 %endif
 
 %changelog
+* Thu Jul 13 2023 Zdenek Pytela <zpytela@redhat.com> - 38.21-1
+- Make systemd_tmpfiles_t MLS trusted for lowering the level of files
+- Revert "Allow insights client map cache_home_t"
+- Allow nfsidmapd connect to systemd-machined over a unix socket
+- Allow snapperd connect to kernel over a unix domain stream socket
+- Allow virt_qemu_ga_t create .ssh dir with correct label
+- Allow targetd read network sysctls
+- Set the abrt_handle_event boolean to on
+- Permit kernel_t to change the user identity in object contexts
+- Allow insights client map cache_home_t
+- Label /usr/sbin/mariadbd with mysqld_exec_t
+- Trim changelog so that it starts at F37 time
+- Define equivalency for /run/systemd/generator.early
+
 * Thu Jun 29 2023 Zdenek Pytela <zpytela@redhat.com> - 38.20-1
 - Allow httpd tcp connect to redis port conditionally
 - Label only /usr/sbin/ripd and ripngd with zebra_exec_t
