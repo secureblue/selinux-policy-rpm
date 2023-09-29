@@ -69,7 +69,7 @@ BuildRequires: make
 BuildRequires: systemd-rpm-macros
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(post): /bin/awk /usr/bin/sha512sum
-Requires(meta): rpm-plugin-selinux
+Requires(meta): (rpm-plugin-selinux if rpm-libs)
 Requires: selinux-policy-any = %{version}-%{release}
 Provides: selinux-policy-base = %{version}-%{release}
 Suggests: selinux-policy-targeted
