@@ -815,6 +815,7 @@ exit 0
 
 %changelog
 * Tue Oct 10 2023 Zdenek Pytela <zpytela@redhat.com> - 40.2-1
+- Add the virt_supplementary module to modules-targeted-contrib.conf
 - Make new virt drivers permissive
 - Split virt policy, introduce virt_supplementary module
 - Allow apcupsd cgi scripts read /sys
