@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 40.14
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -824,6 +824,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Mar 07 2024 Zdenek Pytela <zpytela@redhat.com> - 40.14-2
+- Update varrun-convert.sh script to check for existing duplicate entries
+
 * Mon Feb 26 2024 Zdenek Pytela <zpytela@redhat.com> - 40.14-1
 - Allow userdomain get attributes of files on an nsfs filesystem
 - Allow opafm create NFS files and directories
