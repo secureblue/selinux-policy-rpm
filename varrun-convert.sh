@@ -80,7 +80,7 @@ sed -i 's/system_u:object_r:\([^:]*\):\(.*\)$/(system_u object_r \1 ((\2) (\2)))
 sed -i s'/ <<none>>$/ ())/' ${EXTRA_VARRUN_ENTRIES}
 
 # Wrap each line with an optional block
-local i=1
+i=1
 while read line
 do
   echo "(optional extra_var_run_${i}"
