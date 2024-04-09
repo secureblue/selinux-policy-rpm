@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 2cdf4e71dc3557b4a87b1430edffcddc82e5d835
+%global commit dc98c54983569572791d0237989110a29ed7faa4
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 40.15
+Version: 40.16
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -824,6 +824,21 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 09 2024 Zdenek Pytela <zpytela@redhat.com> - 40.16-1
+- Allow keyutils-dns-resolver connect to the system log service
+- Allow qemu-ga read vm sysctls
+- postfix: allow qmgr to delete mails in bounce/ directory
+- policy: support pidfs
+- Confine selinux-autorelabel-generator.sh
+- Allow logwatch_mail_t read/write to init over a unix stream socket
+- Allow logwatch read logind sessions files
+- files_dontaudit_getattr_tmpfs_files allowed the access and didn't dontaudit it
+- files_dontaudit_mounton_modules_object allowed the access and didn't dontaudit it
+- Allow NetworkManager the sys_ptrace capability in user namespace
+- dontaudit execmem for modemmanager
+- Allow dhcpcd use unix_stream_socket
+- Allow dhcpc read /run/netns files
+
 * Fri Mar 15 2024 Zdenek Pytela <zpytela@redhat.com> - 40.15-1
 - Update mmap_rw_file_perms to include the lock permission
 - Allow plymouthd log during shutdown
