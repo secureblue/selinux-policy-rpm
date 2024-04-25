@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit dc98c54983569572791d0237989110a29ed7faa4
+%global commit 471437a05d18a759a7d675c29b42839c1b7d72a4
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 40.16
+Version: 40.17
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -824,6 +824,19 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr 25 2024 Zdenek Pytela <zpytela@redhat.com> - 40.17-1
+- Define transitions for /run/libvirt/common and /run/libvirt/qemu
+- Allow systemd-sleep read raw disk data
+- Allow numad to trace processes in user namespace
+- Allow abrt-dump-journal-core connect to systemd-userdbd
+- Allow plymouthd read efivarfs files
+- Update the auth_dontaudit_read_passwd_file() interface
+- Label /dev/mmcblk0rpmb character device with removable_device_t
+- fix hibernate on btrfs swapfile (F40)
+- Allow nut to statfs()
+- Allow system dbusd service status systemd services
+- Allow systemd-timedated get the timemaster service status
+
 * Tue Apr 09 2024 Zdenek Pytela <zpytela@redhat.com> - 40.16-1
 - Allow keyutils-dns-resolver connect to the system log service
 - Allow qemu-ga read vm sysctls
