@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 471437a05d18a759a7d675c29b42839c1b7d72a4
+%global commit 28c2ee5fb5dfba79004bfa8dece14dfb62967319
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 40.17
+Version: 40.18
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -824,6 +824,25 @@ exit 0
 %endif
 
 %changelog
+* Mon May 06 2024 Zdenek Pytela <zpytela@redhat.com> - 40.18-1
+- Allow virtqemud read vfio devices
+- Allow virtqemud get attributes of a tmpfs filesystem
+- Allow svirt_t read vm sysctls
+- Allow virtqemud create and unlink files in /etc/libvirt/
+- Allow virtqemud get attributes of cifs files
+- Allow virtqemud get attributes of filesystems with extended attributes
+- Allow virtqemud get attributes of NFS filesystems
+- Allow virt_domain read and write usb devices conditionally
+- Allow virtstoraged use the io_uring API
+- Allow virtstoraged execute lvm programs in the lvm domain
+- Allow virtnodevd_t map /var/lib files
+- Allow svirt_tcg_t map svirt_image_t files
+- Allow abrt-dump-journal-core connect to systemd-homed
+- Allow abrt-dump-journal-core connect to systemd-machined
+- Allow sssd create and use io_uring
+- Allow selinux-relabel-generator create units dir
+- Allow dbus-broker read/write inherited user ttys
+
 * Thu Apr 25 2024 Zdenek Pytela <zpytela@redhat.com> - 40.17-1
 - Define transitions for /run/libvirt/common and /run/libvirt/qemu
 - Allow systemd-sleep read raw disk data
