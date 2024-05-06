@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 40.18
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -407,6 +407,17 @@ if posix.stat(config_file) then \
     bf:close() \
 end
 
+# Remove the local_varrun SELinux module
+%define removeVarrunModule() \
+if [ -r "%{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun/cil" ]; then \
+  %{_bindir}/rm -rf %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun \
+fi;
+
+%define removeVarrunModuleLua() \
+if posix.access ("%{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun/cil", "r") then \
+  os.execute ("%{_bindir}/rm -rf %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun") \
+end
+
 %build
 
 %prep
@@ -580,6 +591,7 @@ SELinux targeted policy package.
 
 %pretrans targeted -p <lua>
 %backupConfigLua
+%removeVarrunModuleLua targeted
 
 %pre targeted
 %preInstall targeted
@@ -615,8 +627,32 @@ exit 0
 %{_sbindir}/selinuxenabled && %{_sbindir}/semodule -nB
 exit 0
 
+%triggerprein -- container-selinux
+%removeVarrunModule targeted
+exit 0
+
+%triggerprein -- pcp-selinux
+%removeVarrunModule targeted
+exit 0
+
+%triggerpostin -- container-selinux
+%{_libexecdir}/selinux/varrun-convert.sh targeted
+exit 0
+
+%triggerpostin -- pcp-selinux
+%{_libexecdir}/selinux/varrun-convert.sh targeted
+exit 0
+
 %triggerpostun -- selinux-policy-targeted < 3.12.1-74
 rm -f %{_sysconfdir}/selinux/*/modules/active/modules/sandbox.pp.disabled 2>/dev/null
+exit 0
+
+%triggerpostun -- pcp-selinux
+%{_libexecdir}/selinux/varrun-convert.sh targeted
+exit 0
+
+%triggerpostun -- container-selinux
+%{_libexecdir}/selinux/varrun-convert.sh targeted
 exit 0
 
 %triggerpostun targeted -- selinux-policy-targeted < 3.13.1-138
@@ -824,6 +860,9 @@ exit 0
 %endif
 
 %changelog
+* Mon May 06 2024 Zdenek Pytela <zpytela@redhat.com> - 40.18-2
+- Update rpm configuration for the /var/run equivalency change
+
 * Mon May 06 2024 Zdenek Pytela <zpytela@redhat.com> - 40.18-1
 - Allow virtqemud read vfio devices
 - Allow virtqemud get attributes of a tmpfs filesystem
