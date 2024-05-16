@@ -24,7 +24,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 40.18
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -860,6 +860,9 @@ exit 0
 %endif
 
 %changelog
+* Thu May 16 2024 Adam Williamson <awilliam@redhat.com> - 40.18-3
+- Correct some errors in the RPM macro changes from -2
+
 * Mon May 06 2024 Zdenek Pytela <zpytela@redhat.com> - 40.18-2
 - Update rpm configuration for the /var/run equivalency change
 
