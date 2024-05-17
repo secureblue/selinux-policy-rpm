@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 28c2ee5fb5dfba79004bfa8dece14dfb62967319
+%global commit 0ed7e9a797ca5be979a5b0b3e626efd775004851
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,8 +23,8 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 40.18
-Release: 3%{?dist}
+Version: 40.19
+Release: 1%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted-base.conf
@@ -860,6 +860,23 @@ exit 0
 %endif
 
 %changelog
+* Fri May 17 2024 Zdenek Pytela <zpytela@redhat.com> - 40.19-1
+- Allow postfix smtpd map aliases file
+- Ensure dbus communication is allowed bidirectionally
+- Label systemd configuration files with systemd_conf_t
+- Label /run/systemd/machine with systemd_machined_var_run_t
+- Allow systemd-hostnamed read the vsock device
+- Allow sysadm execute dmidecode using sudo
+- Allow sudodomain list files in /var
+- Allow setroubleshootd get attributes of all sysctls
+- Allow various services read and write z90crypt device
+- Allow nfsidmap connect to systemd-homed
+- Allow sandbox_x_client_t dbus chat with accountsd
+- Allow system_cronjob_t dbus chat with avahi_t
+- Allow staff_t the io_uring sqpoll permission
+- Allow staff_t use the io_uring API
+- Add support for secretmem anon inode
+
 * Thu May 16 2024 Adam Williamson <awilliam@redhat.com> - 40.18-3
 - Correct some errors in the RPM macro changes from -2
 
