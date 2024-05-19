@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 0ed7e9a797ca5be979a5b0b3e626efd775004851
+%global commit 1f7f05d908f1c93939d7eed9f24a826b0f3ae723
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 40.19
+Version: 40.20
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -860,6 +860,12 @@ exit 0
 %endif
 
 %changelog
+* Sun May 19 2024 Zdenek Pytela <zpytela@redhat.com> - 40.20-1
+- Allow journald read systemd config files and directories
+- Allow systemd_domain read systemd_conf_t dirs
+- Fix bad Python regexp escapes
+- Allow fido services connect to postgres database
+
 * Fri May 17 2024 Zdenek Pytela <zpytela@redhat.com> - 40.19-1
 - Allow postfix smtpd map aliases file
 - Ensure dbus communication is allowed bidirectionally
