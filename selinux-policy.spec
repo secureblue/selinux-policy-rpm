@@ -63,6 +63,9 @@ Source36: selinux-check-proper-disable.service
 
 # Script to convert /var/run file context entries to /run
 Source37: varrun-convert.sh
+# Configuration files to dnf-protect targeted and/or mls subpackages
+Source38: selinux-policy-targeted.conf
+Source39: selinux-policy-mls.conf
 
 # Provide rpm macros for packages installing SELinux modules
 Source102: rpm.macros
@@ -451,6 +454,10 @@ mkdir -p %{buildroot}%{_sharedstatedir}/selinux/{targeted,mls,minimum,modules}/
 
 mkdir -p %{buildroot}%{_datadir}/selinux/packages
 
+mkdir -p %{buildroot}%{_sysconfdir}/dnf/protected.d/
+install -m 755 %{SOURCE38} %{buildroot}%{_sysconfdir}/dnf/protected.d/
+install -m 755 %{SOURCE39} %{buildroot}%{_sysconfdir}/dnf/protected.d/
+
 # Install devel
 make clean
 %if %{BUILD_TARGETED}
@@ -679,6 +686,7 @@ fi
 exit 0
 
 %files targeted -f %{buildroot}%{_datadir}/selinux/targeted/nonbasemodules.lst
+%config(noreplace) %{_sysconfdir}/dnf/protected.d/selinux-policy-targeted.conf
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/targeted/contexts/users/sysadm_u
 %fileList targeted
@@ -857,6 +865,7 @@ exit 0
 
 
 %files mls -f %{buildroot}%{_datadir}/selinux/mls/nonbasemodules.lst
+%config(noreplace) %{_sysconfdir}/dnf/protected.d/selinux-policy-mls.conf
 %config(noreplace) %{_sysconfdir}/selinux/mls/contexts/users/unconfined_u
 %fileList mls
 %endif
