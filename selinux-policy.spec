@@ -413,11 +413,6 @@ if posix.stat(config_file) then \
 end
 
 # Remove the local_varrun SELinux module
-%define removeVarrunModule() \
-if [ -r "%{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun/cil" ]; then \
-  %{_bindir}/rm -rf %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun \
-fi;
-
 %define removeVarrunModuleLua() \
 if posix.access ("%{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun/cil", "r") then \
   os.execute ("%{_bindir}/rm -rf %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun") \
@@ -636,21 +631,11 @@ exit 0
 %{_sbindir}/selinuxenabled && %{_sbindir}/semodule -nB
 exit 0
 
-%triggerprein -- container-selinux
-%removeVarrunModule targeted
-exit 0
+%triggerprein -p <lua> -- container-selinux
+%removeVarrunModuleLua targeted
 
-%triggerprein -- pcp-selinux
-%removeVarrunModule targeted
-exit 0
-
-%triggerpostin -- container-selinux
-%{_libexecdir}/selinux/varrun-convert.sh targeted
-exit 0
-
-%triggerpostin -- pcp-selinux
-%{_libexecdir}/selinux/varrun-convert.sh targeted
-exit 0
+%triggerprein -p <lua> -- pcp-selinux
+%removeVarrunModuleLua targeted
 
 %triggerpostun -- selinux-policy-targeted < 3.12.1-74
 rm -f %{_sysconfdir}/selinux/*/modules/active/modules/sandbox.pp.disabled 2>/dev/null
