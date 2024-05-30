@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit 1f7f05d908f1c93939d7eed9f24a826b0f3ae723
+%global commit feb2379d4674d065dbcabe8b342c731954930536
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 40.20
+Version: 40.21
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -871,6 +871,14 @@ exit 0
 %endif
 
 %changelog
+* Thu May 30 2024 Zdenek Pytela <zpytela@redhat.com> - 40.21-1
+- Add policy for a generic generator
+- Add policy for tpm2 generator
+- Add policy for ssh-generator
+- Add policy for second batch of generators
+- Update policy for systemd generators
+- ci: Adjust Cockpit test plans
+
 * Sun May 19 2024 Zdenek Pytela <zpytela@redhat.com> - 40.20-1
 - Allow journald read systemd config files and directories
 - Allow systemd_domain read systemd_conf_t dirs
