@@ -1,6 +1,6 @@
 # github repo with selinux-policy sources
 %global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit feb2379d4674d065dbcabe8b342c731954930536
+%global commit 351a598ecbc0717926181e0a88d07878a12e7301
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -23,7 +23,7 @@
 %define CHECKPOLICYVER 3.2
 Summary: SELinux policy configuration
 Name: selinux-policy
-Version: 40.21
+Version: 41.1
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -871,6 +871,20 @@ exit 0
 %endif
 
 %changelog
+* Mon Jun 03 2024 Zdenek Pytela <zpytela@redhat.com> - 41.1-1
+- Allow fstab-generator create unit file symlinks
+- Update policy for cryptsetup-generator
+- Update policy for fstab-generator
+- Allow virtqemud read vm sysctls
+- Allow collectd to trace processes in user namespace
+- Allow bootupd search efivarfs dirs
+- Add policy for systemd-mountfsd
+- Add policy for systemd-nsresourced
+- Update policy generators
+- Add policy for anaconda-generator
+- Update policy for fstab and gpt generators
+- Add policy for kdump-dep-generator
+
 * Thu May 30 2024 Zdenek Pytela <zpytela@redhat.com> - 40.21-1
 - Add policy for a generic generator
 - Add policy for tpm2 generator
