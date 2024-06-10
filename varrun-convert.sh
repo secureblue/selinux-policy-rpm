@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 ### varrun-convert.sh
 ### convert legacy filecontext entries containing /var/run to /run
 ### and load an extra selinux module with the new content
