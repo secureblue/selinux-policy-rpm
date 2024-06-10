@@ -444,8 +444,8 @@ mkdir -p %{buildroot}%{_sharedstatedir}/selinux/{targeted,mls,minimum,modules}/
 mkdir -p %{buildroot}%{_datadir}/selinux/packages
 
 mkdir -p %{buildroot}%{_sysconfdir}/dnf/protected.d/
-install -m 755 %{SOURCE38} %{buildroot}%{_sysconfdir}/dnf/protected.d/
-install -m 755 %{SOURCE39} %{buildroot}%{_sysconfdir}/dnf/protected.d/
+install -m 644 %{SOURCE38} %{buildroot}%{_sysconfdir}/dnf/protected.d/
+install -m 644 %{SOURCE39} %{buildroot}%{_sysconfdir}/dnf/protected.d/
 
 # Install devel
 make clean
