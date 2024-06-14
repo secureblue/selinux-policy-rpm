@@ -278,9 +278,9 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %ghost %{_sharedstatedir}/selinux/%1/active/users_extra.linked \
 %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/file_contexts.homedirs \
 %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules_checksum \
-%ghost %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun \
-%ghost %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun/cil \
-%ghost %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun/lang_ext \
+%ghost %verify(not mode md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun \
+%ghost %verify(not mode md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun/cil \
+%ghost %verify(not mode md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun/lang_ext \
 %nil
 
 %define relabel() \
