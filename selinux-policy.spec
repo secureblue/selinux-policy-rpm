@@ -21,18 +21,16 @@ Version: 41.8
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
-Source1: modules-targeted-base.conf
-Source31: modules-targeted-contrib.conf
+Source1: modules-targeted.conf
 Source2: booleans-targeted.conf
 Source3: Makefile.devel
 Source4: setrans-targeted.conf
-Source5: modules-mls-base.conf
-Source32: modules-mls-contrib.conf
+Source5: modules-mls.conf
 Source6: booleans-mls.conf
 Source8: setrans-mls.conf
 Source14: securetty_types-targeted
 Source15: securetty_types-mls
-#Source16: modules-minimum.conf
+Source16: modules-minimum.lst
 Source17: booleans-minimum.conf
 Source18: setrans-minimum.conf
 Source19: securetty_types-minimum
@@ -182,12 +180,7 @@ cp -f selinux_config/users-%1 ./policy/users \
 #cp -f selinux_config/modules-%1-base.conf  ./policy/modules.conf \
 
 %define makeModulesConf() \
-cp -f selinux_config/modules-%1-%2.conf  ./policy/modules-base.conf \
-cp -f selinux_config/modules-%1-%2.conf  ./policy/modules.conf \
-if [ %3 == "contrib" ];then \
-	cp selinux_config/modules-%1-%3.conf ./policy/modules-contrib.conf; \
-	cat selinux_config/modules-%1-%3.conf >> ./policy/modules.conf; \
-fi; \
+cp -f selinux_config/modules-%1.conf  ./policy/modules.conf
 
 %define installCmds() \
 %make_build %common_params UNK_PERMS=%3 NAME=%1 TYPE=%2 base.pp \
@@ -263,8 +256,7 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %config(noreplace) %{_sysconfdir}/selinux/%1/contexts/users/staff_u \
 %dir %{_datadir}/selinux/%1 \
 %{_datadir}/selinux/%1/base.lst \
-%{_datadir}/selinux/%1/modules-base.lst \
-%{_datadir}/selinux/%1/modules-contrib.lst \
+%{_datadir}/selinux/%1/modules.lst \
 %{_datadir}/selinux/%1/nonbasemodules.lst \
 %dir %{_sharedstatedir}/selinux/%1 \
 %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/commit_num \
@@ -337,16 +329,12 @@ else \
 fi;
 
 %define modulesList() \
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s ", $1 }' ./policy/modules-base.conf > %{buildroot}%{_datadir}/selinux/%1/modules-base.lst \
-awk '$1 !~ "/^#/" && $2 == "=" && $3 == "base" { printf "%%s ", $1 }' ./policy/modules-base.conf > %{buildroot}%{_datadir}/selinux/%1/base.lst \
-if [ -e ./policy/modules-contrib.conf ];then \
-	awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s ", $1 }' ./policy/modules-contrib.conf > %{buildroot}%{_datadir}/selinux/%1/modules-contrib.lst; \
-fi;
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "module" { printf "%%s ", $1 }' ./policy/modules.conf > %{buildroot}%{_datadir}/selinux/%1/modules.lst \
+awk '$1 !~ "/^#/" && $2 == "=" && $3 == "base" { printf "%%s ", $1 }' ./policy/modules.conf > %{buildroot}%{_datadir}/selinux/%1/base.lst \
 
 %define nonBaseModulesList() \
-contrib_modules=`cat %{buildroot}%{_datadir}/selinux/%1/modules-contrib.lst` \
-base_modules=`cat %{buildroot}%{_datadir}/selinux/%1/modules-base.lst` \
-for i in $contrib_modules $base_modules; do \
+modules=`cat %{buildroot}%{_datadir}/selinux/%1/modules.lst` \
+for i in $modules; do \
     if [ $i != "sandbox" ];then \
         echo "%verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/100/$i" >> %{buildroot}%{_datadir}/selinux/%1/nonbasemodules.lst \
     fi; \
@@ -419,7 +407,7 @@ end
 tar -C policy/modules/contrib -xf %{SOURCE35}
 
 mkdir selinux_config
-for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE14} %{SOURCE15} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE22} %{SOURCE23} %{SOURCE25} %{SOURCE26} %{SOURCE31} %{SOURCE32};do
+for i in %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE8} %{SOURCE14} %{SOURCE15} %{SOURCE17} %{SOURCE18} %{SOURCE19} %{SOURCE20} %{SOURCE22} %{SOURCE23} %{SOURCE25} %{SOURCE26};do
  cp $i selinux_config
 done
 
@@ -452,7 +440,7 @@ make clean
 %if %{with targeted}
 # Build targeted policy
 %makeCmds targeted mcs allow
-%makeModulesConf targeted base contrib
+%makeModulesConf targeted
 %installCmds targeted mcs allow
 # install permissivedomains.cil
 %{_sbindir}/semodule -p %{buildroot} -X 100 -s targeted -i %{SOURCE28}
@@ -467,9 +455,10 @@ mv sandbox.pp %{buildroot}%{_datadir}/selinux/packages/sandbox.pp
 %if %{with minimum}
 # Build minimum policy
 %makeCmds minimum mcs allow
-%makeModulesConf targeted base contrib
+%makeModulesConf targeted
 %installCmds minimum mcs allow
 rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
+install -m 644 %{SOURCE16} %{buildroot}%{_datadir}/selinux/minimum/modules-enabled.lst
 %modulesList minimum
 %nonBaseModulesList minimum
 %endif
@@ -477,7 +466,7 @@ rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
 %if %{with mls}
 # Build mls policy
 %makeCmds mls mls deny
-%makeModulesConf mls base contrib
+%makeModulesConf mls
 %installCmds mls mls deny
 %modulesList mls
 %nonBaseModulesList mls
@@ -697,16 +686,17 @@ fi
 
 %post minimum
 %checkConfigConsistency minimum
-contribpackages=`cat %{_datadir}/selinux/minimum/modules-contrib.lst`
-basepackages=`cat %{_datadir}/selinux/minimum/modules-base.lst`
+modules=`cat %{_datadir}/selinux/minimum/modules.lst`
+basemodules=`cat %{_datadir}/selinux/minimum/base.lst`
+enabledmodules=`cat %{_datadir}/selinux/minimum/modules-enabled.lst`
 if [ ! -d %{_sharedstatedir}/selinux/minimum/active/modules/disabled ]; then
     mkdir %{_sharedstatedir}/selinux/minimum/active/modules/disabled
 fi
 if [ $1 -eq 1 ]; then
-for p in $contribpackages; do
+for p in $modules; do
     touch %{_sharedstatedir}/selinux/minimum/active/modules/disabled/$p
 done
-for p in $basepackages apache dbus inetd kerberos mta nis; do
+for p in $basemodules $enabledmodules; do
     rm -f %{_sharedstatedir}/selinux/minimum/active/modules/disabled/$p
 done
 %{_sbindir}/semanage import -S minimum -f - << __eof
@@ -717,7 +707,7 @@ __eof
 %{_sbindir}/semodule -B -s minimum
 else
 instpackages=`cat %{_datadir}/selinux/minimum/instmodules.lst`
-for p in $contribpackages; do
+for p in $packages; do
     touch %{_sharedstatedir}/selinux/minimum/active/modules/disabled/$p
 done
 for p in $instpackages apache dbus inetd kerberos mta nis; do
@@ -774,6 +764,7 @@ exit 0
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/sysadm_u
 %fileList minimum
+%{_datadir}/selinux/minimum/modules-enabled.lst
 %endif
 
 %if %{with mls}
