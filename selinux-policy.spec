@@ -18,7 +18,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 41.8
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted.conf
@@ -289,7 +289,7 @@ fi; \
 # In some scenarios, /usr/bin/httpd is labelled incorrectly after sbin merge. \
 # Relabel all files under /usr/bin, in case they got installed before policy \
 # was updated and the labels were incorrect. \
-%{_sbindir}/restorecon -R /usr/bin \
+%{_sbindir}/restorecon -R /usr/bin /usr/sbin \
 if %{_sbindir}/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null;then \
     continue; \
 fi;
