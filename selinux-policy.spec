@@ -286,6 +286,10 @@ if %{_sbindir}/selinuxenabled && [ "${SELINUXTYPE}" = %1 -a -f ${FILE_CONTEXT}.p
 fi; \
 # rebuilding the rpm database still can sometimes result in an incorrect context \
 %{_sbindir}/restorecon -R /usr/lib/sysimage/rpm \
+# In some scenarios, /usr/bin/httpd is labelled incorrectly after sbin merge. \
+# Relabel all files under /usr/bin, in case they got installed before policy \
+# was updated and the labels were incorrect. \
+%{_sbindir}/restorecon -R /usr/bin \
 if %{_sbindir}/restorecon -e /run/media -R /root /var/log /var/run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null;then \
     continue; \
 fi;
