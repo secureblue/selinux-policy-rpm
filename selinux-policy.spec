@@ -589,12 +589,12 @@ SELinux targeted policy package.
 
 %post targeted
 %checkConfigConsistency targeted
-%postInstall $1 targeted
 exit 0
 
 %posttrans targeted
 %checkConfigConsistency targeted
 %{_libexecdir}/selinux/varrun-convert.sh targeted
+%postInstall $1 targeted
 %{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm
 
 %postun targeted
@@ -795,12 +795,12 @@ SELinux MLS (Multi Level Security) policy package.
 
 %post mls
 %checkConfigConsistency mls
-%postInstall $1 mls
 exit 0
 
 %posttrans mls
 %checkConfigConsistency mls
 %{_libexecdir}/selinux/varrun-convert.sh mls
+%postInstall $1 mls
 %{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm
 
 %postun mls
