@@ -436,8 +436,6 @@ mkdir -p %{buildroot}%{_sharedstatedir}/selinux/{targeted,mls,minimum,modules}/
 mkdir -p %{buildroot}%{_datadir}/selinux/packages
 
 mkdir -p %{buildroot}%{_sysconfdir}/dnf/protected.d/
-install -m 644 %{SOURCE38} %{buildroot}%{_sysconfdir}/dnf/protected.d/
-install -m 644 %{SOURCE39} %{buildroot}%{_sysconfdir}/dnf/protected.d/
 
 # Install devel
 make clean
@@ -454,6 +452,7 @@ rm -rf %{buildroot}%{_sharedstatedir}/selinux/targeted/active/modules/100/sandbo
 mv sandbox.pp %{buildroot}%{_datadir}/selinux/packages/sandbox.pp
 %modulesList targeted
 %nonBaseModulesList targeted
+install -m 644 %{SOURCE38} %{buildroot}%{_sysconfdir}/dnf/protected.d/
 %endif
 
 %if %{with minimum}
@@ -474,6 +473,7 @@ install -m 644 %{SOURCE16} %{buildroot}%{_datadir}/selinux/minimum/modules-enabl
 %installCmds mls mls deny
 %modulesList mls
 %nonBaseModulesList mls
+install -m 644 %{SOURCE39} %{buildroot}%{_sysconfdir}/dnf/protected.d/
 %endif
 
 # remove leftovers when save-previous=true (semanage.conf) is used
