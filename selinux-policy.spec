@@ -18,7 +18,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 41.9
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted.conf
@@ -845,4 +845,7 @@ exit 0
 %endif
 
 %changelog
+* Sat Jul 20 2024 Fedora Release Engineering <releng@fedoraproject.org> - 41.9-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
+
 %autochangelog
