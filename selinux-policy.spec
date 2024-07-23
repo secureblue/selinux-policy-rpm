@@ -67,6 +67,7 @@ BuildArch: noarch
 BuildRequires: python3 gawk checkpolicy >= %{CHECKPOLICYVER} m4 policycoreutils-devel >= %{POLICYCOREUTILSVER} bzip2
 BuildRequires: make
 BuildRequires: systemd-rpm-macros
+BuildRequires: groff
 Requires(pre): policycoreutils >= %{POLICYCOREUTILSVER}
 Requires(post): /bin/awk /usr/bin/sha512sum
 Requires(meta): (rpm-plugin-selinux if rpm-libs)
