@@ -18,7 +18,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 41.15
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: modules-targeted.conf
@@ -58,6 +58,8 @@ Source37: varrun-convert.sh
 # Configuration files to dnf-protect targeted and/or mls subpackages
 Source38: selinux-policy-targeted.conf
 Source39: selinux-policy-mls.conf
+# Script to convert /usr/sbin file context entries to /usr/bin
+Source40: binsbin-convert.sh
 
 # Provide rpm macros for packages installing SELinux modules
 Source102: rpm.macros
@@ -91,6 +93,7 @@ the policy has been adjusted to provide support for Fedora.
 %{_usr}/lib/tmpfiles.d/selinux-policy.conf
 %{_rpmconfigdir}/macros.d/macros.selinux-policy
 %{_unitdir}/selinux-check-proper-disable.service
+%{_libexecdir}/selinux/binsbin-convert.sh
 %{_libexecdir}/selinux/varrun-convert.sh
 
 %package sandbox
@@ -271,6 +274,9 @@ rm -f %{buildroot}%{_sharedstatedir}/selinux/%1/active/*.linked \
 %ghost %{_sharedstatedir}/selinux/%1/active/users_extra.linked \
 %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/file_contexts.homedirs \
 %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules_checksum \
+%ghost %verify(not mode md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/400/extra_binsbin \
+%ghost %verify(not mode md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/400/extra_binsbin/cil \
+%ghost %verify(not mode md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/400/extra_binsbin/lang_ext \
 %ghost %verify(not mode md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun \
 %ghost %verify(not mode md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun/cil \
 %ghost %verify(not mode md5 size mtime) %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun/lang_ext \
@@ -405,6 +411,12 @@ if posix.access ("%{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun/
   os.execute ("%{_bindir}/rm -rf %{_sharedstatedir}/selinux/%1/active/modules/400/extra_varrun") \
 end
 
+# Remove the local_binsbin SELinux module
+%define removeBinsbinModuleLua() \
+if posix.access ("%{_sharedstatedir}/selinux/%1/active/modules/400/extra_binsbin/cil", "r") then \
+  os.execute ("%{_bindir}/rm -rf %{_sharedstatedir}/selinux/%1/active/modules/400/extra_binsbin") \
+end
+
 %build
 
 %prep
@@ -429,6 +441,7 @@ mkdir -p %{buildroot}%{_bindir}
 install -m 755  %{SOURCE33} %{buildroot}%{_bindir}/
 mkdir -p %{buildroot}%{_libexecdir}/selinux
 install -m 755  %{SOURCE37} %{buildroot}%{_libexecdir}/selinux
+install -m 755  %{SOURCE40} %{buildroot}%{_libexecdir}/selinux
 
 # Always create policy module package directories
 mkdir -p %{buildroot}%{_datadir}/selinux/{targeted,mls,minimum,modules}/
@@ -584,6 +597,7 @@ SELinux targeted policy package.
 %pretrans targeted -p <lua>
 %backupConfigLua
 %removeVarrunModuleLua targeted
+%removeBinsbinModuleLua targeted
 
 %pre targeted
 %preInstall targeted
@@ -595,8 +609,10 @@ exit 0
 %posttrans targeted
 %checkConfigConsistency targeted
 %{_libexecdir}/selinux/varrun-convert.sh targeted
+%{_libexecdir}/selinux/binsbin-convert.sh targeted
 %postInstall $1 targeted
 %{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm
+%{_sbindir}/restorecon -i /usr/sbin/fapolicyd* /usr/sbin/usbguard*
 
 %postun targeted
 if [ $1 = 0 ]; then
@@ -619,11 +635,25 @@ exit 0
 %{_sbindir}/selinuxenabled && %{_sbindir}/semodule -nB
 exit 0
 
+%triggerin -- fapolicyd-selinux
+%{_libexecdir}/selinux/binsbin-convert.sh targeted
+%{_sbindir}/restorecon /usr/sbin/fapolicyd*
+
+%triggerin -- usbguard-selinux
+%{_libexecdir}/selinux/binsbin-convert.sh targeted
+%{_sbindir}/restorecon /usr/sbin/usbguard*
+
 %triggerprein -p <lua> -- container-selinux
 %removeVarrunModuleLua targeted
 
 %triggerprein -p <lua> -- pcp-selinux
 %removeVarrunModuleLua targeted
+
+%triggerprein -p <lua> -- fapolicyd-selinux
+%removeBinsbinModuleLua targeted
+
+%triggerprein -p <lua> -- usbguard-selinux
+%removeBinsbinModuleLua targeted
 
 %triggerpostun -- selinux-policy-targeted < 3.12.1-74
 rm -f %{_sysconfdir}/selinux/*/modules/active/modules/sandbox.pp.disabled 2>/dev/null
@@ -635,6 +665,14 @@ exit 0
 
 %triggerpostun -- container-selinux
 %{_libexecdir}/selinux/varrun-convert.sh targeted
+exit 0
+
+%triggerpostun -- fapolicyd-selinux
+%{_libexecdir}/selinux/binsbin-convert.sh targeted
+exit 0
+
+%triggerpostun -- usbguard-selinux
+%{_libexecdir}/selinux/binsbin-convert.sh targeted
 exit 0
 
 %triggerpostun targeted -- selinux-policy-targeted < 3.13.1-138
@@ -726,6 +764,7 @@ exit 0
 %posttrans minimum
 %checkConfigConsistency minimum
 %{_libexecdir}/selinux/varrun-convert.sh minimum
+%{_libexecdir}/selinux/binsbin-convert.sh minimum
 %{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm
 
 %postun minimum
@@ -801,6 +840,7 @@ exit 0
 %posttrans mls
 %checkConfigConsistency mls
 %{_libexecdir}/selinux/varrun-convert.sh mls
+%{_libexecdir}/selinux/binsbin-convert.sh mls
 %postInstall $1 mls
 %{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm
 
