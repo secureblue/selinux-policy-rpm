@@ -18,7 +18,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 41.17
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: Makefile.devel
@@ -587,7 +587,7 @@ exit 0
 %{_libexecdir}/selinux/varrun-convert.sh targeted
 %{_libexecdir}/selinux/binsbin-convert.sh targeted
 %postInstall $1 targeted
-%{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm
+%{_sbindir}/restorecon -Ri /usr/lib/sysimage/rpm /var/lib/rpm /etc/mdevctl.d
 %{_sbindir}/restorecon -i /usr/sbin/fapolicyd* /usr/sbin/usbguard*
 
 %postun targeted
