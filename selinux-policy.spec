@@ -628,10 +628,6 @@ exit 0
 %triggerprein -p <lua> -- usbguard-selinux
 %removeBinsbinModuleLua targeted
 
-%triggerpostun -- selinux-policy-targeted < 3.12.1-74
-rm -f %{_sysconfdir}/selinux/*/modules/active/modules/sandbox.pp.disabled 2>/dev/null
-exit 0
-
 %triggerpostun -- pcp-selinux
 %{_libexecdir}/selinux/varrun-convert.sh targeted
 exit 0
@@ -646,27 +642,6 @@ exit 0
 
 %triggerpostun -- usbguard-selinux
 %{_libexecdir}/selinux/binsbin-convert.sh targeted
-exit 0
-
-%triggerpostun targeted -- selinux-policy-targeted < 3.13.1-138
-CR=$'\n'
-INPUT=""
-for i in `find %{_sysconfdir}/selinux/targeted/modules/active/modules/ -name \*disabled`; do
-    module=`basename $i | sed 's/.pp.disabled//'`
-    if [ -d %{_sharedstatedir}/selinux/targeted/active/modules/100/$module ]; then
-        touch %{_sharedstatedir}/selinux/targeted/active/modules/disabled/$p
-    fi
-done
-for i in `find %{_sysconfdir}/selinux/targeted/modules/active/modules/ -name \*.pp`; do
-    INPUT="${INPUT}${CR}module -N -a $i"
-done
-for i in $(find %{_sysconfdir}/selinux/targeted/modules/active -name \*.local); do
-    cp $i %{_sharedstatedir}/selinux/targeted/active
-done
-echo "$INPUT" | %{_sbindir}/semanage import -S targeted -N
-if %{_sbindir}/selinuxenabled ; then
-        %{_sbindir}/load_policy
-fi
 exit 0
 
 %files targeted -f %{buildroot}%{_datadir}/selinux/targeted/nonbasemodules.lst
@@ -756,27 +731,6 @@ if [ $1 = 0 ]; then
 fi
 exit 0
 
-%triggerpostun minimum -- selinux-policy-minimum < 3.13.1-138
-if [ `ls -A %{_sharedstatedir}/selinux/minimum/active/modules/disabled/` ]; then
-    rm -f %{_sharedstatedir}/selinux/minimum/active/modules/disabled/*
-fi
-CR=$'\n'
-INPUT=""
-for i in `find %{_sysconfdir}/selinux/minimum/modules/active/modules/ -name \*disabled`; do
-    module=`basename $i | sed 's/.pp.disabled//'`
-    if [ -d %{_sharedstatedir}/selinux/minimum/active/modules/100/$module ]; then
-        touch %{_sharedstatedir}/selinux/minimum/active/modules/disabled/$p
-    fi
-done
-for i in `find %{_sysconfdir}/selinux/minimum/modules/active/modules/ -name \*.pp`; do
-    INPUT="${INPUT}${CR}module -N -a $i"
-done
-echo "$INPUT" | %{_sbindir}/semanage import -S minimum -N
-if %{_sbindir}/selinuxenabled ; then
-    %{_sbindir}/load_policy
-fi
-exit 0
-
 %files minimum -f %{buildroot}%{_datadir}/selinux/minimum/nonbasemodules.lst
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/unconfined_u
 %config(noreplace) %{_sysconfdir}/selinux/minimum/contexts/users/sysadm_u
@@ -832,25 +786,6 @@ if [ $1 = 0 ]; then
     fi
 fi
 exit 0
-
-%triggerpostun mls -- selinux-policy-mls < 3.13.1-138
-CR=$'\n'
-INPUT=""
-for i in `find %{_sysconfdir}/selinux/mls/modules/active/modules/ -name \*disabled`; do
-    module=`basename $i | sed 's/.pp.disabled//'`
-    if [ -d %{_sharedstatedir}/selinux/mls/active/modules/100/$module ]; then
-        touch %{_sharedstatedir}/selinux/mls/active/modules/disabled/$p
-    fi
-done
-for i in `find %{_sysconfdir}/selinux/mls/modules/active/modules/ -name \*.pp`; do
-    INPUT="${INPUT}${CR}module -N -a $i"
-done
-echo "$INPUT" | %{_sbindir}/semanage import -S mls -N
-if %{_sbindir}/selinuxenabled ; then
-        %{_sbindir}/load_policy
-fi
-exit 0
-
 
 %files mls -f %{buildroot}%{_datadir}/selinux/mls/nonbasemodules.lst
 %config(noreplace) %{_sysconfdir}/dnf/protected.d/selinux-policy-mls.conf
