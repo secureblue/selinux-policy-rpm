@@ -154,7 +154,6 @@ This package contains manual pages and documentation of the policy modules.
 
 %files doc
 %{_mandir}/man*/*
-%{_mandir}/ru/*/*
 %exclude %{_mandir}/man8/container_selinux.8.gz
 %doc %{_datadir}/doc/%{name}
 
@@ -471,8 +470,6 @@ install -m 644 %{SOURCE39} %{buildroot}%{_sysconfdir}/dnf/protected.d/
 # remove leftovers when save-previous=true (semanage.conf) is used
 rm -rf %{buildroot}%{_sharedstatedir}/selinux/{minimum,targeted,mls}/previous
 
-mkdir -p %{buildroot}%{_mandir}
-cp -R  man/* %{buildroot}%{_mandir}
 make %common_params UNK_PERMS=allow NAME=targeted TYPE=mcs DESTDIR=%{buildroot} PKGNAME=%{name} install-docs
 make %common_params UNK_PERMS=allow NAME=targeted TYPE=mcs DESTDIR=%{buildroot} PKGNAME=%{name} install-headers
 mkdir %{buildroot}%{_datadir}/selinux/devel/
@@ -480,7 +477,7 @@ mv %{buildroot}%{_datadir}/selinux/targeted/include %{buildroot}%{_datadir}/seli
 install -m 644 %{SOURCE1} %{buildroot}%{_datadir}/selinux/devel/Makefile
 install -m 644 doc/example.* %{buildroot}%{_datadir}/selinux/devel/
 install -m 644 doc/policy.* %{buildroot}%{_datadir}/selinux/devel/
-%{_bindir}/sepolicy manpage -a -p %{buildroot}%{_datadir}/man/man8/ -w -r %{buildroot}
+%{_bindir}/sepolicy manpage -a -p %{buildroot}%{_mandir}/man8/ -w -r %{buildroot}
 mkdir %{buildroot}%{_datadir}/selinux/devel/html
 mv %{buildroot}%{_datadir}/man/man8/*.html %{buildroot}%{_datadir}/selinux/devel/html
 mv %{buildroot}%{_datadir}/man/man8/style.css %{buildroot}%{_datadir}/selinux/devel/html
