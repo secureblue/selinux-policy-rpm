@@ -162,11 +162,11 @@ This package contains manual pages and documentation of the policy modules.
 %define makeCmds() \
 %make_build %common_params UNK_PERMS=%3 NAME=%1 TYPE=%2 bare \
 %make_build %common_params UNK_PERMS=%3 NAME=%1 TYPE=%2 conf \
-cp -f ./dist/%1/booleans.conf ./policy/booleans.conf \
-cp -f ./dist/%1/users ./policy/users \
+install -p -m0644 ./dist/%1/booleans.conf ./policy/booleans.conf \
+install -p -m0644 ./dist/%1/users ./policy/users \
 
 %define makeModulesConf() \
-cp -f ./dist/%1/modules.conf ./policy/modules.conf \
+install -p -m0644 ./dist/%1/modules.conf ./policy/modules.conf \
 
 %define installCmds() \
 %make_build %common_params UNK_PERMS=%3 NAME=%1 TYPE=%2 base.pp \
@@ -176,13 +176,13 @@ make %common_params UNK_PERMS=%3 NAME=%1 TYPE=%2 DESTDIR=%{buildroot} install-ap
 make %common_params UNK_PERMS=%3 NAME=%1 TYPE=%2 DESTDIR=%{buildroot} SEMODULE="%{_sbindir}/semodule -p %{buildroot} -X 100 " load \
 %{__mkdir} -p %{buildroot}%{_sysconfdir}/selinux/%1/logins \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.subs \
-install -m0644 ./config/file_contexts.subs_dist %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files \
-install -m0644 ./dist/%1/setrans.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
-install -m0644 ./dist/customizable_types %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
+install -p -m0644 ./config/file_contexts.subs_dist %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files \
+install -p -m0644 ./dist/%1/setrans.conf %{buildroot}%{_sysconfdir}/selinux/%1/setrans.conf \
+install -p -m0644 ./dist/customizable_types %{buildroot}%{_sysconfdir}/selinux/%1/contexts/customizable_types \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.bin \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local \
 touch %{buildroot}%{_sysconfdir}/selinux/%1/contexts/files/file_contexts.local.bin \
-cp ./dist/booleans.subs_dist %{buildroot}%{_sysconfdir}/selinux/%1 \
+install -p -m0644 ./dist/booleans.subs_dist %{buildroot}%{_sysconfdir}/selinux/%1 \
 rm -f %{buildroot}%{_datadir}/selinux/%1/*pp*  \
 %{_bindir}/sha512sum %{buildroot}%{_sysconfdir}/selinux/%1/policy/policy.%{POLICYVER} | cut -d' ' -f 1 > %{buildroot}%{_sysconfdir}/selinux/%1/.policy.sha512; \
 rm -rf %{buildroot}%{_sysconfdir}/selinux/%1/contexts/netfilter_contexts  \
@@ -412,12 +412,12 @@ mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
 touch %{buildroot}%{_sysconfdir}/selinux/config
 touch %{buildroot}%{_sysconfdir}/sysconfig/selinux
 mkdir -p %{buildroot}%{_usr}/lib/tmpfiles.d/
-cp %{SOURCE2} %{buildroot}%{_usr}/lib/tmpfiles.d/
+install -p -m0644 %{SOURCE2} %{buildroot}%{_usr}/lib/tmpfiles.d/
 mkdir -p %{buildroot}%{_bindir}
-install -m 755 %{SOURCE3} %{buildroot}%{_bindir}/
+install -p -m 755 %{SOURCE3} %{buildroot}%{_bindir}/
 mkdir -p %{buildroot}%{_libexecdir}/selinux
-install -m 755  %{SOURCE37} %{buildroot}%{_libexecdir}/selinux
-install -m 755  %{SOURCE40} %{buildroot}%{_libexecdir}/selinux
+install -p -m 755  %{SOURCE37} %{buildroot}%{_libexecdir}/selinux
+install -p -m 755  %{SOURCE40} %{buildroot}%{_libexecdir}/selinux
 
 # Always create policy module package directories
 mkdir -p %{buildroot}%{_datadir}/selinux/{targeted,mls,minimum,modules}/
@@ -443,7 +443,7 @@ rm -rf %{buildroot}%{_sharedstatedir}/selinux/targeted/active/modules/100/sandbo
 mv sandbox.pp %{buildroot}%{_datadir}/selinux/packages/sandbox.pp
 %modulesList targeted
 %nonBaseModulesList targeted
-install -m 644 %{SOURCE38} %{buildroot}%{_sysconfdir}/dnf/protected.d/
+install -p -m 644 %{SOURCE38} %{buildroot}%{_sysconfdir}/dnf/protected.d/
 %endif
 
 %if %{with minimum}
@@ -452,7 +452,7 @@ install -m 644 %{SOURCE38} %{buildroot}%{_sysconfdir}/dnf/protected.d/
 %makeModulesConf targeted
 %installCmds minimum mcs allow
 rm -rf %{buildroot}%{_sharedstatedir}/selinux/minimum/active/modules/100/sandbox
-install -m 644 %{SOURCE16} %{buildroot}%{_datadir}/selinux/minimum/modules-enabled.lst
+install -p -m 644 %{SOURCE16} %{buildroot}%{_datadir}/selinux/minimum/modules-enabled.lst
 %modulesList minimum
 %nonBaseModulesList minimum
 %endif
@@ -464,7 +464,7 @@ install -m 644 %{SOURCE16} %{buildroot}%{_datadir}/selinux/minimum/modules-enabl
 %installCmds mls mls deny
 %modulesList mls
 %nonBaseModulesList mls
-install -m 644 %{SOURCE39} %{buildroot}%{_sysconfdir}/dnf/protected.d/
+install -p -m 644 %{SOURCE39} %{buildroot}%{_sysconfdir}/dnf/protected.d/
 %endif
 
 # remove leftovers when save-previous=true (semanage.conf) is used
@@ -474,21 +474,21 @@ make %common_params UNK_PERMS=allow NAME=targeted TYPE=mcs DESTDIR=%{buildroot} 
 make %common_params UNK_PERMS=allow NAME=targeted TYPE=mcs DESTDIR=%{buildroot} PKGNAME=%{name} install-headers
 mkdir %{buildroot}%{_datadir}/selinux/devel/
 mv %{buildroot}%{_datadir}/selinux/targeted/include %{buildroot}%{_datadir}/selinux/devel/include
-install -m 644 %{SOURCE1} %{buildroot}%{_datadir}/selinux/devel/Makefile
-install -m 644 doc/example.* %{buildroot}%{_datadir}/selinux/devel/
-install -m 644 doc/policy.* %{buildroot}%{_datadir}/selinux/devel/
+install -p -m 644 %{SOURCE1} %{buildroot}%{_datadir}/selinux/devel/Makefile
+install -p -m 644 doc/example.* %{buildroot}%{_datadir}/selinux/devel/
+install -p -m 644 doc/policy.* %{buildroot}%{_datadir}/selinux/devel/
 %{_bindir}/sepolicy manpage -a -p %{buildroot}%{_mandir}/man8/ -w -r %{buildroot}
 mkdir %{buildroot}%{_datadir}/selinux/devel/html
 mv %{buildroot}%{_datadir}/man/man8/*.html %{buildroot}%{_datadir}/selinux/devel/html
 mv %{buildroot}%{_datadir}/man/man8/style.css %{buildroot}%{_datadir}/selinux/devel/html
 
 mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
-install -m 644 %{SOURCE5} %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
+install -p -m 644 %{SOURCE5} %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
 sed -i 's/SELINUXPOLICYVERSION/%{version}/' %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
 sed -i 's@SELINUXSTOREPATH@%{_sharedstatedir}/selinux@' %{buildroot}%{_rpmconfigdir}/macros.d/macros.selinux-policy
 
 mkdir -p %{buildroot}%{_unitdir}
-install -m 644 %{SOURCE36} %{buildroot}%{_unitdir}
+install -p -m 644 %{SOURCE36} %{buildroot}%{_unitdir}
 
 %post
 %systemd_post selinux-check-proper-disable.service
