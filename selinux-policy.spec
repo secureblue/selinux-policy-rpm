@@ -94,7 +94,7 @@ SELinux sandbox policy for use with the sandbox utility.
 %post sandbox
 rm -f %{_sysconfdir}/selinux/*/modules/active/modules/sandbox.pp.disabled 2>/dev/null
 rm -f %{_sharedstatedir}/selinux/*/active/modules/disabled/sandbox 2>/dev/null
-%{_sbindir}/semodule -n -X 100 -i %{_datadir}/selinux/packages/sandbox.pp
+%{_sbindir}/semodule -n -X 100 -i %{_datadir}/selinux/packages/sandbox.pp 2> /dev/null
 if %{_sbindir}/selinuxenabled ; then
     %{_sbindir}/load_policy
 fi;
@@ -286,7 +286,7 @@ fi;
 if [ $1 -ne 1 ] && [ -s %{_sysconfdir}/selinux/config ]; then \
      for MOD_NAME in ganesha ipa_custodia kdbus; do \
         if [ -d %{_sharedstatedir}/selinux/%1/active/modules/100/$MOD_NAME ]; then \
-           %{_sbindir}/semodule -n -d $MOD_NAME; \
+           %{_sbindir}/semodule -n -d $MOD_NAME 2> /dev/null; \
         fi; \
      done; \
      . %{_sysconfdir}/selinux/config; \
@@ -312,7 +312,7 @@ fi; \
 if [ -e %{_sysconfdir}/selinux/%2/.rebuild ]; then \
    rm %{_sysconfdir}/selinux/%2/.rebuild; \
 fi; \
-%{_sbindir}/semodule -B -n -s %2; \
+%{_sbindir}/semodule -B -n -s %2 2> /dev/null; \
 [ "${SELINUXTYPE}" == "%2" ] && %{_sbindir}/selinuxenabled && load_policy; \
 if [ %1 -eq 1 ]; then \
    %{_sbindir}/restorecon -R /root /var/log /run /etc/passwd* /etc/group* /etc/*shadow* 2> /dev/null; \
@@ -605,7 +605,7 @@ exit 0
 
 
 %triggerin -- pcre2
-%{_sbindir}/selinuxenabled && %{_sbindir}/semodule -nB
+%{_sbindir}/selinuxenabled && %{_sbindir}/semodule -nB 2> /dev/null
 exit 0
 
 %triggerin -- fapolicyd-selinux
@@ -695,7 +695,7 @@ login -m  -s unconfined_u -r s0-s0:c0.c1023 __default__
 login -m  -s unconfined_u -r s0-s0:c0.c1023 root
 __eof
 %{_sbindir}/restorecon -R /root /var/log /var/run 2> /dev/null
-%{_sbindir}/semodule -B -s minimum
+%{_sbindir}/semodule -B -s minimum 2> /dev/null
 else
 instpackages=`cat %{_datadir}/selinux/minimum/instmodules.lst`
 for p in $packages; do
@@ -704,7 +704,7 @@ done
 for p in $instpackages apache dbus inetd kerberos mta nis; do
     rm -f %{_sharedstatedir}/selinux/minimum/active/modules/disabled/$p
 done
-%{_sbindir}/semodule -B -s minimum
+%{_sbindir}/semodule -B -s minimum 2> /dev/null
 %relabel minimum
 fi
 exit 0
