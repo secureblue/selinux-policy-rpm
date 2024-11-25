@@ -5,7 +5,7 @@
 
 # github repo with selinux-policy sources
 %global giturl https://github.com/secureblue/selinux-policy
-%global commit e7ba252da77c2436cb04c948f1212b9ae6fd2e86
+%global commit 30a441c7f2b058ddb84b4b18f6a9375d9c414745
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
