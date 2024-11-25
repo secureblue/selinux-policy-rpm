@@ -4,8 +4,8 @@
 %bcond mls      1
 
 # github repo with selinux-policy sources
-%global giturl https://github.com/fedora-selinux/selinux-policy
-%global commit a1230377e79a5b5f9ba6730e04fc6c1a4e454929
+%global giturl https://github.com/secureblue/selinux-policy
+%global commit e7ba252da77c2436cb04c948f1212b9ae6fd2e86
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
