@@ -5,7 +5,7 @@
 
 # github repo with selinux-policy sources
 %global giturl https://github.com/secureblue/selinux-policy
-%global commit ff87e1581525465122a715f7fd3016048d0abbc1
+%global commit a1ecea66c8cf8baec7229a0b2b694e6c2b3edb15
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %define distro redhat
@@ -18,7 +18,7 @@
 Summary: SELinux policy configuration
 Name: selinux-policy
 Version: 41.26
-Release: 32%{?dist}
+Release: 33%{?dist}
 License: GPL-2.0-or-later
 Source: %{giturl}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 Source1: Makefile.devel
