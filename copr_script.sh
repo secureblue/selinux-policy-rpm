@@ -1,6 +1,19 @@
-#! /bin/sh -x 
+#!/bin/sh -eux
 
-mv ./selinux-policy-rpm/* .
+LATEST_COMMIT=$(git ls-remote https://github.com/secureblue/selinux-policy.git refs/heads/f42-secureblue | awk '{print $1}')
+SECUREBLUE_REPO_URL='https://github.com/secureblue/selinux-policy.git'
+
+git clone --depth=1 https://src.fedoraproject.org/rpms/selinux-policy.git
+cd ./selinux-policy
+git checkout f42
+sed --sandbox -i \
+  -e "s|^%global giturl .*|%global giturl $SECUREBLUE_REPO_URL|" \
+  -e "s/^%global commit .*/%global commit $LATEST_COMMIT/" \
+  -e '/^Version: /s/$/-secureblue/' \
+  selinux-policy.spec
+cd ..
+
+mv ./selinux-policy/* .
 git clone https://github.com/fedora-selinux/macro-expander.git
 mv ./macro-expander/macro-expander.sh ./macro-expander-bin
 rm -rf ./macro-expander
