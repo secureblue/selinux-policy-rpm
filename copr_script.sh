@@ -1,7 +1,7 @@
 #!/bin/sh -eux
 
 LATEST_COMMIT=$(git ls-remote https://github.com/secureblue/selinux-policy.git refs/heads/f42-secureblue | awk '{print $1}')
-SECUREBLUE_REPO_URL='https://github.com/secureblue/selinux-policy.git'
+SECUREBLUE_REPO_URL='https://github.com/secureblue/selinux-policy'
 
 git clone --depth=1 https://src.fedoraproject.org/rpms/selinux-policy.git
 cd ./selinux-policy
