@@ -9,7 +9,7 @@ git checkout f42
 sed --sandbox -i \
   -e "s|^%global giturl .*|%global giturl $SECUREBLUE_REPO_URL|" \
   -e "s/^%global commit .*/%global commit $LATEST_COMMIT/" \
-  -e '/^Version: /s/$/-secureblue/' \
+  -e '/^Release: /s/$/-secureblue/' \
   selinux-policy.spec
 cd ..
 
