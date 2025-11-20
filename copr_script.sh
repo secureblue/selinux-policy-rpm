@@ -11,6 +11,10 @@ sed --sandbox -i \
   -e "s/^%global commit .*/%global commit $LATEST_COMMIT/" \
   -e '/^Version: /s/$/_secureblue/' \
   selinux-policy.spec
+for cil_policy_file in ./cil/*.cil; do
+    policy_file_name=$(basename "$cil_policy_file")
+    sed -i "/make clean/a semodule -v -i ${policy_file_name}"  selinux-policy.spec
+done
 cd ..
 
 mv ./selinux-policy/* .
