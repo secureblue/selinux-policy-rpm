@@ -5,7 +5,7 @@ SECUREBLUE_REPO_URL='https://github.com/secureblue/selinux-policy'
 
 git clone https://src.fedoraproject.org/rpms/selinux-policy.git
 cd ./selinux-policy
-git checkout f42
+git checkout f43
 sed --sandbox -i \
   -e "s|^%global giturl .*|%global giturl $SECUREBLUE_REPO_URL|" \
   -e "s/^%global commit .*/%global commit $LATEST_COMMIT/" \
