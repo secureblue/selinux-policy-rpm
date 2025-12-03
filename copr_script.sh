@@ -12,7 +12,7 @@ sed --sandbox -i \
   -e '/^Version: /s/$/_secureblue/' \
   selinux-policy.spec
   sed -i -e '/^# recreate sandbox\.pp$/i semodule -p %{buildroot} -X 100 -s targeted -v -i ./cil/*.cil' selinux-policy.spec
-  sed -i -e '/$%fileList targeted$/i %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_fm_userns/cil\
+  sed -i -e '/^%fileList targeted$/i %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_fm_userns/cil\
     %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_fm_userns/lang_ext\
     %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_systemd_flatpak_exec/cil\
     %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_systemd_flatpak_exec/lang_ext\
