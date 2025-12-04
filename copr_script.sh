@@ -12,18 +12,13 @@ sed --sandbox -i \
   -e '/^Version: /s/$/_secureblue/' \
   selinux-policy.spec
   sed -i -e '/^# recreate sandbox\.pp$/i semodule -p %{buildroot} -X 100 -s targeted -v -i ./cil/*.cil' selinux-policy.spec
-  sed -i -e '/^%fileList targeted$/i %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_fm_userns/cil\
-    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_fm_userns/lang_ext\
-    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_systemd_flatpak_exec/cil\
-    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_systemd_flatpak_exec/lang_ext\
-    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_userns/cil\
-  	%verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_userns/lang_ext\
-    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/harden_userns/cil\
-    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/harden_userns/lang_ext\
-    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/unbreak_thunar_thumbs/cil\
-    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/unbreak_thunar_thumbs/lang_ext\
-    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/userns_deny_unconfined_relabels/cil\
-    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/userns_deny_unconfined_relabels/lang_ext' selinux-policy.spec
+  sed -i -e '/^%fileList targeted$/i %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_fm_userns\
+    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_systemd_flatpak_exec\
+    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/grant_userns\
+    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/harden_userns\
+    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/unbreak_thunar_thumbs\
+    %verify(not md5 size mtime) %{_sharedstatedir}/selinux/targeted/active/modules/100/userns_deny_unconfined_relabels' selinux-policy.spec
+  sed -i -e 's/^Release: 1%{?dist}/Release: 2%{?dist}/' selinux-policy.spec
 cd ..
 
 mv ./selinux-policy/* .
